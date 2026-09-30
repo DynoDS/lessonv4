@@ -287,6 +287,8 @@ function pictureShape(data, ctx) {
 // is missing is the axis to name.
 function checkPictureCellSize(zone, data, ctx) {
   if (!ctx || !data || data.essential === false) return;
+  // A picture in a table cell is a cue read with its row's words.
+  if (ctx._tableCell) return;
   if (!data.imagePath) return;
   if (isClassCharacterPortrait(data.imagePath)) return;
   if (resolveFit(data, false) !== 'contain') return;

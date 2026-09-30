@@ -133,3 +133,47 @@ test('with the switch the deck is written and every faulty slide is named', () =
     fs.rmSync(run.root, { recursive: true, force: true });
   }
 });
+
+// The slide decorator previews that same flagged deck before it adds drawings
+// to the slides that are fine. Its check used to fail on the flagged slides,
+// so a flagged deck got no drawings on any slide (streamline 10B, 29 September
+// 2026). Faults only on the flagged slides now give a preview; a fault on any
+// other slide still fails.
+const CHECK = path.join(__dirname, '..', 'scripts', 'check-slide-design.js');
+
+function check(flaggedList) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'decorate-flagged-'));
+  const lessonPath = path.join(root, 'lesson.json');
+  fs.writeFileSync(lessonPath, JSON.stringify(lesson(), null, 2));
+  const result = spawnSync(
+    process.execPath,
+    [CHECK, '--preview', '--settled', '--flagged-slides', flaggedList, lessonPath],
+    { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024, cwd: root }
+  );
+  return { root, status: result.status, output: `${result.stdout || ''}${result.stderr || ''}` };
+}
+
+test('a flagged deck previews for the decorator when every fault is on a flagged slide', () => {
+  const run = check('2,3');
+  try {
+    if (/AUTOFIT_(DEPENDENCY_MISSING|NOT_PERMITTED)/.test(run.output)) return;
+    assert.equal(run.status, 0, run.output.slice(-2000));
+    assert.match(run.output, /^SLIDE_DESIGN_PREVIEW: /m);
+    assert.match(run.output, /^SLIDE_DESIGN_CHECK_OK: 3 slides/m);
+    assert.match(run.output, /note: slide 2: /);
+  } finally {
+    fs.rmSync(run.root, { recursive: true, force: true });
+  }
+});
+
+test('a fault on a slide nobody flagged still fails the decorator preview', () => {
+  const run = check('2');
+  try {
+    if (/AUTOFIT_(DEPENDENCY_MISSING|NOT_PERMITTED)/.test(run.output)) return;
+    assert.notEqual(run.status, 0);
+    assert.match(run.output, /SLIDE_DESIGN_CHECK_FAILED/);
+    assert.doesNotMatch(run.output, /^SLIDE_DESIGN_PREVIEW: /m);
+  } finally {
+    fs.rmSync(run.root, { recursive: true, force: true });
+  }
+});

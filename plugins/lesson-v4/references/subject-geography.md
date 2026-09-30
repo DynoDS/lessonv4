@@ -110,6 +110,22 @@ Judge the response against the geographical learning. Matching, locating, labell
 
 ---
 
+## What a worksheet looks like in geography
+
+A sheet takes the shape its geography needs, and these are shapes that work on real Year 3 and 4 geography sheets, to choose from by the lesson's thinking. A sheet can be one of them done well, or two joined, and none is the default: a single well-built activity is as complete a sheet as one with sections. Below and Greater Depth choose from the same set, often keeping the Expected shape and changing how much is already filled in or how hard the cases are.
+
+- **Mark up the map.** A real map the child works on: the countries the Amazon crosses marked from a list, or arrows showing which way a town grew and labels on what stopped it.
+- **Read the graph, then say what it shows.** A climate graph or bar chart with questions underneath that need its numbers (`Which month is wettest? How is July different from January?`), then one that uses the reading (`Which of these two places could this graph belong to?`).
+- **A data table to compare.** Today's temperature in ten rainforest places, tropical and temperate, then one sentence on the difference and a reason for it.
+- **Who's right about the place?** Three children describe how a river changes from source to mouth; the child picks the one who is right and fixes the others.
+- **Photograph clues.** A photograph of a place the class has not seen, with the things that show today's idea circled or labelled.
+- **A table along the river or across places.** Upper, middle and lower course with the size, speed and landform of each, or two places compared on the criteria the lesson taught.
+- **Label it, then use it.** The layers of the rainforest labelled, then what lives in each layer and why it can live there.
+
+The page list above says what a geographical answer holds; these are ways to lay a sheet out so children produce it. A poster, a leaflet or a postcard does not earn a sheet, because the time goes on layout and the page shows little of the geography.
+
+---
+
 ## Vocabulary in geography
 
 The general rule holds: the words that earn a card are the ones children reason *with*. In geography those are the ones that let a child describe or explain any place, not only today's: climate, vegetation, relief, settlement, erosion, trade, sustainable. Proper nouns and named features (Manaus, Tropic of Capricorn, the Amazon) are content the lesson teaches and children need, but they belong in the teaching rather than on vocabulary cards, because knowing them makes a child knowledgeable about one place rather than a stronger geographical thinker.

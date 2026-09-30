@@ -223,7 +223,18 @@ def resolve_library_root() -> tuple[Path | None, str]:
     return None, "resolver printed neither a root nor an unavailable line"
 
 
+_LIBRARY_IDS: dict[str, frozenset[str]] = {}
+
+
 def library_ids(library_root: Path) -> set[str]:
+    """The catalogue, read once per check rather than once per declined slide."""
+    key = str(library_root)
+    if key not in _LIBRARY_IDS:
+        _LIBRARY_IDS[key] = frozenset(_read_library_ids(library_root))
+    return set(_LIBRARY_IDS[key])
+
+
+def _read_library_ids(library_root: Path) -> set[str]:
     """Every drawing this run could have looked at.
 
     The shipped index is the catalogue. The folder is only ever a union with it,
@@ -289,8 +300,72 @@ def held_ids(library_root: Path) -> set[str] | None:
     return held
 
 
+# Answers already fetched in one batch, keyed by the library and the searches.
+_SEARCH_ANSWERS: dict[tuple[str, tuple[str, ...]], list[str]] = {}
+
+
+def _search_key(library_root: Path, queries: list[str]) -> tuple[str, tuple[str, ...]]:
+    return (str(library_root), tuple(queries))
+
+
+def prefetch_searches(library_root: Path, groups: list[list[str]]) -> None:
+    """Run every search the record names in one process, before the slides are read.
+
+    One process per declined slide took 13 to 31 seconds a check on Codex, long
+    enough for the host to give up waiting and start the check again while the
+    first was still running (26 September 2026, about 9 minutes lost). Each
+    answer is exactly the one a single search gives; a group the batch could
+    not answer is left for the single search below.
+    """
+    wanted = []
+    for queries in groups:
+        key = _search_key(library_root, queries)
+        if queries and key not in _SEARCH_ANSWERS and queries not in wanted:
+            wanted.append(queries)
+    if not wanted or not SEARCH_SCRIPT.is_file():
+        return
+    import tempfile
+    handle = tempfile.NamedTemporaryFile(
+        "w", suffix=".json", delete=False, encoding="utf-8"
+    )
+    try:
+        json.dump(wanted, handle)
+        handle.close()
+        completed = subprocess.run(
+            ["node", str(SEARCH_SCRIPT), "--no-fetch", "--batch-file", handle.name,
+             "--limit", "24"],
+            capture_output=True, text=True, timeout=300,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return
+    finally:
+        try:
+            Path(handle.name).unlink()
+        except OSError:
+            pass
+    for line in completed.stdout.splitlines():
+        if not line.startswith("EDUCATIONAL_SVG_BATCH:"):
+            continue
+        try:
+            payload = json.loads(line.split(":", 1)[1].strip())
+            queries = wanted[payload["index"]]
+        except (json.JSONDecodeError, KeyError, IndexError, TypeError):
+            continue
+        candidates = payload.get("candidates")
+        if not isinstance(candidates, list):
+            continue
+        _SEARCH_ANSWERS[_search_key(library_root, queries)] = [
+            candidate.get("libraryId")
+            for candidate in candidates
+            if isinstance(candidate, dict) and isinstance(candidate.get("libraryId"), str)
+        ]
+
+
 def run_search(library_root: Path, queries: list[str]) -> list[str]:
     """Ask the real library what those searches return. Empty list when it cannot run."""
+    answered = _SEARCH_ANSWERS.get(_search_key(library_root, queries))
+    if answered is not None:
+        return list(answered)
     if not SEARCH_SCRIPT.is_file():
         return []
     # --no-fetch because checking evidence is a deterministic step: it reads the
@@ -891,6 +966,13 @@ def check(
 
     actual = deck_optional_pictures(lesson)
     failures: list[str] = []
+    if library_root is not None:
+        prefetch_searches(library_root, [
+            [q for q in entry["searched"] if isinstance(q, str)]
+            for entry in entries
+            if isinstance(entry, dict) and isinstance(entry.get("searched"), list)
+            and all(isinstance(q, str) for q in entry["searched"])
+        ])
     if room:
         stamped = room_record.get("compositionSha256") if isinstance(room_record, dict) else None
         if isinstance(stamped, str) and stamped != composition_fingerprint(lesson):

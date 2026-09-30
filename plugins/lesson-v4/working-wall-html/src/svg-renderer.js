@@ -610,7 +610,20 @@ async function preRenderSvgs(spec, specDir) {
           // intrinsic size scaled by density and only then resizes, so leaving it
           // behind would upscale a small bitmap and cost the sharpness the bigger
           // target was for.
-          const png = await sharp(Buffer.from(svg), { density: 144 * RENDER_SCALE })
+          // A drawing sized in a big photograph's own pixels (a labelled
+          // 1280 x 2994 diagram lays out at about 3350 x 3294) would rasterise
+          // at over 700 million pixels at that density, past the image
+          // library's limit, and the whole wall failed (29 September 2026).
+          // Nothing above the printed size is kept after the resize, so such a
+          // drawing is rasterised at the printed size instead. Every drawing
+          // that fits under the limit is drawn exactly as before.
+          let density = 144 * RENDER_SCALE;
+          const intrinsic = await sharp(Buffer.from(svg)).metadata();
+          const pixelsAt = (d) => (intrinsic.width * d / 72) * (intrinsic.height * d / 72);
+          if (intrinsic.width && intrinsic.height && pixelsAt(density) > 250e6) {
+            density = 72 * RENDER_OUT_PX / Math.max(intrinsic.width, intrinsic.height);
+          }
+          const png = await sharp(Buffer.from(svg), { density })
             .resize(resize)
             .png()
             .toBuffer();

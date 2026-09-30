@@ -22,7 +22,7 @@
     {
       "template": "body-full",
       "headerStyle": "title",
-      "title": "More polygons: rectangle 2, rhombus 2, triangle 3, right-triangle 0",
+      "title": "More polygons: rectangle 2, rhombus 2, triangle 3",
       "instruction": "answer reveal green",
       "body": {
         "type": "row",

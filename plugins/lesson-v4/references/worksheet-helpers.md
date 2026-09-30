@@ -49,7 +49,7 @@ artefact and cannot drift apart.
                       "recordingReason": "Every answer is a number or an explanation.",
                       "layout": "auto", "zones": [ { }, { }, { } ] },
     "greaterDepth": { "recording": "books",
-                      "recordingReason": "Reasoning written from a shared copy; nothing is marked on the page.",
+                      "recordingReason": "Reasoning written in books; nothing is marked on the page.",
                       "layout": "halves-side", "orientation": "landscape",
                       "zones": { "a": { }, "b": { } } }
   },
@@ -143,8 +143,8 @@ seconds it takes to cut the pile into three.
 | `layout` | required. `"auto"` for the normal case — the engine chooses the shape. Or a named page shape from `worksheet-compositions.md`, when the teaching wants a particular arrangement. |
 | `orientation` | `portrait` (default for a named layout) or `landscape`. Per sheet, though one lesson's sheets normally share one: see below. With `"auto"`, stating one constrains the choice to it; omitting it lets the engine try both. |
 | `zones` | required. With `"auto"`: an ARRAY of zone contents in reading order. With a named layout: an object with one entry per lettered zone. |
-| `recording` | required. `"books"` when every question can be answered in an exercise book from a shared copy, `"sheet"` when at least one needs the printed page. Prints a small book or pencil beside the level code, and a `"books"` sheet also gets a page of question slips at the back of the file. `books-or-sheet.md` has the test and the age guide. |
-| `recordingReason` | required, on every sheet. One line saying why this whole sheet is better that way: for `"sheet"`, the question that needs the printed page and what the child does to it (`"Q4: the child labels the printed photograph"`); for `"books"`, what makes every question answerable from a shared copy. Going to look for a question that needs the page is the test, and finding none is what makes a sheet `"books"`. A blank a child copies (a digit box, a gap in a short sentence) is not a printed thing they cannot reproduce. Never change a question to reach either mark. |
+| `recording` | required. `"books"` when every question can be answered in an exercise book, `"sheet"` when at least one needs the printed page. Prints a small book or pencil beside the level code, and a `"books"` sheet prints as a page of half-page question slips in place of the sheet. `books-or-sheet.md` has the test, the age guide and what to do when something is too wide for a slip. |
+| `recordingReason` | required, on every sheet. One line saying why this whole sheet is better that way: for `"sheet"`, the question that needs the printed page and what the child does to it (`"Q4: the child labels the printed photograph"`); for `"books"`, what makes every question answerable in a book. Going to look for a question that needs the page is the test, and finding none is what makes a sheet `"books"`. A blank a child copies (a digit box, a gap in a short sentence) is not a printed thing they cannot reproduce. Never change a question to reach either mark. |
 | `recordingLookedAgain` | optional, `true` or `false`. `true` on a `"books"` sheet says you looked again at the words the preflight flagged (`RECORDING_LOOK_AGAIN`) and a book still does; without it the build prints that sheet as `"sheet"`. |
 
 Any figure inside a `"books"` sheet that the children will draw for themselves
@@ -386,8 +386,9 @@ reported rather than just the first.
 | `WORD_BANK_MISSING` | Pupil wording tells the child to use the word bank and the sheet has none. |
 | `SECTION_LABEL_IN_TEXT` | A block's mode-of-work heading (`Fluency`, `Reasoning`, `Practise`...) opens a question's own words, so it prints as part of that question. Lift it into a `section-label` above the block; the heading is wanted, just not there. |
 | `NOT_FOR_THE_CHILD` | Pupil wording names the page's machinery rather than the work (`answer line`, `writing lines`, `sentence stem`, `prefilled`, `placeholder`). Say what the child does and let the helper supply the room to do it. |
-| `SLIPS: ...` | A `"books"` sheet's question slips were added at the back of the PDF, with how many fit a page. |
-| `SLIPS_SKIPPED` | A `"books"` sheet got no slips (its questions are too long for a slip shorter than a page, or nothing is left once the answer room is taken out). The sheet itself is unchanged. Information, not a fault. |
+| `SLIPS: ...` | A `"books"` sheet printed as its question slips, in the sheet's place in the PDF, with how many fit a page. |
+| `SLIPS_SKIPPED` | A `"books"` sheet got no slips (something on it is wider than a half-page slip, its questions are too long for a slip shorter than a page, or nothing is left once the answer room is taken out), so the sheet prints instead, unchanged. Information, not a fault. |
+| `SLIP_TOO_WIDE` | Preflight only. A `"books"` sheet holds something wider than a half-page slip, named with its width. Decide it against `books-or-sheet.md` ("Slips are half a page wide"): `"onSlip": false` on a figure the children draw or copy themselves, `"sheet"` when the child works on it or cannot read it smaller. A wide figure is not by itself a reason for `"sheet"`. Never reword the question. |
 | `RECORDING_CHANGED` | A sheet's `recording` was unusable: marked `"books"` with wording that looks as if it needs the printed page and no `"recordingLookedAgain": true` (printed as `"sheet"`, no slips), or not one of the two choices (printed unmarked). The build still delivers; the preflight is where this is fixed. |
 | `RECORDING_MISSING` / `RECORDING_INVALID` | Preflight only. A sheet has no `recording`, or a value other than `"books"` or `"sheet"`. Fix the field; never reword the question. |
 | `RECORDING_LOOK_AGAIN` | Preflight only, and a prompt to look again rather than a refusal. A `"books"` sheet's words look as if they need the printed page (`circle`, `tick`, `in the box`...). A box in the question's own sentence, or on a sheet whose only helpers are sentences and number sentences, is never flagged. Look at that question against `books-or-sheet.md`: a printed thing the child cannot reproduce makes the sheet `"sheet"`, and when a book still does, `"recordingLookedAgain": true` on the sheet quiets this. Never reword the question. |

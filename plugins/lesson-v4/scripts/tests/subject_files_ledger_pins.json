@@ -904,11 +904,11 @@
   },
   {
    "id": "SJ-A22",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place; changed 29 September 2026, the teacher's ruling: sheet shapes outside maths come from each subject file's `What a worksheet looks like` section, a menu chosen by the lesson's thinking, never one template",
    "present": [
     {
      "file": "agents/adaptation-designer.md",
-     "text": "`[PLUGIN_ROOT]/references/subject-[subject].md` — the subject's own thinking, progression and authentic depth, when this lesson's subject has one. List the references directory for `subject-*.md` and read the matching file. Use it alongside `adaptive-adaptation.md`: neither source has blanket authority to override the other, and the adaptation must satisfy both the general access rules and the genuine subject learning.",
+     "text": "`[PLUGIN_ROOT]/references/subject-[subject].md` — the subject's own thinking, progression and authentic depth, when this lesson's subject has one. List the references directory for `subject-*.md` and read the matching file; outside maths, its `What a worksheet looks like` section holds the sheet shapes a separate Below or Greater Depth resource chooses from too. Use it alongside `adaptive-adaptation.md`: neither source has blanket authority to override the other, and the adaptation must satisfy both the general access rules and the genuine subject learning.",
      "section": {
       "heading": "## Before You Start",
       "occurrence": 0,

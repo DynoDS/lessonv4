@@ -29,8 +29,18 @@ const RADIUS      = 0.08;
 const LABEL_FONT  = 28;
 const LABEL_COLOR = '00B050';
 // The teacher's limit: the criteria support the work and never take more than
-// half the slide. Only a slide whose one job is the criteria may go further.
+// half the slide. Only a slide whose one job is the criteria may go further, or
+// a slide marked `workOnPaper`: the children do the task on paper and the board
+// shows only the question and a reference, so nothing on it needs protecting
+// from the criteria (29 September 2026, a labelling slide whose six-row "what it
+// looks like" table was refused at 51% although the labelling was on the sheet).
 const MAX_SLIDE_SHARE = 0.5;
+
+function workIsOnPaper(ctx) {
+  const slides = ctx && ctx.lesson && Array.isArray(ctx.lesson.slides) ? ctx.lesson.slides : null;
+  const slide = slides && Number.isInteger(ctx.slideIndex) ? slides[ctx.slideIndex] : null;
+  return !!(slide && slide.workOnPaper === true);
+}
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
@@ -39,7 +49,7 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
   const criteria = data.criteria || data.content;
 
   const share = (zone.w * zone.h) / (SLIDE_W * SLIDE_H);
-  if (share > MAX_SLIDE_SHARE + 0.005 && !(ctx && ctx._criteriaSlide)) {
+  if (share > MAX_SLIDE_SHARE + 0.005 && !(ctx && ctx._criteriaSlide) && !workIsOnPaper(ctx)) {
     throw new Error(
       `SC_PANEL_TOO_LARGE: the success criteria panel takes ${Math.round(share * 100)}% ` +
       `of the slide, and the teacher never wants criteria over half a slide beside ` +
@@ -48,6 +58,8 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
       `the panel the roomiest shape half the slide allows (the full height of one ` +
       `side) and arrange the work beside it. Never show fewer criteria, and a ` +
       `\`success-criteria\` slide is only for criteria being taught, compared or built. ` +
+      `When the children do this task on paper and the board shows only its question and a ` +
+      `reference, mark the slide \`workOnPaper: true\` and the panel may take the room. ` +
       `Nothing was drawn smaller or cut.`
     );
   }

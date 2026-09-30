@@ -170,6 +170,16 @@ REGISTRIES = {
     ),
 }
 
+# Visuals a surface's renderer dispatches on by name, outside its registry
+# object. The stick-in pack draws a labelled diagram and a source copy this way
+# (they carry a picture, so they are sized differently from the vector pieces),
+# and reading only the registry called a labelled diagram undrawable on the
+# stick-in pack although the pack draws it (29 September 2026).
+DISPATCHERS = {
+    "stick-in": ("stick-in-sheets-html/src/render-piece-html.js",
+                 r"""item\.visual === ["']([A-Za-z][A-Za-z0-9_-]*)["']\) return"""),
+}
+
 # How a built specification names the helper it drew, per surface.
 SPEC_KEY_FIELDS = {
     "slides": ("type",),
@@ -256,6 +266,12 @@ def registry_keys(root: Path, surface: str) -> set[str]:
                 depth -= line.count("}") + line.count("]")
                 if depth < 0:
                     depth = 0
+    dispatcher = DISPATCHERS.get(surface)
+    if dispatcher:
+        try:
+            keys.update(re.findall(dispatcher[1], (root / dispatcher[0]).read_text(encoding="utf-8")))
+        except OSError:
+            pass
     if not keys:
         raise CoverageError(f"no helper keys found for surface {surface!r}")
     return keys

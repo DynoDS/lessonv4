@@ -187,14 +187,37 @@ def resolve(role: str, host: str) -> dict[str, str]:
             f"(supported: {', '.join(supported)})"
         )
 
-    return {
+    fields = {
         "role": role,
         "instructions": f"agents/{role}.md",
+    }
+    # A role file longer than one reader page cannot arrive whole in one Codex
+    # command: the host cuts the middle out. Every long-role Codex worker on 28
+    # September 2026 read its file whole first, lost the middle, then found the
+    # paged-read note near its top and read it all again (about 690K characters
+    # a run). Naming the paged read here lets the launch send it from the start.
+    if host == "codex" and role_file_is_long(role):
+        fields["read_instructions_with"] = (
+            f'"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role {role} --page 1'
+        )
+    return {
+        **fields,
         "task_name": task_name_for(role),
         "model": model,
         "reasoning_effort": effort,
         "fork_turns": FORK_TURNS,
     }
+
+
+# The page size of the reference reader, which is what a Codex command can carry.
+READER_PAGE_CHARS = 24_000
+
+
+def role_file_is_long(role: str) -> bool:
+    try:
+        return len((AGENTS_DIR / f"{role}.md").read_text(encoding="utf-8")) > READER_PAGE_CHARS
+    except OSError:
+        return False
 
 
 def spec_command(args: argparse.Namespace) -> int:
@@ -223,7 +246,9 @@ def spec_command(args: argparse.Namespace) -> int:
             print(f"{key}: {value}")
     print()
     print(
-        "Copy these fields verbatim into the launch. Append a run-specific suffix "
+        "Copy these fields verbatim into the launch. Where a role has "
+        "read_instructions_with, its prompt says to read its instructions with that "
+        "command and each page it names, in place of the path alone. Append a run-specific suffix "
         "to task_name when one launch is not enough (image_scout_p1, "
         "lesson_designer_redesign_1); keep the role prefix so the launch stays "
         "auditable."
@@ -417,8 +442,11 @@ def role_for(task_name: str) -> str | None:
 # Three kinds of line in the orchestrator's record carry the timing:
 #
 #   - a `spawn_agent` function_call, whose arguments name the worker: launched;
-#   - an `agent_message` from `/root/<worker>` to `/root`: the worker's final
-#     answer arriving, so returned;
+#   - an `agent_message` from `/root/<worker>` to `/root`: the LAST one is the
+#     worker's final answer arriving, so returned. A worker can message the
+#     orchestrator before it finishes (a lesson designer sends progress), and
+#     counting the first message showed a designer that ran 11 to 17 minutes as
+#     "ran 2m", booking the rest as the orchestrator's wait (29 September 2026);
 #   - any other tool call the orchestrator makes afterwards: the first one
 #     after a return is when that result was serviced. A `wait_agent` is not
 #     servicing anything, it is going back to sleep, so it does not count;
@@ -478,7 +506,7 @@ def timeline_events(session: Path) -> dict:
                     and payload.get("recipient") == "/root"
                 ):
                     task = author[len("/root/"):]
-                    if task and task not in returns:
+                    if task:
                         returns[task] = when
 
     actions.sort()

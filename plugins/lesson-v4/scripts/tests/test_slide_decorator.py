@@ -252,7 +252,10 @@ class AFlaggedDeckStillGetsItsDrawingsTests(unittest.TestCase):
     def test_the_decorator_knows_the_flagged_deck_is_the_exception(self) -> None:
         decorator = DECORATOR.read_text(encoding="utf-8")
         self.assertIn("Unless the orchestrator launched you on a flagged deck", decorator)
-        self.assertIn("--deliver-flagged", decorator)
+        # The slide check takes the flagged numbers, not the build's switch:
+        # `--deliver-flagged` alone was refused, so a flagged deck got no drawings.
+        self.assertIn('--flagged-slides "[FLAGGED_SLIDES]"', decorator)
+        self.assertNotIn("with `--deliver-flagged`", decorator)
         self.assertIn("FLAGGED_SLIDES:", decorator)
 
     def test_the_decorator_still_stops_on_a_deck_nobody_settled(self) -> None:

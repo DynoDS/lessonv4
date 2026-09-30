@@ -43,6 +43,21 @@ A PSHE Do beat has children apply the taught reason or boundary to a situation, 
 
 No beat needs a child's own experience to be completed; a private choice can stay private (`Use safe distance` above).
 
+## What a worksheet looks like in PSHE
+
+A sheet takes the shape its PSHE needs, and these are shapes that work on real Year 3 and 4 PSHE sheets, to choose from by the lesson's thinking. A sheet can be one of them done well, or two joined, and none is the default: a single well-built activity is as complete a sheet as one with sections. Below and Greater Depth choose from the same set, often keeping the Expected shape and changing how much is already filled in or how hard the cases are. Every situation belongs to someone else (`Use safe distance` above).
+
+- **Correct the statement.** Four wrong statements to rewrite so they are true: `We only need to look one way when crossing the road.`
+- **Advice for someone else.** `Jacob is going to the beach with his family. What four things should he remember to stay safe near the water?` The child applies the taught rules to another person's day.
+- **Whose reason is better?** Two children give a reason for the same choice, one using the taught reason and one not; the child picks and says why.
+- **Sort it.** Physical or mental, now or later, call for help or not, with at least one case the taught rule decides rather than common sense.
+- **Fill the gaps.** A short paragraph with a word bank and a few spare words, when the lesson taught facts children need to hold.
+- **Label around a picture.** The dangers around a bonfire, or the food groups on the Eatwell plate.
+- **A risk table.** The hazard in one column and what makes it safer in the other.
+- **One thing made well.** `Draw a balanced plate for Andeep. Use the word bank to help you.`, or `Suggest three things to add to this meal to make it healthier.`
+
+Four situations each answered with the same `The sensible choice is to... because...` is one question asked four times; vary what the child does unless practising that one move is the point. A poster does not earn a sheet, because the time goes on layout and the page shows little of the PSHE.
+
 ## Food and diet
 
 A lesson about food, diet or healthy eating follows the NHS Eatwell Guide for what a balanced diet is and how it is shown.

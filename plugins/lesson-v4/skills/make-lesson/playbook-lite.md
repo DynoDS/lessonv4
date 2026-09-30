@@ -1496,33 +1496,12 @@ unavailable` or `none required` nothing was published and there is nothing to
 prove: skip it, and do not treat its absence as a blocking fault. The picture
 results in the run report still tell the teacher what the lesson does without.
 
-The shared build review log is the plugin developer's record, so it is written
-only on the computer the plugin is developed on. Resolve `PLUGIN_SOURCE_ROOT`
-now (see the skill's package-root section). On
-`PLUGIN_SOURCE_ROOT_UNAVAILABLE` developer mode is off: write nothing, and give
-the report's shared investigation log `Status: NOT REQUIRED`, because every
-finding is already in the run report and a teacher who is not developing the
-plugin should not find an engine log on their Desktop. Otherwise append genuine
-findings:
-
-```text
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/record-build-review.py" \
-  --lesson "[year, subject and objective in plain English]" \
-  --plugin-root "[PLUGIN_ROOT]" \
-  --finding "[one reusable engine finding]" \
-  [--finding "..." for each further finding] \
-  --source-root "[PLUGIN_SOURCE_ROOT]"
-```
-
-The log lives on the Desktop, so it does not depend on where the run started,
-and each entry carries the plugin version. Require `BUILD_REVIEW_LOG_OK`. There
-is no pending-log branch and no checkout to go looking for. A finding is one a
-future run would hit again: a check that refused a correct output, a renderer
-that could not draw what the lesson needed, two rules that disagreed.
-
 ---
 
 ## Phase 4 — Final Assembly and Report
+
+Start the report while the last workers run: every section that needs no late
+result can be written in the wait, leaving only the late lines to fill.
 
 Write `[WORKING_DIR]/run-report.md` with:
 
@@ -1556,8 +1535,7 @@ Write `[WORKING_DIR]/run-report.md` with:
   immediately beforehand and copied verbatim;
 - every line of `[WORKING_DIR]/friction.md`, the run's tagged record of
   obstacles, blocks and repairs. It keeps blocks a repair closed; `Blocking
-  faults` above lists only what is still broken;
-- shared investigation-log status.
+  faults` above lists only what is still broken.
 
 Run the report check and require `RUN_REPORT_OK`:
 
@@ -1577,6 +1555,15 @@ send a short
 teacher-facing report naming the topic, year, subject, objective,
 exact files, pedagogical highlights, design-review result and every teacher
 flag.
+
+Then add the report to the shared run log, the one troubleshooting record, which
+also removes the lesson folder's copy. Require `BUILD_REVIEW_LOG_OK`:
+
+```bash
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/record-build-review.py" --report "[WORKING_DIR]/run-report.md" \
+  --lesson "[year, subject and objective]" --plugin-root "[PLUGIN_ROOT]" \
+  --working-dir "[WORKING_DIR]" --output-dir "[OUTPUT_DIR]" --host [claude|codex]
+```
 
 A package missing an earned output is `PARTIAL`; a fault that stopped a resource building or passing its
 own check is `BLOCKED`; a wall the builder could not verify against its page contract, which
@@ -1601,8 +1588,8 @@ walk-through says the lesson left something for another lesson, say what in one 
 Once every branch has settled, build the explicit list from the teaching
 resources only: the deck, worksheets, answer key, working wall, stick-in
 sheets and, when the pack holds a card kit, its `- Stick-in Sheets -
-Answers.txt` teacher file. The run report and walk-through stay in `OUTPUT_DIR` for the teacher to
-read there; the delivery script skips them if passed.
+Answers.txt` teacher file. The walk-through stays in `OUTPUT_DIR` for the teacher to
+read there; the delivery script skips it if passed.
 
 When `filing.txt` says `DELIVERY=folder`, `DELIVERY=sorted` or
 `DELIVERY=letterbox`, run `run-fixed-resource.py deliver` directly with

@@ -20,7 +20,7 @@
               "context": "A plain robin beside a short word problem",
               "educationalSvgId": "standard/ro/robin.svg",
               "educationalSvgSlug": "robin",
-              "imagePath": "stage-e-robin.png",
+              "imagePath": "icons/robin.png",
               "fallbackEmoji": "🐦",
               "alt": "robin"
             }
@@ -34,7 +34,7 @@
               "context": "A simple television beside a price problem",
               "educationalSvgId": "standard/tv/tv-minimal.svg",
               "educationalSvgSlug": "tv-minimal",
-              "imagePath": "stage-e-tv-minimal.png",
+              "imagePath": "icons/tv-minimal.png",
               "fallbackEmoji": "📺",
               "alt": "television"
             }
@@ -47,7 +47,7 @@
               "context": "One plain lit candle used at a baptism",
               "educationalSvgId": "standard/ca/candle-lit.svg",
               "educationalSvgSlug": "candle-lit",
-              "imagePath": "stage-e-candle-lit.png",
+              "imagePath": "icons/candle-lit.png",
               "fallbackEmoji": "🕯️",
               "alt": "lit candle"
             }
@@ -70,7 +70,7 @@
               "context": "A plain robin beside a short word problem",
               "educationalSvgId": "standard/ro/robin.svg",
               "educationalSvgSlug": "robin",
-              "imagePath": "stage-e-robin.png",
+              "imagePath": "icons/robin.png",
               "alt": "robin"
             }
           },
@@ -83,7 +83,7 @@
               "context": "A simple television beside a price problem",
               "educationalSvgId": "standard/tv/tv-minimal.svg",
               "educationalSvgSlug": "tv-minimal",
-              "imagePath": "stage-e-tv-minimal.png",
+              "imagePath": "icons/tv-minimal.png",
               "alt": "television"
             }
           },
@@ -95,7 +95,7 @@
               "context": "One plain lit candle used at a baptism",
               "educationalSvgId": "standard/ca/candle-lit.svg",
               "educationalSvgSlug": "candle-lit",
-              "imagePath": "stage-e-candle-lit.png",
+              "imagePath": "icons/candle-lit.png",
               "alt": "lit candle"
             }
           }

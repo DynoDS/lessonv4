@@ -8,15 +8,19 @@
 // nothing to someone monitoring books without the question beside it. So:
 //
 //   - every sheet carries `recording`: "books" when every question on it can be
-//     answered in a book from a shared copy or the board, "sheet" when at least
+//     answered in a book from its slip or the board, "sheet" when at least
 //     one needs the page itself. A mixed sheet is "sheet": a sheet that is half
 //     books still needs a print per child and only adds trimming.
-//   - the sheet's corner shows a small book or pencil beside its level code.
-//     The teacher can ignore it; the sheet itself is unchanged.
-//   - each "books" sheet also gets one page of question slips at the back of
-//     the same PDF: the same questions and pictures with the answer space
-//     taken out, repeated so several fit on a page. A child sticks one in and
-//     answers underneath.
+//   - the sheet's corner shows a small book or pencil beside its level code,
+//     and every slip shows the book beside its code.
+//   - a "books" sheet prints as a page of question slips in the sheet's own
+//     place in the PDF, and the write-on sheet is not printed: the same
+//     questions and pictures with the answer space taken out, half a page wide
+//     so a slip fits an exercise book, repeated so several fit on a page. A
+//     child sticks one in and answers underneath. Daniel, 29 September 2026:
+//     printing the sheet as well only spent the paper the mark was there to
+//     save. When the slips cannot be made, the sheet prints in their place, so
+//     a level is never left with nothing.
 //
 // Whether a sheet is books or sheet is the worksheet designer's call, made
 // against `references/books-or-sheet.md`. This file owns only what can be
@@ -259,8 +263,8 @@ function recordingProblems(worksheet, { required = false } = {}) {
             `one line saying why this whole sheet is better that way: for ` +
             `"sheet", the question that needs the printed page and what the ` +
             `child does to it ("Q4: the child labels the printed photograph"); ` +
-            `for "books", what makes every question answerable from a shared ` +
-            `copy. Going to look for a question that needs the page is the ` +
+            `for "books", what makes every question answerable in a book. ` +
+            `Going to look for a question that needs the page is the ` +
             `test. Never change a question to reach either mark. See ` +
             `references/books-or-sheet.md.`,
         });
@@ -314,7 +318,12 @@ function forSlip(node) {
   for (const [key, value] of Object.entries(node)) {
     out[key] = key === "stack" || key === "row" ? forSlip(value) : value;
   }
-  if (node.helper === "questions" || node.helper === "written-answers") {
+  // Helpers that draw themselves differently on a slip. Questions and written
+  // answers drop their answer blanks and ruled lines. A method frame keeps its
+  // boxes but puts each label above them rather than in a column beside them,
+  // which asked for about 130mm and made every slip a full-width strip
+  // (Daniel, 29 September 2026); same labels, same boxes, same order.
+  if (node.helper === "questions" || node.helper === "written-answers" || node.helper === "method-frame") {
     out.slip = true;
   }
   if (isStack(node) || isRow(node)) {
@@ -375,9 +384,10 @@ function packableWidthMm(widthMm) {
 }
 
 // A numbered question whose whole content is one short line of words, whether
-// the sheet wrote that line as a question item or as the instruction above a
-// figure the slip has dropped. Anything with a picture, a stem, a blank in its
-// words or a figure still keeps its own line.
+// the sheet wrote that line as a question item, as a one-line written answer
+// ("8 + 4 + 2 =", whose ruled line the slip has dropped), or as the instruction
+// above a figure the slip has dropped. Anything with a picture, a stem, a blank
+// in its words or a figure still keeps its own line.
 function shortQuestionText(node, maxWidthMm) {
   if (!node || typeof node !== "object" || node.number === undefined) return null;
   if (node.groupPrompt) return null;
@@ -392,6 +402,12 @@ function shortQuestionText(node, maxWidthMm) {
     if (!Array.isArray(inner.items) || inner.items.length !== 1) return null;
     const item = inner.items[0];
     text = typeof item === "string" ? item : null;
+  } else if (inner.helper === "written-answers" && !inner.text) {
+    if (!Array.isArray(inner.items) || inner.items.length !== 1) return null;
+    const item = inner.items[0];
+    const plain = item && typeof item === "object" &&
+      Object.keys(item).every((key) => ["text", "lines", "sentences"].includes(key));
+    text = plain && typeof item.text === "string" ? item.text : null;
   } else if (inner.helper === "instruction") {
     text = typeof inner.text === "string" ? inner.text : null;
   }
@@ -449,7 +465,11 @@ function packShortQuestions(content, widthMm) {
     run = [];
   };
 
-  for (const node of content.stack) {
+  for (const raw of content.stack) {
+    // A question group the sheet holds inside a stack of its own (a Greater
+    // Depth zone that opens with one) is packed where it sits: left as it was,
+    // (1a) to (1c) ran down the slip one to a line.
+    const node = isStack(raw) && raw.number === undefined ? packShortQuestions(raw, widthMm) : raw;
     const text = shortQuestionText(node, maxWidthMm);
     const group = mainQuestionOf(node);
     if (text !== null && (!run.length || run[0].group === group)) {
@@ -515,18 +535,87 @@ function slipPadTopMm(codeBeside) {
   return CUT_PAD_MM + (codeBeside ? 0 : CODE_LINE_MM);
 }
 
-// Two slips across when every item can be read at half the page's width,
-// otherwise one full-width strip.
-function columnsFor(nodes) {
-  const halfMm = contentWidthMm(2);
-  for (const node of nodes) {
-    try {
-      if (needsContent(node, halfMm).minWidthMm > halfMm) return 1;
-    } catch {
-      return 1;
-    }
+// Slips are always half a page wide, two across. A slip is stuck into an
+// exercise book, and a full-width strip is as wide as the page it goes on:
+// Daniel, 29 September 2026, "otherwise there's no point in it being a strip".
+// A slip holding something wider than half a page cannot be made. The worksheet
+// designer hears so at the preflight (SLIP_TOO_WIDE) and decides what the sheet
+// is; left as it was, the build prints the sheet in place of the slips, never a
+// full-width strip.
+const SLIP_COLS = 2;
+
+function minWidthOf(node, widthMm) {
+  try {
+    return needsContent(node, widthMm).minWidthMm;
+  } catch {
+    return Infinity;
   }
-  return 2;
+}
+
+// The parts of a slip too wide for it, as { number, helper, needMm }: the
+// smallest parts that are too wide on their own, so the designer is told which
+// picture it is rather than which zone. Judged on the questions before packing:
+// a packed row asks for its cells' sheet-sized minimum widths, which a
+// one-number question never needs, and the rendered-fit check catches a row
+// that genuinely does not fit.
+function tooWideForSlip(nodes) {
+  const halfMm = contentWidthMm(SLIP_COLS);
+  const found = [];
+  const drill = (node, number, roomMm) => {
+    const numbered = node && node.number !== undefined;
+    const own = numbered ? node.number : number;
+    const room = numbered ? roomMm - NUMBER_ROOM_MM : roomMm;
+    // Into a row's parts as well as a stack's: a picture too wide on its own
+    // is named, and a row is named only when its parts fit alone but not side
+    // by side.
+    const parts = isStack(node) ? node.stack : isRow(node) ? node.row : null;
+    const before = found.length;
+    if (Array.isArray(parts)) for (const part of parts) drill(part, own, room);
+    if (found.length > before) return;
+    const needMm = minWidthOf(node, roomMm);
+    if (needMm > roomMm) {
+      const helper = (node && node.helper) || (isRow(node) ? "items side by side" : "stack");
+      found.push({ number: own, helper, needMm });
+    }
+  };
+  for (const node of nodes) {
+    if (minWidthOf(node, halfMm) > halfMm) drill(node, undefined, halfMm);
+  }
+  return found;
+}
+
+function describeTooWide(found) {
+  return found
+    .map((f) => `${f.helper} (${Math.round(f.needMm)}mm${f.number !== undefined ? `, question ${f.number}` : ""})`)
+    .join(", ");
+}
+
+// For the designer's preflight: each books sheet whose slips cannot be made at
+// half a page, from the engine's own sheets (`sheetsOf`), so the widths are the
+// ones the build will meet.
+function slipWidthProblems(sheets) {
+  const halfMm = Math.round(contentWidthMm(SLIP_COLS));
+  const problems = [];
+  for (const sheet of sheets) {
+    if (!sheet.spec || sheet.spec.recording !== "books" || sheet.pageCount !== 1) continue;
+    const found = tooWideForSlip(slipContentOf(sheet.spec));
+    if (!found.length) continue;
+    problems.push({
+      signal: "SLIP_TOO_WIDE",
+      sheet: sheet.key,
+      found,
+      message:
+        `${sheet.label} is marked "books", so it prints as slips half a page wide ` +
+        `(${halfMm}mm of words) to fit an exercise book, and ${describeTooWide(found)} ` +
+        `will not fit that. Decide, against references/books-or-sheet.md: a figure ` +
+        `the children draw or copy for themselves in their books is marked ` +
+        `"onSlip": false; one the child has to work on, or cannot read any smaller, ` +
+        `makes the sheet "sheet". Holding such a picture is not by itself a reason ` +
+        `for "sheet". Never reword or cut a question to make it fit. Left as it is, ` +
+        `the build prints this sheet instead of its slips.`,
+    });
+  }
+  return problems;
 }
 
 // An estimate of the slip's content height, from the engine's own arithmetic.
@@ -573,7 +662,15 @@ const SLIP_CSS = `
     height: 100%;
     overflow: hidden;
   }
-  .slip-item { flex: 0 0 auto; }
+  .slip-item { flex: 0 0 auto; position: relative; }
+  /* The hairline between questions, drawn where one of the sheet's zones meets
+     the next as well as inside a zone: the stack only rules between its own
+     items, so (2) and (3) ran together with nothing between them. Not above a
+     heading, which marks itself, as on the sheet. */
+  .slip-item--ruled::before {
+    content: ""; position: absolute; left: 0; right: 0; top: -${GAP_MM / 2}mm;
+    border-top: var(--rule-hair) solid var(--colour-rule);
+  }
   /* A short question on the sheet keeps room under it for its answer blank.
      On a slip the blank has gone, so the last question in a list gives that
      room back. */
@@ -598,6 +695,12 @@ const SLIP_CSS = `
   .slip-item .h-row { height: auto; }
   .slip--left .slip-code { right: ${CUT_PAD_MM}mm; }
   .slip--code-above .slip-code { top: ${CUT_PAD_MM - 1}mm; }
+  .sheet-recording {
+    width: 1.35em;
+    height: 1.35em;
+    margin-left: 0.35em;
+    vertical-align: -0.3em;
+  }
   .slip-code {
     position: absolute;
     right: ${EDGE_PAD_MM}mm;
@@ -622,7 +725,10 @@ const SLIP_CSS = `
 function bodyHtml(nodes, cols) {
   const widthMm = contentWidthMm(cols);
   return nodes
-    .map((node) => `<div class="slip-item">${renderContent(node, widthMm)}</div>`)
+    .map((node, i) => {
+      const ruled = i > 0 && !opensWithHeading([node]);
+      return `<div class="slip-item${ruled ? " slip-item--ruled" : ""}">${renderContent(node, widthMm)}</div>`;
+    })
     .join("");
 }
 
@@ -663,9 +769,9 @@ function renderSlipsPage({ nodes, cols, rows, code, title, slipMm, codeBeside = 
   for (let i = 0; i < cols * rows; i += 1) {
     const classes = ["slip"];
     if (cols === 2) classes.push(i % 2 === 0 ? "slip--left" : "slip--right");
-    if (code && !codeBeside) classes.push("slip--code-above");
+    if (!codeBeside) classes.push("slip--code-above");
     cells.push(
-      `<div class="${classes.join(" ")}">${code ? `<div class="slip-code">${esc(code)}</div>` : ""}` +
+      `<div class="${classes.join(" ")}"><div class="slip-code">${esc(code || "")}${recordingIcon("books")}</div>` +
         `<div class="slip-body" data-worksheet-zone="slip-${i + 1}">${inner}</div></div>`
     );
   }
@@ -712,38 +818,33 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
   const nodes = slipContentOf(sheetSpec);
   if (!nodes.length) return { skipped: "the sheet has nothing left to print once its answer spaces are taken out" };
   const code = sheetSpec.code || "";
-  const codeBeside = !code || opensWithHeading(nodes);
+  // The book mark always prints, so the code line is only shared with a
+  // heading that leaves its right-hand end empty.
+  const codeBeside = opensWithHeading(nodes);
 
-  // Two across when the content can be read at half width, and one full-width
-  // strip as well: long questions wrap less on a strip, so a strip can fit
-  // more to the page. Whichever puts more slips on the page wins, and on a tie
-  // the one with fewer cuts.
-  const plans = [];
-  // Judged on the questions before packing: a packed row asks for its cells'
-  // sheet-sized minimum widths, which a one-number question never needs, and
-  // the rendered-fit check below catches a row that genuinely does not fit.
-  const across = columnsFor(nodes) === 2 ? [2, 1] : [1];
-  for (const cols of across) {
-    const laid = slipNodesFor(nodes, cols);
-    let contentMm;
-    try {
-      contentMm = browser
-        ? await measuredContentMm(browser, laid, cols)
-        : estimatedContentMm(laid, cols);
-    } catch (error) {
-      return { skipped: `its slip could not be measured (${String(error.message || error).split("\n")[0]})` };
-    }
-    // A hair of margin over the browser's measurement, as the sheets keep.
-    const askedMm = contentMm + (browser ? 1 : 0);
-    const slipMm = askedMm + slipPadTopMm(codeBeside) + CUT_PAD_MM;
-    const rows = rowsFor(slipMm);
-    if (rows >= 1) plans.push({ cols, rows, laid, slipMm });
+  const wide = tooWideForSlip(nodes);
+  if (wide.length) {
+    return {
+      skipped: `${describeTooWide(wide)} will not fit a slip half a page wide, which is what fits an exercise book`,
+    };
   }
-  plans.sort((a, b) => b.cols * b.rows - a.cols * a.rows || a.cols + a.rows - (b.cols + b.rows));
-  if (!plans.length) return { skipped: "its questions are too long to fit a slip shorter than a page" };
 
-  const { cols, laid, slipMm } = plans[0];
-  let { rows } = plans[0];
+  const cols = SLIP_COLS;
+  const laid = slipNodesFor(nodes, cols);
+  let contentMm;
+  try {
+    contentMm = browser
+      ? await measuredContentMm(browser, laid, cols)
+      : estimatedContentMm(laid, cols);
+  } catch (error) {
+    return { skipped: `its slip could not be measured (${String(error.message || error).split("\n")[0]})` };
+  }
+  // A hair of margin over the browser's measurement, as the sheets keep.
+  const askedMm = contentMm + (browser ? 1 : 0);
+  const slipMm = askedMm + slipPadTopMm(codeBeside) + CUT_PAD_MM;
+  let rows = rowsFor(slipMm);
+  if (rows < 1) return { skipped: "its questions are too long to fit a slip shorter than a page" };
+
   while (rows >= 1) {
     const html = renderSlipsPage({ nodes: laid, cols, rows, code, title, slipMm, codeBeside });
     if (!browser) return { html, cols, rows };
@@ -765,7 +866,9 @@ module.exports = {
   slipContentOf,
   slipNodesFor,
   packShortQuestions,
-  columnsFor,
+  tooWideForSlip,
+  slipWidthProblems,
+  SLIP_COLS,
   estimatedContentMm,
   rowsFor,
   renderSlipsPage,

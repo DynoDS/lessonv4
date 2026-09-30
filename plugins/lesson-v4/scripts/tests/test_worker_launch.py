@@ -81,6 +81,24 @@ class SpecTests(unittest.TestCase):
             with self.subTest(line=line):
                 self.assertIn(line, result.stdout)
 
+    def test_a_long_codex_role_is_launched_with_its_paged_read(self) -> None:
+        """On 28 September 2026 every long-role Codex worker read its file whole,
+        lost the middle, then read it all again paged (about 690K a run)."""
+        result = run("spec", "--role", "slide-designer", "--role", "image-scout")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(
+            'read_instructions_with: "[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" '
+            "--role slide-designer --page 1",
+            result.stdout,
+        )
+        # A role file short enough to arrive whole needs no paged read.
+        self.assertNotIn("--role image-scout --page 1", result.stdout)
+
+    def test_claude_launches_are_unchanged_by_the_paged_read(self) -> None:
+        result = run("spec", "--host", "claude", "--role", "slide-designer")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn("read_instructions_with", result.stdout)
+
     def test_working_wall_builder_gets_its_explicit_visual_review_settings(self) -> None:
         result = run("spec", "--role", "working-wall-builder")
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -632,6 +650,32 @@ class TimelineTests(unittest.TestCase):
         self.assertLess(marker, block, "the timeline follows the audit marker, never precedes it")
         self.assertIn("WORKER_LAUNCH_AUDIT_OK: 2 named workers", result.stdout)
         self.assertTrue(lines[-1].startswith("WORKER_TIMELINE_TOTAL:"))
+
+    def test_a_progress_message_is_not_the_return(self) -> None:
+        """A lesson designer messages the orchestrator while it works. Counting
+        that first message showed a designer that ran 11 to 17 minutes as
+        "ran 2m" (29 September 2026); the last message is the return."""
+        def line(when: str, payload: dict) -> str:
+            return json.dumps({"timestamp": when, "type": "response_item", "payload": payload})
+
+        records = [
+            line("2026-09-28T15:26:00Z", {"type": "function_call", "name": "spawn_agent",
+                                          "arguments": json.dumps({"task_name": "lesson_designer"})}),
+            line("2026-09-28T15:28:00Z", {"type": "agent_message", "author": "/root/lesson_designer",
+                                          "recipient": "/root"}),
+            line("2026-09-28T15:28:05Z", {"type": "function_call", "name": "wait_agent"}),
+            line("2026-09-28T15:38:00Z", {"type": "agent_message", "author": "/root/lesson_designer",
+                                          "recipient": "/root"}),
+            line("2026-09-28T15:38:30Z", {"type": "function_call", "name": "exec_command"}),
+        ]
+        tmp = Path(__file__).resolve().parent / "_worker_timeline_progress_tmp.jsonl"
+        tmp.write_text("\n".join(records) + "\n", encoding="utf-8")
+        try:
+            result = run("timeline", "--session", str(tmp))
+        finally:
+            tmp.unlink()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("ran 12m 0s  waited 0m 30s", result.stdout)
 
     def test_a_record_with_no_launches_says_so(self) -> None:
         tmp = Path(__file__).resolve().parent / "_worker_timeline_tmp.jsonl"

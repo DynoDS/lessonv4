@@ -313,6 +313,23 @@ function labelColumnMm(lines) {
   return Math.min(LABEL_MAX_MM, Math.max(LABEL_MIN_MM, longest * LABEL_CHAR_MM + 3.5));
 }
 
+// On a question slip (`spec.slip`, set by src/slips.js) each label sits on its
+// own line above its boxes instead of in a column beside them. Beside them,
+// "Two numbers that make 10:" and its boxes asked for about 130mm, and a slip
+// is half a page wide so that it fits an exercise book (Daniel, 29 September
+// 2026). The sheet itself keeps the column.
+const LABEL_ABOVE_GAP_MM = 1;
+
+function labelsAbove(spec) {
+  return spec.slip === true;
+}
+
+function labelAboveMm(line, widthMm) {
+  const label = labelOf(line).trim();
+  if (!label) return 0;
+  return linesFor(label, widthMm) * LINE_MM + LABEL_ABOVE_GAP_MM;
+}
+
 function tokenize(content) {
   return String(content == null ? "" : content)
     .split(/(_{2,}|□)/)
@@ -361,7 +378,8 @@ function showsWorkedNumbers(lines) {
 
 function renderMethodFrame(spec) {
   const lines = frameLines(spec);
-  const labelMm = labelColumnMm(lines);
+  const above = labelsAbove(spec);
+  const labelMm = above ? 0 : labelColumnMm(lines);
   const framed = spec.frame !== false;
   const worked = showsWorkedNumbers(lines);
 
@@ -380,7 +398,11 @@ function renderMethodFrame(spec) {
         .join("");
       const label =
         labelMm > 0 ? `<span class="h-mframe-label">${esc(labelOf(line))}</span>` : "";
-      return `<div class="h-mframe-line">${label}<span class="h-mframe-segs">${segs}</span></div>`;
+      const labelLine =
+        above && labelOf(line).trim()
+          ? `<div class="h-mframe-label-above">${esc(labelOf(line))}</div>`
+          : "";
+      return `${labelLine}<div class="h-mframe-line">${label}<span class="h-mframe-segs">${segs}</span></div>`;
     })
     .join("");
 
@@ -391,7 +413,8 @@ function renderMethodFrame(spec) {
 
 function measureMethodFrame(spec, widthMm) {
   const lines = frameLines(spec);
-  const labelMm = labelColumnMm(lines);
+  const above = labelsAbove(spec);
+  const labelMm = above ? 0 : labelColumnMm(lines);
   const framed = spec.frame !== false;
 
   const stemMm = spec.text
@@ -400,7 +423,10 @@ function measureMethodFrame(spec, widthMm) {
   const titleMm = spec.title ? TITLE_LINE_MM + 2 : 0;
   const chromeMm = PANEL_PAD_V_MM * 2 + (framed ? PANEL_BORDER_MM : 0);
   const availMm = widthMm - PANEL_PAD_H_MM * 2 - labelMm;
-  const linesMm = lines.reduce((h, l) => h + lineHeightMm(l, availMm, labelMm), 0);
+  const linesMm = lines.reduce(
+    (h, l) => h + lineHeightMm(l, availMm, labelMm) + (above ? labelAboveMm(l, availMm) : 0),
+    0
+  );
 
   return stemMm + titleMm + linesMm + chromeMm;
 }
@@ -410,8 +436,22 @@ const FRAME_MAX_MIN_MM = 240; // a minimum wider than the page can never be met,
 
 function needsMethodFrame(spec) {
   const lines = frameLines(spec);
-  const labelMm = labelColumnMm(lines);
   const widestMm = lines.reduce((w, l) => Math.max(w, lineWidthMm(l)), 0);
+
+  if (labelsAbove(spec)) {
+    // Labels above: as wide as the longer of a label on one line and the
+    // longest line of boxes, so neither wraps.
+    const longestLabelMm = lines.reduce(
+      (w, l) => Math.max(w, labelOf(l).trim().length * LABEL_CHAR_MM),
+      0
+    );
+    return {
+      minWidthMm: Math.min(FRAME_MAX_MIN_MM, Math.max(40, longestLabelMm, widestMm) + PANEL_PAD_H_MM * 2),
+      minHeightMm: measureMethodFrame(spec, WIDEST_ZONE_MM),
+    };
+  }
+
+  const labelMm = labelColumnMm(lines);
 
   // Wide enough for the longest line to stay on ONE line, because a method
   // step broken across two rows stops reading as one step. Grows with the
@@ -515,6 +555,12 @@ const css = `
   .h-mframe-framed.h-mframe-worked { border-color: var(--colour-worked); }
   .h-mframe-worked .h-mframe-title { color: var(--colour-worked); }
   .h-mframe-line { display: flex; align-items: flex-start; }
+  /* A slip's label, on its own line above its boxes (labelsAbove). */
+  .h-mframe-label-above {
+    margin-top: ${LABEL_ABOVE_GAP_MM}mm;
+    font-weight: bold; color: var(--colour-ink);
+    line-height: 1.35;
+  }
   /* A method label is SCAFFOLD, and scaffold carries no colour of its own: it
      is set apart by weight and by having its own column, exactly as a writing
      frame's sentence-starters are. Daniel settled this. On a worksheet blue

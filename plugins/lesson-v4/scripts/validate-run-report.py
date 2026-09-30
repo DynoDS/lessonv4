@@ -40,8 +40,10 @@ HEADINGS = [
     "## Picture results",
     "## Helper gaps",
     "## Friction",
-    "## Shared investigation log",
 ]
+# The report itself now goes into the shared run log (29 September 2026), so it
+# no longer carries a status for a second log, and a section left in one is
+# ignored.
 
 PACKAGE_STATUSES = ("COMPLETE", "PARTIAL", "BLOCKED", "UNVERIFIED")
 # Every terminal state `worker-launch.py audit` can reach. Requiring one of them
@@ -235,6 +237,21 @@ def reviewed_retired_pictures(working_dir: Path) -> set[str]:
         }
     except (OSError, ValueError, KeyError, TypeError):
         return set()
+
+
+def last_review_wants_redesign(working_dir: Path) -> bool:
+    """True when the design review on file ends in REDESIGN REQUIRED.
+
+    Only the review's own ``## Result`` section counts: an approved review
+    keeps an empty ``## Redesign required`` heading, and that heading is not
+    a verdict.
+    """
+    try:
+        review = (working_dir / "design-review.md").read_text(encoding="utf-8")
+    except OSError:
+        return False
+    match = re.search(r"^## Result\s*\n(.*?)(?=^## |\Z)", review, re.M | re.S)
+    return bool(match and "REDESIGN REQUIRED" in match.group(1))
 
 
 def helper_obligations(working_dir: Path) -> list[str]:
@@ -784,6 +801,8 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
 
     # ── Shared investigation log: QUEUED/UPDATED lines carry their path ──
     shared_log = sections.get("## Shared investigation log", "")
+    if "## Shared investigation log" not in sections:
+        shared_log = "Status: NOT REQUIRED"
     shared_status_lines = [
         line.strip() for line in shared_log.splitlines()
         if line.strip().startswith("Status:")
@@ -848,6 +867,23 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                         f"helper gaps: {token} was substituted or left pending "
                         "and is not named in the Helper gaps section."
                     )
+
+    # ── A lesson the last review sent back is not a finished lesson ──────
+    # A run once closed COMPLETE while its last design review still said
+    # REDESIGN REQUIRED, the findings never carried into the report (reviewer
+    # release, 26 September 2026). The teacher reads the report, not the review.
+    if last_review_wants_redesign(working):
+        if package_status == "COMPLETE":
+            failures.append(
+                "COMPLETE: the last design review (design-review.md) still says "
+                "REDESIGN REQUIRED; a lesson the review sent back is PARTIAL, not COMPLETE."
+            )
+        if "REDESIGN REQUIRED" not in text:
+            failures.append(
+                "the last design review (design-review.md) still says REDESIGN REQUIRED, "
+                "and the report does not say so; name it, with the review's findings, "
+                "where the teacher reads first."
+            )
 
     # ── COMPLETE is earned, not declared ─────────────────────────────────
     if package_status == "COMPLETE":

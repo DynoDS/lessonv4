@@ -61,6 +61,47 @@ if (fileArg) {
     process.exitCode = 1;
     return;
   }
+  // `--measure`: the real smallest size of every entry and of each part inside
+  // it, for its actual wording, measured exactly as the build measures. Page
+  // planning used to guess these from example sizes that grow with longer
+  // labels (a method frame priced at 95mm wide drew 130mm; a diagram priced at
+  // 105mm tall drew 206mm), and worksheet designers wrote their own scripts
+  // against the engine to find the truth (29 September 2026, three runs of
+  // five). The numbers are the engine's own, so nothing here is estimated twice.
+  if (process.argv.includes("--measure")) {
+    const { withPhase, phaseFor } = require("../src/worksheet");
+    const { needsContent, describeContent } = require("../src/helpers");
+    const { printableArea } = require("../src/page");
+    const { isStack, isRow } = (() => {
+      const has = (c, key) => !!c && typeof c === "object" && c[key] !== undefined;
+      return { isStack: (c) => has(c, "stack"), isRow: (c) => has(c, "row") };
+    })();
+    const size = (content) => {
+      const need = needsContent(withPhase(content, phaseFor(yearGroup)));
+      return `${Math.round(need.minWidthMm)}mm wide x ${Math.round(need.minHeightMm)}mm tall at least`;
+    };
+    for (const orientation of ["portrait", "landscape"]) {
+      const area = printableArea(orientation);
+      console.log(`Printable ${orientation} page: ${Math.round(area.widthMm)}mm x ${Math.round(area.heightMm)}mm`);
+    }
+    console.log("");
+    items.forEach((item, index) => {
+      console.log(`Entry ${index + 1}: ${describeContent(item)}: ${size(item)}`);
+      const parts = isStack(item) ? item.stack : isRow(item) ? item.row : null;
+      if (Array.isArray(parts) && parts.length > 1) {
+        parts.forEach((part, partIndex) => {
+          console.log(`  part ${partIndex + 1}: ${describeContent(part)}: ${size(part)}`);
+        });
+      }
+    });
+    console.log(
+      "\nThese are floors for this content as worded, never targets: a zone smaller " +
+        "than an entry's floor refuses it, and a zone bigger lets it grow. A stack's " +
+        "height adds its parts and the gaps between them; a row's width does the same across."
+    );
+    return;
+  }
+
   // Said before the answers, because it is the one thing that makes the whole
   // answer wrong rather than merely unwelcome.
   console.log(

@@ -16,9 +16,7 @@
         "headers": ["Item", "Cost"],
         "rows": [
           ["A skipping rope", "£2.45"],
-          ["A bouncy ball", "80p"],
-          ["A water bottle", "£4.30"],
-          ["A hat", "£6.99"]
+          ["A bouncy ball", "80p"]
         ]
       },
       "criteriaLabel": "✓ Success Criteria",

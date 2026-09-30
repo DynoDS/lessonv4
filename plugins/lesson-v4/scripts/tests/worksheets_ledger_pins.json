@@ -534,6 +534,7 @@
     "**Every per-child sheet is normally exactly one printable page.** This is a classroom-handling invariant, not a soft target. A normal private pack identifies Below, Expected and Greater Depth provision, but it does not require three physically different sheets. When the adaptation designer deliberately decides that Below or Greater Depth should use the Expected sheet unchanged, that is a complete adaptation decision and must not make the lesson fail or create an artificial duplicate.",
     "A per-child sheet may use exactly two printable pages only when the central learning task requires a substantial write-on visual that pupils must directly plot on, measure, draw on, label or annotate and that visual cannot remain usable on one page. The second page is not available for ordinary overflow, additional questions, prose or extra practice. In every other case, never solve overflow by adding a page, making the central visual unusably small, or silently deleting questions. Redesign the composition and the quantity together upstream. A coordinate lesson might put several prompts around one shared grid; a geography lesson might make one evidence panel do work for several questions. The finished page must still have readable type and usable writing or plotting space. Do not add name/date boxes unless the teacher asks.",
     "**Price the protected set against the page before you close fit priority.** A sheet is one A4 side, and that side is about 250mm of stacked height, or about 165mm in landscape. A sheet prints no title and no objective, so that is the whole side; the only thing above the work is the level's one- or two-letter code in the margin. Nothing downstream can create height that is not there, so a design that protects more than a page's worth has one exit left: it comes back to you, three agents later, with the sheet unbuilt. Count it while the decisions are still yours. Rough prices, from what the built helpers actually need: a large central diagram, plate or map about 105mm; a table, a stimulus panel or a source extract about 55mm each; a printed instruction or reference line about 10mm; every response that needs real written work about 25mm for two lines of a child's handwriting. Add them up. Two large protected blocks plus four written responses is already over a page, and no arrangement recovers the difference.",
+    "**Those prices are heights for items that each take the page's full width, and a price is the smallest the example needs, not what yours will.** Side by side, two items get about 84mm each, and a method frame, a place-value chart or a labelled diagram is often wider than that once its real labels are in it: labels and a word bank widen a drawing and lengthen it. So count anything you plan side by side as stacked unless each piece is plainly narrow, and price a labelled diagram with its word bank as the large block plus a table. A method frame priced at 95mm wide drew 130mm; a place-value chart needed more than the 84mm column it was planned into; a set priced inside the page came back unbuilt (September 2026).",
     "When the total is over, do the redesign here, where it is a teaching decision rather than a cut: reuse one stimulus across connected prompts, fold two responses into one that carries the same thinking, drop a reference the board is already showing while they work, or move a write-on figure to the stick-in pack. Only then write fit priority.",
     "**\"Nothing may be removed\" is a claim about a sheet that already fits.** It is the right answer for a short protected set that prices inside the page, and it is what protects genuine learning content from being trimmed downstream. It is the wrong answer for a set that prices over the page: there, refusing to name a removal order does not save the content, it only decides that the sheet will fail late instead of being designed now. So when the priced set is over budget and you still cannot cut it yourself, name the removal order - lowest-value protected item first, each with the pedagogical reason it is the one that goes.",
     "This pricing is a check, not the measurement. The worksheet designer measures the real page and its refusal still stands; the point of counting here is that an obviously overloaded sheet is caught while the pedagogy is still being decided. A short sheet whose whole protected set is one frame and three responses does not need pricing at all.",
@@ -554,7 +555,7 @@
    "file": "references/lesson-designer-components.md",
    "heading": "## Generated worksheet",
    "paragraphs": [
-    "**Design independent activity before content or surface.** Start with what child has to do, not number of questions. Name core action, how many performances needed, cases/contrasts set must cover, whether related results need stay visible together. If the sheet can replace slide practice, map every essential performance to its worksheet response in the existing `activityArchitecture` fields; protect these in `fitPriority`. Apply the worksheet-use and coverage judgement in `preferences.md` before seeking new instances. Then choose shape with subject page standard: question set, frame child fills, one stimulus worked on, child generating content. Shape follows thinking, not easiest slots.",
+    "**Design independent activity before content or surface.** Start with what child has to do, not number of questions. Name core action, how many performances needed, cases/contrasts set must cover, whether related results need stay visible together. If the sheet can replace slide practice, map every essential performance to its worksheet response in the existing `activityArchitecture` fields; protect these in `fitPriority`. Apply the worksheet-use and coverage judgement in `preferences.md` before seeking new instances. Then choose the sheet's shape. Maths has its own sections in `subject-maths.md`; every other subject file has a `What a worksheet looks like` section showing shapes that work on real sheets in that subject: a quick knowledge task then a thinking task, one activity presented well, a recording table and conclusion, sources each with their questions, one question with room to argue, a figure the child labels or builds, a frame the child fills, work the child generates, or a plain question set. Choose from it by the thinking, not the easiest slots: it is a menu, never a template or a rotation, and a single well-built activity is as complete a sheet as one with sections. Where no shape there fits, the lesson's thinking still decides. When two shapes carry the thinking equally well, prefer the one a child can answer in their book from a small question slip (writing about a picture or claim, not marking on it), because the school wants less paper; never give up thinking to get there.",
     "**Question set stays right when reps are practice or questions carry real demand.** Fails page standard when short factual answers child can give without reading, whether numbered, matched, or round picture. Distinction is demand inside question, never presence.",
     "**Count performances of core action, not question numbers.** Four rows each asking four brief transformations = 16 attempts, not 4; one whole paragraph transformed = one substantial performance. Match amount to time/thought. Keep related cases together when comparison carries learning; separate when each needs own decision/method/working and neighbours would cue answer.",
     "**Price the protected set against the page, then mark fit priority.** One A4 side is about 250mm of stacked height. (A sheet prints no title and no objective, so that is the whole side.) Count what you are protecting against it using the rough prices in `preferences.md` → Worksheets before writing `fitPriority`: a design that protects more than a page's worth comes back three agents later with the sheet unbuilt, and the redesign is a teaching decision that was always yours. Name essential content and protected representation. Name the lower-priority elements that may be removed first, lowest value first with the reason each is the one that goes. A prompt that is the retest of a misconception, or the one place a sticky fact is used on the sheet, is never pre-authorised on the ground that the final section \"asks a version of the same question\": a child can compare two stated meanings correctly while still believing everyone who does the thing believes the same, so the comparison does not test what the retest tests. Drop something else, or protect it and price the rest. `preAuthorisedRemoval: []` is honest only when the priced set already fits; on a set that prices over the page it does not protect the content, it only moves the failure later.",
@@ -615,8 +616,8 @@
    "file": "references/books-or-sheet.md",
    "heading": "## Why the choice exists",
    "paragraphs": [
-    "The teacher's school asked staff to use less paper. A sheet the class can do in books needs a copy between two, or none, instead of one per child. So every sheet says `\"books\"` or `\"sheet\"`, prints a small book or pencil beside its level code, and a books sheet gets a page of question slips at the back of the same file: the same questions with the answer room taken out, several to a page, for children to stick in and answer underneath. The slip is what lets someone monitoring books see what was asked.",
-    "The mark is a suggestion. The teacher can always print the sheet, so the choice changes nothing about how the sheet looks or what it asks. Never change a question, its response form, its support or its visual to earn `\"books\"`: a sheet where the maths is on the page (an empty part-whole model to fill, a claim with the counters that depict it) is a good sheet and is honestly marked `\"sheet\"`."
+    "The teacher's school asked staff to use less paper. A sheet the class can do in books needs no copy per child. So every sheet says `\"books\"` or `\"sheet\"`, prints a small book or pencil beside its level code, and a books sheet prints as a page of question slips in its place in the file: the same questions with the answer room taken out, half a page wide, several to a page, for children to stick in and answer underneath. The slip is what lets someone monitoring books see what was asked.",
+    "The mark decides what prints: a books sheet prints its slips and not the sheet, because printing both spent the paper the mark was there to save (the teacher, 29 September 2026). It changes nothing about what the sheet asks. Never change a question, its response form, its support or its visual to earn `\"books\"`: a sheet where the maths is on the page (an empty part-whole model to fill, a claim with the counters that depict it) is a good sheet and is honestly marked `\"sheet\"`."
    ]
   },
   {
@@ -625,10 +626,10 @@
    "paragraphs": [
     "Ask of every question on the sheet:",
     "> Could a child this age make whatever they need in their book quickly and > accurately enough that the thinking is still the task, and does the book version > still ask the same thing?",
-    "Writing *about* something passes: the child reads the picture, number line, table or source from a shared copy and writes. Working *on* something fails: the child has to mark, label, circle, plot or fill in the printed thing itself.",
+    "Writing *about* something passes: the child reads the picture, number line, table or source from the slip or the board and writes. Working *on* something fails: the child has to mark, label, circle, plot or fill in the printed thing itself.",
     "**A blank is not the same as a page.** A digit box in `2,_80`, a gap in a short sentence, a missing number in a calculation: all of these are copied into a book in seconds, with the blank, and the question still asks the same thing. What makes a sheet `\"sheet\"` is a printed thing the child cannot reproduce - a photograph, a map, a grid, a scale where exact placement is the point - or a copying cost that would swallow the lesson. Daniel's ruling on the Year 4 nearest-1,000 Greater Depth sheet, 19 September 2026: one digit box does not make a write-on sheet.",
     "**Room to answer is what a book is.** A `response` upstream that says where the answers go - handwriting lines, an open working area, space to try numerals and list what you find, boxes for a search - describes answer room. The book supplies that room, and the slip is the same question with it taken out, so it never makes a sheet on its own. Neither does a speech bubble, a claim or a reference the child reads before writing: it prints on the slip and is read there. Greater Depth is where this goes wrong: a finite search and a counterexample, each answered with a list or an explanation, were marked `\"sheet\"` on four Year 4 maths lessons in a row because their answer room was described as a printed working area. A sheet needs something printed that the child works *on*.",
-    "**Say why, either way.** Every sheet carries `\"recordingReason\"`: one line saying why this whole sheet is better that way. For `\"sheet\"`, name the question that needs the page and what the child does to it - `\"Q4: the child labels the printed photograph\"`, `\"Q2: the child plots the reading on the printed grid\"`. For `\"books\"`, say what makes every question answerable from a shared copy - `\"Every answer is a number, an explanation, or a line the children rule for themselves\"`. Going to look for a question that needs the page is the test, and either mark can be reached without running it, so the line is what tells a decision from a default. It is a report, not a defence: a sheet that genuinely needs the page is a good sheet, and changing a question to reach either mark is the only way this field makes a worksheet worse.",
+    "**Say why, either way.** Every sheet carries `\"recordingReason\"`: one line saying why this whole sheet is better that way. For `\"sheet\"`, name the question that needs the page and what the child does to it - `\"Q4: the child labels the printed photograph\"`, `\"Q2: the child plots the reading on the printed grid\"`. For `\"books\"`, say what makes every question answerable in a book - `\"Every answer is a number, an explanation, or a line the children rule for themselves\"`. Going to look for a question that needs the page is the test, and either mark can be reached without running it, so the line is what tells a decision from a default. It is a report, not a defence: a sheet that genuinely needs the page is a good sheet, and changing a question to reach either mark is the only way this field makes a worksheet worse.",
     "**The whole sheet is `\"books\"` only when every question passes.** One question that needs the page makes the sheet `\"sheet\"`. A half-and-half sheet saves no paper, because every child still needs a printed copy for the half that needs it, and it adds trimming the teacher has to do. Each level (Below, Expected, Greater Depth) is decided on its own sheet and often differs: a Below sheet with a partly filled model is `\"sheet\"` while the Expected calculations beside it are `\"books\"`."
    ]
   },
@@ -2095,11 +2096,11 @@
   },
   {
    "id": "WS-D01",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place; changed 29 September 2026, the teacher's ruling: sheet shapes outside maths come from each subject file's `What a worksheet looks like` section, a menu chosen by the lesson's thinking, never one template",
    "present": [
     {
      "file": "references/lesson-designer-components.md",
-     "text": "**Design independent activity before content or surface.** Start with what child has to do, not number of questions. Name core action, how many performances needed, cases/contrasts set must cover, whether related results need stay visible together.",
+     "text": "**Design independent activity before content or surface.** Start with what child has to do, not number of questions. Name core action, how many performances needed, cases/contrasts set must cover, whether related results need stay visible together. If the sheet can replace slide practice, map every essential performance to its worksheet response in the existing `activityArchitecture` fields; protect these in `fitPriority`. Apply the worksheet-use and coverage judgement in `preferences.md` before seeking new instances. Then choose the sheet's shape. Maths has its own sections in `subject-maths.md`; every other subject file has a `What a worksheet looks like` section showing shapes that work on real sheets in that subject: a quick knowledge task then a thinking task, one activity presented well, a recording table and conclusion, sources each with their questions, one question with room to argue, a figure the child labels or builds, a frame the child fills, work the child generates, or a plain question set. Choose from it by the thinking, not the easiest slots: it is a menu, never a template or a rotation, and a single well-built activity is as complete a sheet as one with sections. Where no shape there fits, the lesson's thinking still decides. When two shapes carry the thinking equally well, prefer the one a child can answer in their book from a small question slip (writing about a picture or claim, not marking on it), because the school wants less paper; never give up thinking to get there.",
      "section": {
       "heading": "## Generated worksheet",
       "occurrence": 0,
@@ -2108,7 +2109,7 @@
     },
     {
      "file": "references/lesson-designer-components.md",
-     "text": "Then choose shape with subject page standard: question set, frame child fills, one stimulus worked on, child generating content. Shape follows thinking, not easiest slots.",
+     "text": "Then choose the sheet's shape. Maths has its own sections in `subject-maths.md`; every other subject file has a `What a worksheet looks like` section showing shapes that work on real sheets in that subject: a quick knowledge task then a thinking task, one activity presented well, a recording table and conclusion, sources each with their questions, one question with room to argue, a figure the child labels or builds, a frame the child fills, work the child generates, or a plain question set. Choose from it by the thinking, not the easiest slots: it is a menu, never a template or a rotation, and a single well-built activity is as complete a sheet as one with sections. Where no shape there fits, the lesson's thinking still decides. When two shapes carry the thinking equally well, prefer the one a child can answer in their book from a small question slip (writing about a picture or claim, not marking on it), because the school wants less paper; never give up thinking to get there.",
      "section": {
       "heading": "## Generated worksheet",
       "occurrence": 0,
@@ -6171,11 +6172,11 @@
   },
   {
    "id": "WS-K01",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place; changed 29 September 2026, the teacher's ruling: a books sheet prints its slips only, half a page wide, never the write-on sheet as well",
    "present": [
     {
      "file": "references/books-or-sheet.md",
-     "text": "The worksheet designer reads this when setting each sheet's `recording`, after the sheet's content is settled. It decides one thing: whether a class could do this sheet in their exercise books, from a shared copy or the board.",
+     "text": "The worksheet designer reads this when setting each sheet's `recording`, after the sheet's content is settled. It decides one thing: whether a class could do this sheet in their exercise books, from its question slip or the board.",
      "section": {
       "heading": "# Books or Sheet",
       "occurrence": 0,
@@ -6188,11 +6189,11 @@
   },
   {
    "id": "WS-K02",
-   "outcome": "stories leave for the build log (copied there first, w1), reasons stay: only the date of his reason left (16 September 2026, in the log's 4.2.218 entry)",
+   "outcome": "stories leave for the build log (copied there first, w1), reasons stay: only the date of his reason left (16 September 2026, in the log's 4.2.218 entry); changed 29 September 2026, the teacher's ruling: a books sheet prints its slips only, half a page wide, never the write-on sheet as well",
    "present": [
     {
      "file": "references/books-or-sheet.md",
-     "text": "and a books sheet gets a page of question slips at the back of the same file: the same questions with the answer room taken out, several to a page, for children to stick in and answer underneath. The slip is what lets someone monitoring books see what was asked.",
+     "text": "and a books sheet prints as a page of question slips in its place in the file: the same questions with the answer room taken out, half a page wide, several to a page, for children to stick in and answer underneath. The slip is what lets someone monitoring books see what was asked.",
      "section": {
       "heading": "## Why the choice exists",
       "occurrence": 0,
@@ -6201,7 +6202,7 @@
     },
     {
      "file": "references/books-or-sheet.md",
-     "text": "The teacher's school asked staff to use less paper. A sheet the class can do in books needs a copy between two, or none, instead of one per child.",
+     "text": "The teacher's school asked staff to use less paper. A sheet the class can do in books needs no copy per child.",
      "section": {
       "heading": "## Why the choice exists",
       "occurrence": 0,
@@ -6219,7 +6220,7 @@
     },
     {
      "file": "references/books-or-sheet.md",
-     "text": "The teacher's school asked staff to use less paper. A sheet the class can do in books needs a copy between two, or none, instead of one per child. So every sheet says `\"books\"` or `\"sheet\"`, prints a small book or pencil beside its level code, and a books sheet gets a page of question slips at the back of the same file: the same questions with the answer room taken out, several to a page, for children to stick in and answer underneath. The slip is what lets someone monitoring books see what was asked.",
+     "text": "The teacher's school asked staff to use less paper. A sheet the class can do in books needs no copy per child. So every sheet says `\"books\"` or `\"sheet\"`, prints a small book or pencil beside its level code, and a books sheet prints as a page of question slips in its place in the file: the same questions with the answer room taken out, half a page wide, several to a page, for children to stick in and answer underneath. The slip is what lets someone monitoring books see what was asked.",
      "section": {
       "heading": "## Why the choice exists",
       "occurrence": 0,
@@ -6239,11 +6240,11 @@
   },
   {
    "id": "WS-K03",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place; changed 29 September 2026, the teacher's ruling: a books sheet prints its slips only, half a page wide, never the write-on sheet as well",
    "present": [
     {
      "file": "references/books-or-sheet.md",
-     "text": "The mark is a suggestion. The teacher can always print the sheet, so the choice changes nothing about how the sheet looks or what it asks. Never change a question, its response form, its support or its visual to earn `\"books\"`: a sheet where the maths is on the page (an empty part-whole model to fill, a claim with the counters that depict it) is a good sheet and is honestly marked `\"sheet\"`.",
+     "text": "The mark decides what prints: a books sheet prints its slips and not the sheet, because printing both spent the paper the mark was there to save (the teacher, 29 September 2026). It changes nothing about what the sheet asks. Never change a question, its response form, its support or its visual to earn `\"books\"`: a sheet where the maths is on the page (an empty part-whole model to fill, a claim with the counters that depict it) is a good sheet and is honestly marked `\"sheet\"`.",
      "section": {
       "heading": "## Why the choice exists",
       "occurrence": 0,
@@ -6256,7 +6257,7 @@
   },
   {
    "id": "WS-K04",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place; changed 29 September 2026, the teacher's ruling: a books sheet prints its slips only, half a page wide, never the write-on sheet as well",
    "present": [
     {
      "file": "references/books-or-sheet.md",
@@ -6280,7 +6281,7 @@
     },
     {
      "file": "references/books-or-sheet.md",
-     "text": "Writing *about* something passes: the child reads the picture, number line, table or source from a shared copy and writes. Working *on* something fails: the child has to mark, label, circle, plot or fill in the printed thing itself.",
+     "text": "Writing *about* something passes: the child reads the picture, number line, table or source from the slip or the board and writes. Working *on* something fails: the child has to mark, label, circle, plot or fill in the printed thing itself.",
      "section": {
       "heading": "## The test",
       "occurrence": 0,
@@ -6436,7 +6437,7 @@
   },
   {
    "id": "WS-K12",
-   "outcome": "settled item h: one home for each rule; a copy read by the same reader becomes a pointer that keeps its conditions: step 5 points at books-or-sheet.md, keeping the trigger, the year-group reason, \"never a target\" and `onSlip`; its copies of the test, the reason line and the blank-is-not-a-page paragraph go",
+   "outcome": "settled item h: one home for each rule; a copy read by the same reader becomes a pointer that keeps its conditions: step 5 points at books-or-sheet.md, keeping the trigger, the year-group reason, \"never a target\" and `onSlip`; its copies of the test, the reason line and the blank-is-not-a-page paragraph go; changed 29 September 2026, the teacher's ruling: a books sheet prints its slips only, half a page wide, never the write-on sheet as well",
    "present": [
     {
      "file": "agents/worksheet-designer.md",
@@ -6469,7 +6470,7 @@
     },
     {
      "file": "agents/worksheet-designer.md",
-     "text": "Decide each level on its own sheet, and treat the mark as a report on the sheet you built, never a target: the question, its form and its visual stay exactly as upstream settled them. On a `\"books\"` sheet, add `\"onSlip\": false` to any figure the children will draw for themselves in their books, so the slips leave it off.",
+     "text": "Decide each level on its own sheet, and treat the mark as a report on the sheet you built, never a target: the question, its form and its visual stay exactly as upstream settled them. On a `\"books\"` sheet, add `\"onSlip\": false` to any figure the children will draw for themselves in their books, so the slips leave it off. A books sheet prints only its slips, half a page wide; when the preflight names something too wide for one (`SLIP_TOO_WIDE`), decide it with the reference's section on slip width rather than treating the picture alone as a reason for `\"sheet\"`.",
      "section": {
       "heading": "### 5. Say whether the sheet can go in books",
       "occurrence": 0,
@@ -6489,11 +6490,11 @@
   },
   {
    "id": "WS-K13",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place; changed 29 September 2026, the teacher's ruling: a books sheet prints its slips only, half a page wide, never the write-on sheet as well",
    "present": [
     {
      "file": "references/worksheet-helpers.md",
-     "text": "required. `\"books\"` when every question can be answered in an exercise book from a shared copy, `\"sheet\"` when at least one needs the printed page.",
+     "text": "required. `\"books\"` when every question can be answered in an exercise book, `\"sheet\"` when at least one needs the printed page.",
      "section": {
       "heading": "### A sheet",
       "occurrence": 0,
@@ -6661,11 +6662,11 @@
   },
   {
    "id": "WS-K18",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place; changed 29 September 2026, the teacher's ruling: a books sheet prints its slips only, half a page wide, never the write-on sheet as well",
    "present": [
     {
      "file": "references/books-or-sheet.md",
-     "text": "For `\"sheet\"`, name the question that needs the page and what the child does to it - `\"Q4: the child labels the printed photograph\"`, `\"Q2: the child plots the reading on the printed grid\"`. For `\"books\"`, say what makes every question answerable from a shared copy",
+     "text": "For `\"sheet\"`, name the question that needs the page and what the child does to it - `\"Q4: the child labels the printed photograph\"`, `\"Q2: the child plots the reading on the printed grid\"`. For `\"books\"`, say what makes every question answerable in a book",
      "section": {
       "heading": "## The test",
       "occurrence": 0,
@@ -14343,11 +14344,11 @@
   },
   {
    "id": "HOME-WS-LDC-01",
-   "outcome": "a paragraph of references/lesson-designer-components.md ## Generated worksheet, pinned whole",
+   "outcome": "a paragraph of references/lesson-designer-components.md ## Generated worksheet, pinned whole; changed 29 September 2026, the teacher's ruling: sheet shapes outside maths come from each subject file's `What a worksheet looks like` section, a menu chosen by the lesson's thinking, never one template",
    "present": [
     {
      "file": "references/lesson-designer-components.md",
-     "text": "**Design independent activity before content or surface.** Start with what child has to do, not number of questions. Name core action, how many performances needed, cases/contrasts set must cover, whether related results need stay visible together. If the sheet can replace slide practice, map every essential performance to its worksheet response in the existing `activityArchitecture` fields; protect these in `fitPriority`. Apply the worksheet-use and coverage judgement in `preferences.md` before seeking new instances. Then choose shape with subject page standard: question set, frame child fills, one stimulus worked on, child generating content. Shape follows thinking, not easiest slots.",
+     "text": "**Design independent activity before content or surface.** Start with what child has to do, not number of questions. Name core action, how many performances needed, cases/contrasts set must cover, whether related results need stay visible together. If the sheet can replace slide practice, map every essential performance to its worksheet response in the existing `activityArchitecture` fields; protect these in `fitPriority`. Apply the worksheet-use and coverage judgement in `preferences.md` before seeking new instances. Then choose the sheet's shape. Maths has its own sections in `subject-maths.md`; every other subject file has a `What a worksheet looks like` section showing shapes that work on real sheets in that subject: a quick knowledge task then a thinking task, one activity presented well, a recording table and conclusion, sources each with their questions, one question with room to argue, a figure the child labels or builds, a frame the child fills, work the child generates, or a plain question set. Choose from it by the thinking, not the easiest slots: it is a menu, never a template or a rotation, and a single well-built activity is as complete a sheet as one with sections. Where no shape there fits, the lesson's thinking still decides. When two shapes carry the thinking equally well, prefer the one a child can answer in their book from a small question slip (writing about a picture or claim, not marking on it), because the school wants less paper; never give up thinking to get there.",
      "section": {
       "heading": "## Generated worksheet",
       "occurrence": 0,
@@ -15032,11 +15033,11 @@
   },
   {
    "id": "HOME-WS-BOS-WHY-01",
-   "outcome": "a paragraph of references/books-or-sheet.md ## Why the choice exists, pinned whole",
+   "outcome": "a paragraph of references/books-or-sheet.md ## Why the choice exists, pinned whole; changed 29 September 2026, the teacher's ruling: a books sheet prints its slips only, half a page wide, never the write-on sheet as well",
    "present": [
     {
      "file": "references/books-or-sheet.md",
-     "text": "The teacher's school asked staff to use less paper. A sheet the class can do in books needs a copy between two, or none, instead of one per child. So every sheet says `\"books\"` or `\"sheet\"`, prints a small book or pencil beside its level code, and a books sheet gets a page of question slips at the back of the same file: the same questions with the answer room taken out, several to a page, for children to stick in and answer underneath. The slip is what lets someone monitoring books see what was asked.",
+     "text": "The teacher's school asked staff to use less paper. A sheet the class can do in books needs no copy per child. So every sheet says `\"books\"` or `\"sheet\"`, prints a small book or pencil beside its level code, and a books sheet prints as a page of question slips in its place in the file: the same questions with the answer room taken out, half a page wide, several to a page, for children to stick in and answer underneath. The slip is what lets someone monitoring books see what was asked.",
      "section": {
       "heading": "## Why the choice exists",
       "occurrence": 0,
@@ -15048,11 +15049,11 @@
   },
   {
    "id": "HOME-WS-BOS-WHY-02",
-   "outcome": "a paragraph of references/books-or-sheet.md ## Why the choice exists, pinned whole",
+   "outcome": "a paragraph of references/books-or-sheet.md ## Why the choice exists, pinned whole; changed 29 September 2026, the teacher's ruling: a books sheet prints its slips only, half a page wide, never the write-on sheet as well",
    "present": [
     {
      "file": "references/books-or-sheet.md",
-     "text": "The mark is a suggestion. The teacher can always print the sheet, so the choice changes nothing about how the sheet looks or what it asks. Never change a question, its response form, its support or its visual to earn `\"books\"`: a sheet where the maths is on the page (an empty part-whole model to fill, a claim with the counters that depict it) is a good sheet and is honestly marked `\"sheet\"`.",
+     "text": "The mark decides what prints: a books sheet prints its slips and not the sheet, because printing both spent the paper the mark was there to save (the teacher, 29 September 2026). It changes nothing about what the sheet asks. Never change a question, its response form, its support or its visual to earn `\"books\"`: a sheet where the maths is on the page (an empty part-whole model to fill, a claim with the counters that depict it) is a good sheet and is honestly marked `\"sheet\"`.",
      "section": {
       "heading": "## Why the choice exists",
       "occurrence": 0,
@@ -15096,11 +15097,11 @@
   },
   {
    "id": "HOME-WS-BOS-TEST-03",
-   "outcome": "a paragraph of references/books-or-sheet.md ## The test, pinned whole",
+   "outcome": "a paragraph of references/books-or-sheet.md ## The test, pinned whole; changed 29 September 2026, the teacher's ruling: a books sheet prints its slips only, half a page wide, never the write-on sheet as well",
    "present": [
     {
      "file": "references/books-or-sheet.md",
-     "text": "Writing *about* something passes: the child reads the picture, number line, table or source from a shared copy and writes. Working *on* something fails: the child has to mark, label, circle, plot or fill in the printed thing itself.",
+     "text": "Writing *about* something passes: the child reads the picture, number line, table or source from the slip or the board and writes. Working *on* something fails: the child has to mark, label, circle, plot or fill in the printed thing itself.",
      "section": {
       "heading": "## The test",
       "occurrence": 0,
@@ -15128,11 +15129,11 @@
   },
   {
    "id": "HOME-WS-BOS-TEST-05",
-   "outcome": "a paragraph of references/books-or-sheet.md ## The test, pinned whole",
+   "outcome": "a paragraph of references/books-or-sheet.md ## The test, pinned whole; changed 29 September 2026, the teacher's ruling: a books sheet prints its slips only, half a page wide, never the write-on sheet as well",
    "present": [
     {
      "file": "references/books-or-sheet.md",
-     "text": "**Say why, either way.** Every sheet carries `\"recordingReason\"`: one line saying why this whole sheet is better that way. For `\"sheet\"`, name the question that needs the page and what the child does to it - `\"Q4: the child labels the printed photograph\"`, `\"Q2: the child plots the reading on the printed grid\"`. For `\"books\"`, say what makes every question answerable from a shared copy - `\"Every answer is a number, an explanation, or a line the children rule for themselves\"`. Going to look for a question that needs the page is the test, and either mark can be reached without running it, so the line is what tells a decision from a default. It is a report, not a defence: a sheet that genuinely needs the page is a good sheet, and changing a question to reach either mark is the only way this field makes a worksheet worse.",
+     "text": "**Say why, either way.** Every sheet carries `\"recordingReason\"`: one line saying why this whole sheet is better that way. For `\"sheet\"`, name the question that needs the page and what the child does to it - `\"Q4: the child labels the printed photograph\"`, `\"Q2: the child plots the reading on the printed grid\"`. For `\"books\"`, say what makes every question answerable in a book - `\"Every answer is a number, an explanation, or a line the children rule for themselves\"`. Going to look for a question that needs the page is the test, and either mark can be reached without running it, so the line is what tells a decision from a default. It is a report, not a defence: a sheet that genuinely needs the page is a good sheet, and changing a question to reach either mark is the only way this field makes a worksheet worse.",
      "section": {
       "heading": "## The test",
       "occurrence": 0,

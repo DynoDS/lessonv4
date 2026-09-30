@@ -326,6 +326,37 @@ class TestRunReport(RunReportCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("Delivered resources", result.stdout)
 
+    def write_review(self, result: str) -> None:
+        (self.working / "design-review.md").write_text(
+            f"# Design Review\n\n## Result\n`{result}`\n\n## Corrections made\n- None.\n\n"
+            "## Redesign required\n", encoding="utf-8")
+
+    def test_a_lesson_the_last_review_sent_back_cannot_be_complete(self):
+        """Carried from the reviewer release (26 September 2026) into 10B."""
+        self.write_review("REDESIGN REQUIRED")
+        result = self.validate(self.write_report({
+            "outcome": "Package status: COMPLETE\n\nThe last review said REDESIGN REQUIRED.",
+        }))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("PARTIAL, not COMPLETE", result.stdout)
+
+    def test_a_lesson_the_last_review_sent_back_must_say_so(self):
+        self.write_review("REDESIGN REQUIRED")
+        result = self.validate(self.write_report({"outcome": "Package status: PARTIAL"}))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("does not say so", result.stdout)
+        result = self.validate(self.write_report({
+            "outcome": "Package status: PARTIAL\n\nThe last design review still says REDESIGN REQUIRED.",
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_an_approved_review_with_its_empty_redesign_heading_is_complete(self):
+        """The discrimination case: every review keeps a `## Redesign required`
+        heading, and an approved one leaves it empty."""
+        self.write_review("APPROVED")
+        result = self.validate(self.write_report())
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_excluded_earned_resource_cannot_be_complete(self):
         self.write_json(self.working / "working-wall.json", {"cards": [{"type": "words"}]})
         report = self.write_report(
@@ -563,13 +594,14 @@ class TestRunReport(RunReportCase):
         result = self.validate(report)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
-    def test_queued_shared_log_without_path_is_rejected(self):
-        report = self.write_report(
-            overrides={"shared": "Status: QUEUED"}
-        )
+    def test_a_report_needs_no_shared_log_section(self):
+        """The report itself goes into the shared run log (29 September 2026),
+        so it no longer reports a status for a second log."""
+        report = self.write_report()
+        text = report.read_text(encoding="utf-8")
+        report.write_text(text.split("## Shared investigation log")[0], encoding="utf-8")
         result = self.validate(report)
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("`Path:` line", result.stdout)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_queued_shared_log_with_pending_file_passes(self):
         pending = self.working / "pending-build-review-log.md"

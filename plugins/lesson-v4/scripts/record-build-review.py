@@ -1,45 +1,37 @@
 #!/usr/bin/env python3
-"""Append one run's engine findings to the shared build review log.
+"""Add one lesson run to the shared run log.
 
-The log is where the engine remembers what went wrong, so the next run does not
-rediscover it. Three of the four lesson runs of 7-8 September 2026 appended to
-nothing: each resolved the source checkout, found it outside its own writable
-workspace, wrote a `pending-build-review-log.md` beside its working files and
-said so in its report. The findings were real - a combined-PDF merge corrupting
-a repeated font subset, a slide-design validator with no legal state for a whole
-class of slide, a repair-scope checker refusing a repair it had asked for - and
-all three sat unread in three different output folders.
+Every run writes one detailed entry here, and nowhere else: what the lesson was,
+where its working files are, which plugin version and host made it, and the
+whole checked run report (outcome, files, faults, pictures, helper gaps, worker
+timings, friction). It is the record a troubleshooter reads.
 
-The fault was not the runs' judgement. It was that the only writable home for
-the log depended on where the run happened to be started from.
+The teacher's decision of 29 September 2026: a separate report per lesson beside
+a shared log of findings was the same information written twice, so a run now
+writes its report once, it goes into the shared log, and the lesson folder keeps
+no second copy.
 
-So the log has a fixed home that does not: the teacher's Desktop. That is
-writable on the machine the runs are on, it is the same path whichever project a
-run is launched from, and it is somewhere the teacher can actually open and
-read - which the copy inside a package checkout never was.
-
-The checkout copy is still written when one is genuinely writable, because that
-is the copy agents read at runtime and the one that travels with the package.
-Neither is required for the other to happen, and the exit status says what got
-written.
-
-Every entry is stamped with the plugin version that produced it. A finding is
-about an engine, and "which engine" is the first thing anyone reading it back
-needs to know: several entries in the existing log describe behaviour that three
-patch releases have since changed, and nothing on them says so.
+The log lives in the plugin's home folder (`~/.lesson-resources`, or
+`LESSON_RESOURCES_HOME`), beside its settings. That folder survives plugin
+updates, which replace the installed plugin folder, and it is never part of the
+package, so the log never reaches GitHub or a Codex plugin cache. It replaced a
+Desktop log and a copy inside the package (`references/build-review-log.md`,
+kept as history and no longer written).
 
 Usage:
-    python3 record-build-review.py \\
-        --lesson "Year 4 Maths - Find 1,000 more/less" \\
-        --plugin-root "[PLUGIN_ROOT]" \\
-        --finding "..." [--finding "..."] \\
-        [--source-root "[PLUGIN_SOURCE_ROOT]"]
+    python3 record-build-review.py --report "[WORKING_DIR]/run-report.md" \\
+        --lesson "Year 4 Science - Name parts of the digestive system" \\
+        --plugin-root "[PLUGIN_ROOT]" --working-dir "[WORKING_DIR]" \\
+        --output-dir "[OUTPUT_DIR]" --host claude
 
-    python3 record-build-review.py --where     # print the Desktop log's path
+    python3 record-build-review.py --lesson "..." --plugin-root "..." \\
+        --finding "..." [--finding "..."]     # a finding outside a run
+
+    python3 record-build-review.py --where     # print the log's path
 
 Exit codes:
-    0  the entry reached at least the Desktop log
-    1  bad input, or nothing could be written anywhere
+    0  the entry was written (BUILD_REVIEW_LOG_OK)
+    1  bad input, or the log could not be written (BUILD_REVIEW_LOG_FAILED)
 """
 from __future__ import annotations
 
@@ -50,26 +42,15 @@ import os
 import sys
 from pathlib import Path
 
-LOG_HEADER = "# Build review log\n"
-LOG_FILENAME = "Lesson engine build log.md"
+LOG_HEADER = "# Lesson run log\n"
+LOG_FILENAME = "Lesson run log.md"
 
 
-def desktop_dir() -> Path:
-    """Where the teacher's Desktop is.
-
-    OneDrive redirects it on most school-managed Windows accounts, and the
-    redirected folder is the real one - writing to the un-redirected path
-    creates a second Desktop the teacher never sees.
-    """
-    for name in ("ONEDRIVE", "OneDrive", "OneDriveConsumer", "OneDriveCommercial"):
-        base = os.environ.get(name)
-        if base and (Path(base) / "Desktop").is_dir():
-            return Path(base) / "Desktop"
-    return Path.home() / "Desktop"
-
-
-def desktop_log() -> Path:
-    return desktop_dir() / LOG_FILENAME
+def log_path() -> Path:
+    """The shared run log, in the plugin's home folder beside its settings."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from plugin_settings import plugin_home
+    return plugin_home() / LOG_FILENAME
 
 
 def plugin_version(plugin_root: str | None) -> str:
@@ -93,6 +74,30 @@ def plugin_version(plugin_root: str | None) -> str:
     return "version unknown"
 
 
+def report_entry(lesson: str, version: str, report: str, working_dir: str | None,
+                 output_dir: str | None, host: str | None) -> str:
+    """One run: a heading, where everything is, then the whole checked report.
+
+    The report's own headings drop one level, so each run stays one section of
+    the log and its parts read as that run's parts.
+    """
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    lines = [f"\n## {now} - {lesson}", ""]
+    lines.append(f"- Plugin: {version}" + (f", on {host}" if host else ""))
+    if working_dir:
+        lines.append(f"- Working files: `{working_dir}`")
+    if output_dir:
+        lines.append(f"- Resources made in: `{output_dir}`")
+    body = []
+    for line in report.replace("\r\n", "\n").splitlines():
+        if line.startswith("#"):
+            line = "#" + line
+            if line.lstrip("#").strip().lower() in ("lesson run report", "run report"):
+                continue
+        body.append(line)
+    return "\n".join(lines) + "\n\n" + "\n".join(body).strip("\n") + "\n"
+
+
 def entry_text(lesson: str, version: str, findings: list[str]) -> str:
     today = datetime.date.today().isoformat()
     lines = [f"\n## {today} - {lesson}", f"\n*Built by {version}.*\n"]
@@ -113,7 +118,7 @@ def append(path: Path, entry: str) -> str | None:
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         existing = path.read_text(encoding="utf-8") if path.is_file() else ""
-        if not existing.lstrip().startswith("# Build review log"):
+        if not existing.lstrip().startswith(LOG_HEADER.strip()):
             existing = LOG_HEADER + existing
         path.write_text(existing.rstrip("\n") + "\n" + entry, encoding="utf-8")
         return None
@@ -122,50 +127,58 @@ def append(path: Path, entry: str) -> str | None:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--where", action="store_true",
-                    help="print the Desktop log's path and exit")
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--where", action="store_true", help="print the log's path and exit")
     ap.add_argument("--lesson", help="what this run built, in plain English")
+    ap.add_argument("--report", help="the checked run report to add, whole")
+    ap.add_argument("--working-dir", help="the run's working folder")
+    ap.add_argument("--output-dir", help="where the run made its resources")
+    ap.add_argument("--host", help="claude or codex")
     ap.add_argument("--finding", action="append", default=[],
                     help="one reusable engine finding; repeat for several")
     ap.add_argument("--plugin-root", help="the verified PLUGIN_ROOT of this run")
-    ap.add_argument("--source-root",
-                    help="a writable PLUGIN_SOURCE_ROOT, when the run resolved one")
+    # Retired: the log no longer goes into the package. Accepted so an older
+    # instruction still runs.
+    ap.add_argument("--source-root", help=argparse.SUPPRESS)
     args = ap.parse_args(argv)
 
+    target = log_path()
     if args.where:
-        print(desktop_log())
+        print(target)
         return 0
 
     if not args.lesson:
         ap.error("--lesson is required")
-    findings = [f for f in args.finding if f and f.strip()]
-    if not findings:
-        ap.error("at least one --finding is required")
+    version = plugin_version(args.plugin_root)
 
-    entry = entry_text(args.lesson, plugin_version(args.plugin_root), findings)
+    report_path = Path(args.report) if args.report else None
+    if report_path:
+        try:
+            report = report_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            print(f"BUILD_REVIEW_LOG_FAILED: cannot read the report: {exc}", file=sys.stderr)
+            return 1
+        entry = report_entry(args.lesson, version, report, args.working_dir, args.output_dir, args.host)
+        what = "run report"
+    else:
+        findings = [f for f in args.finding if f and f.strip()]
+        if not findings:
+            ap.error("give --report, or at least one --finding")
+        entry = entry_text(args.lesson, version, findings)
+        what = f"{len(findings)} finding(s)"
 
-    written, failed = [], []
-    target = desktop_log()
     error = append(target, entry)
-    (failed if error else written).append(error or str(target))
-
-    if args.source_root:
-        checkout = Path(args.source_root) / "references" / "build-review-log.md"
-        error = append(checkout, entry)
-        (failed if error else written).append(error or str(checkout))
-
-    if not written:
-        print("BUILD_REVIEW_LOG_FAILED", file=sys.stderr)
-        for note in failed:
-            print(f"- {note}", file=sys.stderr)
+    if error:
+        print(f"BUILD_REVIEW_LOG_FAILED: {error}", file=sys.stderr)
         return 1
-
-    print(f"BUILD_REVIEW_LOG_OK {len(findings)} finding(s)")
-    for note in written:
-        print(f"- written to {note}")
-    for note in failed:
-        print(f"- could not write {note}", file=sys.stderr)
+    if report_path:
+        # The log holds the report now; the lesson folder keeps no second copy.
+        try:
+            report_path.unlink()
+        except OSError:
+            pass
+    print(f"BUILD_REVIEW_LOG_OK {what}")
+    print(f"- written to {target}")
     return 0
 
 

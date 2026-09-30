@@ -140,11 +140,11 @@
         } }
     },
     {
-      "template": "split-v-50-50",
+      "template": "body-full",
       "headerStyle": "title",
-      "title": "Hundred boundary exchanges in both directions",
-      "instruction": "each comparison starts from its own number",
-      "primary": { "type": "place-value-chart",
+      "title": "Hundred boundary exchange upwards: 3,950 to 4,050",
+      "instruction": "ten hundreds exchange into one thousand",
+      "body": { "type": "place-value-chart",
         "columns": ["Th", "H", "T", "O"],
         "pair": {
           "from": ["3", "9", "5", "0"],
@@ -155,8 +155,14 @@
             "to":   { "Th": 4, "H": 0, "T": 5, "O": 0 }
           },
           "exchange": { "from": "H", "to": "Th" }
-        } },
-      "secondary": { "type": "place-value-chart",
+        } }
+    },
+    {
+      "template": "body-full",
+      "headerStyle": "title",
+      "title": "Hundred boundary exchange downwards: 5,060 to 4,960",
+      "instruction": "one thousand exchanges into ten hundreds",
+      "body": { "type": "place-value-chart",
         "columns": ["Th", "H", "T", "O"],
         "pair": {
           "from": ["5", "0", "6", "0"],

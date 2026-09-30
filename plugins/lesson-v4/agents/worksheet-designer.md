@@ -389,6 +389,16 @@ of the answer: the same shape the other way round is a different set of
 millimetres. Put the pair you choose into the sheet as a named `layout` with
 lettered zones, unchanged.
 
+**When a sheet will not fit, measure before you rearrange.** Add `--measure`
+to the same command and it prints the real smallest width and height of every
+entry, and of each part inside it, for its actual wording - the numbers the
+preflight and the build use. That answers what is too big, and by how much,
+without reading the engine's source or writing a script of your own to find
+out. The adaptation's page budget is an estimate made before the wording
+existed; where this disagrees with it, this is right, and a protected set that
+truly measures over the page goes back through the existing route rather than
+being squeezed.
+
 ### 3. Fill the zones
 
 A zone is geometry. It knows it is 84mm by 134mm and nothing else. Put what you
@@ -636,7 +646,11 @@ group, and the same number line is `"books"` in Year 4 and `"sheet"` in Year 2.
 Decide each level on its own sheet, and treat the mark as a report on the sheet
 you built, never a target: the question, its form and its visual stay exactly as
 upstream settled them. On a `"books"` sheet, add `"onSlip": false` to any figure the
-children will draw for themselves in their books, so the slips leave it off.
+children will draw for themselves in their books, so the slips leave it off. A
+books sheet prints only its slips, half a page wide; when the preflight names
+something too wide for one (`SLIP_TOO_WIDE`), decide it with the reference's
+section on slip width rather than treating the picture alone as a reason for
+`"sheet"`.
 
 ---
 

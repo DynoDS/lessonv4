@@ -8,7 +8,7 @@ const { spawnSync } = require('node:child_process');
 
 const { capacityWarnings } = require('../src/content/capacity');
 const { friendlyParseError } = require('../src/validate');
-const { expandTeachLayouts, TeachLayoutError, LAYOUTS } = require('../src/teach-layouts');
+const { expandTeachLayoutsEach, LAYOUTS } = require('../src/teach-layouts');
 
 const BLOCKING_CAPACITY_SIGNALS = new Set([
   'FIXED_CAPTION_CAPACITY',
@@ -1489,6 +1489,24 @@ function countOptionalPictures(lesson) {
   return counts;
 }
 
+// Stands in for a teach-layout slide the check refused, so the rest of the deck
+// can be checked and drawn. It keeps the slide's unit so unit-level checks read
+// the deck as it will be, and says plainly on the page what it is.
+function teachLayoutPlaceholder(slide) {
+  const placeholder = {
+    template: 'split-v-60-40',
+    title: 'Check this slide',
+    primary: { type: 'text', value: 'This slide’s teach layout was refused.' },
+    secondary: { type: 'text', value: 'The check names the fix.' },
+  };
+  if (slide && typeof slide === 'object') {
+    for (const key of ['designUnitId', 'designUnitIds']) {
+      if (slide[key] !== undefined) placeholder[key] = slide[key];
+    }
+  }
+  return placeholder;
+}
+
 function optionalPictureLine(counts) {
   return (
     `SLIDE_DESIGN_OPTIONAL_PICTURES: ${counts['educational-svg']} ` +
@@ -1532,26 +1550,47 @@ function runSlideDesignCheck(inputPath, options = {}) {
   // Read against the slides as written, before teach layouts become ordinary slides.
   const teachLayout = teachLayoutWarnings(lesson, jsonPath);
   const launchPair = launchPairWarnings(lesson, jsonPath);
-  try {
-    lesson = expandTeachLayouts(lesson);
-  } catch (error) {
-    if (!(error instanceof TeachLayoutError)) throw error;
-    return {
-      ok: false,
-      reason: 'TEACH_LAYOUT_INVALID',
-      slideCount,
-      stdout: `BUILD_DIAGNOSTIC: ${JSON.stringify({
-        signal: 'TEACH_LAYOUT_INVALID', artifact: 'slides', faultClass: 'composition',
-        location: {}, message: error.message
-      })}
-`,
-      stderr: `
-TEACH_LAYOUT_INVALID: ${error.message}
-Fix that slide's layout slots, then run the check again.
-`,
-      scratchOutputPath: null,
+  // A teach layout that cannot be expanded used to end the check on the spot,
+  // so every other fault in the deck waited for the next run: slide designers
+  // met their faults one run at a time and spent their repair passes doing it
+  // (29 September 2026, four runs out of four). Each refused layout is now
+  // reported with its slide number, a plain placeholder stands in for it, and
+  // the rest of the deck is checked and built as normal.
+  const expandedEach = expandTeachLayoutsEach(lesson);
+  const teachRefused = expandedEach.errors;
+  const teachRefusedSlides = new Set(teachRefused.map((item) => item.slide));
+  let buildJsonPath = jsonPath;
+  let placeholderPath = null;
+  if (teachRefused.length) {
+    const standIn = lesson.slides.map((slide, index) =>
+      teachRefusedSlides.has(index + 1) ? teachLayoutPlaceholder(slide) : slide
+    );
+    placeholderPath = path.join(
+      path.dirname(jsonPath),
+      `.${path.basename(jsonPath)}.teach-check-${process.pid}.json`
+    );
+    try {
+      fs.writeFileSync(placeholderPath, JSON.stringify({ ...lesson, slides: standIn }));
+      buildJsonPath = placeholderPath;
+    } catch {
+      placeholderPath = null;
+    }
+    lesson = {
+      ...expandedEach.lesson,
+      slides: expandedEach.lesson.slides.map((slide, index) =>
+        slide === null ? teachLayoutPlaceholder(lesson.slides[index]) : slide
+      ),
     };
+  } else {
+    lesson = expandedEach.lesson;
   }
+  // A placeholder carries none of its slide's words, so a vocabulary card
+  // beside one would be judged against a page that is not the lesson's.
+  const onRefusedTeachSlide = (warning) =>
+    !!warning &&
+    (teachRefusedSlides.has(warning.slide) ||
+      (/^VOCAB_CARD_/.test(warning.signal || '') &&
+        (teachRefusedSlides.has(warning.slide + 1) || teachRefusedSlides.has(warning.slide - 1))));
   const optionalPictures = countOptionalPictures(lesson);
   // Only a capacity warning that is not a cue refuses a candidate. The
   // criteria cue (six steps, or 320 characters) is a cue to look, never a
@@ -1559,7 +1598,7 @@ Fix that slide's layout slots, then run the check again.
   // to refuse here although BLOCKING_CAPACITY_SIGNALS left it out: every long
   // list in his style cost the slide designer its repair passes. It is printed
   // as a note beside the result instead, pass or fail.
-  const capacityAll = capacityWarnings(lesson);
+  const capacityAll = capacityWarnings(lesson).filter((warning) => !onRefusedTeachSlide(warning));
   const capacity = capacityAll.filter((warning) => !warning.cue);
   const cueNotes = capacityAll
     .filter((warning) => warning.cue)
@@ -1579,7 +1618,8 @@ Fix that slide's layout slots, then run the check again.
     .concat(stickyEmphasisWarnings(lesson))
     .concat(pictures)
     .concat(repeatedLineWarnings(lesson))
-    .concat(vocabCardBeforeItsWord(lesson));
+    .concat(vocabCardBeforeItsWord(lesson))
+    .filter((warning) => !onRefusedTeachSlide(warning) || teachLayout.includes(warning) || launchPair.includes(warning));
   // A settled deck is checked by the slide decorator, and by the orchestrator
   // after it. Composition is closed to the decorator, so a wording, title or
   // layout fault the slide designer's round left is not its to mend, and
@@ -1607,8 +1647,22 @@ Fix that slide's layout slots, then run the check again.
   // slides at once, and the whole deck was withheld. The build takes about two
   // seconds, so every stage runs and every fault is listed in one go.
   const early = { stdout: '', stderr: '', reason: null };
+  if (teachRefused.length) {
+    early.reason = 'TEACH_LAYOUT_INVALID';
+    early.stdout += teachRefused
+      .map((item) => `BUILD_DIAGNOSTIC: ${JSON.stringify({
+        signal: 'TEACH_LAYOUT_INVALID', artifact: 'slides', faultClass: 'composition',
+        location: { slide: item.slide }, message: item.message
+      })}`)
+      .join('\n') + '\n';
+    early.stderr +=
+      `\n${teachRefused.length} teach layout(s) refused (fix the layout's slots, ` +
+      'or choose a layout these slots fit; the placeholder page in the preview marks each one):\n' +
+      teachRefused.map((item) => `  x TEACH_LAYOUT_INVALID: ${item.message}`).join('\n') +
+      '\n';
+  }
   if (capacity.length) {
-    early.reason = 'SLIDE_DESIGN_CAPACITY';
+    early.reason = early.reason || 'SLIDE_DESIGN_CAPACITY';
     early.stdout += `${capacity.map(buildDiagnostic).join('\n')}\n`;
     early.stderr +=
       `\n${capacity.length} slide-design composition problem(s):\n` +
@@ -1691,7 +1745,7 @@ Fix that slide's layout slots, then run the check again.
       process.execPath,
       [
         buildPath,
-        jsonPath,
+        buildJsonPath,
         scratchDir,
         "--design-preview",
       ],
@@ -1885,6 +1939,7 @@ Fix that slide's layout slots, then run the check again.
   } finally {
     try {
       fs.rmSync(scratchDir, { recursive: true, force: true });
+      if (placeholderPath) fs.rmSync(placeholderPath, { force: true });
     } catch (error) {
       outcome = {
         ok: false,
@@ -1900,7 +1955,51 @@ Fix that slide's layout slots, then run the check again.
     }
   }
 
+  // A flagged deck is settled: its repair round could not clear some slides,
+  // it ships with them flagged, and the slide decorator still owes the other
+  // slides their drawings. The decorator's preview used to fail on the flagged
+  // slides themselves, so a flagged deck got no drawings at all. When every
+  // fault the check found sits on a slide the build already flagged, the drawn
+  // pages (those slides carrying their "check this slide" note) are the
+  // preview. A fault anywhere else still fails, as does a fault with no slide.
+  let flaggedNotes = [];
+  if (
+    options.flaggedSlides &&
+    outcome &&
+    (!outcome.ok || early.reason) &&
+    outcome.partialPreviewOutputPath
+  ) {
+    const faults = parseBuildDiagnostics(`${early.stdout}${outcome.stdout || ''}`);
+    const allFlagged =
+      faults.length > 0 &&
+      faults.every((d) => d && d.location && options.flaggedSlides.has(d.location.slide));
+    if (allFlagged) {
+      flaggedNotes = faults.map(
+        (d) => `  note: slide ${d.location.slide}: ${d.signal}: flagged for the teacher; it takes no drawing`
+      );
+      early.reason = null;
+      outcome = {
+        ...outcome,
+        ok: true,
+        reason: null,
+        stdout: String(outcome.stdout || '')
+          .split(/\r?\n/)
+          .filter((line) => !line.startsWith('BUILD_DIAGNOSTIC: ') && !line.startsWith('PARTIAL_PREVIEW: '))
+          .join('\n'),
+        previewDir: outcome.partialPreviewDir,
+        previewOutputPath: outcome.partialPreviewOutputPath,
+      };
+      delete outcome.partialPreviewDir;
+      delete outcome.partialPreviewOutputPath;
+    }
+  }
+
   outcome = withEarly(outcome);
+  if (outcome && flaggedNotes.length) {
+    outcome.stderr =
+      `\n${flaggedNotes.length} fault(s) on the flagged slides, which ship as they are:\n` +
+      `${flaggedNotes.join('\n')}\n${outcome.stderr || ''}`;
+  }
   if (outcome && settledNotes.length) {
     outcome.stderr =
       `\n${settledNotes.length} note(s) on a settled deck, the slide designer's to mend and ` +
@@ -1927,10 +2026,27 @@ function main(argv = process.argv.slice(2)) {
   const args = [];
   let photoRequirementsPath = null;
   let photoRequirementsFlagSeen = false;
+  let flaggedSlides = null;
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === '--preview' || arg === '--settled') continue;
+    // `--deliver-flagged` is what the build calls a flagged deck; here the
+    // slide numbers do the work, so the word alone changes nothing.
+    if (arg === '--preview' || arg === '--settled' || arg === '--deliver-flagged') continue;
+    if (arg === '--flagged-slides') {
+      const next = argv[index + 1] || '';
+      const numbers = next.replace(/\s/g, '').split(',').filter(Boolean);
+      if (!numbers.length || numbers.some((part) => !/^\d+$/.test(part))) {
+        console.error(
+          '--flagged-slides takes the slide numbers the build flagged, separated by commas ' +
+            `(as its SLIDES_FLAGGED: line names them), not ${JSON.stringify(next)}`
+        );
+        return 1;
+      }
+      flaggedSlides = new Set(numbers.map(Number));
+      index += 1;
+      continue;
+    }
     if (arg === '--photo-requirements') {
       photoRequirementsFlagSeen = true;
       const next = argv[index + 1];
@@ -1948,8 +2064,13 @@ function main(argv = process.argv.slice(2)) {
   ) {
     console.error(
       'Usage: node check-slide-design.js <lesson.json> ' +
-        '[--photo-requirements <photo-requirements.json>] [--preview] [--settled]'
+        '[--photo-requirements <photo-requirements.json>] [--preview] [--settled] ' +
+        '[--flagged-slides <n,n>]'
     );
+    return 1;
+  }
+  if (flaggedSlides && !(preview && settled)) {
+    console.error('--flagged-slides is for previewing a settled, flagged deck: use it with --preview --settled.');
     return 1;
   }
 
@@ -1957,6 +2078,7 @@ function main(argv = process.argv.slice(2)) {
     retainPreview: preview,
     photoRequirementsPath,
     settled,
+    flaggedSlides,
   });
   writeText(process.stdout, result.stdout);
   writeText(process.stderr, result.stderr);

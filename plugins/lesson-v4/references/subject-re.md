@@ -40,6 +40,18 @@ An RE Do beat makes children connect what people do with what they believe, and 
 
 Children observe and reason about practices in these beats; none asks them to perform worship (below).
 
+## What a worksheet looks like in RE
+
+A sheet takes the shape its RE needs, and these are shapes that work on real Year 3 and 4 RE sheets, to choose from by the lesson's thinking. A sheet can be one of them done well, or two joined, and none is the default: a single well-built activity is as complete a sheet as one with sections. Below and Greater Depth choose from the same set, often keeping the Expected shape and changing how much is already filled in or how hard the cases are.
+
+- **Who understands it best?** Two or three people say what a teaching means; the child decides and finishes `... shows an accurate understanding because...`.
+- **One sentence is wrong.** Jun explains why Makkah matters to Muslims and one of his sentences is incorrect: find it and say why.
+- **True or false, then fix it.** Statements about the story of the widow's mite, with the false ones corrected.
+- **The practice and its meaning.** A stem for each practice with the meaning left to the child: `Pilgrims wear plain white clothes because...`
+- **Read the data.** A census chart of worldviews, then `What is the largest group? How do you know?`
+- **A caption for a visitor.** One object in a place of worship (the charred cross at Coventry) and what a visitor should know it means.
+- **Retell it in order.** Four pictures from the story and a sentence for each, when knowing the story is what the rest of the lesson needs.
+
 ## Do not ask children to pretend to worship
 
 Children may observe, discuss and understand religious practices. A teacher may demonstrate a posture, object or sequence when that helps children understand what happens. Do not ask children to perform worship as though the belief or practice were their own.

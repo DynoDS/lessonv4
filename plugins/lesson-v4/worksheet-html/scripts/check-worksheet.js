@@ -22,7 +22,7 @@ const {
   WorksheetError,
 } = require("../src/worksheet");
 const { tightnessOf, describeTightness } = require("../src/tightness");
-const { recordingProblems, recordingAdvisories } = require("../src/slips");
+const { recordingProblems, recordingAdvisories, slipWidthProblems } = require("../src/slips");
 const {
   LABELS,
   describeReturn,
@@ -631,6 +631,15 @@ function main() {
       if (!description.trim()) continue;
       console.warn(`[room] ${sheet.label}`);
       for (const line of description.split("\n")) console.warn(`[room]   ${line}`);
+    }
+
+    // A books sheet prints as slips half a page wide, and something wider
+    // cannot go on one. Refused here, while the sheet is still the designer's,
+    // because what the sheet should be is the designer's call and never the
+    // engine's: holding a wide picture does not make a sheet "sheet" (Daniel,
+    // 29 September 2026). Left unanswered, the build prints the sheet instead.
+    for (const problem of slipWidthProblems(sheetsOf(worksheet))) {
+      fail(problem.signal, problem.message);
     }
 
     answerKeyOf(worksheet);

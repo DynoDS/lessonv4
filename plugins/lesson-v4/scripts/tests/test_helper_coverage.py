@@ -739,6 +739,16 @@ class EverySurfaceDescribesItsOwnHelpers(unittest.TestCase):
             "reader choosing between them has only the name: " + ", ".join(undescribed),
         )
 
+    def test_the_stick_in_pack_draws_what_its_renderer_dispatches_by_name(self):
+        """The stick-in renderer draws a labelled diagram and a source copy by
+        name, outside its registry object. Reading only the registry refused a
+        Year 4 digestive system lesson's labelled body diagram on the stick-in
+        pack (29 September 2026) although the pack draws it."""
+        keys, _ = self.helpers_and_lines("stick-in")
+        self.assertIn("label-diagram", keys)
+        self.assertIn("source-copy", keys)
+        self.assertIn("number-line", keys)
+
     def test_the_slide_chart_says_it_draws_counters(self):
         # The specific sentence the failed run needed and did not get. Counters
         # are what separates this helper from the worksheet's same-named one.

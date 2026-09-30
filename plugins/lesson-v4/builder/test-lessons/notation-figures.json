@@ -218,23 +218,44 @@
     },
     {
       "template": "maths-turn-sc",
-      "title": "Recording helpers",
+      "title": "Recording helpers: bar chart",
       "instruction": "Record each value in the right structure",
       "questions": ["Which marks make the information readable?"],
       "workingSpace": false,
-      "questionVisual": {
-        "type": "row",
-        "items": [
-          { "type": "bar-chart", "categories": ["A", "B", "C"], "values": [2, 4, 3], "y_max": 4, "y_interval": 1 },
-          { "type": "place-value-chart", "columns": ["H", "T", "O"], "rows": [["3", "4", "2"]] },
-          { "type": "measuring-jug", "max": 400, "majorEvery": 100, "minorEvery": 50, "value": 250, "unit": "ml" }
-        ]
-      },
+      "questionVisual": { "type": "bar-chart", "categories": ["A", "B", "C"], "values": [2, 4, 3], "y_max": 4, "y_interval": 1 },
       "criteria": {
         "type": "steps",
         "steps": [
           { "text": "Draw equal-width bars from the baseline.", "helper": "draw-bars" },
+          "Check the units in the question."
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "Recording helpers: place value",
+      "instruction": "Record each value in the right structure",
+      "questions": ["Which marks make the information readable?"],
+      "workingSpace": false,
+      "questionVisual": { "type": "place-value-chart", "columns": ["H", "T", "O"], "rows": [["3", "4", "2"]] },
+      "criteria": {
+        "type": "steps",
+        "steps": [
           { "text": "Put one digit in each place-value column.", "helper": "one-per-column" },
+          "Check the units in the question."
+        ]
+      }
+    },
+    {
+      "template": "maths-turn-sc",
+      "title": "Recording helpers: measuring jug",
+      "instruction": "Record each value in the right structure",
+      "questions": ["Which marks make the information readable?"],
+      "workingSpace": false,
+      "questionVisual": { "type": "measuring-jug", "max": 400, "majorEvery": 100, "minorEvery": 50, "value": 250, "unit": "ml" },
+      "criteria": {
+        "type": "steps",
+        "steps": [
           { "text": "Count equal scale intervals before reading the value.", "helper": "count-scale-intervals" },
           "Check the units in the question."
         ]

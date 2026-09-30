@@ -1,0 +1,41 @@
+#!/bin/sh
+# lesson-v4: refuse a commit that changes the plugin while any automatic check is red.
+# Turn it on once per computer (and per clone): git config core.hooksPath .githooks
+# Agreed with the teacher on 30 September 2026, after three releases were saved
+# while nine checks had been failing since the first of them.
+#
+# Commits that touch nothing under plugins/lesson-v4 (plans, evaluations) pass
+# straight through. The checks run on the folder as it stands, the copy Codex
+# installs from, so another session's unsaved work there counts too.
+
+if [ -z "$(git diff --cached --name-only -- plugins/lesson-v4 | head -n 1)" ]; then
+  exit 0
+fi
+
+top=$(git rev-parse --show-toplevel)
+runner="$top/plugins/lesson-v4/scripts/tests/run_all_checks.py"
+if [ ! -f "$runner" ]; then
+  echo "lesson-v4 checks: this copy has no run_all_checks.py yet, so the commit was not checked."
+  exit 0
+fi
+
+# Git hands a hook the commit's own index and repository. Some checks run git
+# in folders of their own, and must never see (or write to) this commit's index.
+unset GIT_INDEX_FILE GIT_DIR GIT_WORK_TREE GIT_PREFIX GIT_COMMON_DIR GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES
+
+if command -v python >/dev/null 2>&1; then py=python; else py=python3; fi
+echo "lesson-v4 checks: running every automatic check before this commit (about a minute)..."
+if "$py" -X utf8 "$runner"; then
+  exit 0
+fi
+
+cat <<'EOF'
+
+Commit refused: at least one automatic check above is failing.
+Make every check pass, then commit again. If a check names wording that this
+change altered on purpose, compare the old and new text first, confirm nothing
+the teacher decided was lost, and only then point the check at the new words.
+If the failure comes from another session's unsaved work in this folder, that
+session needs to finish or put its work aside first.
+EOF
+exit 1

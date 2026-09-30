@@ -42,7 +42,7 @@ const SLOT_KEYS = [
 const PASS_THROUGH = [
   'title', 'headerStyle', 'instruction', 'signal', 'designUnitId', 'designUnitIds',
   'speakerNotes', 'decorations', 'representationRefs', 'successCriteriaRefs',
-  'stickyKnowledgeRefs', 'photoRefs',
+  'stickyKnowledgeRefs', 'photoRefs', 'workOnPaper',
   // Passed through so build.js can name the `speakerNotes` rename itself.
   'notes'
 ];
@@ -708,9 +708,31 @@ function expandTeachLayouts(lesson) {
   });
 }
 
+// Expands every teach-layout slide it can and reports each one it cannot, with
+// its slide number, leaving null in that slide's place. The slide check uses it
+// so one refused layout no longer hides every other fault in the deck.
+function expandTeachLayoutsEach(lesson) {
+  const errors = [];
+  if (!lesson || typeof lesson !== 'object' || !Array.isArray(lesson.slides)) {
+    return { lesson, errors };
+  }
+  const slides = lesson.slides.map((slide, i) => {
+    if (!isTeachLayout(slide)) return slide;
+    try {
+      return expandSlide(slide, i + 1);
+    } catch (error) {
+      if (!(error instanceof TeachLayoutError)) throw error;
+      errors.push({ slide: i + 1, message: error.message });
+      return null;
+    }
+  });
+  return { lesson: Object.assign({}, lesson, { slides }), errors };
+}
+
 module.exports = {
   LAYOUTS,
   TeachLayoutError,
   expandTeachLayouts,
+  expandTeachLayoutsEach,
   isTeachLayout
 };

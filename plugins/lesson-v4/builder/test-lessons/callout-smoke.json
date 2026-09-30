@@ -111,7 +111,7 @@
     {
       "template": "grid-4",
       "headerStyle": "title",
-      "title": "Small cards (class G) — one callout per card, each pointing a different way",
+      "title": "Small cards: one callout per card, each pointing differently",
       "cells": [
         { "type": "callout", "text": "Points up.", "points": "up" },
         { "type": "callout", "text": "Points down.", "points": "down", "variant": "blue" },

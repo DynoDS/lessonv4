@@ -556,7 +556,10 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # 77 KiB until 27 September 2026, when the lesson voice editor's phase
         # (Phase 1.6, about 3 KiB) joined the pipeline between the review and
         # the renderers: the allowance grew by that phase, and no more.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 80 * 1024 + 512)
+        # Raised by 256 bytes on 29 September 2026, with the teacher's agreement,
+        # for the one line that has the run report drafted while the last
+        # workers run (see the delivery slice's own raise below).
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 80 * 1024 + 768)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.
@@ -567,10 +570,15 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         accreting past this is the signal to consolidate it, not to widen the
         cap.
         """
+        # One raise, agreed by the teacher on 29 September 2026: the delivery
+        # slice gains the line that has the report drafted while the last
+        # workers run (a Codex run spent 10 minutes writing it after they
+        # finished). Every other slice keeps the 7 KiB cap.
+        raised = {"delivery": 7 * 1024 + 512}
         for name in BOUNDS:
             with self.subTest(slice=name):
                 size = self.measured_bytes(self.run_slice(name).stdout)
-                self.assertLess(size, 7 * 1024, f"slice {name} is {size} bytes")
+                self.assertLess(size, raised.get(name, 7 * 1024), f"slice {name} is {size} bytes")
 
     def test_focused_repair_slice_routes_resource_owners_to_compact_entrypoints(
         self,
@@ -659,12 +667,16 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         for token in (
             'finalize-picture-assignment.py" provenance',
             "Require `PICTURE_PROVENANCE_OK` before removing transient picture work",
-            "record-build-review.py",
-            # Written only where the plugin is developed; elsewhere the report says NOT REQUIRED.
-            "developer mode is off: write nothing",
         ):
             with self.subTest(token=token):
                 self.assertIn(token, finalize)
+
+        # The run report goes into the shared run log once it is checked (the
+        # teacher's decision of 29 September 2026): one record, written once.
+        delivery = self.slice_text("delivery")
+        self.assertIn('record-build-review.py" --report', delivery)
+        self.assertIn("BUILD_REVIEW_LOG_OK", delivery)
+        self.assertNotIn("record-build-review.py", finalize)
 
         # The merge and its verdict vocabulary must be gone, not reworded.
         for retired in (

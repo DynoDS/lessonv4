@@ -376,7 +376,7 @@ async function main() {
       typeof sheet.recordingReason === "string" ? sheet.recordingReason.trim() : "";
     const cost =
       sheet.recording === "books"
-        ? "books, a copy between two, with question slips at the back."
+        ? "books, printed as question slips in place of the sheet."
         : "sheet, a copy per child.";
     console.log(`RECORDING: ${sheetLabel(key)} - ${cost} ${reason || "No reason given."}`);
   }
@@ -513,22 +513,25 @@ async function main() {
     });
   let rendered = draw(sheets);
 
-  // The levels marked books get a page of question slips each, printed after
-  // every sheet so the file still reads Below, Expected, Greater Depth first.
+  // The levels marked books print as a page of question slips each, in the
+  // sheet's own place, so the file still reads Below, Expected, Greater Depth,
+  // and the write-on sheet is left out: printing both spent the paper the mark
+  // was there to save (Daniel, 29 September 2026). A level whose slips cannot
+  // be made prints its sheet instead, so no level is ever left with nothing.
   // One level on the approved two-page exception has a write-on visual at its
   // heart and is never a books sheet, so it gets none.
   let slipSheets = sheets.filter((s) => s.spec.recording === "books" && s.pageCount === 1);
   const slipsPathFor = (sheet) => path.join(outDir, `${base}-slips-${sheet.key}.html`);
   const reportSlips = (sheet, result) => {
     if (result.skipped) {
-      console.log(`SLIPS_SKIPPED: ${sheet.label} - no question slips, because ${result.skipped}. The sheet itself is unchanged.`);
+      console.log(`SLIPS_SKIPPED: ${sheet.label} - no question slips, because ${result.skipped}. The sheet prints instead, unchanged.`);
       diagnostic("SLIPS_SKIPPED", "composition", { sheet: sheet.key }, result.skipped);
       return;
     }
     const across = result.cols === 2 ? "2 across" : "1 across";
     console.log(
       `SLIPS: ${sheet.label} - ${result.cols * result.rows} slips a page ` +
-        `(${across}, ${result.rows} down), at the back of the file.`
+        `(${across}, ${result.rows} down), printed in place of the sheet.`
     );
   };
 
@@ -536,15 +539,25 @@ async function main() {
   let fitVerified = false;
   if (blocker) {
     console.log(`PDF_SKIPPED: ${blocker}`);
-    for (const r of rendered) console.log(`Built HTML: ${r.htmlPath}`);
+    // The same swap as the PDF below: a level with slips hands over its slips'
+    // HTML in the sheet's place, and its sheet's file is taken away so that
+    // the teacher is not given both.
+    const slipped = new Set();
     for (const sheet of slipSheets) {
       const result = await buildSlips({ sheetSpec: sheet.spec, title: base });
       if (!result.skipped) {
-        const slipsPath = slipsPathFor(sheet);
-        fs.writeFileSync(slipsPath, result.html);
-        console.log(`Built HTML: ${slipsPath}`);
+        fs.writeFileSync(slipsPathFor(sheet), result.html);
+        slipped.add(sheet.key);
       }
       reportSlips(sheet, result);
+    }
+    for (const r of rendered) {
+      if (slipped.has(r.sheet.key)) {
+        fs.rmSync(r.htmlPath, { force: true });
+        console.log(`Built HTML: ${slipsPathFor(r.sheet)}`);
+      } else {
+        console.log(`Built HTML: ${r.htmlPath}`);
+      }
     }
     // The HTML is still the worksheet on a browserless box, and it is still
     // unverified. Those are two different facts and both get said: claiming a
@@ -562,7 +575,10 @@ async function main() {
     );
   } else {
     const { htmlToPdf, launchBrowser } = require("../src/chrome");
+    // Each page printed, with the level it belongs to, so a level's slips can
+    // take its sheet's place when the file is put together.
     const pdfs = [];
+    const slipPdfs = new Map();
     const clipped = [];
     const reshaped = [];
     const corrected = [];
@@ -590,7 +606,7 @@ async function main() {
       if (settled.html !== r.html) fs.writeFileSync(r.htmlPath, settled.html);
       if (settled.correction) corrected.push({ sheet: r.sheet, zones: settled.correction });
       if (settled.reshape) reshaped.push({ sheet: r.sheet, ...settled.reshape });
-      pdfs.push(settled.pdf);
+      pdfs.push({ key: r.sheet.key, pdf: settled.pdf });
       for (const problem of settled.fitProblems) {
         clipped.push({ sheet: r.sheet, problem });
       }
@@ -632,7 +648,7 @@ async function main() {
         const result = await buildSlips({ sheetSpec: sheet.spec, title: base, browser, htmlToPdf });
         if (!result.skipped) {
           fs.writeFileSync(slipsPathFor(sheet), result.html);
-          pdfs.push(result.pdf);
+          slipPdfs.set(sheet.key, result.pdf);
         }
         reportSlips(sheet, result);
       }
@@ -706,7 +722,12 @@ async function main() {
     }
 
     const combined = path.join(outDir, `${base}.pdf`);
-    fs.writeFileSync(combined, await mergePdfs(pdfs));
+    const printed = [];
+    for (const { key, pdf } of pdfs) {
+      if (!slipPdfs.has(key)) printed.push(pdf);
+      else if (!printed.includes(slipPdfs.get(key))) printed.push(slipPdfs.get(key));
+    }
+    fs.writeFileSync(combined, await mergePdfs(printed));
     console.log(`Built: ${combined}`);
     fitVerified = true;
   }

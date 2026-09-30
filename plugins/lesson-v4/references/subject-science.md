@@ -70,6 +70,20 @@ A science Do beat makes children use the scientific relationship, not describe w
 - **Model or real?** On a diagram the lesson used (the Earth and Sun with arrows, particles as dots), children tick what is really there and cross what is drawn only to help us understand.
 - **Prove Sam wrong.** `Sam says all metals are attracted to magnets.` Find the case that breaks it (8.8).
 
+## What a worksheet looks like in science
+
+A sheet takes the shape its science needs, and these are shapes that work on real Year 3 and 4 science sheets, to choose from by the lesson's thinking. A sheet can be one of them done well, or two joined, and none is the default: a single well-built activity is as complete a sheet as one with sections. Below and Greater Depth choose from the same set, often keeping the Expected shape and changing how much is already filled in or how hard the cases are.
+
+- **Record, then conclude.** A results table with its headings (or with `What will your headings and units be?` when choosing them is the skill), then a conclusion from those results: `Which surface had the most friction? Use your results to say how you know.` In a practical lesson this recording sheet is often the whole sheet, and rightly.
+- **Before and after.** Draw what you think (the inside of a fish, a skeleton), look or find out, then draw it again. The change between the two drawings is the evidence.
+- **A table, then the diagram.** Name, where it is and what it does for each type of tooth, then the mouth to label. The levels differ by how much of the table is already filled in.
+- **Always, sometimes or never true.** A short table of statements with three tick columns, with the misconception living in one of them.
+- **Who's right?** Two children disagree about what blood does; the child chooses and explains with the taught idea.
+- **Sort it, or build the key.** Sort by the taught property with a case the class has not handled, or write yes or no questions that split six animals into groups.
+- **Fix the explanation.** `Jacob has written about the human body. Find and correct his mistakes.`, or a process with a missing step to fill.
+
+A poster does not earn a sheet, because the time goes on layout and the page shows little of the science.
+
 ## Support the teacher without spoiling the enquiry
 
 When useful, give the teacher accurate teacher-facing information about:

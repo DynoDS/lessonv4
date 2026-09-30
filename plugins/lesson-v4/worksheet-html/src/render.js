@@ -404,6 +404,32 @@ function placeTree(node, x, y, w, out = []) {
   return out;
 }
 
+// The hairline between questions where one zone sits under another. The stack
+// rules between the questions inside a zone, but a zone's first question has
+// nothing above it in its own stack, so where zones met there was no line: on
+// a Year 4 sheet, (1) and (2) were ruled apart and (2) ran straight into (3)
+// (Daniel, 29 September 2026). Drawn in the middle of the gutter above any zone
+// that is not at the top of the page, across the zone's width and on across
+// the gutter when the zone beside it starts at the same height, so a row of
+// zones gets one line. Not above a heading, which marks itself, as in a stack.
+function zoneOpensWithHeading(content) {
+  let first = content;
+  while (first && Array.isArray(first.stack)) first = first.stack[0];
+  return Boolean(first && first.helper === "section-label");
+}
+
+function zoneRules(placed) {
+  const ruled = placed.filter((p) => p.content && p.y > 0 && !zoneOpensWithHeading(p.content));
+  const near = (a, b) => Math.abs(a - b) < 0.01;
+  return ruled
+    .map((p) => {
+      const joinsNext = ruled.some((q) => q !== p && near(q.y, p.y) && near(q.x, p.x + p.w));
+      const width = p.w - (joinsNext ? 0 : GUTTER_MM);
+      return `<div class="zone-rule" style="left:${p.x}mm;top:${p.y - GUTTER_MM / 2}mm;width:${width}mm"></div>`;
+    })
+    .join("");
+}
+
 // How much room a zone's CONTENT actually gets, which is not the size of the
 // zone. A gutter comes off the width so content does not run into its
 // neighbour's, and measureTree and the renderer both subtract it.
@@ -699,7 +725,8 @@ function renderSheet(spec, opts = {}) {
   // much real content the sheet carries.
   const fillPct = Math.round((naturalMm / area.heightMm) * 100);
 
-  const zones = placeTree(measured, 0, 0, area.widthMm)
+  const placed = placeTree(measured, 0, 0, area.widthMm);
+  const zones = placed
     .map((p) => {
       const inner = p.content ? renderContent(p.content, p.w - GUTTER_MM) : "";
       // The zone id travels into the DOM so the browser check can name the
@@ -713,7 +740,7 @@ function renderSheet(spec, opts = {}) {
         width:${p.w - GUTTER_MM}mm;
         height:${p.h}mm;">${inner}</div>`;
     })
-    .join("");
+    .join("") + zoneRules(placed);
 
   return `<!doctype html>
 <html><head><meta charset="utf-8"><title>${spec.title || "Worksheet"}</title>
@@ -756,6 +783,7 @@ ${cssVariables()}
 
   .area { position: relative; width: 100%; height: 100%; z-index: 1; }
   .zone { position: absolute; box-sizing: border-box; overflow: hidden; }
+  .zone-rule { position: absolute; border-top: var(--rule-hair) solid var(--colour-rule); }
 
   /* A full-page data table owns the remaining page after any heading above
      it. Let its rows share that real height instead of stopping at the

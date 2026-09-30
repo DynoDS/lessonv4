@@ -362,6 +362,13 @@ test("a books sheet whose words look as if they need the page passes with a prom
   const spec = baseSpec();
   spec.sheets.expected.recording = "books";
   spec.sheets.expected.recordingReason = "Every answer is a word or a grid reference.";
+  // The map is wider than a half-page slip, which the preflight refuses until
+  // the designer decides (slips.test.js); read here from the board, so it is
+  // left off the slip and this test stays on the wording prompt.
+  const wideRefused = runBoth(dir, spec);
+  assert.notStrictEqual(wideRefused.code, 0, wideRefused.stdout);
+  assert.ok(wideRefused.stdout.includes("SLIP_TOO_WIDE"), wideRefused.stdout);
+  spec.sheets.expected.zones.a.row[0].onSlip = false;
   const prompted = runBoth(dir, spec);
   assert.strictEqual(prompted.code, 0, prompted.stdout);
   assert.ok(prompted.stderr.includes("RECORDING_LOOK_AGAIN"), prompted.stderr);

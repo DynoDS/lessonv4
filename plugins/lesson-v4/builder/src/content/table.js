@@ -3,6 +3,7 @@
 const { FONT, COLOURS, FIT } = require('../styles');
 const { splitAnswerRuns } = require('../answer-text');
 const { fitGroupId, growFitObjectName } = require('../text-fit');
+const { textWidthEm } = require('../../../shared/text/comic-glyph-width');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD              = 0.12;
@@ -21,6 +22,16 @@ const CELL_ALIGN       = 'center';
 // 10pt is not adequate evidence that children can read the table.
 const TABLE_MIN_PT     = 20;
 const ROW_MIN_H        = 0.38;
+// Breathing room either side of a cell's words, in inches, when a column is
+// sized to them.
+const CELL_SIDE_ROOM   = 0.2;
+// The width a picture cell asks for, as a multiple of the row height: a small
+// picture a child recognises beside the words in its row.
+const PICTURE_CELL_ASPECT = 1.3;
+const PICTURE_CELL_PAD = 0.05;
+// A column whose longest entry needs no more than this share of the table's
+// width is a column of short entries, and keeps each one on a single line.
+const SHORT_COLUMN_SHARE = 0.35;
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 // A table divides whatever height it is handed. Handed too little, it used to
@@ -33,7 +44,78 @@ function requiredZoneHeight(rowCount) {
   return 2 * PAD + HEADER_H + rowCount * ROW_MIN_H;
 }
 
-function drawTable(pptx, slide, zone, data) {
+
+// A cell is words (a string) or a picture: any content object with a `type`,
+// usually `{ "type": "image", "imagePath": "..." }`, so one column can hold words
+// in some rows and a picture in others (the teacher, 29 September 2026: a
+// "what it looks like" table for the digestive system wanted a small picture of
+// each part where the words were hard going).
+function isPictureCell(cell) {
+  return !!cell && typeof cell === 'object' && typeof cell.type === 'string';
+}
+
+function plainWords(cell) {
+  return String(cell == null ? '' : cell).replace(/\|\||\{\{|\}\}|<<|>>/g, '');
+}
+
+function lineInches(text, bold) {
+  return textWidthEm(text, bold) * CELL_FONT / 72;
+}
+
+// Columns take the width their words need rather than an equal share. Equal
+// shares gave a column of one-word part names as much room as a column of
+// descriptions, which then wrapped to two lines and would not fit (29
+// September 2026). `columnWidths` sets the shares by hand, and
+// `columnWidths: "equal"` keeps the old equal split.
+function columnWidths(headers, rows, innerW, rowH, fixed) {
+  const cols = headers.length;
+  if (fixed === 'equal') return headers.map(() => innerW / cols);
+  if (Array.isArray(fixed) && fixed.length === cols && fixed.every((n) => Number(n) > 0)) {
+    const total = fixed.reduce((sum, n) => sum + Number(n), 0);
+    return fixed.map((n) => innerW * Number(n) / total);
+  }
+  const need = [];
+  const floor = [];
+  for (let c = 0; c < cols; c += 1) {
+    let lineNeed = lineInches(plainWords(headers[c]), true) + CELL_SIDE_ROOM;
+    let wordNeed = 0;
+    rows.forEach((row) => {
+      const cell = Array.isArray(row) ? row[c] : undefined;
+      if (isPictureCell(cell)) {
+        const pictureNeed = rowH * PICTURE_CELL_ASPECT;
+        lineNeed = Math.max(lineNeed, pictureNeed);
+        wordNeed = Math.max(wordNeed, pictureNeed);
+        return;
+      }
+      const words = plainWords(cell);
+      const bold = c === 0;
+      lineNeed = Math.max(lineNeed, lineInches(words, bold) + CELL_SIDE_ROOM);
+      words.split(/\s+/).forEach((word) => {
+        wordNeed = Math.max(wordNeed, lineInches(word, bold) + CELL_SIDE_ROOM);
+      });
+    });
+    need.push(lineNeed);
+    // A column of short entries (part names, labels) keeps each entry on one
+    // line: "small intestine" broken over two lines reads as two words.
+    floor.push(lineNeed <= innerW * SHORT_COLUMN_SHARE ? lineNeed : Math.min(wordNeed, lineNeed));
+  }
+  const totalNeed = need.reduce((a, b) => a + b, 0);
+  if (totalNeed <= innerW) {
+    // Everything fits on one line: share the spare room in proportion, so the
+    // table still fills its zone and keeps its shape.
+    return need.map((n) => innerW * n / totalNeed);
+  }
+  const totalFloor = floor.reduce((a, b) => a + b, 0);
+  if (totalFloor >= innerW) return floor.map((n) => innerW * n / totalFloor);
+  // Every column keeps its longest word; the rest of the width goes where the
+  // lines are longest.
+  const spare = innerW - totalFloor;
+  const want = need.map((n, c) => n - floor[c]);
+  const totalWant = want.reduce((a, b) => a + b, 0) || 1;
+  return floor.map((n, c) => n + spare * want[c] / totalWant);
+}
+
+function drawTable(pptx, slide, zone, data, ctx) {
   const headers = Array.isArray(data.headers) ? data.headers : [];
   const rows    = Array.isArray(data.rows)    ? data.rows    : [];
   if (headers.length === 0 || rows.length === 0) return;
@@ -43,9 +125,10 @@ function drawTable(pptx, slide, zone, data) {
   const innerY = zone.y + PAD;
   const innerW = zone.w - 2 * PAD;
   const innerH = zone.h - 2 * PAD;
-  const colW   = innerW / cols;
   const bodyH  = innerH - HEADER_H;
   const rowH   = bodyH / rows.length;
+  const widths = columnWidths(headers, rows, innerW, rowH, data.columnWidths);
+  const colX   = widths.map((_, c) => innerX + widths.slice(0, c).reduce((a, w) => a + w, 0));
 
   if (rowH < ROW_MIN_H) {
     const needed = requiredZoneHeight(rows.length);
@@ -75,7 +158,8 @@ function drawTable(pptx, slide, zone, data) {
   const tableGroup = fitGroupId(zone, 'table-text');
 
   headers.forEach(function (h, c) {
-    const cx = innerX + c * colW;
+    const cx = colX[c];
+    const colW = widths[c];
     slide.addShape(pptx.shapes.RECTANGLE, {
       x: cx, y: innerY, w: colW, h: HEADER_H,
       fill: { color: HEADER_FILL },
@@ -92,7 +176,8 @@ function drawTable(pptx, slide, zone, data) {
   rows.forEach(function (row, r) {
     const rowFill = ROW_FILLS[r % ROW_FILLS.length];
     row.forEach(function (cell, c) {
-      const cx = innerX + c * colW;
+      const cx = colX[c];
+      const colW = widths[c];
       const cy = innerY + HEADER_H + r * rowH;
       const isFirstCol = c === 0;
       const cellBold   = isFirstCol ? true : !FIRST_COL_BOLD;
@@ -101,6 +186,19 @@ function drawTable(pptx, slide, zone, data) {
         fill: { color: rowFill },
         line: { color: CELL_BORDER, width: 1 }
       });
+      if (isPictureCell(cell)) {
+        // A picture cell draws through the ordinary helpers, bare: the row's
+        // colour is its background, so it takes no card of its own, and it is
+        // a cue read with its row's words, so the slide-size picture floor does
+        // not apply to it.
+        const { drawContent } = require('./index');
+        drawContent(pptx, slide, {
+          x: cx + PICTURE_CELL_PAD, y: cy + PICTURE_CELL_PAD,
+          w: colW - 2 * PICTURE_CELL_PAD, h: rowH - 2 * PICTURE_CELL_PAD,
+          noCard: true,
+        }, cell, Object.assign({}, ctx || {}, { _tableCell: true }));
+        return;
+      }
       slide.addText(splitAnswerRuns(cell || '', cellBold), {
         x: cx, y: cy, w: colW, h: rowH,
         fontFace: FONT, fontSize: CELL_FONT, bold: cellBold, color: COLOURS.body,
@@ -111,4 +209,4 @@ function drawTable(pptx, slide, zone, data) {
   });
 }
 
-module.exports = { drawTable, requiredZoneHeight, ROW_MIN_H };
+module.exports = { drawTable, requiredZoneHeight, columnWidths, ROW_MIN_H };

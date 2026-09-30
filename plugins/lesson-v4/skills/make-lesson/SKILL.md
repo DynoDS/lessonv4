@@ -121,6 +121,10 @@ together), then wait on all of them with the host's wait tool (`wait_agent` in
 ChatGPT Work) and service each as it returns. A progress update is written
 without ending the turn.
 
+Whenever you wait with that tool, give it a long timeout, ten minutes: it
+returns the moment a worker finishes, so a short one only adds empty turns (42
+of 69 one-minute waits in a 28 September 2026 run came back with nothing).
+
 ---
 
 ## Worker launch settings

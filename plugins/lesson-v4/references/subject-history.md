@@ -179,6 +179,21 @@ Judge what the response demonstrates, not its format. Matching, labelling and sh
 
 ---
 
+## What a worksheet looks like in history
+
+A sheet takes the shape its history needs, and these are shapes that work on real Year 3 and 4 history sheets, to choose from by the lesson's thinking. A sheet can be one of them done well, or two joined, and none is the default: a single well-built activity is as complete a sheet as one with sections. Below and Greater Depth choose from the same set, often keeping the Expected shape and changing how much is already filled in or how hard the cases are.
+
+- **Know it, then think with it.** A quick task on the knowledge (order Boudica's rebellion with the first event done; sort statements under `client rulers` and `fought the Romans`), then one that uses it: `Aisha says the Vikings only raided. Lucas says raiding was one part of a bigger story. Who do you agree with? Explain why.`
+- **Fix the claim.** Three or four wrong statements to correct from what the lesson taught, or one to take apart: `The Vikings raided Lindisfarne because they wanted to hurt the monks. Explain why this is wrong.`
+- **Sources, each with its own questions.** Two or three short sources (the adapted wording the lesson wrote, a picture, a date), each with the questions that read it directly underneath, so a child never crosses the page to find what a question is about. A block of evidence at the top with the questions further down is the form that fails.
+- **The museum label.** A photograph of an object and a label to finish: `This is... It is made from... It was found... It shows us that...`. The stems carry the historian's questions and the knowledge stays the child's.
+- **A table that holds two things apart.** Then and now, what people were suffering from beside what the report changed, or a column for each person, with at least two things in each.
+- **One question with room to argue.** `Was Lord Shaftesbury a hero?`, with a short list of words to use, when the lesson built the knowledge the answer needs. It usually comes after a quicker task rather than standing alone.
+
+Every card, statement and sort passes the test in `Choose the response that reveals the history`: could a child do it without the history the lesson taught? A poster, a leaflet or an advert does not earn a sheet, because the time goes on layout and the page shows little of the history.
+
+---
+
 ## Vocabulary in history
 
 The general rule holds: the words that earn a card are the ones children reason *with*. In history those are the abstract ones the National Curriculum names as an aim, empire, civilisation, parliament, peasantry, monarchy, invasion, settlement, and they are what let a child say something about a period they have not met yet.

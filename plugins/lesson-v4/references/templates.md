@@ -845,6 +845,19 @@ size. A header must not grow independently of the cells it describes.
 
 **Inline emphasis in cells.** Body cells accept the inline markers (`**bold**`, `[[focus-blue]]`, `{{answer-green}}`, `<<supplied-orange>>`) and `\n` line breaks — see the slide-designer's answer-format guidance for each. The common use is `**bold**` on the deciding word of a branch/lookup table (the word that changes row to row), so a child's eye lands on it rather than reading every word at equal weight. The first column is bold throughout, so a deciding word there takes no mark: bold shows nothing in it. `[[ ]]` is question blue, and a deciding word is not a question. `<<x>>` tints a supplied/given value orange — a figure the question hands the child to work from, as distinct from the answer (`||`/`{{ }}`, green). Green answer markers are allowed only on answer/reveal slides. A completed prepared example or `visible-in-unit` model is a worked example, but a cell takes no colour role, so in a table it stays the table's black.
 
+**Columns are sized to their words.** Each column takes the width its longest line needs, a column of short entries (part names, labels) keeps each entry on one line, and the spare room goes where the lines are longest, so a one-word column no longer takes as much width as a column of descriptions. Set `"columnWidths": [1, 3]` to fix the shares by hand, or `"columnWidths": "equal"` for equal columns.
+
+**A cell can be a picture.** Any cell may hold a content object instead of words, most often `{ "type": "image", "imagePath": "unsplash/stomach.png" }`, so one column can carry words in some rows and a small picture in others: a picture of each part beside its name helps a child who finds the description hard going. The picture sits bare on the row's colour, and a picture cell is a cue read with its row, so the slide-size picture floor does not apply to it.
+
+```json
+{ "type": "table",
+  "headers": ["Part", "What it looks like"],
+  "rows": [
+    ["stomach", { "type": "image", "imagePath": "unsplash/stomach.png" }],
+    ["small intestine", "a thin tube, coiled up in the middle"]
+  ] }
+```
+
 ### `mult-grid`
 
 The multiplication-facts grid — the SATs "write the missing numbers in this multiplication grid" shape. An operator corner box, column headers along the top, row headers down the left, product cells in the body, drawn as large square cells so the numbers read from the back of the room. Reach for this whenever the lesson shows a times-tables grid; the generic `table` makes the numbers small and hides the `×` in a styled strip, so it reads as a data table rather than the puzzle children meet on the paper.
@@ -1827,6 +1840,8 @@ Use it when the criteria has to go somewhere those templates' panel can't reach:
 Do **not** wrap criteria in `sc-panel` when it already sits in a `maths-*-sc` template's `criteria` slot — that slot draws the green box itself, so wrapping would double it. `sc-panel` is for criteria placed *outside* those panels.
 
 A panel takes at most half the slide's area; the build refuses a bigger one (`SC_PANEL_TOO_LARGE`) everywhere except a `success-criteria` slide, whose only job is the criteria.
+
+A slide marked `workOnPaper: true` (the task is done on paper and the board shows only its question, instruction and a reference) is the other exception: its panel may take the room its words need (`slide-success-criteria.md`).
 
 ### `callout`
 

@@ -4,9 +4,10 @@
 //
 // Daniel's school asked for less paper (16 September 2026). Every sheet now
 // says whether its questions can be answered in an exercise book, carries a
-// small mark saying so, and a books sheet gets a page of question slips at the
-// back of the same PDF: the same questions with the answer room taken out, so
-// a child sticks one in and a book monitor can see what was asked.
+// small mark saying so, and a books sheet prints as a page of question slips in
+// its own place in the PDF: the same questions with the answer room taken out,
+// half a page wide, so a child sticks one in and a book monitor can see what
+// was asked. Since 29 September 2026 the write-on sheet is not printed as well.
 
 const assert = require("node:assert/strict");
 const test = require("node:test");
@@ -23,8 +24,13 @@ const {
   renderSlipsPage,
   rowsFor,
   slipNodesFor,
+  tooWideForSlip,
+  slipWidthProblems,
+  buildSlips,
   MAX_ROWS,
 } = require("../src/slips");
+const { needsContent } = require("../src/helpers");
+const EXAMPLES = require("./helper-examples");
 const { renderSheet } = require("../src/render");
 const { sheetsOf } = require("../src/worksheet");
 const { REGISTRY } = require("../src/helpers");
@@ -279,7 +285,7 @@ test("slips follow the sheet's reading order and keep its question numbers", () 
   });
   assert.equal((html.match(/class="slip[ "]/g) || []).length, 4);
   assert.equal((html.match(/data-worksheet-zone="slip-/g) || []).length, 4);
-  assert.match(html, /<div class="slip-code">E<\/div>/);
+  assert.match(html, /<div class="slip-code">E<svg class="sheet-recording"[^>]*aria-label="books"/);
   const firstSlip = html.slice(html.indexOf('class="slip '), html.indexOf('data-worksheet-zone="slip-2"'));
   assert.ok(firstSlip.indexOf("Round to the nearest 100.") < firstSlip.indexOf("Explain your answer"));
   assert.doesNotMatch(firstSlip, /h-lines/);
@@ -406,6 +412,104 @@ test("a packed number keeps its own line: the cell is as wide as the words reall
   assert.ok(roman.stack[0].parts[0] >= 10 + 21.2, "LXXXVIII measures 21.2mm");
 });
 
+test("every slip carries the book mark beside its code, with or without a code", () => {
+  // Daniel, 29 September 2026: the slips are the books version, so they show the book.
+  const coded = renderSlipsPage({ nodes: [], cols: 2, rows: 1, code: "GD", title: "t" });
+  assert.equal((coded.match(/<div class="slip-code">GD<svg class="sheet-recording"[^>]*aria-label="books"/g) || []).length, 2);
+  const lone = renderSlipsPage({ nodes: [], cols: 2, rows: 1, code: "", title: "t" });
+  assert.match(lone, /<div class="slip-code"><svg class="sheet-recording"/);
+  assert.match(lone, /\.sheet-recording \{/);
+});
+
+test("a method frame puts its labels above its boxes on a slip, and fits half a page", () => {
+  // His Year 4 Expected frame: beside its boxes, "Two numbers that make 10:"
+  // asked for about 130mm and made every slip a full-width strip.
+  const frame = {
+    helper: "method-frame",
+    lines: [
+      { label: "Two numbers that make 10:", content: "___ + ___ = 10" },
+      { label: "Add the last number:", content: "10 + ___ = ___" },
+    ],
+  };
+  const onSlip = forSlip(frame);
+  assert.equal(onSlip.slip, true);
+  assert.ok(needsContent(frame).minWidthMm > 92, "the sheet keeps its label column");
+  assert.ok(needsContent(onSlip).minWidthMm <= 92, `${needsContent(onSlip).minWidthMm}mm on a slip`);
+  const html = renderSlipsPage({ nodes: [onSlip], cols: 2, rows: 1, code: "E", title: "t" });
+  assert.match(html, /class="h-mframe-label-above">Two numbers that make 10:<\/div><div class="h-mframe-line">/);
+  assert.doesNotMatch(html, /<span class="h-mframe-label">/);
+  // Same boxes, same order.
+  assert.equal((html.match(/class="h-mframe-box"/g) || []).length, 2 * 4);
+});
+
+test("one-line written answers sit side by side, inside a group the zone holds on its own too", () => {
+  // Expected (3a) to (3d) and Greater Depth (1a) to (1c) ran down the slip one
+  // to a line: the packer knew questions and instructions but not a one-line
+  // written answer, and never looked inside a group held in a stack of its own.
+  const part = (n, text) => ({
+    number: n,
+    stack: [{ helper: "written-answers", showNumbers: false, items: [{ text, lines: 1 }], slip: true }],
+  });
+  const line = { number: 1, helper: "instruction", text: "Write the number bond to 10 first, then the total.", groupPrompt: true };
+  const zone = { stack: [{ stack: [line, part("1a", "8 + 6 + 2 ="), part("1b", "4 + 9 + 6 ="), part("1c", "7 + 3 + 3 =")] }] };
+  const [laid] = slipNodesFor([zone], 2);
+  const group = laid.stack[0].stack;
+  assert.equal(group[0], line, "the task line keeps its own line");
+  const rows = group.slice(1).map((r) => r.row.filter((c) => c.number !== undefined).map((c) => c.number));
+  assert.deepEqual(rows, [["1a", "1b"], ["1c"]]);
+  // A written answer with words of its own above it keeps its line.
+  const long = { number: "2a", stack: [{ helper: "written-answers", text: "Kacper is thinking of three numbers.", items: [{ text: "Find them all.", lines: 3 }] }] };
+  const [kept] = slipNodesFor([{ stack: [long, part("2b", "9 + 8 + 1 =")] }], 2);
+  assert.equal(kept.stack[0], long);
+});
+
+test("a line separates every question on a slip, where the sheet's zones meet too, never above a heading", () => {
+  // The stack rules only between its own questions, so (2), which ended one
+  // zone, ran into (3), which began the next (29 September 2026).
+  const q = (n) => ({ number: n, helper: "questions", showNumbers: false, items: [`${n} + 1 =`] });
+  const heading = { stack: [{ helper: "section-label", text: "Going Deeper" }, q(4)] };
+  const html = renderSlipsPage({ nodes: [{ stack: [q(1), q(2)] }, { stack: [q(3)] }, heading], cols: 2, rows: 1, code: "E", title: "t" });
+  const firstSlip = html.slice(html.indexOf('data-worksheet-zone="slip-1"'), html.indexOf('data-worksheet-zone="slip-2"'));
+  const items = firstSlip.match(/class="slip-item[^"]*"/g);
+  assert.deepEqual(items, ['class="slip-item"', 'class="slip-item slip-item--ruled"', 'class="slip-item"']);
+});
+
+test("a slip is always half a page wide: anything wider is named, and no full-width strip is made", async () => {
+  // Daniel, 29 September 2026: a full-width strip goes in a book as wide as
+  // the page, "otherwise there's no point in it being a strip".
+  const { text: _words, ...timeline } = EXAMPLES.timeline;
+  const nodes = [{ stack: [{ number: 1, stack: [{ helper: "questions", items: ["Which era came first?"] }, { helper: "timeline", ...timeline }] }] }];
+  const found = tooWideForSlip(nodes);
+  assert.equal(found.length, 1);
+  assert.equal(found[0].helper, "timeline", "the picture is named, not its zone");
+  assert.equal(found[0].number, 1);
+  const wide = await buildSlips({ sheetSpec: { code: "E", zones: { a: nodes[0] } }, title: "t" });
+  assert.match(wide.skipped, /^timeline \(\d+mm, question 1\) will not fit a slip half a page wide/);
+  const [plain] = sheetsOf({ sheets: { expected: sheet("books") } });
+  const made = await buildSlips({ sheetSpec: plain.spec, title: "t" });
+  assert.equal(made.cols, 2);
+});
+
+test("the designer is told which picture keeps a books sheet off its slips, and decides", () => {
+  // His 29 September 2026 answer: holding a wide picture is not by itself a
+  // reason for "sheet"; the designer looks and decides.
+  const { text: _words, ...timeline } = EXAMPLES.timeline;
+  const withTimeline = (recording, extra = {}) => {
+    const s = sheet(recording);
+    s.zones.a.stack.push({ helper: "timeline", ...timeline, ...extra });
+    return { sheets: { expected: s } };
+  };
+  const [problem, ...rest] = slipWidthProblems(sheetsOf(withTimeline("books")));
+  assert.equal(rest.length, 0);
+  assert.equal(problem.signal, "SLIP_TOO_WIDE");
+  assert.match(problem.message, /timeline \(\d+mm\)/);
+  assert.match(problem.message, /"onSlip": false/);
+  assert.match(problem.message, /not by itself a reason/);
+  // Either of the designer's answers quiets it.
+  assert.deepEqual(slipWidthProblems(sheetsOf(withTimeline("books", { onSlip: false }))), []);
+  assert.deepEqual(slipWidthProblems(sheetsOf(withTimeline("sheet"))), []);
+});
+
 test("a group's task line keeps its own line above its packed parts", () => {
   const line = { number: 2, helper: "instruction", text: "Write each number as Roman numerals.", groupPrompt: true };
   const q = (n, text) => ({ number: n, helper: "questions", showNumbers: false, items: [text] });
@@ -453,7 +557,7 @@ const answerKey = {
   ],
 };
 
-test("a books sheet gets a page of slips at the back of the one file", async (t) => {
+test("a books sheet prints as its slips, in the sheet's own place in the one file", async (t) => {
   const { stdout, pdf, files } = build({
     meta: { lesson: "Rounding", yearGroup: 4 },
     sheets: { below: sheet("sheet"), expected: sheet("books") },
@@ -461,16 +565,39 @@ test("a books sheet gets a page of slips at the back of the one file", async (t)
   });
   if (/PDF_SKIPPED/.test(stdout)) {
     assert.match(stdout, /^Built HTML: .*Rounding - Worksheets-slips-expected\.html$/m);
+    // The slips are handed over in the sheet's place, never beside it.
+    assert.doesNotMatch(stdout, /^Built HTML: .*Rounding - Worksheets-expected\.html$/m);
     t.skip("no browser on this machine; the slips were written as HTML");
     return;
   }
-  assert.match(stdout, /^SLIPS: Expected - \d+ slips a page/m);
+  assert.match(stdout, /^SLIPS: Expected - \d+ slips a page \(2 across, \d+ down\), printed in place of the sheet\./m);
   assert.doesNotMatch(stdout, /SLIPS: Below/);
   assert.ok(files.includes("Rounding - Worksheets-slips-expected.html"));
 
   const { PDFDocument } = require("pdf-lib");
   const doc = await PDFDocument.load(pdf);
-  assert.equal(doc.getPageCount(), 3, "Below, Expected, then Expected's slips");
+  // Printing the write-on sheet as well only spent the paper the mark was
+  // there to save (Daniel, 29 September 2026).
+  assert.equal(doc.getPageCount(), 2, "Below's sheet, then Expected's slips and no Expected sheet");
+});
+
+test("a books sheet whose slips cannot be made prints its sheet, so the level still gets something", async (t) => {
+  const { text: _words, ...timeline } = EXAMPLES.timeline;
+  const wide = sheet("books");
+  wide.zones.a.stack.push({ helper: "timeline", ...timeline });
+  const { stdout, pdf } = build({
+    meta: { lesson: "Rounding", yearGroup: 4 },
+    sheets: { below: sheet("sheet"), expected: wide },
+    answerKey,
+  });
+  assert.match(stdout, /^SLIPS_SKIPPED: Expected - no question slips, because timeline \(\d+mm\) will not fit a slip half a page wide.*The sheet prints instead, unchanged\./m);
+  if (/PDF_SKIPPED/.test(stdout)) {
+    assert.match(stdout, /^Built HTML: .*Rounding - Worksheets-expected\.html$/m);
+    t.skip("no browser on this machine; the sheet was written as HTML");
+    return;
+  }
+  const { PDFDocument } = require("pdf-lib");
+  assert.equal((await PDFDocument.load(pdf)).getPageCount(), 2, "Below's sheet, then Expected's sheet");
 });
 
 test("a sheet marked books that needs the page is printed as a sheet, with no slips", () => {

@@ -276,13 +276,30 @@ def validate_step_summary_shape(summary: dict, step: dict, label: str) -> None:
         or not isinstance(summary.get("results"), list)
         or type(summary.get("complete")) is not bool
     ):
-        raise ValidationError(f"{label}: search summary does not match its compiled step")
+        wrong = [
+            name for name, bad in (
+                ("query (a non-empty string)", not isinstance(summary, dict) or not isinstance(summary.get("query"), str) or not str(summary.get("query") or "").strip()),
+                (f"source ({step['source']!r})", not isinstance(summary, dict) or summary.get("source") != step["source"]),
+                (f"round ({step['round']!r})", not isinstance(summary, dict) or summary.get("round") != step["round"]),
+                (f"requested_count ({step['candidate_count']!r})", not isinstance(summary, dict) or summary.get("requested_count") != step["candidate_count"]),
+                ("results (a list)", not isinstance(summary, dict) or not isinstance(summary.get("results"), list)),
+                ("complete (true or false)", not isinstance(summary, dict) or type(summary.get("complete")) is not bool),
+            ) if bad
+        ]
+        raise ValidationError(
+            f"{label}: search summary does not match its compiled step; these fields are "
+            f"missing or differ from the schedule: {', '.join(wrong)}. The summary is the one "
+            "the fetcher wrote for that compiled step; run the step again rather than editing it"
+        )
 
 
 def completed_step_summary(step: dict, label: str) -> tuple[Path, dict]:
     primary_path, retry_path = step_summary_paths(step)
     if not primary_path.is_file() or primary_path.is_symlink():
-        raise ValidationError(f"{label}: compiled search step has no primary summary")
+        raise ValidationError(
+            f"{label}: compiled search step has no primary summary at {primary_path}; "
+            "run that compiled step (its source, round and query) so the fetcher writes it there"
+        )
     primary = read_json(primary_path, f"{label} primary search summary")
     validate_step_summary_shape(primary, step, label)
 
@@ -296,7 +313,11 @@ def completed_step_summary(step: dict, label: str) -> tuple[Path, dict]:
         raise ValidationError(f"{label}: incomplete search summary has no recognised failure kind")
     if failure_kind == "transport":
         if not retry_path.is_file() or retry_path.is_symlink():
-            raise ValidationError(f"{label}: transient source failure lacks its one retry")
+            raise ValidationError(
+                f"{label}: transient source failure lacks its one retry; a transport failure "
+                f"is retried once, into {retry_path} (the same filename in a retry-1 folder "
+                "beside the first summary), and the first summary is kept"
+            )
         retry = read_json(retry_path, f"{label} retry search summary")
         validate_step_summary_shape(retry, step, label)
         if retry["complete"] is not True:
@@ -723,7 +744,14 @@ def validate_result(args) -> None:
                     step_has_final_operational_failure(step, label)
                     for step in compiled["search_schedule"]
                 ):
-                    raise ValidationError(f"{label}: real_source_unavailable lacks final outage evidence")
+                    raise ValidationError(
+                        f"{label}: real_source_unavailable lacks final outage evidence; it needs at "
+                        "least one compiled search step whose summary says complete: false with an "
+                        "auth or rate_limit failure, or a transport failure whose one retry-1 summary "
+                        "also failed. A search that completed, even with no results, is not an outage: "
+                        "report the reason about what the search found instead (no_faithful_real_match or "
+                        "real_requirement_unfulfillable)"
+                    )
                 # With no generator behind it, an AI-fallback picture has only
                 # its ladder, so one shut shelf is not the end of it: every
                 # rung must have answered or stayed down through its retry.

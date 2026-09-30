@@ -78,15 +78,29 @@ function parseArgs(argv) {
       index += 1;
     } else if (arg === "--no-fetch") {
       options.fetch = false;
+    } else if (arg === "--batch-file") {
+      // Many index-only searches in one run: a JSON list of query lists. The
+      // pass check re-runs one search per declined slide, and starting a fresh
+      // process to load the index for each one took 13 to 31 seconds a check on
+      // Codex, long enough for the host to give up waiting and start it again.
+      if (!value) usage("--batch-file needs a path.");
+      options.batchFile = value;
+      index += 1;
     } else {
       usage(`Unknown option: ${arg}`);
     }
   }
 
-  options.queries = [...new Set(options.queries.filter(Boolean))];
+  options.queries = normaliseQueries(options.queries);
   options.styles = [...new Set(options.styles)];
-  if (!options.queries.length) usage("At least one --query is required.");
-  if (options.queries.length > 6) usage("Use no more than six queries.");
+  if (options.batchFile) {
+    if (options.fetch || options.about || options.queries.length) {
+      usage("--batch-file is index-only: use it with --no-fetch and without --query or --about.");
+    }
+  } else {
+    if (!options.queries.length) usage("At least one --query is required.");
+    if (options.queries.length > 6) usage("Use no more than six queries.");
+  }
   if (options.styles.some((style) => !STYLES.includes(style))) {
     usage("--style must use standard, cartoon, solid, inkbrush, or blockprint.");
   }
@@ -94,9 +108,47 @@ function parseArgs(argv) {
   return options;
 }
 
+function normaliseQueries(queries) {
+  return [...new Set(queries.map((query) => String(query).trim()).filter(Boolean))];
+}
+
+// One index-only search per group, in order, each exactly the search a single
+// `--no-fetch` run with those queries gives. A group a single run would refuse
+// (no queries, or more than six) is reported as refused, not searched.
+async function runBatch(options) {
+  const fs = require("node:fs");
+  let groups;
+  try {
+    groups = JSON.parse(fs.readFileSync(options.batchFile, "utf8"));
+  } catch (error) {
+    usage(`--batch-file could not be read as JSON: ${error.message}`);
+  }
+  if (!Array.isArray(groups)) usage("--batch-file must hold a JSON list of query lists.");
+  const library = await resolveLibrary({ probe: false });
+  const ids = library.root ? knownIds({ root: library.root, mode: library.mode }) : null;
+  groups.forEach((group, index) => {
+    const queries = Array.isArray(group) ? normaliseQueries(group) : [];
+    if (!ids) {
+      console.log(`EDUCATIONAL_SVG_BATCH: ${JSON.stringify({ index, available: false, candidates: [] })}`);
+      return;
+    }
+    if (!queries.length || queries.length > 6) {
+      console.log(`EDUCATIONAL_SVG_BATCH: ${JSON.stringify({ index, refused: true, candidates: [] })}`);
+      return;
+    }
+    const ranked = searchIds(ids, { ...options, queries, limit: options.limit }).slice(0, options.limit);
+    const candidates = ranked.map((entry) => ({
+      ...entry,
+      sourcePath: cachedPath(library.root, entry.libraryId),
+    }));
+    console.log(`EDUCATIONAL_SVG_BATCH: ${JSON.stringify({ index, queries, candidates })}`);
+  });
+}
+
 async function main() {
   const started = process.hrtime.bigint();
   const options = parseArgs(process.argv.slice(2));
+  if (options.batchFile) return runBatch(options);
   // Ranking needs the index and nothing else, so an index-only run neither
   // probes the library nor fails when it cannot be reached.
   const library = await resolveLibrary({ probe: options.fetch });

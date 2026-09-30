@@ -22,7 +22,7 @@
     {
       "template": "body-full",
       "headerStyle": "title",
-      "title": "Rectangle: the diagonal is NOT a line of symmetry (red cross + fold mismatch)",
+      "title": "Rectangle: the diagonal is NOT a line of symmetry",
       "instruction": "the fold ghost sticks out — the halves do not match",
       "body": {
         "type": "row",
@@ -34,7 +34,7 @@
     {
       "template": "body-full",
       "headerStyle": "title",
-      "title": "Parallelogram: the vertical line FAILS (red cross + fold mismatch)",
+      "title": "Parallelogram: the vertical line FAILS",
       "instruction": "the fold ghost leaves an overhang and a gap",
       "body": {
         "type": "row",
@@ -46,7 +46,7 @@
     {
       "template": "body-full",
       "headerStyle": "title",
-      "title": "Isosceles triangle: the vertical line PASSES (green tick + clean overlap)",
+      "title": "Isosceles triangle: the vertical line PASSES",
       "instruction": "the fold ghost lands exactly on the shape",
       "body": {
         "type": "row",

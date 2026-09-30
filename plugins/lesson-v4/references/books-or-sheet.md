@@ -2,20 +2,21 @@
 
 The worksheet designer reads this when setting each sheet's `recording`, after
 the sheet's content is settled. It decides one thing: whether a class could do
-this sheet in their exercise books, from a shared copy or the board.
+this sheet in their exercise books, from its question slip or the board.
 
 ## Why the choice exists
 
 The teacher's school asked staff to use less paper. A sheet
-the class can do in books needs a copy between two, or none, instead of one per
-child. So every sheet says `"books"` or `"sheet"`, prints a small book or pencil
-beside its level code, and a books sheet gets a page of question slips at the
-back of the same file: the same questions with the answer room taken out, several
-to a page, for children to stick in and answer underneath. The slip is what lets
+the class can do in books needs no copy per child. So every sheet says
+`"books"` or `"sheet"`, prints a small book or pencil beside its level code, and
+a books sheet prints as a page of question slips in its place in the file: the
+same questions with the answer room taken out, half a page wide, several to a
+page, for children to stick in and answer underneath. The slip is what lets
 someone monitoring books see what was asked.
 
-The mark is a suggestion. The teacher can always print the sheet, so the choice
-changes nothing about how the sheet looks or what it asks. Never change a
+The mark decides what prints: a books sheet prints its slips and not the sheet,
+because printing both spent the paper the mark was there to save (the teacher,
+29 September 2026). It changes nothing about what the sheet asks. Never change a
 question, its response form, its support or its visual to earn `"books"`: a sheet
 where the maths is on the page (an empty part-whole model to fill, a claim with
 the counters that depict it) is a good sheet and is honestly marked `"sheet"`.
@@ -29,7 +30,7 @@ Ask of every question on the sheet:
 > still ask the same thing?
 
 Writing *about* something passes: the child reads the picture, number line, table
-or source from a shared copy and writes. Working *on* something fails: the child
+or source from the slip or the board and writes. Working *on* something fails: the child
 has to mark, label, circle, plot or fill in the printed thing itself.
 
 **A blank is not the same as a page.** A digit box in `2,_80`, a gap in a short
@@ -57,7 +58,7 @@ child works *on*.
 why this whole sheet is better that way. For `"sheet"`, name the question that
 needs the page and what the child does to it - `"Q4: the child labels the printed
 photograph"`, `"Q2: the child plots the reading on the printed grid"`. For
-`"books"`, say what makes every question answerable from a shared copy - `"Every
+`"books"`, say what makes every question answerable in a book - `"Every
 answer is a number, an explanation, or a line the children rule for themselves"`.
 Going to look for a question that needs the page is the test, and either mark can
 be reached without running it, so the line is what tells a decision from a
@@ -116,6 +117,22 @@ so the slip leaves it off. Printed, it would double the slip's height and halve
 the paper saved, and the child would work on the slip instead of drawing it.
 Leave unmarked any figure a child reads from: a photograph, a source, a data
 table, a number line whose value they read off.
+
+## Slips are half a page wide
+
+A slip is stuck into an exercise book, so it is half an A4 page wide: a
+full-width strip is as wide as the page it goes on and saves the book nothing.
+The slip redraws what it can to fit (a method frame puts its labels above its
+boxes); a figure that still needs more than half a page cannot go on one, and
+the preflight names it as `SLIP_TOO_WIDE`.
+
+That is a question for you, not a verdict. Holding a wide figure is not by
+itself a reason for `"sheet"`: ask what the child does with it. A figure the
+children draw or copy for themselves in their books is marked `"onSlip": false`.
+A figure the child works on, or one that has to be in front of them and cannot
+be read any smaller, makes the sheet `"sheet"`. Never reword or cut a question
+to make it fit. A books sheet whose slips still cannot be made prints as the
+sheet instead, so the class always gets something.
 
 ## What the build checks
 
