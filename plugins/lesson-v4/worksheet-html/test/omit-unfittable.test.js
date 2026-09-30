@@ -14,6 +14,7 @@
 // omitted, and a fault that is not about page fit still refuses everything.
 
 const assert = require("node:assert/strict");
+const { answersText } = require("./answer-text");
 const test = require("node:test");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -69,8 +70,8 @@ function buildWith(spec, extraArgs) {
     stdout = e.stdout || e.message;
   }
   const files = fs.readdirSync(dir).filter((f) => f !== "worksheet.json");
-  const keyFile = files.find((f) => f.endsWith(" - Answers.txt"));
-  const key = keyFile ? fs.readFileSync(path.join(dir, keyFile), "utf8") : "";
+  const keyFile = files.find((f) => f.endsWith(" - Answers.html"));
+  const key = keyFile ? answersText(fs.readFileSync(path.join(dir, keyFile), "utf8")) : "";
   fs.rmSync(dir, { recursive: true, force: true });
   return { stdout, files, failed, key };
 }
@@ -367,7 +368,7 @@ test("an Expected sheet the browser finds clipped refuses the whole pack, names 
   assert.match(stdout, /^SHEET_DOES_NOT_FIT: Expected page 1/m);
   assert.match(stdout, /^SHEET_DOES_NOT_FIT: Below page 1 zone "a" \(the Expected sheet, standing in because the page cannot hold the Below sheet/m);
   assert.doesNotMatch(stdout, /SHEET_STANDS_IN/);
-  assert.ok(!files.some((f) => f.endsWith(" - Answers.txt")), files.join(", "));
+  assert.ok(!files.some((f) => / - Answers\.(pdf|html)$/.test(f)), files.join(", "));
   assert.ok(!files.some((f) => f.endsWith(".pdf")), files.join(", "));
 });
 

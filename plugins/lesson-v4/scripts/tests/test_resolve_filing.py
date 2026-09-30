@@ -307,3 +307,77 @@ if __name__ == "__main__":
             except AssertionError as e:
                 failed += 1; print("FAIL", name, str(e)[:200])
     sys.exit(1 if failed else 0)
+
+
+def _numbered_run(base, current, settings):
+    env = settings_env(base, **settings)
+    out = subprocess.run(
+        [sys.executable, str(SCRIPT), "Year 4", "Maths", "--working", str(base / "working"),
+         "--current", str(base / "working" / current)],
+        capture_output=True, text=True, env=env,
+    )
+    return dict(l.split("=", 1) for l in out.stdout.splitlines() if "=" in l), out
+
+
+def test_the_previous_lesson_follows_the_plan_numbers_not_the_clock():
+    # 30 September 2026: lesson 15 was rebuilt after lesson 16, and lesson 17's
+    # run was handed lesson 15. The plan's own numbers say 16.
+    import time
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        w = base / "working"
+        _design(w, "year-4-maths-lesson-16-roman-numerals-to-l", 4, "Maths")
+        time.sleep(0.05)
+        _design(w, "year-4-maths-lesson-15-negative-numbers", 4, "Maths")
+        time.sleep(0.05)
+        _design(w, "year-4-maths-lesson-18-place-value", 4, "Maths")
+        (w / "year-4-maths-lesson-17-roman-numerals-to-c").mkdir()
+        kv, out = _numbered_run(base, "year-4-maths-lesson-17-roman-numerals-to-c", {"folder": False})
+        assert Path(kv.get("PREVIOUS_LESSON", "")).name == "year-4-maths-lesson-16-roman-numerals-to-l", out.stdout
+
+
+def test_a_rebuilt_copy_of_the_previous_lesson_is_chosen_by_which_was_built_last():
+    import time
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        w = base / "working"
+        _design(w, "year-4-maths-lesson-16-roman-numerals-to-l", 4, "Maths")
+        time.sleep(0.05)
+        rebuilt = _design(w, "year-4-maths-lesson-16-roman-numerals-to-l (1)", 4, "Maths")
+        (w / "year-4-maths-lesson-17-roman-numerals-to-c").mkdir()
+        kv, out = _numbered_run(base, "year-4-maths-lesson-17-roman-numerals-to-c", {"folder": False})
+        assert Path(kv.get("PREVIOUS_LESSON", "")).name == rebuilt.name, out.stdout
+
+
+def test_without_a_lesson_number_the_latest_built_lesson_still_decides():
+    import time
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        w = base / "working"
+        _design(w, "year-4-maths-lesson-15-negative-numbers", 4, "Maths")
+        time.sleep(0.05)
+        latest = _design(w, "adding-mentally", 4, "Maths")
+        (w / "place-value-problems").mkdir()
+        kv, out = _numbered_run(base, "place-value-problems", {"folder": False})
+        assert Path(kv.get("PREVIOUS_LESSON", "")).name == latest.name, out.stdout
+
+
+def test_earlier_lessons_are_the_three_before_the_previous_by_plan_number():
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        w = base / "working"
+        for n in (12, 13, 14, 15, 16, 18):
+            _design(w, f"year-4-maths-lesson-{n}-topic", 4, "Maths")
+        (w / "year-4-maths-lesson-17-roman-numerals-to-c").mkdir()
+        kv, out = _numbered_run(base, "year-4-maths-lesson-17-roman-numerals-to-c", {"folder": False})
+        assert Path(kv["PREVIOUS_LESSON"]).name == "year-4-maths-lesson-16-topic", out.stdout
+        names = [Path(p).name for p in kv["EARLIER_LESSONS"].split(" | ")]
+        assert names == ["year-4-maths-lesson-15-topic", "year-4-maths-lesson-14-topic", "year-4-maths-lesson-13-topic"], out.stdout
+
+
+def test_no_previous_lesson_means_no_earlier_lessons():
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        (base / "working").mkdir()
+        kv, out = _plain_run(base, "Maths", {"folder": False})
+        assert kv.get("PREVIOUS_LESSON") == "" and kv.get("EARLIER_LESSONS") == "", out.stdout

@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 const { build, buildKits, naturalAnswersFilename } = require("../build");
-const { normaliseCardSet, orderForPrint, followsTheKey, renderKitPages } = require("../src/render-card-set");
+const { normaliseCardSet, orderForPrint, followsTheKey, renderKitPages, renderSheetPages } = require("../src/render-card-set");
 
 const FIXTURE = path.join(__dirname, "fixtures/card-kit.json");
 const spec = () => JSON.parse(fs.readFileSync(FIXTURE, "utf8"));
@@ -48,6 +48,60 @@ test("orderForPrint breaks an order that would give the sort away", () => {
     assert.ok(!followsTheKey(order, key), `seed ${seed} left the cards in key order`);
     assert.deepStrictEqual(order.map((c) => c.id).sort(), ["a", "b", "c", "d"]);
   }
+});
+
+test("an order set as a sort, one card under each numbered heading, never prints in the answer's own order", () => {
+  const headings = ["1st", "2nd", "3rd", "4th", "5th"].map((label, i) => ({ id: `group-00${i + 1}`, label }));
+  const cards = ["Angel visits Mary", "Journey to Bethlehem", "Born in a stable", "Shepherds hear first", "Wise men arrive"]
+    .map((label, i) => ({ id: `item-00${i + 1}`, label }));
+  const key = new Map(cards.map((c, i) => [c.id, headings[i].id]));
+  for (let seed = 1; seed < 200; seed++) {
+    const order = orderForPrint(cards, key, seed, headings.map((h) => h.id));
+    assert.notDeepStrictEqual(order.map((c) => c.id), cards.map((c) => c.id), `seed ${seed} printed the story in order`);
+    assert.deepStrictEqual(order.map((c) => c.id).sort(), cards.map((c) => c.id).sort());
+  }
+});
+
+test("a sheet prints every picture on one uncut page, far larger than a card, with a box on each and the places at the top", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "stickin-sheet-"));
+  const headings = ["1st", "2nd", "3rd", "4th", "5th"].map((label, i) => ({ id: `group-00${i + 1}`, label }));
+  const cards = ["Angel visits Mary", "Journey", "Stable", "Shepherds", "Wise men"].map((label, i) => {
+    fs.writeFileSync(path.join(dir, `p${i}.png`), PNG_1PX);
+    return { id: `item-00${i + 1}`, label, photoRef: `photo-00${i + 1}`, imagePath: `p${i}.png` };
+  });
+  const item = JSON.parse(JSON.stringify(spec().items[0]));
+  item.spec.headings = headings;
+  item.spec.cards = cards;
+  item.spec.teacher.answer = cards.map((c, i) => ({ cardId: c.id, headingId: headings[i].id }));
+  item.spec.sets = { per: "pair" };
+  item.spec.form = "sheet";
+  const kit = normaliseCardSet(item, 30, dir);
+  assert.strictEqual(typeof kit, "object", `expected a kit, got: ${kit}`);
+  const laid = renderSheetPages(kit, { printableWMm: 277, printableHMm: 185, pageHtml: (c, b) => `<div>${c}${b}</div>` });
+  assert.strictEqual(laid.pages.length, 15, "one sheet between two for a class of 30");
+  const html = laid.pages[0];
+  assert.ok(!html.includes("dashed"), "a sheet has no cut guides");
+  assert.strictEqual(html.split("<img ").length - 1, 5, "every picture is on the one page");
+  assert.ok(html.includes("Write 1 to 5 in the boxes."), "an order tells children to write the places");
+  assert.ok(laid.pictureMm >= 70, `pictures fill the page (${laid.pictureMm} mm), not a 30 mm card`);
+  const answers = require("../src/render-card-set").answersText([kit], "Test");
+  assert.ok(answers.includes("Printed as a sheet"), "the teacher's notes say it is a sheet, not cards");
+});
+
+test("a sheet for a sort into named groups gives each group a letter and prints the key at the top", () => {
+  const item = JSON.parse(JSON.stringify(spec().items[0]));
+  item.spec.form = "sheet";
+  const kit = normaliseCardSet(item, 30);
+  const laid = renderSheetPages(kit, { printableWMm: 277, printableHMm: 185, pageHtml: (c, b) => `<div>${c}${b}</div>` });
+  const html = laid.pages[0];
+  assert.ok(html.includes("Write the letter in each box"), "children are told to write a letter");
+  assert.ok(html.includes(`<b>A</b> = ${kit.headings[0].label}`), "the key names what each letter means");
+});
+
+test("a kit whose form is neither cards nor sheet is refused by name", () => {
+  const item = JSON.parse(JSON.stringify(spec().items[0]));
+  item.spec.form = "poster";
+  assert.match(normaliseCardSet(item, 30), /form must be cards or sheet/);
 });
 
 // ─── The teacher's half ──────────────────────────────────────────────────
@@ -150,15 +204,43 @@ test("a card's detail prints under its label, so the account a card carries reac
   assert.strictEqual(html.split(">Tom, aged 12, is fed at the bakery and sleeps by the oven.<").length - 1, 15);
 });
 
-test("a card that carries a picture, or a kit with no tag, is refused by name rather than printed short", () => {
+// A one-pixel PNG, enough for the pack to embed and a test to find.
+const PNG_1PX = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+  "base64"
+);
+
+test("a picture card prints the picture the board shows, above its words, and every card in the set stays one size", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "stickin-picture-"));
+  fs.mkdirSync(path.join(dir, "unsplash"));
+  fs.writeFileSync(path.join(dir, "unsplash", "stable.png"), PNG_1PX);
+  const item = JSON.parse(JSON.stringify(spec().items[0]));
+  item.spec.cards[0].photoRef = "photo-001";
+  item.spec.cards[0].imagePath = "unsplash/stable.png";
+  const kit = normaliseCardSet(item, 30, dir);
+  assert.strictEqual(typeof kit, "object", `expected a kit, got: ${kit}`);
+  const plain = normaliseCardSet(JSON.parse(JSON.stringify(spec().items[0])), 30, dir);
+  const laid = renderKitPages(kit, { printableWMm: 277, printableHMm: 190, pageHtml: (c, b) => `<div>${c}${b}</div>` });
+  const html = laid.pages.join("");
+  assert.ok(html.includes("data:image/png;base64,"), "the picture is embedded in the pack");
+  assert.ok(html.includes("object-fit:contain"), "the picture is fitted whole, never cropped");
+  const plainLaid = renderKitPages(plain, { printableWMm: 277, printableHMm: 190, pageHtml: (c, b) => `<div>${c}${b}</div>` });
+  assert.ok(laid.setHeightMm > plainLaid.setHeightMm, "a picture makes every card in the set taller, so size gives nothing away");
+  const answers = require("../src/render-card-set").answersText([kit], "Test");
+  assert.ok(answers.includes("(picture: unsplash/stable.png)"), "the teacher's key names the picture on each card");
+});
+
+test("a picture card whose picture cannot be printed, a photoRef with no imagePath, or a kit with no tag, is refused by name rather than printed short", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "stickin-picture-"));
   for (const [name, mutate, pattern] of [
-    ["picture", (item) => { item.spec.cards[0].photoRef = "workshop"; }, /carries a picture/],
-    ["image path", (item) => { item.spec.cards[0].imagePath = "unsplash/x.jpg"; }, /carries a picture/],
+    ["missing picture", (item) => { item.spec.cards[0].imagePath = "unsplash/not-there.jpg"; }, /was not found/],
+    ["photoRef only", (item) => { item.spec.cards[0].photoRef = "photo-001"; }, /no imagePath/],
+    ["not a picture", (item) => { item.spec.cards[0].imagePath = "notes.txt"; }, /not a picture the pack can print/],
     ["no tag", (item) => { delete item.tag; }, /no tag/],
   ]) {
     const item = JSON.parse(JSON.stringify(spec().items[0]));
     mutate(item);
-    const result = normaliseCardSet(item, 30);
+    const result = normaliseCardSet(item, 30, dir);
     assert.strictEqual(typeof result, "string", `${name}: expected a refusal`);
     assert.match(result, pattern, name);
   }

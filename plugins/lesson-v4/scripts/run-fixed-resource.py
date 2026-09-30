@@ -128,8 +128,14 @@ def actual_family(
             plugin_root, f"{lesson_name} - Worksheets", "worksheet"
         )
         answer_base = re.sub(r"\s*-\s*Worksheets$", "", base, flags=re.IGNORECASE) or base
+        # The teacher's answer sheet, and its HTML record. The text key it
+        # replaced in 4.2.305 is listed too, so a rebuild of a lesson first made
+        # on an older version archives the old key rather than leaving it
+        # beside the new sheet to be mistaken for it.
         paths = [
             output / f"{base}.pdf",
+            output / f"{answer_base} - Answers.pdf",
+            output / f"{answer_base} - Answers.html",
             output / f"{answer_base} - Answers.txt",
         ]
         # Do not feed `base` to a glob pattern: `safeFilenameComponent` quite

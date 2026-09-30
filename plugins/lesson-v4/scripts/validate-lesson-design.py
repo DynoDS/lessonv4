@@ -31,7 +31,7 @@ TOP_LEVEL_FIELDS = {
 
 # Fields a design may carry without every saved design and fixture having to
 # grow them at once. Present, they are validated as strictly as the rest.
-OPTIONAL_TOP_LEVEL_FIELDS = {"resourceOpportunities", "vocabularyPlacement", "vocabularyIntroductions"}
+OPTIONAL_TOP_LEVEL_FIELDS = {"resourceOpportunities", "vocabularyPlacement", "vocabularyIntroductions", "lessonQuestion"}
 
 # WHEN each key word is introduced.
 #
@@ -1130,7 +1130,7 @@ def bullet_items(text: str) -> list[str]:
     return items
 
 
-SORT_HANDLING_KINDS = {"cards"}
+SORT_HANDLING_KINDS = {"cards", "sheet"}
 SORT_HANDLING_PER = {"child", "pair", "group"}
 
 
@@ -1171,12 +1171,15 @@ def validate_sort_handling(raw: Any, path: str) -> None:
 
 
 def sort_handled_as_cards(unit: dict[str, Any]) -> dict[str, Any] | None:
-    """The unit's `handling` block when its sort is done with printed cards."""
+    """The unit's `handling` block when its sort is printed for the tables:
+    `cards` to cut out and move, or `sheet`, every item on one page with a box
+    to write in. Either way the stick-in track prints it and the run cannot
+    close COMPLETE without it."""
     task = unit.get("taskStructure")
     if not isinstance(task, dict) or task.get("kind") != "sort":
         return None
     handling = task.get("handling")
-    if isinstance(handling, dict) and handling.get("kind") == "cards":
+    if isinstance(handling, dict) and handling.get("kind") in SORT_HANDLING_KINDS:
         return handling
     return None
 
@@ -1271,17 +1274,9 @@ def validate_task_structure(
                     item["photoRef"] in unit_photo_refs,
                     f"{item_path}.photoRef must also appear in the source unit photoRefs",
                 )
-                # A printed card kit carries words only. A card whose picture
-                # is part of what children decide from would print without it
-                # and the kit would still look complete, so refuse it here,
-                # where the designer can still choose.
-                expect(
-                    not (isinstance(structure.get("handling"), dict)
-                         and structure["handling"].get("kind") == "cards"),
-                    f"{item_path}.photoRef: a sort handled as printed cards prints words only, "
-                    "so this card's picture would be lost from the kit; handle this sort on the "
-                    "board, or put what the picture shows into the card's detail",
-                )
+                # A sort handled as printed cards prints this picture on its
+                # card (the stick-in `card-set` carries its imagePath), so a
+                # picture card is allowed at tables as well as on the board.
         return structure
 
     expect_exact_keys(
@@ -4391,6 +4386,10 @@ def run_design_checks(
             )
 
     with faults.section():
+        if root.get("lessonQuestion") is not None:
+            validate_lesson_question(root["lessonQuestion"], photo_by_id)
+
+    with faults.section():
         slide_notes = expect_list(root["slideDesignNotes"], "slideDesignNotes")
         for index, note in enumerate(slide_notes):
             expect_string(note, f"slideDesignNotes[{index}]")
@@ -4425,6 +4424,33 @@ def run_design_checks(
                         photo_id in used_photo_ids,
                         f"initial photo requirement is not referenced by lesson-design.json: {photo_id}",
                     )
+
+
+def validate_lesson_question(raw: Any, photo_by_id: dict) -> None:
+    """The one question a lesson may open on and answer by its end.
+
+    Optional and usually absent: `null` or no key means the lesson has none.
+    When present it is the question children read on its own slide after the
+    starter (`text`, which may open with one short scene sentence), its one
+    picture (`photoRefs`), what the teacher says on that slide (`script`), and
+    why this lesson earns it and how its final task answers it (`reason`, for
+    the reviewer and the teacher, never on the board). preferences.md owns when
+    a lesson earns one.
+    """
+    path = "lessonQuestion"
+    question = expect_dict(raw, path)
+    expect_exact_keys(question, {"text", "photoRefs", "script", "reason"}, {"text", "photoRefs", "script", "reason"}, path)
+    text = expect_string(question["text"], f"{path}.text")
+    expect(text.strip().endswith("?"), f"{path}.text must be a question children read, ending with a question mark")
+    script = expect_string(question["script"], f"{path}.script")
+    expect(bool(script.strip()), f"{path}.script must say what the teacher says on the question's slide")
+    refs = expect_list(question["photoRefs"], f"{path}.photoRefs")
+    expect(len(refs) == 1, f"{path}.photoRefs holds exactly one picture, the one that makes the question worth asking")
+    for index, ref in enumerate(refs):
+        ref = expect_string(ref, f"{path}.photoRefs[{index}]")
+        expect(ref in photo_by_id, f"{path}.photoRefs[{index}] names no photo requirement: {ref}")
+    reason = expect_string(question["reason"], f"{path}.reason")
+    expect(bool(reason.strip()), f"{path}.reason must say why this lesson earns a question and how its final task answers it")
 
 
 def main(argv: list[str] | None = None) -> int:

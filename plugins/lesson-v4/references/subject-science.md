@@ -54,6 +54,8 @@ Ask for a prediction with a reason based on the child’s current scientific thi
 
 Normally make sense of the result while children can still see the equipment, observations or data. Safety or sensible classroom organisation may require clearing or moving equipment first; that practical exception overrides the normal order.
 
+**A lesson question in science** (`preferences.md` → `A lesson question, when one earns its place`) most often fits a how-and-why explanation lesson: `How does a sandwich you eat at lunchtime end up helping you run around at playtime?` answered by the digestion explanation. A naming or vocabulary lesson rarely earns one.
+
 ## What a Do beat looks like in science
 
 A science Do beat makes children use the scientific relationship, not describe what they saw. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each changes the case from the one the Teach showed:
@@ -69,6 +71,7 @@ A science Do beat makes children use the scientific relationship, not describe w
 - **Keep it fair.** From four cards describing the test, children circle the one thing that must stay the same and tell a partner what would go wrong if it changed.
 - **Model or real?** On a diagram the lesson used (the Earth and Sun with arrows, particles as dots), children tick what is really there and cross what is drawn only to help us understand.
 - **Prove Sam wrong.** `Sam says all metals are attracted to magnets.` Find the case that breaks it (8.8).
+- **Test it, or watch it tested.** Every child writes a prediction, then a one-minute test settles it: at tables when the class has the equipment, at the front when it has not (the rice on cling film that jumps when a tray is banged). Or a quick model makes the hidden thing visible, five metres of wool beside one and a half for the two intestines (`do-beats.md` §11.5 and §11.6).
 
 ## What a worksheet looks like in science
 

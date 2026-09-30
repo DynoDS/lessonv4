@@ -673,30 +673,74 @@ Instead, every populated pupil sheet must have a complete top-level
 ```json
 "answerKey": {
   "below": [
-    { "question": 1, "answer": "..." }
+    { "question": 1, "answer": "Smallest 4,068. Greatest 8,640.", "note": "Not 0,468: zero can't go first." }
   ],
   "expected": [
-    { "question": 1, "answer": "..." }
+    { "question": "1a", "answer": "9,642" },
+    { "question": 3, "answer": "Yes. 0 can't go first, so 2 does: 2,058." }
   ],
   "greaterDepth": [
-    { "question": 1, "answer": "..." }
+    { "question": "4a", "answer": "5 and three smaller cards, e.g. 5, 3, 1, 0" }
   ]
 }
 ```
 
-Use one entry for every numbered question the child sees. `question` is the
-number the engine assigns in reading order; `answer` is the complete teacher
-answer. For an open task with no printed number, use a clear label such as
-`"Model response"` or `"Accept"` and state what a correct response must show.
-For genuinely open reasoning, give an example plus the acceptance condition
-(`"Answers vary; for example ... Accept any answer that ..."`). Copy supplied
-answers faithfully, calculate deterministic answers, and use the adaptation's
-answer blocks for its sheets. Do not reverse-engineer an Expected answer from its question. Use the item's structured `answer`. `answer.kind: none` supplies no answer content: when such a task carries a printed number its entry states what a correct response must show and what to accept, and when it has no printed number it takes no entry. `exact`, `model` and `standard` feed the answer-key route with the supplied `content` and any `acceptanceCondition`. Worksheet answer delivery is always teacher-only. The final JSON is not complete while any pupil
-sheet lacks its own answer section or any numbered question lacks an entry.
+Use one entry for every numbered question the child sees; `question` is the
+label the engine prints. The builder prints the key as the teacher's answer
+sheet: every level in columns on one side of A4, each label with its answer in
+green. The teacher marks from it at the end of the day with a pile of books,
+so write each entry to be read at a glance: what the teacher needs to tick
+the child's work, one line where it can be and never more than two. An entry
+that reads like a model paragraph gets skipped, and then the sheet has failed
+the teacher it was for.
 
-The builder writes this mechanically to `[Topic] - Answers.txt` with Below,
-Expected and Greater Depth headings. You do not design an answer page, choose
-an answer layout, or spend tokens making it attractive.
+- **`answer`** leads with the answer itself: the number, the word, the list,
+  the choice. For a reasoning question, give the verdict and then the one idea
+  the child's reason has to contain ("Yes. 0 can't go first, so 2 does:
+  2,058."; "Only tiny pieces can pass through the gut wall into the blood.").
+  The teacher ticks any wording that carries that idea, so this is what
+  decides the mark, not a model to compare against. Say the idea once: as the
+  reason itself, or as what any reason must be about ("Put the cafe by the
+  station. Reason is about how many people walk past."), never a model reason
+  followed by what else to accept, which says it twice. Several right answers: a
+  short set is listed in full ("3,268 or 3,286"); a set too long to list
+  becomes the rule and one example. An open or opinion question: what any good
+  answer needs, and one short example ("Either view. Must use a fact, e.g. he
+  stopped young children working in mines.").
+- **`note`** is optional and a few words long, and most entries have none.
+  Use it for the one thing a teacher would otherwise mark wrongly: the usual
+  wrong answer ("Not 0,468: zero can't go first.") or a partial answer that
+  still earns the tick ("Some of them is fine."). Leave it out whenever the
+  answer says enough, and never repeat the answer in it. Write it in words a
+  teacher who missed the lesson would follow ("Not 45: that adds instead of
+  multiplying."), never a name the lesson gave a misconception.
+- **`picture`** is only for an answer the child draws or places, where words
+  would take a sentence and still leave the teacher unsure: a shape reflected
+  on a grid, lines of symmetry, a working circuit, a route on a map, a sort
+  with many items. It is the sheet's own figure spec, finished, with the answer
+  drawn in green wherever the figure can show one. A number in a chart, a
+  matched pair, a lettered label or a shaded fraction is words ("Any 3 of the
+  8 parts"), not a picture.
+
+Take every answer from its source: the lesson design's structured `answer`
+for Expected, the adaptation's answer blocks for Below and Greater Depth.
+Those carry the full model, the acceptance condition and every boundary case,
+which is how the question and its answer were made right. The key keeps their
+result and the idea that decides the mark, and never changes what counts as
+right. Calculate deterministic answers. Do not reverse-engineer an Expected
+answer from its question. For an open task with no printed number, use a clear
+label such as `"Model response"` and say in a line what a correct response
+must show. `answer.kind: none` supplies no answer content: when such a task
+carries a printed number its entry states what a correct response must show
+and what to accept, and when it has no printed number it takes no entry.
+Worksheet answer delivery is always teacher-only. The final JSON is not complete while
+any pupil sheet lacks its own answer section or any numbered question lacks an
+entry. The preflight names any answer that prints past two lines
+(`ANSWER_LONG`); it never refuses one, and the fix is the answer and its
+deciding idea, not a smaller font.
+
+The builder lays out the answer sheet: the columns, the colours, the pages.
+You write the entries and design no page.
 
 **A single sheet is normal, not a failure.** A shared working frame produces
 one; so does any lesson whose adaptation step was skipped. When

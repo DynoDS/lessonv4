@@ -27,6 +27,8 @@ Flexibility does not mean weak evidence. The design must still identify enough i
 
 A personal reflection or a piece about the child's own life names the product. The PSHE learning behind it is the knowledge or the decision the lesson taught, and the reflection draws on it or the lesson has only been told. A child explaining their own choice with the reason the lesson taught, or placing their own situation against the boundary the lesson drew, is using the learning; a child describing their day from memory is not (`preferences.md` → What a Lesson Is For).
 
+**A lesson question in PSHE** (`preferences.md` → `A lesson question, when one earns its place`) fits a lesson with a belief to turn round: `Is being loud a good thing or a bad thing?` asked again at the end as `What would you say now, and why?`, never quoting what the class said at the start.
+
 ## What a Do beat looks like in PSHE
 
 A PSHE Do beat has children apply the taught reason or boundary to a situation, always someone else's. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each uses a scenario the Teach did not already settle:

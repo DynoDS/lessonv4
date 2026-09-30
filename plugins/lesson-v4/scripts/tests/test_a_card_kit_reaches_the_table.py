@@ -157,13 +157,14 @@ class TheDesignSaysHowASortIsHandledTests(unittest.TestCase):
                 with self.assertRaises(self.module.ContractError):
                     self.structure(bad)
 
-    def test_a_card_sort_cannot_rest_on_a_picture_the_kit_would_lose(self):
+    def test_a_card_sort_can_carry_pictures_because_the_kit_prints_them(self):
         sort = copy.deepcopy(SORT)
         sort["items"][0]["photoRef"] = "bakery"
-        with self.assertRaisesRegex(self.module.ContractError, "prints words only"):
-            self.module.validate_task_structure(sort, "taskStructure", unit_photo_refs={"bakery"})
+        self.module.validate_task_structure(sort, "taskStructure", unit_photo_refs={"bakery"})
         sort.pop("handling")
         self.module.validate_task_structure(sort, "taskStructure", unit_photo_refs={"bakery"})
+        with self.assertRaises(self.module.ContractError):
+            self.module.validate_task_structure(sort, "taskStructure", unit_photo_refs=set())
 
     def test_the_helper_tells_a_card_sort_from_a_board_sort(self):
         unit = kit_design()["teachingSequence"][0]
@@ -252,7 +253,7 @@ class TheKitMatchesTheUnitTests(unittest.TestCase):
         for phrase, mutate in {
             "instruction differs": lambda i: i["spec"].__setitem__("instruction", "Sort the cards."),
             "has no tag": lambda i: i.pop("tag"),
-            "carry a picture the kit cannot print": lambda i: i["spec"]["cards"][0].__setitem__("photoRef", "bakery"),
+            "prints a picture its sort item does not have": lambda i: i["spec"]["cards"][0].update(imagePath="unsplash/bakery.jpg"),
         }.items():
             with self.subTest(phrase=phrase):
                 changed = copy.deepcopy(item)
@@ -260,11 +261,33 @@ class TheKitMatchesTheUnitTests(unittest.TestCase):
                 faults = self.faults(design, [changed])
                 self.assertTrue(any(phrase in f for f in faults), faults)
 
-    def test_a_pictured_card_in_the_design_refuses_the_kit(self):
+    def test_a_pictured_card_prints_the_boards_picture_and_nothing_else(self):
         design = kit_design()
         design["teachingSequence"][0]["taskStructure"]["items"][0]["photoRef"] = "bakery"
+        # The kit leaves the picture off: refused, because the card would print without it.
         faults = self.faults(design, [faithful_card_set()])
-        self.assertTrue(any("carry a picture" in f for f in faults), faults)
+        self.assertTrue(any("differ from the unit's sort items" in f for f in faults), faults)
+        # The kit names the picture but gives no file to print.
+        kit = faithful_card_set()
+        kit["spec"]["cards"][0]["photoRef"] = "bakery"
+        faults = self.faults(design, [kit])
+        self.assertTrue(any("no imagePath" in f for f in faults), faults)
+        # The kit prints the board's picture: faithful.
+        kit["spec"]["cards"][0]["imagePath"] = "unsplash/bakery.jpg"
+        self.assertEqual(self.faults(design, [kit]), [])
+        # The kit prints a different file from the one the photo contract names.
+        faults = self.module.kit_faults(design, {"items": [kit]}, {"bakery": "unsplash/other.jpg"})
+        self.assertTrue(any("but bakery is unsplash/other.jpg" in f for f in faults), faults)
+
+    def test_a_sheet_is_a_printed_kit_too_and_its_form_must_match(self):
+        design = kit_design()
+        design["teachingSequence"][0]["taskStructure"]["handling"]["kind"] = "sheet"
+        self.assertIsNotNone(load("lesson_validator_sheet", "validate-lesson-design.py").sort_handled_as_cards(design["teachingSequence"][0]))
+        kit = faithful_card_set()
+        faults = self.faults(design, [kit])
+        self.assertTrue(any("card-set form is cards but the unit's handling is sheet" in f for f in faults), faults)
+        kit["spec"]["form"] = "sheet"
+        self.assertEqual(self.faults(design, [kit]), [])
 
     def test_a_kit_for_a_board_sort_is_refused_too(self):
         design = kit_design()

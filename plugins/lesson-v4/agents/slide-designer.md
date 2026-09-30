@@ -122,6 +122,7 @@ Do the spec yourself. Do not delegate template lookup, helper lookup, slide runs
 Understand the arc first. Identify:
 
 - starter;
+- the lesson question, when `lessonQuestion` is not null: one slide straight after the starter and its answer slide, before any vocabulary card or Teach, built as `teach-layout` with layout `picture-with-statement` (its picture from `photoRefs`, `lead` from its `text` word for word, so the question is the slide's large line, and its `script` as the speaker notes) and a title naming it as the class's question (`Our question`), with no `designUnitId`; the question is not repeated on later slides unless a unit's own words carry it;
 - vocabulary moments;
 - each teaching source unit;
 - each pupil-action unit;

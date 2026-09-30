@@ -23,6 +23,7 @@ const {
 } = require("../src/worksheet");
 const { tightnessOf, describeTightness } = require("../src/tightness");
 const { recordingProblems, recordingAdvisories, slipWidthProblems } = require("../src/slips");
+const { longAnswerAdvisories } = require("../src/answer-sheet");
 const {
   LABELS,
   describeReturn,
@@ -642,7 +643,12 @@ function main() {
       fail(problem.signal, problem.message);
     }
 
-    answerKeyOf(worksheet);
+    // The key prints as the teacher's answer sheet, read at a glance. A model
+    // paragraph still prints; it is named here, never refused, so the designer
+    // can say the answer and the idea that decides the mark instead.
+    for (const advisory of longAnswerAdvisories(answerKeyOf(worksheet))) {
+      console.warn(`[answers] ${advisory}`);
+    }
     const refused = checkWorksheet(worksheet);
     if (refused.length) {
       for (const sheet of refused) {

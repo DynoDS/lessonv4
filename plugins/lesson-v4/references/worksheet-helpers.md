@@ -54,8 +54,8 @@ artefact and cannot drift apart.
                       "zones": { "a": { }, "b": { } } }
   },
   "answerKey": {
-    "below":        [ { "question": 1, "answer": "..." } ],
-    "expected":     [ { "question": 1, "answer": "..." }, { "question": 2, "answer": "..." } ],
+    "below":        [ { "question": 1, "answer": "...", "note": "..." } ],
+    "expected":     [ { "question": 1, "answer": "..." }, { "question": 2, "answer": "...", "picture": { "helper": "..." } } ],
     "greaterDepth": [ { "question": 1, "answer": "..." } ]
   },
   "notes": [ "Anything the teacher must hear about this sheet." ]
@@ -79,7 +79,7 @@ the work.
 
 | Top-level field | |
 |---|---|
-| `answerKey` | required, complete, for every pupil sheet present. Never `sheets.answers`, which is refused. The build writes it to the separate teacher `- Answers.txt` file. |
+| `answerKey` | required, complete, for every pupil sheet present. Never `sheets.answers`, which is refused. The build prints it as the teacher's answer sheet, its own `- Answers.pdf`: each entry is `question`, a short `answer`, an optional few-word `note`, and an optional `picture` (one worksheet helper spec, finished) only for an answer the child draws or places. How to word them is in the worksheet designer's "Pupil sheets and the separate answer key". |
 | `notes` | optional, top level only. A note written inside a sheet is dropped without a word; only top-level notes reach the builder's `Note:` lines and the teacher. |
 | `returned` | optional, top level only. One entry per sheet sent back to its author, beside its `WORKSHEET_CONTENT_GAP` note: `{ "sheet": "below", "problem": "teaching" }` for a problem a child could not get past as printed, or `"problem": "picture"` with `"refs"` for a picture it needs that will never arrive. The preflight reads this, never the note's words. `"teaching"` covers a sheet that contradicts the objective too (rule 11), and is refused while that sheet's own pictures are approved and not yet published. A returned Below or Greater Depth sheet is out of `sheets` and goes back to the adaptation designer; until its redesign goes in, and the entry comes off, the build prints the Expected sheet in its place, with the Expected answers as its key section. A sheet in `sheets` is always checked and built: the preflight refuses an entry beside one, or for a tier the adaptation does not direct. The Expected sheet is never built around. |
 
@@ -360,7 +360,11 @@ reported rather than just the first.
 | Signal | Meaning |
 |---|---|
 | `Built: <path>` | The single PDF holding every sheet. |
-| `Built answers: <path>` | The separate teacher answer file, written first on every successful build. |
+| `Built answers: <path>` | The teacher's answer sheet, a separate PDF (HTML beside `PDF_SKIPPED`), printed last on every successful build. |
+| `ANSWER_SHEET: ...` | How many sides the answer sheet took, and whether its text was made smaller to fit two. |
+| `ANSWER_LONG: ...` | An answer that prints past two lines on the answer sheet. Advisory (the preflight prints it too): give the answer and the idea that decides the mark. |
+| `ANSWER_PICTURE_SKIPPED: ...` | An answer's picture could not be drawn at the answer sheet's column width, so the answer printed as words. |
+| `ANSWERS_THIRD_SIDE: ...` | The answer sheet ran past two sides even at its smaller text. Nothing was cut. |
 | `PDF_SKIPPED` + `Built HTML: <path>` per sheet | This machine cannot make a PDF yet (no Chrome, or packages not installed - the message says which), and `scripts/ensure-chrome.js` usually fixes it: it installs the packages and fetches a headless Chrome over the network. Until then the HTML files are the worksheet: self-contained, printed from Chrome at 100% scale. Not a failure, and not verified either. |
 | `PAGE_FIT_UNVERIFIED` | Prints beside `PDF_SKIPPED`. No browser, so no page was measured as it will actually print: the HTML is partial, unverified output. A technical state of the machine, not a fault in the worksheet. |
 | `Sheets: ...` | Which sheets went into it. |
@@ -374,6 +378,7 @@ reported rather than just the first.
 | `ANSWER_KEY_INCOMPLETE` | The key exists but misses a question the sheet prints. Names the sheet and the label. |
 | `ANSWER_KEY_EXTRA` | The key answers a question the sheet does not print. Names the label and lists what the sheet does print. |
 | `ANSWER_KEY_DUPLICATE` | The key answers the same question twice. |
+| `ANSWER_PICTURE_UNKNOWN` | A key entry's `picture` is not a worksheet helper spec. Names the question. |
 | `QUESTION_LABEL_INVALID` | A key entry's question label is empty or unreadable. |
 | `QUESTION_GROUP_INVALID` | A `questionGroupId` holds only one Part. Either it needs its other Parts, or it is an ordinary question and carries no ID. |
 | `QUESTION_GROUP_NONCONTIGUOUS` | A group's Parts are split apart by another question. The Parts of one Question group run consecutively. |

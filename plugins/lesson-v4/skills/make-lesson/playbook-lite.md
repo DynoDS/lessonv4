@@ -89,7 +89,10 @@ request for the next lesson from a plan carries neither: read
 `[PLUGIN_ROOT]/references/lesson-from-plan.md`, which supplies both.
 
 Create `[OUTPUT_DIR]/working/[lesson-slug]` after deriving the slug with
-`scripts/slugify.js`. Archive an existing non-empty working folder to the lowest
+`scripts/slugify.js`. When the brief or plan gives the lesson's number, start the
+slug with year, subject and that number (`year-4-maths-lesson-17-roman-numerals`):
+the filing step reads it to find the lesson before this one by the plan rather
+than by which lesson was built last. Archive an existing non-empty working folder to the lowest
 unused ` (N)` sibling before starting a fresh run. Create its `unsplash/`
 subfolder.
 
@@ -122,12 +125,12 @@ from that and flag the file.
 Just before launching the Lesson Designer, run:
 
 ```bash
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/resolve-filing.py" "[YEAR]" "[SUBJECT]" --working "[OUTPUT_DIR]/working" > "[WORKING_DIR]/filing.txt"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/resolve-filing.py" "[YEAR]" "[SUBJECT]" --working "[OUTPUT_DIR]/working" --current "[WORKING_DIR]" > "[WORKING_DIR]/filing.txt"
 ```
 
 Where finished resources go is the teacher's own saved choice, and `DELIVERY=`
 says which. Take year and subject from the teacher's words; name an inferred
-subject aloud. Pass a non-empty `PREVIOUS_LESSON=` as `PREVIOUS_LESSON_DIR`
+subject aloud. Pass a non-empty `PREVIOUS_LESSON=` as `PREVIOUS_LESSON_DIR`, and a non-empty `EARLIER_LESSONS=` as `EARLIER_LESSON_DIRS`,
 whatever the mode.
 
 - `DELIVERY=none`: nothing is chosen yet, so the resources stay in `OUTPUT_DIR`.
@@ -173,6 +176,7 @@ TEACHER_BRIEF_FILE: [WORKING_DIR]/teacher-brief.txt
 [LESSON_PLAN_INPUT when supplied]
 [TEACHER_WORKSHEET_INPUT when supplied]
 [PREVIOUS_LESSON_DIR when found]
+[EARLIER_LESSON_DIRS when found]
 
 OWNED_OUTPUTS:
 - [WORKING_DIR]/design-decisions.md
@@ -1164,7 +1168,7 @@ Build worksheets directly:
   --summary-output "[WORKING_DIR]/build-results/worksheets.json"
 ```
 
-Require the complete answer key as a separate teacher output. One semantic
+Require the complete answer key as the separate teacher answer sheet. One semantic
 diagnostic permits one focused Worksheet Designer repair and one rebuild.
 
 
@@ -1586,7 +1590,7 @@ walk-through says the lesson left something for another lesson, say what in one 
 ## Phase 5 - Save the Resources
 
 Once every branch has settled, build the explicit list from the teaching
-resources only: the deck, worksheets, answer key, working wall, stick-in
+resources only: the deck, worksheets, answer sheet, working wall, stick-in
 sheets and, when the pack holds a card kit, its `- Stick-in Sheets -
 Answers.txt` teacher file. The walk-through stays in `OUTPUT_DIR` for the teacher to
 read there; the delivery script skips it if passed.

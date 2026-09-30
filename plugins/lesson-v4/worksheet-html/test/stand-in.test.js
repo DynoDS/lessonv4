@@ -10,6 +10,7 @@
 // omit-unfittable.test.js.)
 
 const { test } = require("node:test");
+const { answersText } = require("./answer-text");
 const assert = require("node:assert");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -57,7 +58,7 @@ function build(spec) {
   });
   const files = fs.existsSync(out) ? fs.readdirSync(out) : [];
   const read = (name) => (files.includes(name) ? fs.readFileSync(path.join(out, name), "utf8") : "");
-  return { ...result, files, read, key: read("Grid refs - Answers.txt") };
+  return { ...result, files, read, key: answersText(read("Grid refs - Answers.html")) };
 }
 
 // The answer lines under one heading of the key, up to the next blank line.

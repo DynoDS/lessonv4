@@ -36,7 +36,6 @@ const {
   sheetsOf,
   checkWorksheet,
   answerKeyOf,
-  renderAnswerKey,
   resolveAutoLayouts,
   sheetCriteriaPanels,
   WorksheetError,
@@ -45,6 +44,7 @@ const {
 const { resolveImages } = require("../src/images");
 const { prepareWorksheetDecorations } = require("../src/decorations");
 const { recordingProblems, recordingAdvisories, buildSlips } = require("../src/slips");
+const { answerSheetHtml, buildAnswerSheet, longAnswerAdvisories } = require("../src/answer-sheet");
 const {
   STAND_IN_TIERS,
   describeReturn,
@@ -423,9 +423,9 @@ async function main() {
   }
 
   // Answers are a different audience. Validate complete coverage before pupil
-  // pages are written, and keep the resulting teacher text out of `sheets`
+  // pages are written, and keep the teacher's answer sheet out of `sheets`
   // entirely so it cannot be appended to a pupil print job.
-  const answerKey = answerKeyOf(worksheet);
+  answerKeyOf(worksheet);
 
   // Fit first, every sheet, before a single page is drawn. A part-built
   // worksheet is worse than none: it looks finished.
@@ -493,11 +493,17 @@ async function main() {
 
   // The pipeline normally passes "Topic - Worksheets" as the pupil filename.
   // Strip that audience suffix before adding the teacher one, so the pair reads
-  // "Topic - Worksheets.pdf" and "Topic - Answers.txt".
+  // "Topic - Worksheets.pdf" and "Topic - Answers.pdf". The answer sheet is
+  // made last, from the pack as delivered, so a tier the Expected sheet stood
+  // in for is keyed with the Expected answers and says so.
   const answerBase = base.replace(/\s*-\s*Worksheets$/i, "") || base;
-  const answersPath = path.join(outDir, `${answerBase} - Answers.txt`);
-  fs.writeFileSync(answersPath, renderAnswerKey(worksheet, answerKey, { stoodIn: keyLines() }), "utf8");
-  console.log(`Built answers: ${answersPath}`);
+  const answersPdfPath = path.join(outDir, `${answerBase} - Answers.pdf`);
+  const answersHtmlPath = path.join(outDir, `${answerBase} - Answers.html`);
+  // An answer written as a model paragraph still prints, and is named here so
+  // the run report can say which ones a tired teacher will skip.
+  for (const advisory of longAnswerAdvisories(answerKeyOf(worksheet))) {
+    console.log(advisory);
+  }
 
   // Every sheet's HTML is written before any PDF is attempted, so a machine
   // that cannot print still ends this run holding the whole worksheet.
@@ -559,6 +565,12 @@ async function main() {
         console.log(`Built HTML: ${r.htmlPath}`);
       }
     }
+    // The teacher's answer sheet as HTML, the same page the PDF would print,
+    // unmeasured like everything else on a browserless box.
+    const answerPage = answerSheetHtml(worksheet, answerKeyOf(worksheet), { stoodIn: keyLines() });
+    fs.writeFileSync(answersHtmlPath, answerPage.html);
+    for (const problem of answerPage.problems) console.log(problem);
+    console.log(`Built answers: ${answersHtmlPath}`);
     // The HTML is still the worksheet on a browserless box, and it is still
     // unverified. Those are two different facts and both get said: claiming a
     // verified fit here would be claiming a measurement nobody took.
@@ -587,6 +599,8 @@ async function main() {
     // prints through this one process: launching Chrome per page was the
     // slowest line in the build multiplied by up to a dozen, for identical
     // output.
+    // The teacher's answer sheet, printed once the pack settles (below).
+    let answerSheet = null;
     const browser = await launchBrowser();
     try {
 
@@ -633,7 +647,6 @@ async function main() {
           why: `the page cannot hold the ${sheetLabel(key)} sheet (${details.join(" ")})`,
         });
       }
-      fs.writeFileSync(answersPath, renderAnswerKey(worksheet, answerKeyOf(worksheet), { stoodIn: keyLines() }), "utf8");
       sheets = sheetsOf(worksheet);
       rendered = draw(sheets);
       slipSheets = sheets.filter((s) => s.spec.recording === "books" && s.pageCount === 1);
@@ -652,6 +665,18 @@ async function main() {
         }
         reportSlips(sheet, result);
       }
+    }
+
+    // The teacher's answer sheet, once the pack is settled: after any stand-in,
+    // and never for a pack the build is about to refuse.
+    if (!clipped.length) {
+      answerSheet = await buildAnswerSheet({
+        worksheet,
+        answerKey: answerKeyOf(worksheet),
+        stoodIn: keyLines(),
+        browser,
+        htmlToPdf,
+      });
     }
 
     } finally {
@@ -714,10 +739,8 @@ async function main() {
           { sheet: sheet.key, page: sheet.page, zone: problem.zone }
         );
       }
-      // A refused pack leaves no answer key behind. It was written before the
-      // pages were drawn, and on its own it would be delivered as if the pack
-      // were, naming a stand-in the class never got.
-      fs.rmSync(answersPath, { force: true });
+      // A refused pack gets no answer sheet: on its own it would be delivered
+      // as if the pack were, naming a stand-in the class never got.
       return;
     }
 
@@ -729,6 +752,18 @@ async function main() {
     }
     fs.writeFileSync(combined, await mergePdfs(printed));
     console.log(`Built: ${combined}`);
+    fs.writeFileSync(answersPdfPath, answerSheet.pdf);
+    // The page's HTML beside it, as each pupil sheet keeps its own: a record
+    // of what printed, never delivered (only the PDF goes to the drive).
+    fs.writeFileSync(answersHtmlPath, answerSheet.html);
+    for (const problem of answerSheet.problems) console.log(problem);
+    // The marker line carries the path alone: the runner reads everything
+    // after it as the file's name.
+    console.log(`Built answers: ${answersPdfPath}`);
+    console.log(
+      `ANSWER_SHEET: ${answerSheet.sides} side${answerSheet.sides === 1 ? "" : "s"}` +
+        `${answerSheet.size === "small" ? ", printed in smaller text to fit" : ""}.`
+    );
     fitVerified = true;
   }
 

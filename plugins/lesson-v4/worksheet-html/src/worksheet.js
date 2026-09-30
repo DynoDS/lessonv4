@@ -26,8 +26,8 @@
 
 const { plainCriteria } = require("../../shared/text/criteria-marks");
 const { checkFit, criteriaPanelsOn, NOT_ON_SHEETS } = require("./render");
-const { renderContent, requiredSets } = require("./helpers");
-const { canonicalQuestionLabel, formatQuestionLabel } = require("./labels");
+const { renderContent, requiredSets, helperNames } = require("./helpers");
+const { canonicalQuestionLabel } = require("./labels");
 
 // Any width will do: the question is whether the words are ON the page, and a
 // helper prints the same words however wide its zone is.
@@ -960,7 +960,29 @@ function answerKeyOf(worksheet) {
         );
       }
 
-      return { question: label, answer };
+      // Two optional parts, both for the teacher's answer sheet. A note is a
+      // few words under the answer (the usual wrong answer, or a partial one
+      // that still earns the tick); a picture is the sheet's own figure,
+      // finished, for an answer the child draws or places.
+      const out = { question: label, answer };
+      if (entry.note !== undefined && entry.note !== null) {
+        const note = String(entry.note).trim();
+        if (note) out.note = note;
+      }
+      if (entry.picture !== undefined && entry.picture !== null) {
+        const picture = entry.picture;
+        if (!picture || typeof picture !== "object" || Array.isArray(picture) ||
+            !helperNames().includes(picture.helper)) {
+          throw new WorksheetError(
+            "ANSWER_PICTURE_UNKNOWN",
+            `answerKey.${name} (${label}): a picture is one worksheet helper spec, ` +
+              `and ${JSON.stringify(picture && picture.helper)} is not a worksheet helper. ` +
+              `Give the sheet's own figure, finished, or leave the picture out and say the answer in words.`
+          );
+        }
+        out.picture = picture;
+      }
+      return out;
     });
 
     for (const label of printed) {
@@ -975,42 +997,6 @@ function answerKeyOf(worksheet) {
   }
 
   return normalised;
-}
-
-// `stoodIn` maps each tier the Expected sheet stands in for to why, in words
-// the teacher reads under the heading (the sheet could not be used as printed,
-// its picture never arrived, the page could not hold it, or it could not be
-// built): its section is the Expected answers, and says so.
-function renderAnswerKey(worksheet, answerKey = answerKeyOf(worksheet), { stoodIn = {} } = {}) {
-  const meta = worksheet.meta || {};
-  const present = PUPIL_SHEET_ORDER.filter(
-    (name) => worksheet.sheets && worksheet.sheets[name]
-  );
-  const coded = present.length > 1;
-  const title = meta.lesson || meta.name || "Worksheet";
-  const lines = [
-    `${title} - Answer Key`,
-    "Teacher copy - keep separate from pupil worksheets.",
-    "",
-  ];
-
-  for (const name of present) {
-    const heading = coded
-      ? `${SHEET_LABELS[name]} (${SHEET_CODES[name]})`
-      : SHEET_LABELS[name];
-    lines.push(heading.toUpperCase());
-    if (stoodIn[name]) {
-      lines.push(
-        `The Expected sheet stands in here for the ${SHEET_LABELS[name]} sheet, ${stoodIn[name]}. ` +
-          "These are the Expected answers."
-      );
-    }
-    for (const entry of answerKey[name]) {
-      lines.push(`${formatQuestionLabel(entry.question)} ${entry.answer}`);
-    }
-    lines.push("");
-  }
-  return `${lines.join("\n").trimEnd()}\n`;
 }
 
 // Every sheet checked before any of them is drawn.
@@ -1526,7 +1512,6 @@ module.exports = {
   sheetsOf,
   checkWorksheet,
   answerKeyOf,
-  renderAnswerKey,
   questionCount,
   numbered,
   resolveAutoSheet,

@@ -139,6 +139,7 @@ Choose the response from what children need to show about the past. A comparison
 - **Sort what changed and what stayed the same.** Features of a Victorian and a modern classroom into only then, both, and only now, then say which change was biggest (5.10).
 - **Say what the source cannot tell us.** Under a source children have not seen, two boxes: children write one thing it shows and one thing it cannot tell us. For a lesson whose objective is what sources can tell us; elsewhere the caution is the one question step 5 of the sketch asks, not a beat of its own.
 - **Fix the claim.** `All Tudor children went to school` or `the Vikings only raided`: children cross out the word that makes it wrong and tell a partner the fact from today that corrects it, so the misconception is named out loud and then undone (8.8).
+- **Handle the evidence.** An artefact, or its photograph printed large, passed round: children find the detail that shows how people lived or what they believed, and say what it cannot tell us (`do-beats.md` §11.4).
 
 **Talk when it helps children form or show an answer.** Partner rehearsal can prepare writing; an individual spoken explanation can itself be the outcome. Make each child's understanding available to the teacher rather than relying on the most confident group spokesperson.
 
@@ -224,7 +225,7 @@ Three things follow, and they change how a single lesson is designed:
 
 - A history lesson is allowed to end unresolved. That is not a badly planned lesson.
 - Every lesson moves the argument forward and ends with something banked that the final lesson will use. So the design names what this lesson banks.
-- Sub-questions serve the main question, and not every lesson needs a big question of its own.
+- Sub-questions serve the main question, and not every lesson needs a big question of its own. When one does (`preferences.md` → `A lesson question, when one earns its place`), it serves the unit's enquiry question rather than sitting beside it: `Thousands of people walk past this fountain every day. Why was it built for a man most of them have never heard of?`
 
 Where the brief gives the enquiry question, treat it as the thing this lesson serves. Where it does not, the lesson still works but say plainly what it is contributing to, because a history lesson designed as a self-contained hour is how a unit ends up as six unconnected topics.
 

@@ -53,7 +53,7 @@ class RunReportCase(unittest.TestCase):
         self.slides_out.write_bytes(b"slides fixture")
         self.worksheets_out = self.output / "Beatrix Potter - Worksheets.pdf"
         self.worksheets_out.write_bytes(b"worksheet fixture")
-        self.answers_out = self.output / "Beatrix Potter - Answers.txt"
+        self.answers_out = self.output / "Beatrix Potter - Answers.pdf"
         self.answers_out.write_bytes(b"answers fixture")
 
         self.report = self.working / "run-report.md"

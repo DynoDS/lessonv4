@@ -29,7 +29,7 @@ const { pieceHandle, A4, CLASS_SIZE, HANDLE_BAND_MM } = require("./src/layout-ru
 const { selectContextPictureSet } = require("../shared/context-picture-set");
 const { renderPieceHtml, esc } = require("./src/render-piece-html");
 const { withoutTaughtMarks } = require("../shared/text/criteria-marks");
-const { normaliseCardSet, renderKitPages, answersText } = require("./src/render-card-set");
+const { normaliseCardSet, renderKitPages, renderSheetPages, answersText } = require("./src/render-card-set");
 const { normaliseSourceText, renderSourceTextPages } = require("./src/render-source-text");
 
 const GREY = "#999999";
@@ -253,11 +253,11 @@ function naturalAnswersFilename(lesson) {
 // heading and item cards with cut guides), and the key for every kit goes to
 // one teacher text file beside the pack. A kit whose spec cannot be printed
 // faithfully is refused by name, like a moment that cannot draw.
-function buildKits(cardSetItems, classSize) {
+function buildKits(cardSetItems, classSize, baseDir) {
   const kits = [];
   const dropped = [];
   for (const item of cardSetItems) {
-    const kit = normaliseCardSet(item, classSize);
+    const kit = normaliseCardSet(item, classSize, baseDir);
     if (typeof kit === "string") {
       console.warn(`[stick-in] card kit "${item.label || "card-set"}": ${kit} - this kit is NOT in the pack.`);
       dropped.push(item.label || "card-set");
@@ -269,7 +269,7 @@ function buildKits(cardSetItems, classSize) {
   const summaries = [];
   const laidOut = [];
   for (const kit of kits) {
-    const laid = renderKitPages(kit, {
+    const laid = (kit.form === "sheet" ? renderSheetPages : renderKitPages)(kit, {
       printableWMm: PRINTABLE_W_MM,
       printableHMm: PRINTABLE_H_MM,
       pageHtml: pageDiv,
@@ -281,7 +281,9 @@ function buildKits(cardSetItems, classSize) {
     }
     laidOut.push(kit);
     pageDivs.push(...laid.pages);
-    const fit = laid.splitSet
+    const fit = kit.form === "sheet"
+      ? `printed as a whole sheet, no cutting${laid.pictureMm ? `, pictures about ${laid.pictureMm} mm wide` : ""}`
+      : laid.splitSet
       ? `each set runs over ${laid.pagesPerSet} pages`
       : `${laid.setsPerPage} set${laid.setsPerPage === 1 ? "" : "s"} a page`;
     summaries.push(
@@ -344,7 +346,7 @@ async function build(specPath, outDir) {
   const sourceTextItems = items.filter((item) => item && item.visual === "source-text");
   const pieceItems = items.filter((item) => item && item.visual !== "card-set" && item.visual !== "source-text");
   const { moments, dropped } = await renderMoments(pieceItems, baseDir);
-  const kitsBuilt = buildKits(cardSetItems, classSize);
+  const kitsBuilt = buildKits(cardSetItems, classSize, baseDir);
   const sourcesBuilt = buildSourceTexts(sourceTextItems, classSize);
   const allDropped = [...dropped, ...kitsBuilt.dropped, ...sourcesBuilt.dropped];
 
@@ -422,7 +424,10 @@ async function build(specPath, outDir) {
     );
     process.exitCode = 1;
   } else {
-    console.log(`${classSetLine} - print once, cut along the dashed lines, each child's set comes off together.`);
+    const allSheets = moments.length === 0 && kitsBuilt.kits.length > 0 && kitsBuilt.kits.every((k) => k.form === "sheet");
+    console.log(allSheets
+      ? `${classSetLine} - print once and hand out; the sheets are not cut.`
+      : `${classSetLine} - print once, cut along the dashed lines, each child's set comes off together.`);
   }
   return outPath;
 }

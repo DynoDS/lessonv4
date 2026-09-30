@@ -1,6 +1,7 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const { answersText } = require("./answer-text");
 const test = require("node:test");
 const { PDFDocument } = require("pdf-lib");
 
@@ -243,14 +244,16 @@ test("pupil PDF and complete teacher answers build as separate files", async () 
     );
 
     const pupilPdf = path.join(dir, "Multiply by 3 - Worksheets.pdf");
-    const answersTxt = path.join(dir, "Multiply by 3 - Answers.txt");
+    const answersPdf = path.join(dir, "Multiply by 3 - Answers.pdf");
     assert.ok(fs.existsSync(pupilPdf), "pupil PDF was not written");
-    assert.ok(fs.existsSync(answersTxt), "separate teacher answer key was not written");
+    assert.ok(fs.existsSync(answersPdf), "separate teacher answer sheet was not written");
 
     const doc = await PDFDocument.load(fs.readFileSync(pupilPdf));
     assert.equal(doc.getPageCount(), 3, "the pupil PDF should contain exactly three sheets");
 
-    const answers = fs.readFileSync(answersTxt, "utf8");
+    const answersDoc = await PDFDocument.load(fs.readFileSync(answersPdf));
+    assert.equal(answersDoc.getPageCount(), 1, "three short keys fit one side of the answer sheet");
+    const answers = answersText(fs.readFileSync(path.join(dir, "Multiply by 3 - Answers.html"), "utf8"));
     assert.match(answers, /BELOW \(B\)[\s\S]*\(1\) 12/);
     assert.match(answers, /EXPECTED \(E\)[\s\S]*\(1\) 18/);
     assert.match(

@@ -6,7 +6,7 @@ difference below) stays in one place instead of being duplicated inside the
 orchestrator.
 
 Usage:
-    python resolve-filing.py <year group> <subject> [--working <OUTPUT_DIR>/working]
+    python resolve-filing.py <year group> <subject> [--working <OUTPUT_DIR>/working] [--current <WORKING_DIR>]
 
 Where resources go is the teacher's own choice, saved once in the plugin's
 settings (scripts/plugin_settings.py), and the resolver prints which of three it is:
@@ -21,9 +21,16 @@ settings (scripts/plugin_settings.py), and the resolver prints which of three it
                       the teacher's computer to collect and save at login
 
 Every mode prints, with --working:
-    PREVIOUS_LESSON  the working folder of the lesson this run built last in the
+    PREVIOUS_LESSON  the working folder of the lesson before this one in the
                      same year and subject (empty when none), so the designer
-                     can reuse its exact words
+                     can reuse its exact words. When this run's folder (--current)
+                     carries its plan number (`...-lesson-17-...`), that is the
+                     highest-numbered earlier lesson; otherwise the calendar slot
+                     (sorted mode) or the latest built lesson decides
+    EARLIER_LESSONS  up to three working folders before PREVIOUS_LESSON in the same
+                     year and subject, nearest first, joined by " | " (empty when
+                     none): context for what the class has already met, never a
+                     rota to vary against
 
 Sorted mode also prints:
     TERM_FOLDER   the half-term folder, e.g. "Summer 2"
@@ -77,6 +84,11 @@ def parse_args(argv):
         i = argv.index("--working")
         working_root = argv[i + 1] if i + 1 < len(argv) else ""
         del argv[i:i + 2]
+    global CURRENT_FOLDER
+    if "--current" in argv:
+        i = argv.index("--current")
+        CURRENT_FOLDER = argv[i + 1] if i + 1 < len(argv) else ""
+        del argv[i:i + 2]
     # Callers pass the year the way the teacher wrote it ("Year 4", "Y4", "4").
     # Only the number finds the year folder; "Year 4" once missed it silently and
     # a full Monday was offered as free.
@@ -108,6 +120,74 @@ def lesson_identity(folder):
         return None
     year = re.sub(r"\D", "", str(lesson.get("yearGroup", "")))
     return year, str(lesson.get("subject", "")).strip().lower()
+
+
+# The run's own working folder, when the caller names it (--current).
+CURRENT_FOLDER = ""
+LESSON_NUMBER_RE = re.compile(r"(?:^|-)lesson-(\d+)(?:-|$| )")
+
+
+def lesson_number(folder):
+    """The plan number a working folder's name carries (`year-4-maths-lesson-17-...`), or None."""
+    match = LESSON_NUMBER_RE.search(os.path.basename(os.path.normpath(folder)).lower())
+    return int(match.group(1)) if match else None
+
+
+def numbered_previous(working_root, year, subject, current_folder):
+    """The lesson before this one by the plan's own numbers, or "" when they cannot say.
+
+    The clock cannot order lessons: rebuilding lesson 15 after lesson 16 made
+    lesson 17's run take lesson 15 as its previous lesson (30 September 2026).
+    When this run's folder carries its lesson number, the previous lesson is the
+    highest-numbered earlier lesson in the same year and subject, and a rebuilt
+    copy of that lesson (`... (1)`) is chosen by which was built last.
+    """
+    current = lesson_number(current_folder) if current_folder else None
+    if current is None:
+        return ""
+    here = os.path.normcase(os.path.abspath(current_folder))
+    best = None
+    for design in glob.glob(os.path.join(working_root, "*", "lesson-design.json")):
+        folder = os.path.dirname(os.path.abspath(design))
+        if os.path.normcase(folder) == here or lesson_identity(folder) != (year, subject.lower()):
+            continue
+        number = lesson_number(folder)
+        if number is None or number >= current:
+            continue
+        rank = (number, os.path.getmtime(design))
+        if best is None or rank > best[0]:
+            best = (rank, folder)
+    return best[1] if best else ""
+
+
+def earlier_lessons(working_root, year, subject, current_folder, previous, limit=3):
+    """Up to `limit` lessons before `previous`, nearest first: by plan number when
+    this run's folder carries one, otherwise by when each was built."""
+    here = os.path.normcase(os.path.abspath(current_folder)) if current_folder else ""
+    prev = os.path.normcase(os.path.abspath(previous)) if previous else ""
+    current = lesson_number(current_folder) if current_folder else None
+    candidates = []
+    for design in glob.glob(os.path.join(working_root, "*", "lesson-design.json")):
+        folder = os.path.dirname(os.path.abspath(design))
+        key = os.path.normcase(folder)
+        if key in (here, prev) or lesson_identity(folder) != (year, subject.lower()):
+            continue
+        candidates.append((lesson_number(folder), os.path.getmtime(design), folder))
+    if current is not None:
+        previous_number = lesson_number(previous) if previous else None
+        ceiling = previous_number if previous_number is not None else current
+        best_by_number = {}
+        for number, stamp, folder in candidates:
+            if number is None or number >= ceiling:
+                continue
+            if number not in best_by_number or stamp > best_by_number[number][0]:
+                best_by_number[number] = (stamp, folder)
+        ordered = [best_by_number[n][1] for n in sorted(best_by_number, reverse=True)]
+    else:
+        prev_stamp = os.path.getmtime(os.path.join(previous, "lesson-design.json")) if previous else None
+        ordered = [folder for _n, stamp, folder in sorted(candidates, key=lambda c: c[1], reverse=True)
+                   if prev_stamp is None or stamp < prev_stamp]
+    return ordered[:limit]
 
 
 def latest_lesson(working_root, year, subject):
@@ -314,7 +394,11 @@ class SortedFiling:
         # calendar's guess and must not be announced as free.
         print(f"DRIVE_CHECKED={'yes' if slot['checked'] else 'no'}")
         if self.working_root:
-            print(f"PREVIOUS_LESSON={self.previous_lesson(slot['term'], slot['week'], slot['day'])}")
+            previous = numbered_previous(self.working_root, self.year, self.subject, CURRENT_FOLDER) \
+                or self.previous_lesson(slot['term'], slot['week'], slot['day'])
+            print(f"PREVIOUS_LESSON={previous}")
+            earlier = earlier_lessons(self.working_root, self.year, self.subject, CURRENT_FOLDER, previous) if previous else []
+            print(f"EARLIER_LESSONS={' | '.join(earlier)}")
         return 0
 
 
@@ -373,7 +457,11 @@ def main(argv=None):
             return 1
         return filing.run(today())
     if working_root:
-        print(f"PREVIOUS_LESSON={latest_lesson(working_root, year, subject)}")
+        previous = numbered_previous(working_root, year, subject, CURRENT_FOLDER) \
+            or latest_lesson(working_root, year, subject)
+        print(f"PREVIOUS_LESSON={previous}")
+        earlier = earlier_lessons(working_root, year, subject, CURRENT_FOLDER, previous) if previous else []
+        print(f"EARLIER_LESSONS={' | '.join(earlier)}")
     return 0
 
 

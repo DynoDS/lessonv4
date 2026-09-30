@@ -10,8 +10,8 @@ const {
   sheetsOf,
   checkWorksheet,
   answerKeyOf,
-  renderAnswerKey,
 } = require("../src/worksheet");
+const { answerSheetHtml } = require("../src/answer-sheet");
 
 // A sheet small enough to fit anything, so these tests are about the worksheet
 // and never accidentally about the fit check.
@@ -120,7 +120,7 @@ test("a numbered pupil question cannot be absent from its answer key", () => {
   });
 });
 
-test("the teacher answer key is compact text with clear sheet headings", () => {
+test("the teacher answer sheet heads each level with its name and code", () => {
   const spec = {
     ...worksheet({
       below: { layout: "full", zones: zones() },
@@ -138,12 +138,12 @@ test("the teacher answer key is compact text with clear sheet headings", () => {
     ),
   };
 
-  const text = renderAnswerKey(spec);
-  assert.match(text, /Teacher copy - keep separate from pupil worksheets/);
-  assert.match(text, /BELOW \(B\)/);
-  assert.match(text, /EXPECTED \(E\)/);
-  assert.match(text, /GREATER DEPTH \(GD\)/);
-  assert.match(text, /\(2\) 15/);
+  const { html } = answerSheetHtml(spec, answerKeyOf(spec));
+  assert.match(html, /Teacher only/);
+  assert.match(html, /Below \(B\)/);
+  assert.match(html, /Expected \(E\)/);
+  assert.match(html, /Greater Depth \(GD\)/);
+  assert.match(html, /\(2\)<\/span>.*?>15</s);
 });
 
 test("a worksheet with only the expected sheet is normal, not an error", () => {

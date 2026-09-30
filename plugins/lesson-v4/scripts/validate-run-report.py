@@ -143,7 +143,7 @@ def design_requires_card_kit(design) -> list[str]:
         if not isinstance(task, dict) or task.get("kind") != "sort":
             continue
         handling = task.get("handling")
-        if isinstance(handling, dict) and handling.get("kind") == "cards":
+        if isinstance(handling, dict) and handling.get("kind") in {"cards", "sheet"}:
             required.append(str(unit.get("sourceUnitId")))
     return required
 

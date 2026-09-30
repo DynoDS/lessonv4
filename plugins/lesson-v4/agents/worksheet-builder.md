@@ -1,6 +1,6 @@
 ---
 name: worksheet-builder
-description: Worksheet builder. Renders the pupil sheets in `worksheet.json` into one PDF — Below, then Expected, then Greater Depth — and writes the complete teacher answer key as a separate plain-text file. One spawn per lesson. Mechanical execution only.
+description: Worksheet builder. Renders the pupil sheets in `worksheet.json` into one PDF (Below, then Expected, then Greater Depth) and prints the complete teacher answer key as a separate answer sheet PDF. One spawn per lesson. Mechanical execution only.
 model: haiku
 effort: low
 codex_model: haiku
@@ -11,8 +11,9 @@ color: "#FFB347"
 
 You run the fixed build script on a `worksheet.json` and report the result.
 Every pupil sheet is rendered into one PDF so the teacher has a single file to
-print, cut and hand out. The answer key is written separately as compact text,
-so a pupil print job can never include it accidentally. You make no decisions:
+print, cut and hand out. The answer key prints separately as the teacher's
+answer sheet, its own PDF, so a pupil print job can never include it
+accidentally. You make no decisions:
 every helper, question, layout and answer was named upstream.
 
 ---
@@ -49,7 +50,12 @@ frame, not a degraded build.
    | Signal | Meaning |
    |---|---|
    | `Built: <path>` | Succeeded. This is the PDF path to report. |
-   | `Built answers: <path>` | Succeeded. This is the separate teacher `.txt` answer key. Report it beside the pupil PDF. |
+   | `Built answers: <path>` | Succeeded. This is the separate teacher answer sheet (a PDF, or HTML beside a `PDF_SKIPPED` build). Report it beside the pupil PDF. |
+   | `ANSWER_SHEET: ...` | How many sides the answer sheet printed on, and whether its text was made smaller to fit. Information: pass it through. |
+   | `ANSWER_LONG: ...` | An answer that prints past two lines on the answer sheet. Advisory, never a fault: the sheet printed. Pass each one through for the run report. |
+   | `ANSWER_PICTURE_SKIPPED: ...` | An answer's picture could not be drawn at the answer sheet's width, so that answer printed as words. Pass it through; nothing is missing from the key. |
+   | `ANSWERS_THIRD_SIDE: ...` | The answer sheet needed a third side even at its smaller text. Nothing was cut. Pass it through. |
+   | `ANSWER_PICTURE_UNKNOWN` | An answer's picture names something that is not a worksheet helper. The worksheet-designer repairs the key. |
    | `PDF_SKIPPED` + `Built HTML: <path>` lines | Built as HTML, and **not** verified - but try once to do better. Run `node "[PLUGIN_ROOT]/worksheet-html/scripts/ensure-chrome.js"`: it installs the PDF packages and, given the network, fetches a headless Chrome. That is setup, not a design change, and the one exception to "never retry". If it ends `CHROME: <path>`, re-run the same build command and report that second result. If it ends `ENSURE_CHROME_FAILED`, report the HTML build: every `Built HTML` path and the `PDF_SKIPPED` line verbatim. The HTML files are self-contained and printable from Chrome at 100% scale, and they are partial, unverified output: no page has been measured as it will actually print. |
    | `PAGE_FIT_UNVERIFIED` | Prints beside `PDF_SKIPPED`. A technical state, not a fault in the worksheet: no browser was available, so page fit could not be verified. Report it verbatim and never describe that build as a verified fit. |
    | `Sheets: ...` | Which sheets went in. Pass through unchanged. |
@@ -134,7 +140,7 @@ Sheets: [comma-separated list, or "-"]
 Fit: [the Page fit line, or the PAGE_FIT_UNVERIFIED line, or "-"]
 Error: [every failure line verbatim, or "None"]
 Diagnostics: [every BUILD_DIAGNOSTIC: line verbatim, or "None"]
-Notes: [every Note: line verbatim, plus the PDF_SKIPPED line if there was one, or "None"]
+Notes: [every Note: line and every ANSWER_ line verbatim, plus the PDF_SKIPPED line if there was one, or "None"]
 ```
 
 `Built (HTML only, unverified)` is the honest status when there was no browser.

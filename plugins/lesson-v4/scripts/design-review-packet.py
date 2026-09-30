@@ -1366,6 +1366,14 @@ def class_view_blocks(design: dict) -> list[tuple[str, list[str]]]:
         )
         vocabulary_after(starter.get("sourceUnitId") or "")
 
+    question = design.get("lessonQuestion")
+    if isinstance(question, dict) and question.get("text"):
+        # Its own slide after the starter; the voice editor's lane is what
+        # this view prints, so the question and its scene line are reworded
+        # with the rest of the class's words.
+        spoken = re.sub(r"^\s*Say to children:\s*", "", str(question.get("script") or ""), count=1)
+        blocks.append(("Our question", [question["text"]] + ([f"Teacher says: {spoken}"] if spoken.strip() else [])))
+
     for unit in design.get("teachingSequence") or []:
         blocks.append((unit["label"], class_view_unit(unit, criteria=criteria, sticky=sticky, drawings=drawings)))
         vocabulary_after(unit.get("sourceUnitId") or "")
@@ -1850,6 +1858,50 @@ def build_do_beside_teach(design: dict) -> list[str]:
     return lines
 
 
+def _load_do_beats_in_a_row():
+    import importlib.util
+
+    name = "lesson_v4_do_beats_in_a_row"
+    if name in sys.modules:
+        return sys.modules[name]
+    path = Path(__file__).resolve().parent / "do-beats-in-a-row.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def build_child_seat(design: dict) -> list[str]:
+    """The whole lesson as the class lives it, from the same reading the
+    designer's completion check uses. Each Do beat can pass beside its own
+    Teach while the run of them is one long listen: the 30 September 2026
+    Nativity lesson was approved with every task before the writing answered
+    alone, off the board, and the class was lost."""
+    seat = _load_do_beats_in_a_row().child_seat(design)
+    return [
+        "## The lesson from a child's seat",
+        "",
+        (
+            "Every stretch where children only listen, and every time they do "
+            "something, in the order the class meets it. Read it for the "
+            "pupil-experience check (`preferences.md` → `Use variety "
+            "deliberately, without a quota`): a run of tasks each answered "
+            "alone, off the board, giving back what was just said, is a lesson "
+            "children listened to rather than did, however right each beat is "
+            "beside its Teach. Read the count of what children do between the "
+            "starter and the main work, and after it, against `preferences.md` → "
+            "`A lesson holds two or three Dos, then its final task`. The numbers "
+            "are where to look, not the verdict."
+        ),
+        "",
+        seat[0],
+        *(f"- {line.strip()}" for line in seat[1:]),
+        "",
+    ]
+
+
 def read_class_view_count(view_path: Path) -> tuple[int, int]:
     """The count and year the review view printed at the head of its class view."""
     for line in view_path.read_text(encoding="utf-8").splitlines():
@@ -2065,6 +2117,22 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
         concepts=concepts,
     )
 
+    question = design.get("lessonQuestion")
+    lines.extend(["## Lesson question", ""])
+    if isinstance(question, dict) and question.get("text"):
+        lines.extend([
+            f"- Question (its own slide after the starter): {question['text']}",
+            f"- Teacher says: {question.get('script', '')}",
+            f"- Picture: {', '.join(question.get('photoRefs') or []) or '(none)'}",
+            f"- Why this lesson earns it, and how the final task answers it: {question.get('reason', '')}",
+            "- Read it against `preferences.md` → `A lesson question, when one earns its place`: the final "
+            "task answers it, this lesson alone can answer it, a child cannot answer it well yet, and the "
+            "answer is the learning.",
+            "",
+        ])
+    else:
+        lines.extend(["- None. Most lessons have none; never ask for one.", ""])
+
     lines.extend(["## Vocabulary", ""])
     scheduled_words = {
         row["id"] for _, group in vocabulary_schedule(design) for row in group
@@ -2209,6 +2277,7 @@ def build_review_view(design: dict, photo_requirements: dict) -> str:
 
     lines.extend(build_board_names(design))
     lines.extend(build_do_beside_teach(design))
+    lines.extend(build_child_seat(design))
 
     ending = design["ending"]
     lines.extend(

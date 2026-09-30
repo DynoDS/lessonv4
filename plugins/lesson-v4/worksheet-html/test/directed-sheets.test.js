@@ -9,6 +9,7 @@
 // photo contract.
 
 const { test } = require("node:test");
+const { answersText } = require("./answer-text");
 const assert = require("node:assert");
 const fs = require("node:fs");
 const os = require("node:os");
@@ -348,9 +349,9 @@ test("a Below sheet a repair returns over a dead picture costs neither the other
   assert.ok(!built.stdout.includes('BUILD_DIAGNOSTIC: {"signal":"SHEET_STANDS_IN"'), built.stdout);
   assert.ok(!built.stdout.includes("IMAGE_MISSING"), built.stdout);
   assert.ok(/^(Built: |PDF_SKIPPED)/m.test(built.stdout), built.stdout);
-  const answers = fs.readdirSync(out).filter((name) => name.endsWith(".txt"));
+  const answers = fs.readdirSync(out).filter((name) => name.endsWith(" - Answers.html"));
   assert.strictEqual(answers.length, 1, fs.readdirSync(out).join(", "));
-  const key = fs.readFileSync(path.join(out, answers[0]), "utf8");
+  const key = answersText(fs.readFileSync(path.join(out, answers[0]), "utf8"));
   assert.ok(/^EXPECTED/m.test(key) && /^BELOW/m.test(key), key);
   assert.ok(key.includes("The Expected sheet stands in here for the Below sheet"), key);
 });

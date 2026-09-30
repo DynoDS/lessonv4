@@ -69,6 +69,7 @@ Use the contents to open only the activity families relevant to the intended thi
 - **§8 Generative** — eight make-something-new formats (write the question, apply to a new case, spot the mistake, prove Sam wrong). Read when a chunk is understood and now needs using: transfer, application, generating fresh examples.
 - **§9 Metacognitive** — seven thinking-about-thinking formats (confidence vote, muddiest point, three-two-one). Read when you need the class's own read on where they are, or the lesson targets a misconception or a shifted view.
 - **§10 Explain, predict, infer and connect**: ten formats for using an explanation as an explanation (because sentence, explain the link, predict before reveal, words to diagram and back, what can we tell, connect to earlier learning). Read whenever the Teach that just finished explained a cause, a mechanism, a reason or a relationship, or handed children evidence to reason from. This is the commonest chunk in a content lesson and the easiest one to answer with a summary that only says it back.
+- **§11 Hands-on**: six formats with something on the table to handle (sort or order pictures, build it in pieces, place it on a map or timeline, look closely at a source, a quick test, show it with a model), each with a board version, a printed version where the pack can make one, and real materials only when the class has them. Read when moving, testing or building the thing would make the thinking happen better than seeing it on the board.
 
 ---
 
@@ -379,7 +380,7 @@ On the board: *Should the museum return the marbles? A: Yes. B: No.* Pupils choo
 **Register:** movement-embodied.
 **Mechanism:** Use movement, gesture, mime or physical sequencing when the action meaningfully represents the content (Sullivan, 2018; Macedonia & Knosche, 2011; *Frontiers in Psychology* embodied-learning syntheses). Do not claim automatic retention or SEND benefits. Consider mobility, sensory, anxiety and behaviour barriers and provide an equivalent seated or non-performing role where needed.
 
-**The user keeps a calm classroom.** He does not use stand-up routines, and a beat that gets the class out of seats, moving round the room or performing at the front works against the room he runs. So a seated form comes first: order cards at the table (5.8) rather than Human Sequencing, a partner discussion rather than Conscience Alley. Gesture-as-Memory and Mime It can be done sitting down and stay available. Choose a whole-class movement beat only when the teacher asks for it, or when the movement is itself what is being learned (standing and making a quarter turn to learn what a quarter turn is).
+**The user keeps a calm classroom.** Calm is not the same as seated: children working at tables with a partner or a group, moving cards, building, testing or deciding together is the purposeful doing he wants, and the line he draws is between purposeful and hyper (running, jumping, shouting). He does not use stand-up routines, and a beat that gets the whole class out of seats, moving round the room or performing at the front works against the room he runs. So a seated form comes first: order cards at the table (5.8) rather than Human Sequencing, a partner discussion rather than Conscience Alley. Gesture-as-Memory and Mime It can be done sitting down and stay available. Choose a whole-class movement beat only when the teacher asks for it, or when the movement is itself what is being learned (standing and making a quarter turn to learn what a quarter turn is).
 
 ### 7.1 Freeze Frame
 Pupils (in pairs or fours) create a still image with their bodies showing a moment — *the king signs the Magna Carta, the rainforest before the loggers came, Pip meeting Estella*. 60 seconds to plan, 15 to hold (Drama Primary National Strategy; dramaresource.com).
@@ -569,6 +570,58 @@ Children name the link between the new idea and something the lesson or the unit
 Two explanations of the same thing, one sound and one plausible but weaker, and children choose and justify. *"Sam says the shadow is bigger because the object got bigger. Priya says it is bigger because it moved closer to the light. Who is right, and how do you know?"* Both must be about the same case and differ only on the taught point, or a child can win the argument for the wrong one (`evidence-synthesis.md` §5).
 **Best for:** consolidating an explanation against the misconception the topic reliably produces.
 **SEND access:** the named characters give a concrete thing to react to; choosing is the entry and justifying is the stretch.
+
+---
+
+## 11. Hands-on: something on the table to handle
+
+**Register:** hands-on.
+**Mechanism:** Acting out an idea with objects, moving counters on a printed map or pieces on a figure, helps children build it (Fiorella and Mayer 2016, moderate evidence at this age; it works calm and seated). Handling earns its time when moving or testing the thing makes the thinking happen better than seeing it on the board: a child can change their mind by moving a card, a quick test gives real evidence, a model shows something hidden. It never earns it because the last task was on the board; choose it for this chunk (`preferences.md` → `A hands-on task has a board version`).
+
+**Every entry has up to three levels, planned in this order, and only the ones it sensibly has.** The board version runs from the slides with nothing prepared, so a tired or cover teacher can teach it. The printed version is made by the pack, and only where `stick-in-sheets-pedagogy.md` says the pack can make it (today a card kit sorted under headings, with each card's picture when its item has one, a write-on figure, a read-from copy); anywhere else the board version stands alone. Real materials are the prepared day's version, planned whenever the best form of the task uses them, beside the board version rather than instead of it, and the printed version shows pictures of the same things; the task is chosen for its thinking first, never for its props (`preferences.md` → `A hands-on task has a board version`).
+
+### 11.1 Sort or order pictures
+Children put pictures of a story, a process or a life cycle in order, or sort photographs into groups.
+**Best for:** a sequence children half know, so they meet it by ordering it rather than hearing it (the Nativity story); a category that shows in how things look.
+**Board:** lettered pictures on the slide; children write the letters in order or under each heading.
+**Printed:** a sheet (`handling.kind: sheet`): every picture on one page, as large as the page allows, with a box in its corner to write the place or the group's letter in, one between two and nothing to cut. Choose cards (`kind: cards`) instead only when moving them round is how children decide, as when they sort into groups and change their minds. An order of up to six is set as a sort whose headings are the places (`1st`, `2nd`, `3rd` ...), one item under each, and the print never shows the answer's order.
+**The limit:** an order that is the slide's own list read back is finding, not thinking.
+
+### 11.2 Build it in pieces
+Children put pieces together in the right order: a volcano's layers, a food chain, the parts of a journey through the body.
+**Best for:** a structure or a build-up over time, where the order of the pieces is the idea.
+**Board:** lettered pieces on a diagram; children write the order.
+**Prepared day:** modelling dough, blocks, string.
+
+### 11.3 Place it on a map, timeline or diagram
+Children put a mark, a counter or a label where it belongs: where the Romans built their forts, when each event happened, where the food is now.
+**Best for:** place, time and position, when putting it there is the decision.
+**Board:** letters or numbers written onto the board figure.
+**Printed:** the figure as a write-on stick-in piece.
+**Prepared day:** counters or sticky notes on the printed figure.
+
+### 11.4 Look closely at a source or specimen
+Children look hard at an object, artefact, rock, material or old photograph to find what it shows.
+**Best for:** history artefacts, science materials, geography photographs, RE objects, when the detail is the evidence.
+**Board:** a large photograph and one question about what it shows.
+**Printed:** a read-from copy per table, when the detail is too small to read from the board.
+**Prepared day:** the real object, passed round.
+
+### 11.5 A quick test
+Every child predicts, then the test settles it: does it float, will the magnet pick it up, does the rice jump when the tray is banged.
+**Best for:** a science idea a one-minute test shows directly.
+**Board:** every child writes a prediction, then the teacher does the test at the front. The Year 4 sound lesson's rice on cling film is this.
+**Printed:** a write-on prediction and result strip, when children record several tests.
+**Prepared day:** the equipment on each table.
+**The limit:** not when setting up takes longer than the thinking, or when the test can fail in a way that teaches the wrong idea.
+
+### 11.6 Show it with a model
+A quick model makes something hidden or huge visible: five metres of wool beside one and a half for the two intestines, paper layers for rock, a stretched spring passing a push along for sound.
+**Best for:** size, length and hidden structure.
+**Board:** the teacher's model at the front, or a photograph of one, with every child predicting first.
+**Prepared day:** the materials, one set per table.
+
+**Demands and supports:** handling, sharing with a partner, fine motor for small pieces; every entry is seated; setting up and clearing away belong in the beat's minutes.
 
 ---
 

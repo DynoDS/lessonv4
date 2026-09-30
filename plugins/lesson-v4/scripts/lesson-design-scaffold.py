@@ -1323,6 +1323,9 @@ def build_scaffold(
             "starter",
             None,
         ),
+        # Most lessons have none: `null` unless the lesson earns one
+        # (preferences.md, `A lesson question, when one earns its place`).
+        "lessonQuestion": None,
         "vocabulary": [
             {
                 "id": f"vocab-{index:03d}",

@@ -24,6 +24,8 @@ RE is full of things a camera can be pointed at - a church, a mosque, a festival
 
 A festival's date marks when a tradition celebrates an event, not a known date of the event: Christians celebrate Jesus' birth on Christmas Day, and the Bible gives no date, so `the day Christians believe Jesus was born` teaches a claim the tradition does not make. Write `the day they celebrate his birth`, and a crib figure added that morning `shows the birth in the story`, not a birth that has not yet happened. A belief names what a tradition holds about who or what something is, not merely that an event occurred: the Christian belief in this lesson is that Jesus is God's Son, and `believes Jesus was born` is a different and weaker claim that a non-Christian could share. Define belief for children as something a person accepts as true; building certainty or proof into the definition (`sure it is true even when nobody can prove it`) teaches a caricature and makes the word harder to use.
 
+**A lesson question in RE** (`preferences.md` → `A lesson question, when one earns its place`) most often fits a why-does-this-matter lesson, framed as what believers believe, never whether it is true: `Babies are born every day. Why do Christians still tell the story of this one baby, 2,000 years later?` answered by the final explanation.
+
 ## What a Do beat looks like in RE
 
 An RE Do beat makes children connect what people do with what they believe, and see who is speaking. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each uses a practice, person or text the Teach did not already explain:
@@ -36,6 +38,7 @@ An RE Do beat makes children connect what people do with what they believe, and 
 - **Which teaching explains it?** Children underline the line in the extract that supports this practice, and tell a partner how.
 - **Fix the claim.** `All Christians celebrate Christmas in the same way`: correct it with what the lesson taught (8.8).
 - **Which beliefs clash?** A short story card with four belief cards beneath: children circle the two that pull against each other in this situation.
+- **Look closely at the object.** A crib scene, an Advent candle or a prayer mat, or its photograph printed large: children find what in it shows what the person believes, and the practice stays observed, never performed (`do-beats.md` §11.4).
 - **Religious, non-religious or either?** Sort reasons someone might give for helping a neighbour.
 
 Children observe and reason about practices in these beats; none asks them to perform worship (below).

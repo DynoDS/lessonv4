@@ -27,14 +27,16 @@ import plugin_settings
 # The teacher's drive gets the teaching resources and nothing else: the deck,
 # the worksheets, the working wall and the stick-in sheets. A run also writes
 # records for the teacher to read where the run was made (the run report, the
-# walk-through, the plain-text answer key, build HTML), and a run once filed its
+# walk-through, build HTML), and a run once filed its
 # run report and walk-through into the lesson's day folder, where the teacher
 # deleted them (Daniel, 13 September 2026: "only the lesson outputs, ppt,
 # working wall, worksheet, stick in sheets, no run reports, no walkthroughs").
 # So the rule lives here, where every caller passes through it, rather than in
-# each caller's list. The answer key is the one text file that belongs with the
-# resources: the teacher marks from it (Daniel, 13 September 2026: "yes answer
-# key too").
+# each caller's list. The answers go too: the teacher marks from them (Daniel,
+# 13 September 2026: "yes answer key too"). The worksheet's answer sheet is a
+# PDF since 4.2.305, so it travels as a resource; the stick-in card kit's key
+# is still a text file, and is the one text file that belongs with the
+# resources.
 RESOURCE_EXTENSIONS = {".pptx", ".pdf", ".docx", ".xlsx"}
 ANSWER_KEY_SUFFIX = " - Answers.txt"
 

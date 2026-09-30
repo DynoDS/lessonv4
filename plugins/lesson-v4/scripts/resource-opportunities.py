@@ -170,7 +170,7 @@ def source_faults(design: dict, stick_in: dict) -> list[str]:
     return faults
 
 
-def kit_faults(design: dict, stick_in: dict) -> list[str]:
+def kit_faults(design: dict, stick_in: dict, photo_files: dict | None = None) -> list[str]:
     """Every way the stick-in spec fails to print the kits the design chose.
 
     The kit's identity is the source unit: its cards are the unit's sort items,
@@ -225,23 +225,30 @@ def kit_faults(design: dict, stick_in: dict) -> list[str]:
         # unit gives one, the detail. Comparing labels alone let a kit drop
         # the account a card existed to carry and still pass.
         want_cards = {
-            row["id"]: (row["label"], row.get("detail") or None)
+            row["id"]: (row["label"], row.get("detail") or None, row.get("photoRef") or None)
             for row in task.get("items") or []
         }
         want_headings = {row["id"]: row["label"] for row in task.get("groups") or []}
         got_cards = {
-            row.get("id"): (row.get("label"), row.get("detail") or None)
+            row.get("id"): (row.get("label"), row.get("detail") or None, row.get("photoRef") or None)
             for row in (spec.get("cards") or [])
             if isinstance(row, dict)
         }
-        pictured = [row["id"] for row in task.get("items") or [] if row.get("photoRef")]
-        if pictured:
-            faults.append(
-                f"{unit_id}: cards {', '.join(pictured)} carry a picture, and a printed card kit "
-                "prints words only; the kit is refused rather than printed without them"
-            )
-        if any(isinstance(row, dict) and (row.get("photoRef") or row.get("imagePath")) for row in (spec.get("cards") or [])):
-            faults.append(f"{unit_id}: card-set cards carry a picture the kit cannot print")
+        # A picture card prints the picture the board shows for that item, so
+        # the kit's card names the same photoRef and the published filename it
+        # resolves to. A picture dropped, added or swapped is a different task.
+        for row in spec.get("cards") or []:
+            if not isinstance(row, dict):
+                continue
+            ref, image = row.get("photoRef") or None, row.get("imagePath") or None
+            if ref and not image:
+                faults.append(f"{unit_id}: card {row.get('id')} has a picture but no imagePath, so it would print without it")
+            elif image and not ref:
+                faults.append(f"{unit_id}: card {row.get('id')} prints a picture its sort item does not have")
+            elif ref and image and photo_files and photo_files.get(ref) and photo_files[ref] != image:
+                faults.append(
+                    f"{unit_id}: card {row.get('id')} prints {image}, but {ref} is {photo_files[ref]}"
+                )
         if (spec.get("instruction") or "").strip() != (unit.get("pupilInstruction") or "").strip():
             faults.append(f"{unit_id}: card-set instruction differs from the unit's pupilInstruction")
         if not isinstance(kit_items_by_unit.get(unit_id, {}).get("tag"), str) or not kit_items_by_unit[unit_id]["tag"].strip():
@@ -280,6 +287,11 @@ def kit_faults(design: dict, stick_in: dict) -> list[str]:
                 f"{unit_id}: card-set alsoAccept differs from the unit's acceptanceCondition"
             )
 
+        if (spec.get("form") or "cards") != handling.get("kind"):
+            faults.append(
+                f"{unit_id}: card-set form is {spec.get('form') or 'cards'} but the unit's handling is "
+                f"{handling.get('kind')}, so the pack would print a different activity"
+            )
         sets = spec.get("sets") if isinstance(spec.get("sets"), dict) else {}
         if sets.get("per") != handling.get("per") or (
             handling.get("per") == "group" and sets.get("groupCount") != handling.get("groupCount")
@@ -323,7 +335,17 @@ def main(argv: list[str] | None = None) -> int:
         stick_in = read_object(args.stick_in, "stick-in-sheets.json")
         if stick_in is None:
             return 1
-        faults = kit_faults(design, stick_in)
+        # The published filename each photoRef resolves to, read from the photo
+        # contract beside the design when there is one, so a picture card is
+        # checked against the picture the board shows.
+        photo_files: dict = {}
+        contract_path = args.lesson_design.parent / "photo-requirements.json"
+        if contract_path.exists():
+            contract = read_object(contract_path, "photo-requirements.json") or {}
+            for row in contract.get("photos") or []:
+                if isinstance(row, dict) and isinstance(row.get("id"), str) and isinstance(row.get("filename"), str):
+                    photo_files[row["id"]] = row["filename"]
+        faults = kit_faults(design, stick_in, photo_files)
         for fault in faults:
             print(f"STICK_IN_KIT_FAULT: {fault}")
         sources = source_faults(design, stick_in)

@@ -69,6 +69,8 @@ Map work includes decoding symbols and keys, constructing maps, reading distribu
 
 **Represent a place fairly for the claim being taught.** A place repeatedly presented only through disaster, deprivation or wilderness can become a caricature. Choose enough evidence and context to avoid implying that one feature represents the whole place. A focused lesson may use one suitable image or attribute; broader claims need broader evidence. Additional images earn their place by correcting or developing the understanding, not by meeting a quota.
 
+**A lesson question in geography** (`preferences.md` → `A lesson question, when one earns its place`) most often fits a why-here lesson: `Why did people build a town exactly where this river bends?` answered by the explanation the lesson builds. A map-skill lesson rarely earns one.
+
 ## What a Do beat looks like in geography
 
 A geography Do beat has a map, a photograph, a graph or a place in it, and the child gets something out of it. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each works on a place or map the Teach did not already use:
@@ -83,6 +85,7 @@ A geography Do beat has a map, a photograph, a graph or a place in it, and the c
 - **Same and different.** Two places on the criteria the lesson taught (climate, relief, how people live), with the difference that matters named (5.10).
 - **Local, national or global?** Six cards (litter in the park, a flood in one town, plastic in the ocean) sorted into three columns by how far the issue reaches.
 - **Try it on a new place.** Two photographs of coasts the class has not seen: children tick the one that will wear away faster and tell a partner the feature from today's teaching that decided it.
+- **Build the landscape in pieces.** A volcano's layers or a river's course put together from printed pieces, oldest or source first, when the order of the pieces is the idea (`do-beats.md` §11.2).
 
 ---
 

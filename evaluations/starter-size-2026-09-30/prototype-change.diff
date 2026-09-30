@@ -1,0 +1,15 @@
+--- /c/Users/Daniel/Projects/lessonv4/plugins/lesson-v4/builder/src/content/numbered-questions.js	2026-09-29 16:58:43.740431900 +0100
++++ builder/src/content/numbered-questions.js	2026-09-30 23:12:30.463388500 +0100
+@@ -305,7 +305,11 @@
+ 
+ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
+   const answerBoxes = data.answerBoxes === true;
+-  const pair = data[PAIRED_LAYOUT] || pairedEntries(data, ctx);
++  const pairFull = data[PAIRED_LAYOUT] || pairedEntries(data, ctx);
++  // PROTOTYPE: the question slide sizes its questions on their own, so the
++  // answer sentences no longer shrink them; the answer slide keeps the pair.
++  const questionSide = pairFull && data.revealPair && data.revealPair.state === 'question';
++  const pair = questionSide ? null : pairFull;
+   const entries = (Array.isArray(data.questions) ? data.questions : [])
+     .map(function (q) {
+       return { source: q, text: stripLeadingLabel(itemText(q)) };
