@@ -1,0 +1,20 @@
+{
+  "topic": "Use number bonds to add three single-digit numbers",
+  "yearGroup": "4",
+  "lessonSlug": "year-4-maths-lesson-19-use-number-bonds-to-add-three-single-digit-numbers",
+  "rationaleNote": "One text-led method card: the three success-criteria steps word for word and the finished 7 + 5 + 3 model (ending on 15, so the 'stop at 10' slip is answered), kept for lesson 20 (add two 2-digit numbers mentally), where bridging to the next ten leans on finding a number bond to 10 first. The reordered-counters picture was left on the slides because the wall can neither fit both rows beside the steps nor draw the board's method frame, and its numbers (4 + 2 + 6) would sit beside a different worked case; vocabulary and doubles stay on the slides.",
+  "cards": [
+    {
+      "type": "workedExample",
+      "page": { "size": "A3", "orientation": "landscape" },
+      "title": "How to add three numbers",
+      "items": [
+        { "label": "Step 1", "text": "Find two numbers that are a {{number bond}} to 10. They might not be next to each other." },
+        { "label": "Step 2", "text": "Add those two first: ___ + ___ = 10." },
+        { "label": "Step 3", "text": "Add the <<last number>> to 10: 10 + ___ = ___." },
+        { "label": "Worked example", "text": "7 + 5 + 3: 7 + 3 = 10, then 10 + 5 = 15" }
+      ],
+      "photo": null
+    }
+  ]
+}

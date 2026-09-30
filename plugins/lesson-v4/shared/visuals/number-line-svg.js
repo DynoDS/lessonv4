@@ -500,7 +500,15 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const boxAt = (xMid, topY, w, h) =>
     `<rect x="${f2(xMid - w / 2)}" y="${f2(topY)}" width="${f2(w)}" height="${f2(h)}" fill="${c.paper}" stroke="${c.ink}" stroke-width="${f2(Math.max(1, TICK_W * E * 0.6))}"/>`;
 
-  L.rows.forEach((row) => {
+  // Named places a wall card can pin something to: just above each jump's
+  // label, where a worked example's step number sits ("jump 1" is the first
+  // jump the spec lists; a second line's are "line 2 jump 1"). Each is
+  // [x%, y%, r%]: the centre of a circle as tall as the label band, and its
+  // radius as a share of the drawing's height. Beside the label was tried
+  // first; on a +2 next to a +3 the circle covered the neighbouring label.
+  // Every surface ignores these unless something asks for one by name.
+  const anchors = {};
+  L.rows.forEach((row, rowIndex) => {
     const l = row.line;
     const { y, x } = row;
     const x1 = L.geo.x1;
@@ -634,6 +642,15 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
           const bw = Math.min(Math.max(2.9 * T, widthPt('+000', T, profile.bold)), Math.abs(jx2 - jx1) - LABEL_GUTTER * T);
           parts.push(boxAt(g.apex.x, g.apex.y - labelH - 1, bw, labelH));
         }
+        {
+          // The spot sits just above the jump's label, centred on its arc. It
+          // may lie above the drawing's top edge: whatever pins something there
+          // grows its own canvas to make room, so the line itself never moves.
+          const r = (BAND * T) / 2;
+          const cy = g.apex.y - labelH - r * 1.1;
+          const name = (rowIndex ? `line ${rowIndex + 1} ` : '') + `jump ${l.jumps.indexOf(j) + 1}`;
+          anchors[name] = [(g.apex.x / L.w) * 100, (cy / L.h) * 100, (r / L.h) * 100];
+        }
       });
     }
   });
@@ -641,7 +658,7 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const w = f2(L.w);
   const h = f2(L.h);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${parts.join('')}</svg>`;
-  return { svg, w: L.w, h: L.h, aspect: L.w / L.h, layout: L };
+  return { svg, w: L.w, h: L.h, aspect: L.w / L.h, layout: L, anchors };
 }
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {

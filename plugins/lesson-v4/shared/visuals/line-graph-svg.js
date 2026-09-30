@@ -242,7 +242,7 @@ function draw(data, L) {
     parts.push(text(px(v), plotBottom + m.tickFs + 2 * u, round(v), m.tickFs, `text-anchor="middle" fill="${TEXT_COLOUR}"`));
   }
   for (let v = 0; v <= yMax + 1e-9; v += yStep) {
-    parts.push(text(plotLeft - 12 * u, py(v), round(v), m.tickFs, `text-anchor="end" dominant-baseline="central" fill="${TEXT_COLOUR}"`));
+    parts.push(text(plotLeft - 12 * u, py(v), round(v), m.tickFs, `text-anchor="end" dy="0.36em" fill="${TEXT_COLOUR}"`));
   }
 
   // Axis titles.

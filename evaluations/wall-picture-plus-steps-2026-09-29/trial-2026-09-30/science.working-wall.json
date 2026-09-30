@@ -1,0 +1,84 @@
+{
+  "topic": "Name the parts of the digestive system",
+  "yearGroup": "Year 4",
+  "lessonSlug": "science",
+  "rationaleNote": "One sheet: the lesson's own body diagram with all seven parts labelled exactly as the board's final Teach slide showed it, because it is the unit's representation rather than today's technique; with no plan I cannot name the exact later lesson, but it is the picture the teacher points at when the next digestion lesson asks what each part does. Cut: the three sticky facts, the three misconceptions and the five vocabulary cards, since each is one part's detail the labelled body already locates and none would be a second, different job.",
+  "cards": [
+    {
+      "type": "labelledDiagram",
+      "page": {
+        "size": "A3",
+        "orientation": "portrait"
+      },
+      "title": "The digestive system",
+      "visual": {
+        "type": "label-diagram",
+        "imagePath": "unsplash/digestive-system-unlabelled.png",
+        "layout": "sides",
+        "labelMaxChars": 10,
+        "callouts": [
+          {
+            "anchor": [
+              36,
+              20
+            ],
+            "label": "mouth",
+            "given": true
+          },
+          {
+            "anchor": [
+              49.5,
+              34
+            ],
+            "label": "oesophagus",
+            "given": true
+          },
+          {
+            "anchor": [
+              61.5,
+              50.5
+            ],
+            "label": "stomach",
+            "given": true
+          },
+          {
+            "anchor": [
+              50,
+              70
+            ],
+            "label": "small intestine",
+            "given": true
+          },
+          {
+            "anchor": [
+              34,
+              66
+            ],
+            "label": "large intestine",
+            "given": true
+          },
+          {
+            "anchor": [
+              49,
+              83
+            ],
+            "label": "rectum",
+            "given": true
+          },
+          {
+            "anchor": [
+              49.5,
+              87.5
+            ],
+            "label": "anus",
+            "given": true
+          }
+        ],
+        "helperUse": {
+          "representationId": "rep-001",
+          "configuration": "complete"
+        }
+      }
+    }
+  ]
+}

@@ -184,10 +184,10 @@ function tightSvg(data, profile) {
   // Axis numbers, centred on each gridline: across below the base, up to the left.
   if (showNumbers) {
     for (let i = 0; i <= cols; i++) {
-      parts.push(`<text x="${f(px(i))}" y="${f(bottom + bottomGutter * 0.55)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${C.num}">${escapeXml(i)}</text>`);
+      parts.push(`<text x="${f(px(i))}" y="${f(bottom + bottomGutter * 0.55)}" text-anchor="middle" dy="0.36em" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${C.num}">${escapeXml(i)}</text>`);
     }
     for (let j = 0; j <= rows; j++) {
-      parts.push(`<text x="${f(left - leftGutter * 0.42)}" y="${f(py(j))}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${C.num}">${escapeXml(j)}</text>`);
+      parts.push(`<text x="${f(left - leftGutter * 0.42)}" y="${f(py(j))}" text-anchor="middle" dy="0.36em" font-family="${FONT}" font-size="${f(NUM_FONT)}" font-weight="bold" fill="${C.num}">${escapeXml(j)}</text>`);
     }
   }
 

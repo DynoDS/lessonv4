@@ -1,0 +1,24 @@
+{
+  "topic": "Use number bonds to add three single-digit numbers",
+  "yearGroup": "Year 4",
+  "lessonSlug": "thu-maths",
+  "rationaleNote": "One section sheet of the board's own reordered counters (4 + 2 + 6, then the 6 moved beside the 4) with the lesson's any-order fact, kept for lesson 20 (adding two 2-digit numbers mentally), where choosing what to add first and bridging through 10 lean on this idea. The three-step method card with 7 + 5 + 3 is left off: its only board picture is the two-line method frame, which the wall cannot draw, and counters for 7 + 5 + 3 would be a new picture the board never showed.",
+  "cards": [
+    {
+      "type": "diagramSection",
+      "page": { "size": "A3", "orientation": "landscape" },
+      "title": "Adding three numbers",
+      "parts": [
+        {
+          "heading": "Does the order change the total?",
+          "visual": { "type": "counter-group", "statement": "4 + 2 + 6", "joiner": "+", "groups": [{ "value": "1", "count": 4 }, { "value": "1", "count": 2 }, { "value": "1", "count": 6 }] }
+        },
+        {
+          "heading": "We've only moved the 6.",
+          "visual": { "type": "counter-group", "statement": "4 + 6 + 2", "joiner": "+", "groups": [{ "value": "1", "count": 4 }, { "value": "1", "count": 6 }, { "value": "1", "count": 2 }] },
+          "notes": ["You can add numbers in any order, and the total stays the same."]
+        }
+      ]
+    }
+  ]
+}

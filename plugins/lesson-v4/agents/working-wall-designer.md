@@ -79,7 +79,7 @@ These are load-bearing. They come from the headteacher's brief and from what mak
 
    **Wall furniture is opt-in and counts as physical output.** Never infer a banner or section headings merely because the lesson opens a unit. Produce them only when the spawn prompt or teacher explicitly requests wall setup. Keep requested furniture separate from the lesson teaching-sheet count and report its physical page cost in `rationaleNote`; it is not a loophole around the wall-space budget.
 
-2. **Choose visuals for each card.** Follow `working-wall-visual-language.md` → Choose visuals for the card's learning. Preserve defining diagrams and evidence. Concise text-led references are valid when useful and readable; an unrelated picture elsewhere in the lesson does not create a requirement for this card.
+2. **Choose visuals for each card.** Every sheet carries a picture of its learning, never only words; a method is its worked example drawn large, the steps pinned to it. Follow `working-wall-visual-language.md` → Choose visuals for the card's learning. With no honest picture, the card stays off.
 
 3. **Cards must be usable references.** Make the learning and how to use the support clear to children with different reading needs. Add context, an example or a visual where needed; a reminder does not have to replace all the teaching for a child who missed the lesson.
 
@@ -89,7 +89,7 @@ These are load-bearing. They come from the headteacher's brief and from what mak
 
    This applies only to a card whose words point INSIDE its picture. A reminder whose picture makes it recognisable rather than readable, like a hand beside `We pass the object to the person who is speaking`, names nothing to find, and asking it for a readable crop would be asking the wrong question of the right card.
 
-4. **Match the final lesson's visual supports — same picture, shape and wording.** If the lesson uses a reference table, sentence frame, anchor diagram, or other visual support, reproduce the final post-review version in the same form. Inspect the completed slide render or final asset, not only the earlier image-search filename: if a map or diagram was corrected during slide review, the corrected version is the visual authority. A reference table on the slides becomes a `referenceTable` card with the same columns and examples — not a list or paraphrase. Children navigate by visual recognition before they read; the wall is the familiar support made large.
+4. **Match the final lesson's visual supports — same picture, shape and wording.** If the lesson uses a reference table, sentence frame, anchor diagram, or other visual support, reproduce the final post-review version in the same form. Inspect the completed slide render or final asset, not only the earlier image-search filename: if a map or diagram was corrected during slide review, the corrected version is the visual authority. A reference table on the slides becomes a `referenceTable` card with the same columns and examples — not a list or paraphrase. Children navigate by visual recognition before they read; the wall is the familiar support made large. One exception: a method the board drew across several slides may be joined into one worked example's whole journey (visual language, Choose visuals).
 
    **Choose the learning relationship before the card type.** First name what children need to see: categories, location, parts, sequence, cause, change, one context with grouped facts, or a repeated method. Then choose the spatial grammar that makes that relationship visible. Do not begin with the builder catalogue and force the lesson into the easiest component.
 
@@ -101,7 +101,7 @@ These are load-bearing. They come from the headteacher's brief and from what mak
    | One real context with two related fact groups | `heroCallouts` |
    | Three actors with action → reason chains | `causeCards` |
    | Genuine repeated row/column lookup | `referenceTable` |
-   | Ordered method | `workedExample` |
+   | Ordered method | `workedExample`, `pictureFirst` |
    | One durable visual fact | `stickyKnowledge` |
 
    **When the lesson's pictures are drawings, look at `diagramSection` before `workedExample`.** It is the only family that puts two or three drawn figures on one sheet; every other composing family requires photographs. Two number lines under `Number lines`, or a marked line beside its three-step strategy under `Rounding`, is a section. One figure and a method is still a `workedExample`.
@@ -133,9 +133,9 @@ Zero is normal.
 
    **Prose a child reads stays a whole sentence; a contract a child checks against stays word for word.** The verbatim rule protects the things a child compares board against wall and would stop trusting if the two diverged: success criteria steps, reference-table columns, a misconception's "Don't" and "Do" pair. Free-standing prose that no child is matching word for word (a worked-example modelled sentence, a sentence stem's framing) may be tightened to come inside the card's budget, keeping the same meaning, the same characters, the same operation or setting, and every protection the sentence carries, never to a clipped phrase. "Tell a trusted adult if you're worried about yourself or someone else." is 70 characters against a 62-character card; "Tell a trusted adult if you're worried about anyone." is the same instruction and fits. A vocabulary definition is the lesson's own sentence and keeps the lesson's wording; only when it genuinely cannot fit may it be shortened, and then it stays a whole sentence a teacher would say, never a clipped phrase. So does a sticky-knowledge statement.
 
-   Making room is the *first* move when an item overruns, not the last: the build narrows the picture (a sticky fact's photo to a third; one such fact a card), then a list goes over a second card, then a shorter whole sentence; the picture comes off last (his walls rarely have a card without one). A one-sentence fact that goes eight characters over is not a card that failed to earn its place: it is a sentence whose card needs room. Drop the card only when the meaning genuinely cannot survive the budget; a safety line lost off the wall is a real cost to a real class, and "it was three characters too long" is not a reason a teacher would accept. When you do shorten, say so in `rationaleNote` with the lesson's original wording, so the teacher can see what changed.
+   Making room is the *first* move when an item overruns, not the last: the build narrows the picture (a sticky fact's photo to a third; one such fact a card), then a list goes over a second card, then a shorter whole sentence; the picture never comes off (rule 2). A one-sentence fact that goes eight characters over is not a card that failed to earn its place: it is a sentence whose card needs room. Drop the card only when the meaning genuinely cannot survive the budget; a safety line lost off the wall is a real cost to a real class, and "it was three characters too long" is not a reason a teacher would accept. When you do shorten, say so in `rationaleNote` with the lesson's original wording, so the teacher can see what changed.
 
-   **Success criteria steps in particular must be verbatim.** When a worked-example card carries the procedure, the step text must match the lesson's success criteria exactly: same number of steps, same wording, same punctuation, and the same colour marks (`((...))`, `{{...}}`, `<<...>>`), which draw the colours the board used. Children see the SC on the slides during teaching and on the wall during practice; if the two diverge, they stop trusting either. Do not summarise the SC into shorter steps for the wall, do not omit a step because it feels redundant on a card. If the lesson has both a "past" SC and a "to" SC (or any pair of variant SCs), pick the one your worked-example is showing and copy that SC in full; do not blend or simplify across variants. SC steps are never shortened, split or reworded to fit. If the full SC won't fit at the wall's fixed A3 size, make room: drop non-SC extras, carry the list in order over two cards of the same type and title when the wall has room for both, and only when nothing else fits take the card's picture off, unless the steps need it (about 106 characters a step instead of 62); if it still will not fit, omit the card, but never reword the steps.
+   **Success criteria steps in particular must be verbatim.** When a worked-example card carries the procedure, the step text must match the lesson's success criteria exactly: same number of steps, same wording, same punctuation, and the same colour marks (`((...))`, `{{...}}`, `<<...>>`), which draw the colours the board used. Children see the SC on the slides during teaching and on the wall during practice; if the two diverge, they stop trusting either. Do not summarise the SC into shorter steps for the wall, do not omit a step because it feels redundant on a card. If the lesson has both a "past" SC and a "to" SC (or any pair of variant SCs), pick the one your worked-example is showing and copy that SC in full; do not blend or simplify across variants. SC steps are never shortened, split or reworded to fit. If the full SC won't fit at the wall's fixed A3 size, make room: drop non-SC extras, carry the list in order over two cards of the same type and title when the wall has room for both; if it still will not fit, omit the card. Never take the picture off, and never reword the steps.
 
 9. **Do not duplicate the slide-designer's work.** Your output is a JSON specification for the wall, not a slide spec. Do not reference slide templates, slot names, speaker notes, or lesson.json conventions. Your job ends when `working-wall.json` is written. Every visual decision on the wall is yours - card type, P1 versus P2, which Educational SVG candidate is acceptable, which emoji fallback to use, and whether a failed P2 removes the card. The builder only renders that finished specification and verifies it; it makes no visual choices on your behalf.
 
@@ -155,7 +155,7 @@ That a card carries a visual is firm (rule 2); *which* visual is the judgement. 
 - The card is a worked-example or sticky-knowledge card and the diagram is the anchor children will look at while reading the steps.
 - The same drawn shape appears in My Turn / Our Turn / Your Turn slides, so children already associate it with this LO.
 
-When no drawn diagram serves the card, consider a relevant photograph or P2 cue. Use a text-led reference if it is clearer; the card-level learning decision governs.
+When no drawn diagram serves the card, use a lesson photograph or P2 cue that shows the learning; with neither, the card stays off.
 
 **A classification lesson is the clearest case of all.** When the LO is telling categories apart by how they look — types of line (parallel / perpendicular), types of angle (acute / right / obtuse), types of triangle (`triangle`) or quadrilateral — the diagram *is* the definition, and the strongest card is the Twinkl "Types of …" poster: a `referenceTable` whose rows pair the category name with its defining picture, each picture a `line-pair`, `angle`, or `triangle` diagram cell (`{ "visual": { … } }`, see the `cards[].rows` note). A child finds the category by recognising its shape, so a text-only table of such a lesson has dropped the very thing children navigate by.
 
@@ -171,11 +171,11 @@ When a flipchart-flagged criteria passes the point-at test and reproduces as a s
 
 On these poster tables the picture is the meaning, so let it carry the meaning: the row wants the name and the picture, plus at most a few words the picture cannot show. A column that only re-describes what the diagram already makes plain — "tick marks: all dashes different" beside a triangle whose dashes are right there, "opening: small" beside a drawn acute angle — adds reading without adding meaning, and turns a glanceable poster back into a wall of words. Keep a short "what it means" only when it tells the child something the picture doesn't; otherwise name-plus-picture is the stronger card, read faster from across the room.
 
-Skip `visual` when it adds no useful information or crowds the reference. Retain any defining representation the child needs.
+A visual that adds no information is decoration, not the card's picture. Retain any defining representation the child needs.
 
 When a primitive cannot draw a necessary teaching anchor, use an authorised alternative or report the gap. A context picture cannot substitute for the shape or relationship children need to inspect.
 
-If the card cannot carry its required learning clearly, omit it and report the gap. Lack of an optional picture alone does not disqualify useful support.
+If the card cannot carry its required learning and a picture of it clearly, omit it and report the gap.
 
 ### Visual primitives
 
@@ -266,8 +266,8 @@ Before searching for P2, identify how the cue improves this card. Do not add fie
 If the library is unavailable, the search or publication fails, or no candidate is suitable:
 
 - for an ordinary P2 `picture`, use its suitable `fallbackEmoji` when one exists by replacing the entire failed request with `{ "kind": "emoji", "value": "<fallbackEmoji>", "alt": "<alt>" }`; `<alt>` is the request's existing non-empty `alt` when present, otherwise its original `concept`;
-- when an ordinary P2 has no suitable emoji fallback, remove that `picture` and judge whether the remaining card still offers useful, accessible support;
-- remove the card and update `rationaleNote` only when it no longer carries its required learning clearly; do not remove useful text-led support merely because P2 is unavailable;
+- when an ordinary P2 has no suitable emoji fallback, remove that `picture`;
+- remove the card and update `rationaleNote` when it then carries no picture (rule 2) or no longer carries its required learning clearly;
 - for semantic-vocabulary P2 (`vocabDefinition.visual` with `type: "image"` and `kind: "educational-svg"`), remove the `vocabDefinition` card;
 - for P3, remove only the failed decoration.
 
@@ -329,7 +329,7 @@ separator, gets:
 - about **62 characters** on a card carrying a photograph or a picture, because
   the picture takes 40% of the sheet (a sticky fact about 106, its photo at a
   third);
-- about **106 characters** on a card with no picture, which keeps the full width.
+- about **106 characters** where the picture sits under the words, at full width.
 
 A worked-example step you write that runs past its budget is not a formatting
 problem to fix later: it is a sentence that was never going to read from the back
@@ -345,8 +345,7 @@ succeeds:
 2. **Shorten the wording** to a whole sentence, keeping the meaning and every
    protection intact (rule 8).
 3. **Split it across two items** where the sentence holds two separable parts.
-4. **Take the picture off** (rule 8).
-5. **Drop the card**, and only here. Note in `rationaleNote` what was lost and
+4. **Drop the card**, and only here. Note in `rationaleNote` what was lost and
    why the wording could not carry the meaning any shorter.
 
 Choose the supported text budget for the actual card configuration, and preserve readable learning and response examples.
@@ -399,7 +398,7 @@ Image-scout fetches photos for slides during the same pipeline run. The filename
 
 **When to use a photo:** pick one only when it genuinely aids understanding of the card's content. The clearest case: a sticky-knowledge card where a concrete image anchors the abstract idea for the child (pizza slices for fractions, coins for money, a number line for ordering). The test is: *does a child who hasn't seen the lesson benefit from the image, or is the card clear without it?*
 
-**When to use `null`:** when this lesson has no picture that shows the thing this card is about. That is a fact about the run, not about the subject: a maths lesson whose board carried photographs of place-value counters has exactly the picture its worked-example card wants, and a wall of words while those files sat published is the failure this rule used to cause when it read as a subject-wide default for maths. Read the picture stage's published filenames before deciding a card has nothing to show. When a card genuinely has none, `null` is right and empty space leaves the teacher room to hand-draw.
+**When to use `null`:** when this lesson has no picture that shows the thing this card is about. That is a fact about the run, not about the subject: a maths lesson whose board carried photographs of place-value counters has exactly the picture its worked-example card wants, and a wall of words while those files sat published is the failure this rule used to cause when it read as a subject-wide default for maths. Read the picture stage's published filenames before deciding a card has nothing to show. When a card genuinely has none, `null` is right, and the card needs a drawn `visual` or stays off.
 
 **Never invent filenames.** An invented path causes the builder to fall back silently to text-only. If no filename in `photo-requirements.json` fits the card, use `null`.
 
@@ -421,4 +420,4 @@ Image-scout fetches photos for slides during the same pipeline run. The filename
 | Only 1 card earned for a lesson | Single-page PDF is fine - still produced. |
 | Fixed wall build unavailable (graceful degradation) | Designer still runs and writes working-wall.json; orchestrator notes the build could not run in the final report. |
 | Lesson is dialogic / discovery and has no procedure | No worked example card. Other card types are still assessed individually on their own criteria. |
-| Card content is genuinely text-only and no picture would add information | Still earned if it passes the point-at test and reads as a usable reference. Note the choice in `rationaleNote`. |
+| Card content is genuinely text-only and no picture would add information | Not a wall sheet (rule 2): it stays on the slides. Say so in `rationaleNote`. |

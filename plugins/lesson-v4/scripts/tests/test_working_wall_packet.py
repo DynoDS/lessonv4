@@ -382,6 +382,13 @@ def words_only_card() -> dict:
     }
 
 
+def pictured_card() -> dict:
+    """A worked example carrying its figure, for checks about something else."""
+    card = words_only_card()
+    card["visual"] = {"type": "numberLine", "start": 2900, "end": 3100, "interval": 50, "labels": "ends"}
+    return card
+
+
 def publish(working_dir: Path, *names: str) -> None:
     receipts = working_dir / "orchestration-receipts" / "picture-terminal"
     receipts.mkdir(parents=True, exist_ok=True)
@@ -413,12 +420,27 @@ def run_check(working_dir: Path, wall: dict, lesson: dict | None = None):
     return subprocess.run(command, capture_output=True, text=True, encoding="utf-8")
 
 
-def test_exact_teaching_lookup_table_needs_no_unrelated_picture(tmp_path: Path) -> None:
+def test_a_words_only_table_is_refused_even_when_it_copies_the_board(tmp_path: Path) -> None:
+    """Daniel's ruling of 29 September 2026: every wall sheet carries a picture.
+
+    Until then an exact copy of the board's lookup table was allowed as words
+    alone. All seven tables ever built were words only, and none went up.
+    """
     publish(tmp_path, "food.jpg")
     table = {"type": "table", "headers": ["Group", "Nutrients"],
              "rows": [["Dairy", "Protein and calcium"], ["Starchy foods", "Carbohydrate"]]}
-    card = {"type": "referenceTable", "columns": table["headers"], "rows": table["rows"]}
+    card = {"type": "referenceTable", "title": "Food groups", "columns": table["headers"], "rows": table["rows"]}
     lesson = {"slides": [{"body": {"type": "sc-panel", "content": table}}]}
+    result = run_check(tmp_path, wall_with([card]), lesson)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "carries no picture" in result.stdout
+
+
+def test_a_table_with_a_picture_in_its_rows_passes(tmp_path: Path) -> None:
+    table = {"type": "table", "headers": ["Group", "Looks like"],
+             "rows": [["Dairy", {"photo": "unsplash/milk.jpg"}]]}
+    card = {"type": "referenceTable", "title": "Food groups", "columns": table["headers"], "rows": table["rows"]}
+    lesson = {"slides": [{"body": table}]}
     result = run_check(tmp_path, wall_with([card]), lesson)
     assert result.returncode == 0, result.stdout + result.stderr
 
@@ -428,18 +450,23 @@ def test_table_exception_does_not_admit_changed_or_invented_rows(tmp_path: Path)
     table = {"type": "table", "headers": ["Group", "Nutrients"],
              "rows": [["Dairy", "Protein and calcium"]]}
     card = {"type": "referenceTable", "columns": table["headers"],
-            "rows": [["Dairy", "Calcium only"]]}
+            "rows": [["Dairy", "Calcium only"], ["Milk", {"photo": "unsplash/milk.jpg"}]]}
     lesson = {"slides": [{"body": table}]}
     result = run_check(tmp_path, wall_with([card]), lesson)
     assert result.returncode == 1, result.stdout + result.stderr
     assert "changes the source rows" in result.stdout
 
 
-def test_text_reference_is_not_rejected_due_to_unrelated_photo(tmp_path: Path) -> None:
+def test_a_words_only_card_is_refused_whatever_the_lesson_published(tmp_path: Path) -> None:
+    """The retired 6 September gate asked whether the LESSON had a photo.
+
+    This asks whether the CARD carries a picture, which is the teacher's rule:
+    a sheet of words is the sheet he takes down.
+    """
     publish(tmp_path, "classroom.jpg")
     result = run_check(tmp_path, wall_with([words_only_card()]))
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert result.stdout.strip() == "WORKING_WALL_DESIGN_OK"
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "carries no picture" in result.stdout
 
 def test_declining_the_wall_passes_when_the_designer_says_why(tmp_path: Path) -> None:
     """No wall is a real answer, and for most lessons it is the right one.
@@ -466,11 +493,24 @@ def test_declining_the_wall_without_a_reason_is_rejected(tmp_path: Path) -> None
     assert "without saying why" in result.stdout
 
 
-def test_the_same_wall_passes_when_the_lesson_had_no_picture_at_all(tmp_path: Path) -> None:
-    """The exception the rule exists for: nothing published, nothing drawn."""
+def test_with_no_picture_anywhere_the_answer_is_no_sheet(tmp_path: Path) -> None:
+    """Nothing published, nothing drawn: the card is left off, not printed as words."""
     result = run_check(tmp_path, wall_with([words_only_card()]))
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "leave the card off" in result.stdout
+
+
+def test_wall_zone_labels_are_not_teaching_sheets(tmp_path: Path) -> None:
+    heading = {"type": "sectionHeading", "heading": "Number", "colour": "0070C0",
+               "page": {"size": "A3", "orientation": "landscape"}}
+    result = run_check(tmp_path, wall_with([heading, pictured_card()]))
     assert result.returncode == 0, result.stdout + result.stderr
-    assert result.stdout.strip() == "WORKING_WALL_DESIGN_OK"
+
+
+def test_word_chips_with_a_picture_pass(tmp_path: Path) -> None:
+    card = {"type": "vocabChips", "title": "Coins", "page": {"size": "A3", "orientation": "landscape"},
+            "chips": [{"word": "ten pence", "photo": "money/10p.png"}, {"word": "one pound"}]}
+    assert run_check(tmp_path, wall_with([card])).returncode == 0
 
 
 def test_a_card_that_carries_its_lesson_photo_passes(tmp_path: Path) -> None:
@@ -519,7 +559,7 @@ def test_a_worked_example_may_not_undo_itself(tmp_path: Path) -> None:
     had written the clean single example; the card manufactured the return
     trip so one example could cover both halves of its title.
     """
-    card = words_only_card()
+    card = pictured_card()
     card["items"] = [
         {"label": "Step 1", "text": "Find the hundreds column."},
         {"label": "Worked example", "text": "2,950 + 100 = 3,050; 3,050 - 100 = 2,950"},
@@ -531,7 +571,7 @@ def test_a_worked_example_may_not_undo_itself(tmp_path: Path) -> None:
 
 def test_a_worked_example_that_goes_somewhere_passes(tmp_path: Path) -> None:
     """The lesson's own wording, which is what the card should have carried."""
-    card = words_only_card()
+    card = pictured_card()
     card["items"] = [
         {"label": "Step 1", "text": "Find the hundreds column."},
         {"label": "Worked example", "text": "100 more than 2,950 is 3,050."},
@@ -545,7 +585,7 @@ def test_a_table_may_not_repeat_its_title_as_its_first_column(tmp_path: Path) ->
         "title": "My explanation",
         "page": {"size": "A3", "orientation": "landscape"},
         "columns": ["My explanation", "What it shows"],
-        "rows": [["The water cooled down.", "A change of state"]],
+        "rows": [["The water cooled down.", {"photo": "unsplash/ice.jpg"}]],
     }
     result = run_check(tmp_path, wall_with([card]))
     assert result.returncode == 1
@@ -559,7 +599,7 @@ def test_the_singular_of_a_plural_title_is_not_that_fault(tmp_path: Path) -> Non
         "title": "Food groups",
         "page": {"size": "A3", "orientation": "landscape"},
         "columns": ["Food group", "Some useful nutrients"],
-        "rows": [["Dairy", "Calcium"]],
+        "rows": [["Dairy", {"photo": "unsplash/milk.jpg"}]],
     }
     assert run_check(tmp_path, wall_with([card])).returncode == 0
 

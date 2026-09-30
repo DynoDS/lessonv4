@@ -1,0 +1,40 @@
+{
+  "topic": "Add two 2-digit numbers mentally",
+  "yearGroup": "4",
+  "lessonSlug": "fri-maths",
+  "rationaleNote": "One sheet: the lesson's bridging method (sc-002, word for word) pinned to 48 + 25 drawn as one number line, kept for the next lesson, subtract two 2-digit numbers, where the teacher points back at partitioning the second number and stopping at the ten. Cut: the non-bridging steps (sc-002 already covers them), the tens-as-ones and lost-ones misconceptions (the jumps to 70 then +3 show the correction), the sticky fact and the two vocabulary words, none of which needs its own sheet.",
+  "cards": [
+    {
+      "type": "workedExample",
+      "layout": "pictureFirst",
+      "page": { "size": "A3", "orientation": "portrait" },
+      "title": "Tens, then ones",
+      "items": [
+        { "label": "Worked example", "text": "48 + 25 = 73" },
+        { "label": "Step 1", "text": "{{Partition}} the second number into tens and ones.", "working": "25 = 20 + 5" },
+        { "label": "Step 2", "text": "Count on the <<tens>> from the first number.", "working": "48 + 20 = 68" },
+        { "label": "Step 3", "text": "Will the ones go past the next ten? If not, add them." },
+        { "label": "Step 4", "text": "If they will, add enough ones to <<reach the next ten>>.", "working": "68 + 2 = 70" },
+        { "label": "Step 5", "text": "Add the ones that are left.", "working": "70 + 3 = 73" }
+      ],
+      "visual": {
+        "type": "numberLine",
+        "start": 45,
+        "end": 75,
+        "interval": 1,
+        "labels": [48, 68, 70, 73],
+        "jumps": [
+          { "from": 48, "to": 68, "label": "+20" },
+          { "from": 68, "to": 70, "label": "+2" },
+          { "from": 70, "to": 73, "label": "+3" }
+        ],
+        "callouts": [
+          { "part": "jump 1", "step": 2 },
+          { "part": "jump 2", "step": 4 },
+          { "part": "jump 3", "step": 5 }
+        ]
+      },
+      "photo": null
+    }
+  ]
+}

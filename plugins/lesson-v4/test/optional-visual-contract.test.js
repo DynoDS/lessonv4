@@ -149,6 +149,12 @@ test("the wall's authorities agree on what earns a card its place", () => {
   // rule 2" that rule 2 no longer contained. This test used to pin the retired
   // wording in place, which is why it went red that day and stayed red: it
   // asserted the old policy rather than agreement about the current one.
+  //
+  // The current one, since 29 September 2026: every sheet carries a picture of
+  // its learning, never only words (the teacher's ruling after two text-led
+  // maths walls). It is not the retired gate, which asked whether the lesson
+  // had a picture and excused success criteria; this asks it of each card,
+  // success criteria included, and the packet check enforces it.
   const contracts = read("references/working-wall-card-contracts.md");
   const designer = read("agents/working-wall-designer.md");
   const visualLanguage = read("references/working-wall-visual-language.md");
@@ -156,7 +162,12 @@ test("the wall's authorities agree on what earns a card its place", () => {
 
   // What earns a card its place, in the file the packet cuts for every run.
   assert.match(contracts, /point-at test/i);
-  assert.match(contracts, /text-led reference is valid/i);
+  assert.match(contracts, /Every card carries a picture of its learning, never only words/);
+  assert.match(designer, /Every sheet carries a picture of its learning, never only words/);
+  assert.match(visualLanguage, /Every sheet on the wall carries a picture of its learning/);
+  for (const [name, text] of [["contracts", contracts], ["designer", designer], ["visual language", visualLanguage]]) {
+    assert.doesNotMatch(text, /text-led reference is valid|text-led references are valid|A readable text-led reference may stand alone/i, `${name} still allows a words-only sheet`);
+  }
 
   // P3's real constraints, in the agent that places it.
   assert.match(designer, /P3 is allowed only on/);

@@ -168,7 +168,7 @@ function tightSvg(data, profile) {
   // ── Data rows. ──
   for (let i = 0; i < categories.length; i++) {
     const cy = OY + titleH + i * rowH + rowH / 2;
-    parts.push(`<text x="${f(OX + labelColW - LABEL_PAD)}" y="${f(cy)}" text-anchor="end" dominant-baseline="central" font-family="Comic Sans MS" font-size="${LABEL_FS}" fill="${C.TEXT_COLOUR}">${escapeXml(categories[i])}</text>`);
+    parts.push(`<text x="${f(OX + labelColW - LABEL_PAD)}" y="${f(cy)}" text-anchor="end" dy="0.36em" font-family="Comic Sans MS" font-size="${LABEL_FS}" fill="${C.TEXT_COLOUR}">${escapeXml(categories[i])}</text>`);
     const { full, half } = rows[i];
     let cx = OX + firstCx;
     let lastCx = cx;
@@ -182,7 +182,7 @@ function tightSvg(data, profile) {
   // ── Key row: one full symbol followed by "= N label". ──
   const keyCy = OY + titleH + categories.length * rowH + KEY_GAP + keyRowH / 2;
   parts.push(circle(OX + firstCx, keyCy));
-  parts.push(`<text x="${f(OX + firstCx + ICON_R + KEY_TEXT_GAP)}" y="${f(keyCy)}" text-anchor="start" dominant-baseline="central" font-family="Comic Sans MS" font-size="${KEY_FS}" fill="${C.TEXT_COLOUR}">${escapeXml(keyText)}</text>`);
+  parts.push(`<text x="${f(OX + firstCx + ICON_R + KEY_TEXT_GAP)}" y="${f(keyCy)}" text-anchor="start" dy="0.36em" font-family="Comic Sans MS" font-size="${KEY_FS}" fill="${C.TEXT_COLOUR}">${escapeXml(keyText)}</text>`);
   anchors.key = pct(OX + firstCx, keyCy);
 
   // Pointing at one category, drawn last so the veil covers that row's symbols

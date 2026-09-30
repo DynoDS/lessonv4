@@ -1,0 +1,36 @@
+{
+  "topic": "Use number bonds to add three single-digit numbers",
+  "yearGroup": "Year 4",
+  "lessonSlug": "thu-maths",
+  "rationaleNote": "One method sheet: the finished 7 + 5 + 3 drawn in the board's own counters, with the three success-criteria steps copied word for word and pinned to the counters they act on, kept for the rest of this 16-lesson addition and subtraction unit (the view names no later lesson, so the pointing moment is any later lesson that adds three digits in one go, such as a column with a carried 1). The any-order fact and its 4 + 2 + 6 counters were left off as a second sheet, because the worked example already shows it in use by adding 7 and 3 before the 5.",
+  "cards": [
+    {
+      "type": "workedExample",
+      "layout": "pictureFirst",
+      "page": { "size": "A3", "orientation": "portrait" },
+      "title": "How to add three numbers",
+      "items": [
+        { "label": "Worked example", "text": "7 + 5 + 3 = 15" },
+        { "label": "Step 1", "text": "Find two numbers that are a {{number bond}} to 10. They might not be next to each other." },
+        { "label": "Step 2", "text": "Add those two first: ___ + ___ = 10.", "working": "7 + 3 = 10" },
+        { "label": "Step 3", "text": "Add the <<last number>> to 10: 10 + ___ = ___.", "working": "10 + 5 = 15" }
+      ],
+      "visual": {
+        "type": "counter-group",
+        "statement": "7 + 5 + 3",
+        "joiner": "+",
+        "groups": [
+          { "value": "1", "count": 7 },
+          { "value": "1", "count": 5 },
+          { "value": "1", "count": 3 }
+        ],
+        "callouts": [
+          { "anchor": [13, 112], "step": 2 },
+          { "anchor": [87, 112], "step": 2 },
+          { "anchor": [50, 112], "step": 3 }
+        ]
+      },
+      "photo": null
+    }
+  ]
+}

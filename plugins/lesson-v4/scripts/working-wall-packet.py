@@ -652,7 +652,11 @@ def build_view(
             lines.append("(the slides carry no drawn figure)")
         lines.append(
             "Each object below is copied from `lesson.json` as rendered. A wall "
-            "figure reuses one of these; it is never re-derived from the prose."
+            "figure reuses one of these kinds of drawing, field for field; it is "
+            "never re-derived from the prose. It may hold different numbers only "
+            "to show the card's own worked example, or to join one worked "
+            "example's steps into its whole journey (visual language, Choose "
+            "visuals for the card's learning)."
         )
         lines.append("")
         for number, path, item in objects:
@@ -912,6 +916,37 @@ def prepare(args: argparse.Namespace) -> int:
 # to serve it. All three were retired on 6 September 2026 along with the wall-wide
 # visual gate, for the reason check() states below: picture availability elsewhere
 # cannot decide a card-s teaching needs. Recover them from git if that is revisited.
+#
+# The rule below is a different one and does not revive that gate. It asks
+# nothing about the lesson's photographs; it asks whether each sheet carries a
+# picture of its own. The teacher's ruling of 29 September 2026: every working
+# wall sheet has a picture, a diagram or a helper, never only words, because a
+# sheet of words is the one he takes down (two of the 56 sheets built before 18
+# September went up, both a picture with its parts pointed at). A card with no
+# picture is not printed as words; the designer leaves it off, which
+# `cards: []` with a reason already allows.
+
+# Wall zone labels, not teaching sheets: a heading or banner names a part of
+# the wall and carries no learning of its own.
+DISPLAY_FAMILIES = {"sectionHeading", "banner"}
+# Families whose build refuses a missing picture itself, so a card of these
+# types that builds has one.
+PICTURE_IS_THE_CARD = {"photoMapOverview", "heroCallouts", "causeCards", "diagramSection"}
+
+
+def card_carries_a_picture(card: dict) -> bool:
+    kind = card.get("type")
+    if kind in DISPLAY_FAMILIES or kind in PICTURE_IS_THE_CARD:
+        return True
+    if card.get("visual") or card.get("photo") or card.get("picture"):
+        return True
+    if kind == "vocabChips":
+        return any(isinstance(chip, dict) and chip.get("photo") for chip in card.get("chips") or [])
+    for row in card.get("rows") or []:
+        cells = row if isinstance(row, list) else [row]
+        if any(isinstance(cell, dict) and (cell.get("visual") or cell.get("photo")) for cell in cells):
+            return True
+    return False
 
 
 
@@ -985,6 +1020,15 @@ def check(args) -> int:
             lesson = read_json(lesson_path, "lesson.json")
     source_tables = [item for _, _, item in rendered_objects(lesson)
                      if item.get("type") == "table" and item.get("headers") and item.get("rows")]
+    wordless = [card.get("title") or card.get("type") or "untitled" for card in cards if not card_carries_a_picture(card)]
+    if wordless:
+        names = ", ".join(f'"{name}"' for name in wordless)
+        raise PacketError(
+            f"Working-wall card{'s' if len(wordless) > 1 else ''} {names} carr{'y' if len(wordless) > 1 else 'ies'} no picture. "
+            "Every wall sheet shows its learning in a picture, a diagram or a helper, never only words. "
+            "Give the card the lesson's own figure or photograph; if the lesson has none that shows this "
+            "learning, leave the card off (an empty wall with a rationaleNote is a valid answer)."
+        )
     for card in cards:
         title = card.get("title") or ""
         for item in card.get("items") or []:

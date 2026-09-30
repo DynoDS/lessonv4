@@ -1,0 +1,31 @@
+{
+  "topic": "Name parts of digestive system",
+  "yearGroup": "Year 4",
+  "lessonSlug": "year-4-science-name-parts-of-digestive-system",
+  "rationaleNote": "One card: the board's own fully labelled body diagram (all seven parts, exactly as slide 20 drew it), kept for the later digestion lessons in this unit where the teacher points back at where food goes. The sticky facts, misconceptions and separate word cards were cut because each is already part of this one picture, and a second sheet would only repeat it in words.",
+  "cards": [
+    {
+      "type": "labelledDiagram",
+      "page": { "size": "A3", "orientation": "portrait" },
+      "title": "The digestive system",
+      "visual": {
+        "type": "label-diagram",
+        "imagePath": "unsplash/digestive-system-unlabelled.png",
+        "layout": "sides",
+        "labelMaxChars": 10,
+        "essential": true,
+        "callouts": [
+          { "anchor": [36, 20], "label": "mouth", "given": true },
+          { "anchor": [51, 40], "label": "oesophagus", "given": true },
+          { "anchor": [55, 47], "label": "stomach", "given": true },
+          { "anchor": [56, 72], "label": "small intestine", "given": true },
+          { "anchor": [34, 66], "label": "large intestine", "given": true },
+          { "anchor": [49, 83], "label": "rectum", "given": true },
+          { "anchor": [50.5, 87.5], "label": "anus", "given": true }
+        ],
+        "helperUse": { "representationId": "rep-001", "configuration": "complete" }
+      },
+      "caption": "Your digestive system is all the parts of your body that break your food down, so your body can use it."
+    }
+  ]
+}

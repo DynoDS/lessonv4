@@ -322,7 +322,7 @@ function tightSvg(data, profile) {
     const lineH = fit.font * LABEL_LINE_GAP;
     const firstY = bandMid - (fit.lines.length * lineH) / 2 + lineH / 2;
     fit.lines.forEach(function (ln, i) {
-      parts.push(`<text x="${f(X(cx))}" y="${f(Y(firstY + i * lineH))}" font-family="Comic Sans MS, sans-serif" font-size="${f(fit.font)}" font-weight="bold" fill="${colour}" text-anchor="middle" dominant-baseline="middle">${esc(ln)}</text>`);
+      parts.push(`<text x="${f(X(cx))}" y="${f(Y(firstY + i * lineH))}" font-family="Comic Sans MS, sans-serif" font-size="${f(fit.font)}" font-weight="bold" fill="${colour}" text-anchor="middle" dy="0.36em">${esc(ln)}</text>`);
     });
   };
   emitLabel(data.label1 || '', leftCx, C.labelL);
@@ -333,7 +333,7 @@ function tightSvg(data, profile) {
   if (showHints) {
     const hint = function (region, txt) {
       const a = regionAnchor(region);
-      parts.push(`<text x="${f(X(a.x))}" y="${f(Y(a.y))}" font-family="Comic Sans MS, sans-serif" font-size="${HINT_FONT}" fill="${C.hint}" text-anchor="middle" dominant-baseline="middle">${esc(txt)}</text>`);
+      parts.push(`<text x="${f(X(a.x))}" y="${f(Y(a.y))}" font-family="Comic Sans MS, sans-serif" font-size="${HINT_FONT}" fill="${C.hint}" text-anchor="middle" dy="0.36em">${esc(txt)}</text>`);
     };
     hint('overlap', 'both');
     hint('outside', 'neither');
@@ -376,7 +376,7 @@ function tightSvg(data, profile) {
         const lineH = fit.font * LABEL_LINE_GAP;
         const firstY = top + fit.h / 2 - (fit.lines.length * lineH) / 2 + lineH / 2;
         fit.lines.forEach(function (ln, i) {
-          parts.push(`<text x="${f(X(cx))}" y="${f(Y(firstY + i * lineH))}" font-family="Comic Sans MS, sans-serif" font-size="${f(fit.font)}" font-weight="bold" fill="${C.chipText}" text-anchor="middle" dominant-baseline="middle">${esc(ln)}</text>`);
+          parts.push(`<text x="${f(X(cx))}" y="${f(Y(firstY + i * lineH))}" font-family="Comic Sans MS, sans-serif" font-size="${f(fit.font)}" font-weight="bold" fill="${C.chipText}" text-anchor="middle" dy="0.36em">${esc(ln)}</text>`);
         });
         chipTop += fit.h + CHIP_VGAP;
       });

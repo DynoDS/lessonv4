@@ -1212,8 +1212,8 @@ report. It owns only `working-wall.json`. Its deterministic check is:
 Require exactly `WORKING_WALL_DESIGN_OK`. The check refuses an empty wall with no
 reason given, a worked example that ends on the number it started from, and a
 reference table that repeats its title as a heading or changes the slides' rows.
-It does not judge whether a card carries a picture: that belongs to the designer,
-so a text-led card passes. Then
+It also refuses a teaching card with no picture: every wall sheet carries one,
+and the designer leaves a card off rather than print words. Then
 build the wall directly, only when `cards` is non-empty:
 
 ```text

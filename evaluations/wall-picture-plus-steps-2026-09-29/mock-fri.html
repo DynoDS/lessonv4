@@ -1,0 +1,75 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@page { size: 297mm 420mm; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #fff; }
+body { width: 297mm; height: 420mm; padding: 10mm; display: flex; flex-direction: column; font-family: 'Comic Sans MS', sans-serif; font-weight: bold; }
+.title { background: #7030A0; color: #fff; text-align: center; font-size: 66pt; line-height: 1.2; padding: 1mm 0 3mm; }
+.panel { background: #EDE3F5; border: 1mm solid #7030A0; border-top: none; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; padding: 4mm 6mm; overflow: hidden; }
+.hero { flex: none; }
+.rows { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-around; border-top: 1mm dashed #B79AD0; padding-top: 3mm; }
+.row { display: flex; align-items: center; gap: 4mm; }
+.badge { flex: none; width: 16mm; height: 16mm; border-radius: 50%; background: #00B050; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 32pt; line-height: 1; padding-bottom: 1mm; }
+.txt { flex: 0 0 128mm; font-size: 26pt; line-height: 1.2; }
+.ex { flex: 1 1 auto; font-size: 40pt; line-height: 1.1; white-space: nowrap; background: #fff; border-radius: 4mm; padding: 2mm 4mm; text-align: center; }
+.ex.q { font-size: 30pt; }
+.t { color: #E36C09; }
+.o { color: #0070C0; }
+.g { color: #00A04A; }
+</style></head><body>
+<div class="title">Tens, then ones</div>
+<div class="panel">
+  <div class="hero">
+    <svg width="100%" viewBox="0 0 1000 300" style="display:block">
+      <g font-family="Comic Sans MS" font-weight="bold" text-anchor="middle">
+        <text x="500" y="110" font-size="110"><tspan>48 + </tspan><tspan>25</tspan></text>
+      </g>
+      <line x1="590" y1="130" x2="520" y2="200" stroke="#555" stroke-width="6"/>
+      <line x1="640" y1="130" x2="710" y2="200" stroke="#555" stroke-width="6"/>
+      <g font-family="Comic Sans MS" font-weight="bold" text-anchor="middle" font-size="80">
+        <text x="505" y="275" fill="#E36C09">20</text>
+        <text x="725" y="275" fill="#0070C0">5</text>
+      </g>
+      <circle cx="860" cy="215" r="40" fill="#00B050"/>
+      <text x="860" y="237" font-family="Comic Sans MS" font-weight="bold" font-size="62" fill="#fff" text-anchor="middle">1</text>
+      
+    </svg>
+    <svg width="100%" viewBox="0 0 1000 330" style="display:block;margin-top:2mm">
+      <!-- empty number line: jumps drawn to show order, not to scale -->
+      <line x1="30" y1="250" x2="970" y2="250" stroke="#000" stroke-width="7"/>
+      <g stroke="#000" stroke-width="7">
+        <line x1="80" y1="228" x2="80" y2="272"/><line x1="600" y1="228" x2="600" y2="272"/>
+        <line x1="740" y1="228" x2="740" y2="272"/><line x1="900" y1="228" x2="900" y2="272"/>
+      </g>
+      <path d="M 80 240 Q 340 -10 600 240" fill="none" stroke="#E36C09" stroke-width="8"/>
+      <path d="M 600 240 Q 670 120 740 240" fill="none" stroke="#0070C0" stroke-width="8"/>
+      <path d="M 740 240 Q 820 120 900 240" fill="none" stroke="#0070C0" stroke-width="8"/>
+      <polygon points="600,244 572,222 598,212" fill="#E36C09"/>
+      <polygon points="740,244 716,220 740,212" fill="#0070C0"/>
+      <polygon points="900,244 876,220 900,212" fill="#0070C0"/>
+      <g font-family="Comic Sans MS" font-weight="bold" text-anchor="middle">
+        <text x="80" y="325" font-size="60">48</text>
+        <text x="600" y="325" font-size="60">68</text>
+        <text x="740" y="325" font-size="60" fill="#00A04A">70</text>
+        <text x="900" y="325" font-size="60">73</text>
+        <text x="370" y="100" font-size="62" fill="#E36C09">+20</text>
+        <text x="670" y="140" font-size="52" fill="#0070C0">+2</text>
+        <text x="820" y="140" font-size="52" fill="#0070C0">+3</text>
+      </g>
+      <g font-family="Comic Sans MS" font-weight="bold" font-size="44" fill="#fff" text-anchor="middle">
+        <circle cx="260" cy="80" r="30" fill="#00B050"/><text x="260" y="95">2</text>
+        <circle cx="670" cy="60" r="30" fill="#00B050"/><text x="670" y="75">4</text>
+        <circle cx="820" cy="60" r="30" fill="#00B050"/><text x="820" y="75">5</text>
+      </g>
+    </svg>
+  </div>
+  <div class="rows">
+    <div class="row"><div class="badge">1</div><div class="txt"><span class="g">Partition</span> the second number into tens and ones.</div><div class="ex">25 = <span class="t">20</span> + <span class="o">5</span></div></div>
+    <div class="row"><div class="badge">2</div><div class="txt">Count on the <span class="t">tens</span> from the first number.</div><div class="ex">48 + <span class="t">20</span> = 68</div></div>
+    <div class="row"><div class="badge">3</div><div class="txt">Will the ones go past the next ten? If not, add them.</div><div class="ex q">68 + <span class="o">5</span> goes past <span class="g">70</span></div></div>
+    <div class="row"><div class="badge">4</div><div class="txt">If they will, add enough ones to <span class="t">reach the next ten</span>.</div><div class="ex">68 + <span class="o">2</span> = <span class="g">70</span></div></div>
+    <div class="row"><div class="badge">5</div><div class="txt">Add the ones that are left.</div><div class="ex">70 + <span class="o">3</span> = 73</div></div>
+  </div>
+</div>
+</body></html>

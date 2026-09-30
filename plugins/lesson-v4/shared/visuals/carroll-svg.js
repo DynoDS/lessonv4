@@ -183,8 +183,8 @@ function tightSvg(data, profile) {
   const colAvail = CELL_W - LABEL_FIT_PAD;
   const colFontL = fitFont(data.colLabel, colAvail, COL_LABEL_FONT, LABEL_MIN_FONT);
   const colFontR = fitFont(data.colNotLabel, colAvail, COL_LABEL_FONT, LABEL_MIN_FONT);
-  parts.push(`<text x="${f(X(colMidL))}" y="${f(Y(colY))}" font-family="Comic Sans MS, sans-serif" font-size="${f(colFontL)}" font-weight="bold" fill="${colLabelC}" text-anchor="middle" dominant-baseline="middle">${esc(data.colLabel || '')}</text>`);
-  parts.push(`<text x="${f(X(colMidR))}" y="${f(Y(colY))}" font-family="Comic Sans MS, sans-serif" font-size="${f(colFontR)}" font-weight="bold" fill="${colLabelC}" text-anchor="middle" dominant-baseline="middle">${esc(data.colNotLabel || '')}</text>`);
+  parts.push(`<text x="${f(X(colMidL))}" y="${f(Y(colY))}" font-family="Comic Sans MS, sans-serif" font-size="${f(colFontL)}" font-weight="bold" fill="${colLabelC}" text-anchor="middle" dy="0.36em">${esc(data.colLabel || '')}</text>`);
+  parts.push(`<text x="${f(X(colMidR))}" y="${f(Y(colY))}" font-family="Comic Sans MS, sans-serif" font-size="${f(colFontR)}" font-weight="bold" fill="${colLabelC}" text-anchor="middle" dy="0.36em">${esc(data.colNotLabel || '')}</text>`);
 
   // Row labels down the side — centred beside each row and ROTATED to run up the
   // side, in house orange, so the two criteria read distinctly (blue across, orange
@@ -197,8 +197,8 @@ function tightSvg(data, profile) {
   const rowAvail = CELL_H - LABEL_FIT_PAD;
   const rowFontT = fitFont(data.rowLabel, rowAvail, ROW_LABEL_FONT, LABEL_MIN_FONT);
   const rowFontB = fitFont(data.rowNotLabel, rowAvail, ROW_LABEL_FONT, LABEL_MIN_FONT);
-  parts.push(`<text x="${f(X(rowX))}" y="${f(Y(rowMidT))}" font-family="Comic Sans MS, sans-serif" font-size="${f(rowFontT)}" font-weight="bold" fill="${rowLabelC}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${f(X(rowX))} ${f(Y(rowMidT))})">${esc(data.rowLabel || '')}</text>`);
-  parts.push(`<text x="${f(X(rowX))}" y="${f(Y(rowMidB))}" font-family="Comic Sans MS, sans-serif" font-size="${f(rowFontB)}" font-weight="bold" fill="${rowLabelC}" text-anchor="middle" dominant-baseline="middle" transform="rotate(-90 ${f(X(rowX))} ${f(Y(rowMidB))})">${esc(data.rowNotLabel || '')}</text>`);
+  parts.push(`<text x="${f(X(rowX))}" y="${f(Y(rowMidT))}" font-family="Comic Sans MS, sans-serif" font-size="${f(rowFontT)}" font-weight="bold" fill="${rowLabelC}" text-anchor="middle" dy="0.36em" transform="rotate(-90 ${f(X(rowX))} ${f(Y(rowMidT))})">${esc(data.rowLabel || '')}</text>`);
+  parts.push(`<text x="${f(X(rowX))}" y="${f(Y(rowMidB))}" font-family="Comic Sans MS, sans-serif" font-size="${f(rowFontB)}" font-weight="bold" fill="${rowLabelC}" text-anchor="middle" dy="0.36em" transform="rotate(-90 ${f(X(rowX))} ${f(Y(rowMidB))})">${esc(data.rowNotLabel || '')}</text>`);
 
   // Placed shapes: rounded chips with the shape name, stacked vertically and
   // centred in each cell when several share it.
@@ -218,7 +218,7 @@ function tightSvg(data, profile) {
       list.forEach(function (s) {
         const top = chipTop;
         parts.push(`<rect x="${f(X(cx - CHIP_W / 2))}" y="${f(Y(top))}" width="${CHIP_W}" height="${CHIP_H}" rx="${CHIP_RX}" fill="${CHIP_FILL}" stroke="${chipStrokeC}" stroke-width="${CHIP_STROKE}"/>`);
-        parts.push(`<text x="${f(X(cx))}" y="${f(Y(top + CHIP_H / 2))}" font-family="Comic Sans MS, sans-serif" font-size="${CHIP_FONT}" font-weight="bold" fill="${chipTextC}" text-anchor="middle" dominant-baseline="middle">${esc(s.label)}</text>`);
+        parts.push(`<text x="${f(X(cx))}" y="${f(Y(top + CHIP_H / 2))}" font-family="Comic Sans MS, sans-serif" font-size="${CHIP_FONT}" font-weight="bold" fill="${chipTextC}" text-anchor="middle" dy="0.36em">${esc(s.label)}</text>`);
         chipTop += CHIP_H + CHIP_VGAP;
       });
     });

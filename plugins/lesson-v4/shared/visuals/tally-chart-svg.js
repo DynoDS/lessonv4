@@ -218,7 +218,7 @@ function tightSvg(data, profile) {
   for (let c = 0; c < colWs.length; c++) {
     const x = colXs[c];
     parts.push(`<rect x="${f(x)}" y="${f(gridTop)}" width="${f(colWs[c])}" height="${f(headerH)}" fill="${C.HEADER_FILL}" stroke="${C.GRID_COLOUR}" stroke-width="${GRID_W}"/>`);
-    parts.push(`<text x="${f(x + colWs[c] / 2)}" y="${f(gridTop + headerH / 2)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${HEADER_FS}" font-weight="bold" fill="${C.TEXT_COLOUR}">${escapeXml(headerTexts[c])}</text>`);
+    parts.push(`<text x="${f(x + colWs[c] / 2)}" y="${f(gridTop + headerH / 2)}" text-anchor="middle" dy="0.36em" font-family="${FONT}" font-size="${HEADER_FS}" font-weight="bold" fill="${C.TEXT_COLOUR}">${escapeXml(headerTexts[c])}</text>`);
   }
 
   // ── Body rows ──
@@ -232,7 +232,7 @@ function tightSvg(data, profile) {
     }
 
     // Label cell — left-aligned text.
-    parts.push(`<text x="${f(CELL_PAD_X)}" y="${f(rowTop + bodyRowH / 2)}" text-anchor="start" dominant-baseline="central" font-family="${FONT}" font-size="${FS}" font-weight="bold" fill="${C.TEXT_COLOUR}">${escapeXml(row && row.label != null ? row.label : '')}</text>`);
+    parts.push(`<text x="${f(CELL_PAD_X)}" y="${f(rowTop + bodyRowH / 2)}" text-anchor="start" dy="0.36em" font-family="${FONT}" font-size="${FS}" font-weight="bold" fill="${C.TEXT_COLOUR}">${escapeXml(row && row.label != null ? row.label : '')}</text>`);
 
     // Tally cell — bundles of five (skipped when blank: the box stays empty).
     if (!blank) {
@@ -248,7 +248,7 @@ function tightSvg(data, profile) {
     if (showTotals && !blank) {
       const { text, isAnswer } = resolveTotal(row);
       const fill = isAnswer ? C.ANSWER_COLOUR : C.TEXT_COLOUR;
-      parts.push(`<text x="${f(colXs[2] + colWs[2] / 2)}" y="${f(rowTop + bodyRowH / 2)}" text-anchor="middle" dominant-baseline="central" font-family="${FONT}" font-size="${FS}" font-weight="bold" fill="${fill}">${escapeXml(text)}</text>`);
+      parts.push(`<text x="${f(colXs[2] + colWs[2] / 2)}" y="${f(rowTop + bodyRowH / 2)}" text-anchor="middle" dy="0.36em" font-family="${FONT}" font-size="${FS}" font-weight="bold" fill="${fill}">${escapeXml(text)}</text>`);
     }
   }
 

@@ -277,7 +277,7 @@ function draw(L) {
       parts.push(`<line x1="${f(plotLeft)}" y1="${f(y)}" x2="${f(plotLeft + plotW)}" y2="${f(y)}" stroke="${GRID_COLOUR}" stroke-width="${f(1.4 * u)}"/>`);
     }
     parts.push(`<line x1="${f(plotLeft - TICK_LEN * u)}" y1="${f(y)}" x2="${f(plotLeft)}" y2="${f(y)}" stroke="${AXIS_COLOUR}" stroke-width="${f(1.8 * u)}"/>`);
-    parts.push(text(plotLeft - TICK_GAP * u, y, v, m.tickFs, `text-anchor="end" dominant-baseline="central" fill="${TEXT_COLOUR}"`));
+    parts.push(text(plotLeft - TICK_GAP * u, y, v, m.tickFs, `text-anchor="end" dy="0.36em" fill="${TEXT_COLOUR}"`));
     if (midGridY === null && v >= s.max / 2) midGridY = y;
   }
   anchors.scale = pct(plotLeft - 56 * u * 0.45, plotTop + plotH * 0.5);

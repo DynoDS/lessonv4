@@ -881,9 +881,9 @@ Do not spawn a separate Educational SVG resolver for any surface.
   complete emoji `picture` when its `fallbackEmoji` is suitable; use the original
   non-empty `alt` when present, otherwise use the original `concept` as `alt`.
   When no suitable fallback exists, drop the failed `picture`. The card then
-  stands as a text-led reference if it still reads as one, and is removed only
-  when the lost picture was its defining representation, which goes in the final
-  report so the gap gets built. An unresolved semantic-vocabulary P2 removes its
+  stays only if it still carries another picture of its learning (every wall
+  sheet carries one); otherwise it is removed, and a lost defining picture goes
+  in the final report so the gap gets built. An unresolved semantic-vocabulary P2 removes its
   `vocabDefinition` card. An unresolved P3 removes only that decoration. Final
   `working-wall.json` contains no unresolved Educational SVG request. P3 remains
   allowed only on `stickyKnowledge`, `workedExample`, `sentenceStem`,

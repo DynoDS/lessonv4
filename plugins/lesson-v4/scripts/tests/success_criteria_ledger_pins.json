@@ -7418,11 +7418,11 @@
   },
   {
    "id": "SC-O04",
-   "outcome": "decisions 11 and 12: the orphaned \"exception above\" is gone; a criteria step is never shortened, split or reworded, and the card makes room; then release 7A (4.2.293): his answer of 26 September 2026 on a wall card whose sentence does not fit (\"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"): the build shrinks the picture a little, then a list goes over a second card, and the picture comes off only when nothing else fits; a success-criteria step is still never reworded",
+   "outcome": "decisions 11 and 12: the orphaned \"exception above\" is gone; a criteria step is never shortened, split or reworded, and the card makes room; then release 7A (4.2.293): his answer of 26 September 2026 on a wall card whose sentence does not fit (\"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"): the build shrinks the picture a little, then a list goes over a second card, and the picture comes off only when nothing else fits; a success-criteria step is still never reworded Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "agents/working-wall-designer.md",
-     "text": "SC steps are never shortened, split or reworded to fit. If the full SC won't fit at the wall's fixed A3 size, make room: drop non-SC extras, carry the list in order over two cards of the same type and title when the wall has room for both, and only when nothing else fits take the card's picture off, unless the steps need it (about 106 characters a step instead of 62); if it still will not fit, omit the card, but never reword the steps.",
+     "text": "SC steps are never shortened, split or reworded to fit. If the full SC won't fit at the wall's fixed A3 size, make room: drop non-SC extras, carry the list in order over two cards of the same type and title when the wall has room for both; if it still will not fit, omit the card. Never take the picture off, and never reword the steps.",
      "section": {
       "heading": "## Rules That Never Change",
       "occurrence": 0,
@@ -7431,7 +7431,7 @@
     },
     {
      "file": "agents/working-wall-designer.md",
-     "text": "**Success criteria steps in particular must be verbatim.** When a worked-example card carries the procedure, the step text must match the lesson's success criteria exactly: same number of steps, same wording, same punctuation, and the same colour marks (`((...))`, `{{...}}`, `<<...>>`), which draw the colours the board used. Children see the SC on the slides during teaching and on the wall during practice; if the two diverge, they stop trusting either. Do not summarise the SC into shorter steps for the wall, do not omit a step because it feels redundant on a card. If the lesson has both a \"past\" SC and a \"to\" SC (or any pair of variant SCs), pick the one your worked-example is showing and copy that SC in full; do not blend or simplify across variants. SC steps are never shortened, split or reworded to fit. If the full SC won't fit at the wall's fixed A3 size, make room: drop non-SC extras, carry the list in order over two cards of the same type and title when the wall has room for both, and only when nothing else fits take the card's picture off, unless the steps need it (about 106 characters a step instead of 62); if it still will not fit, omit the card, but never reword the steps.",
+     "text": "**Success criteria steps in particular must be verbatim.** When a worked-example card carries the procedure, the step text must match the lesson's success criteria exactly: same number of steps, same wording, same punctuation, and the same colour marks (`((...))`, `{{...}}`, `<<...>>`), which draw the colours the board used. Children see the SC on the slides during teaching and on the wall during practice; if the two diverge, they stop trusting either. Do not summarise the SC into shorter steps for the wall, do not omit a step because it feels redundant on a card. If the lesson has both a \"past\" SC and a \"to\" SC (or any pair of variant SCs), pick the one your worked-example is showing and copy that SC in full; do not blend or simplify across variants. SC steps are never shortened, split or reworded to fit. If the full SC won't fit at the wall's fixed A3 size, make room: drop non-SC extras, carry the list in order over two cards of the same type and title when the wall has room for both; if it still will not fit, omit the card. Never take the picture off, and never reword the steps.",
      "section": {
       "heading": "## Rules That Never Change",
       "occurrence": 0,
@@ -7601,11 +7601,11 @@
   },
   {
    "id": "SC-O13",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "references/working-wall-visual-language.md",
-     "text": "The lesson's success-criteria slide, made big and pinned up. Steps as numbered badges down the left, worked example sentence at the bottom.",
+     "text": "The worked example drawn large with its steps pinned to it (`layout: \"pictureFirst\"`)",
      "section": {
       "heading": "## How the card types serve the visual language",
       "occurrence": 0,
@@ -7617,11 +7617,11 @@
   },
   {
    "id": "SC-O14",
-   "outcome": "decision 11: the old visual gate's exception is gone; a text-led card passes the wall-worthy test or stays on the slides",
+   "outcome": "decision 11: the old visual gate's exception is gone; a text-led card passes the wall-worthy test or stays on the slides Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "references/working-wall-visual-language.md",
-     "text": "When none of these gives an honest visual and the card does not pass the wall-worthy test as a text-led reference (`working-wall-card-contracts.md`), it stays on the slides rather than going up as text.",
+     "text": "When none of these gives an honest visual, the card stays on the slides rather than going up as text.",
      "section": {
       "heading": "## When to attach a `visual`",
       "occurrence": 0,
@@ -7630,7 +7630,7 @@
     },
     {
      "file": "references/working-wall-visual-language.md",
-     "text": "When none of these gives an honest visual and the card does not pass the wall-worthy test as a text-led reference (`working-wall-card-contracts.md`), it stays on the slides rather than going up as text. Note that choice in `rationaleNote`, and note any primitive you wished for in your final report - that's how the next renderer build knows what to add next.",
+     "text": "When none of these gives an honest visual, the card stays on the slides rather than going up as text. Note that choice in `rationaleNote`, and note any primitive you wished for in your final report - that's how the next renderer build knows what to add next.",
      "section": {
       "heading": "## When to attach a `visual`",
       "occurrence": 0,
@@ -7649,11 +7649,11 @@
   },
   {
    "id": "SC-O15",
-   "outcome": "decision 11, as O14; then the rest-of-preferences ledger's decisions 11 and 22 (the colours release, 24 September 2026), \"worked example purple too\" and the wall \"uses the board's colour meanings\": a worked-example card is purple, sharing the sticky fact's colour, so the card's shape (numbered steps, or one sentence) says method or fact; the anti-pattern table's sticky-panel row now names the card's shape, not a blue panel, as what says \"fact\"",
+   "outcome": "decision 11, as O14; then the rest-of-preferences ledger's decisions 11 and 22 (the colours release, 24 September 2026), \"worked example purple too\" and the wall \"uses the board's colour meanings\": a worked-example card is purple, sharing the sticky fact's colour, so the card's shape (numbered steps, or one sentence) says method or fact; the anti-pattern table's sticky-panel row now names the card's shape, not a blue panel, as what says \"fact\" Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "references/working-wall-visual-language.md",
-     "text": "Carry a visual (diagram, photo, or emoji cue), or leave the content on the slides, unless it passes the wall-worthy test as a text-led reference (`working-wall-card-contracts.md`), as the lesson's step-by-step success criteria often do.",
+     "text": "Carry a picture of the learning (diagram, photo, or a genuine cue), or leave the content on the slides. A method's success criteria are no exception: draw its worked example and pin the steps to it.",
      "section": {
       "heading": "## Anti-patterns — what breaks the visual language",
       "occurrence": 0,
@@ -7662,7 +7662,7 @@
     },
     {
      "file": "references/working-wall-visual-language.md",
-     "text": "| Anti-pattern | Why it hurts | |---|---| | Long titles that wrap | The title bar is a glance-target. A wrapped title turns the bar into a paragraph and the card stops looking like a poster. | | Three or four items on one card | One concept per page is the whole game. Three items on a card means three half-cards, none of them readable from a desk. | | All-text cards (any subject) | A card a child can only read word-by-word can't be read from across the room, so it isn't wall furniture - it's slide content. Carry a visual (diagram, photo, or emoji cue), or leave the content on the slides, unless it passes the wall-worthy test as a text-led reference (`working-wall-card-contracts.md`), as the lesson's step-by-step success criteria often do. | | A procedure on a sticky-knowledge panel | The sticky card says \"fact\": one sentence to keep, where a method has numbered steps. A procedure on it reads as a fact, not a method, and children stop trusting what the card types mean across the unit. | | Filler cards to hit a count | An empty wall is fine. A wall full of weak cards is worse than a wall with one strong card and two empty hooks. The rationaleNote is where you explain skipping. | | Reference tables as bullet lists | When the lesson used a grid, the wall uses a grid. Reformatting to a list throws away the shape recognition children navigate by. |",
+     "text": "| Anti-pattern | Why it hurts | |---|---| | Long titles that wrap | The title bar is a glance-target. A wrapped title turns the bar into a paragraph and the card stops looking like a poster. | | Three or four items on one card | One concept per page is the whole game. Three items on a card means three half-cards, none of them readable from a desk. | | All-text cards (any subject) | A card a child can only read word-by-word can't be read from across the room, so it isn't wall furniture - it's slide content. Carry a picture of the learning (diagram, photo, or a genuine cue), or leave the content on the slides. A method's success criteria are no exception: draw its worked example and pin the steps to it. | | A procedure on a sticky-knowledge panel | The sticky card says \"fact\": one sentence to keep, where a method has numbered steps. A procedure on it reads as a fact, not a method, and children stop trusting what the card types mean across the unit. | | Filler cards to hit a count | An empty wall is fine. A wall full of weak cards is worse than a wall with one strong card and two empty hooks. The rationaleNote is where you explain skipping. | | Reference tables as bullet lists | When the lesson used a grid, the wall uses a grid. Reformatting to a list throws away the shape recognition children navigate by. |",
      "section": {
       "heading": "## Anti-patterns — what breaks the visual language",
       "occurrence": 0,
@@ -7675,11 +7675,11 @@
   },
   {
    "id": "SC-O16",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "references/working-wall-card-contracts.md",
-     "text": "Why this replaced the older visual gate, which required every card to carry something a child recognises by sight with one exception for a step-by-step success-criteria card: the gate decided cards on whether a picture existed rather than on whether the reference was useful, so it omitted clear text-led references the teacher wanted and waved through a weak card that happened to carry a picture.",
+     "text": "This is not the older visual gate: on 6 September 2026 the point-at test replaced the older gate, which asked whether a picture existed in the lesson, excused a step-by-step success-criteria card, and waved through a weak card that happened to carry a picture.",
      "section": {
       "heading": "## The wall-worthy test",
       "occurrence": 0,
@@ -7723,11 +7723,11 @@
   },
   {
    "id": "SC-O19",
-   "outcome": "decision 12: a criteria step is copied word for word and the card makes room; then release 7A (4.2.293): SA settled item 12: the sticky row says 106, as the wall test and the designer do, and about 72 once the build has shrunk the picture a little (his answer on a wall card's order), and about 106 beside a photo narrowed to a third (his answer on a long sticky fact); then release 7A (4.2.293): his answer of 26 September 2026 on a wall card whose sentence does not fit (\"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"): the build shrinks the picture a little, then a list goes over a second card, and the picture comes off only when nothing else fits; a success-criteria step is still never reworded",
+   "outcome": "decision 12: a criteria step is copied word for word and the card makes room; then release 7A (4.2.293): SA settled item 12: the sticky row says 106, as the wall test and the designer do, and about 72 once the build has shrunk the picture a little (his answer on a wall card's order), and about 106 beside a photo narrowed to a third (his answer on a long sticky fact); then release 7A (4.2.293): his answer of 26 September 2026 on a wall card whose sentence does not fit (\"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"): the build shrinks the picture a little, then a list goes over a second card, and the picture comes off only when nothing else fits; a success-criteria step is still never reworded Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "references/working-wall-preferences.md",
-     "text": "≤ 60 characters beside a picture — \"Read the conjunction — what job does it do?\" fits; a longer step you write needs splitting, but a success-criteria step is copied word for word and the card makes room instead (the list over two cards, and the picture off only when nothing else fits).",
+     "text": "≤ 60 characters beside a picture — \"Read the conjunction — what job does it do?\" fits; a longer step you write needs splitting, but a success-criteria step is copied word for word and the card makes room instead (the list over two cards; the picture never comes off).",
      "section": {
       "heading": "## Wording style — short, concrete, self-contained",
       "occurrence": 0,
@@ -7736,7 +7736,7 @@
     },
     {
      "file": "references/working-wall-preferences.md",
-     "text": "| Card type | Length budget per item (rough guide) | |---|---| | Worked-example step | ≤ 60 characters beside a picture — \"Read the conjunction — what job does it do?\" fits; a longer step you write needs splitting, but a success-criteria step is copied word for word and the card makes room instead (the list over two cards, and the picture off only when nothing else fits). | | Worked-example modelled answer | ≤ 70 characters — full sentences with one main clause, one subordinate clause, and a strong noun. Drop adjectives the lesson used for flavour. | | Sticky-knowledge item | ≤ 62 characters on a card carrying a picture, and about 72 characters once the build has shrunk the picture a little; beside a photo, about 106 characters once the photo has narrowed to about a third of the card and the fact runs to three lines. A card with no picture has the full width, about 106 characters, and a text-led card may use it. | | Sentence-stem item | ≤ 80 characters including the blank. | | Misconception \"Don't\" / \"Do\" | ≤ 50 characters each side. | | Reference table cell | ≤ 30 characters — and check the longest single word fits (no narrow-column hyphens). |",
+     "text": "| Card type | Length budget per item (rough guide) | |---|---| | Worked-example step | ≤ 60 characters beside a picture — \"Read the conjunction — what job does it do?\" fits; a longer step you write needs splitting, but a success-criteria step is copied word for word and the card makes room instead (the list over two cards; the picture never comes off). | | Worked-example modelled answer | ≤ 70 characters — full sentences with one main clause, one subordinate clause, and a strong noun. Drop adjectives the lesson used for flavour. | | Sticky-knowledge item | ≤ 62 characters on a card carrying a picture, and about 72 characters once the build has shrunk the picture a little; beside a photo, about 106 characters once the photo has narrowed to about a third of the card and the fact runs to three lines. A card whose picture sits beneath its words has the full width, about 106 characters. | | Sentence-stem item | ≤ 80 characters including the blank. | | Misconception \"Don't\" / \"Do\" | ≤ 50 characters each side. | | Reference table cell | ≤ 30 characters — and check the longest single word fits (no narrow-column hyphens). |",
      "section": {
       "heading": "## Wording style — short, concrete, self-contained",
       "occurrence": 0,
@@ -7810,7 +7810,7 @@
   },
   {
    "id": "SC-O22",
-   "outcome": "decision 12: the repair never rewords a criteria step and says its card needs room; then release 7A (4.2.293): SA decision 7 and PF decision 22's wording half: room first, a whole sentence always; the sticky-knowledge statement joins the definition sentence, which is unchanged; and release 7A (4.2.293): his answer of 26 September 2026 on a sticky fact too long to sit beside its photo (\"yys\"): the photo narrows to about a third of the card and the whole sentence fits beside it, then a shorter whole sentence, the photo off last of all; and release 7A (4.2.293): his answer of 26 September 2026 on how many long facts one wall card holds (\"yes\"): one three-line fact a card, a second on a second card; then release 7A (4.2.293): SA decision 7 and PF decision 22's wording half: room first, a whole sentence always; the sticky-knowledge statement joins the definition sentence, which is unchanged; and release 7A (4.2.293): his answer of 26 September 2026 on a wall card whose sentence does not fit (\"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"): the build shrinks the picture a little, then a list goes over a second card, and the picture comes off only when nothing else fits; a success-criteria step is still never reworded; and release 7A (4.2.293): his answer of 26 September 2026 on a sticky fact too long to sit beside its photo (\"yys\"): the photo narrows to about a third of the card and the whole sentence fits beside it, then a shorter whole sentence, the photo off last of all",
+   "outcome": "decision 12: the repair never rewords a criteria step and says its card needs room; then release 7A (4.2.293): SA decision 7 and PF decision 22's wording half: room first, a whole sentence always; the sticky-knowledge statement joins the definition sentence, which is unchanged; and release 7A (4.2.293): his answer of 26 September 2026 on a sticky fact too long to sit beside its photo (\"yys\"): the photo narrows to about a third of the card and the whole sentence fits beside it, then a shorter whole sentence, the photo off last of all; and release 7A (4.2.293): his answer of 26 September 2026 on how many long facts one wall card holds (\"yes\"): one three-line fact a card, a second on a second card; then release 7A (4.2.293): SA decision 7 and PF decision 22's wording half: room first, a whole sentence always; the sticky-knowledge statement joins the definition sentence, which is unchanged; and release 7A (4.2.293): his answer of 26 September 2026 on a wall card whose sentence does not fit (\"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"): the build shrinks the picture a little, then a list goes over a second card, and the picture comes off only when nothing else fits; a success-criteria step is still never reworded; and release 7A (4.2.293): his answer of 26 September 2026 on a sticky fact too long to sit beside its photo (\"yys\"): the photo narrows to about a third of the card and the whole sentence fits beside it, then a shorter whole sentence, the photo off last of all Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "agents/working-wall-designer-focused-repair.md",
@@ -7823,7 +7823,7 @@
     },
     {
      "file": "agents/working-wall-designer-focused-repair.md",
-     "text": "An item over its own character budget is different: it needs its card's room first (a list over a second card), then a shorter whole sentence, the picture off last; all are the wall designer's, not this round's, so leave that finding unrepaired and say it needs the wall designer.",
+     "text": "An item over its own character budget is different: it needs its card's room first (a list over a second card), then a shorter whole sentence, the picture never off; all are the wall designer's, not this round's, so leave that finding unrepaired and say it needs the wall designer.",
      "section": {
       "heading": "## Repair and check",
       "occurrence": 0,
@@ -7832,7 +7832,7 @@
     },
     {
      "file": "agents/working-wall-designer-focused-repair.md",
-     "text": "A success-criteria step is never reworded by anyone, so for one of those say instead that its card needs room (its list over two cards, its picture off only when nothing else fits).",
+     "text": "A success-criteria step is never reworded by anyone, so for one of those say instead that its card needs room (its list over two cards; its picture never comes off).",
      "section": {
       "heading": "## Repair and check",
       "occurrence": 0,
@@ -7841,7 +7841,7 @@
     },
     {
      "file": "agents/working-wall-designer-focused-repair.md",
-     "text": "A panel too tall for its page, or a second three-line sticky fact, is a layout fault you can repair without touching a word: put the card's items, in their order, on two cards of the same type and title, when the wall holds only one teaching card (it takes two). `check-repair-scope.py` accepts a list split that way. An item over its own character budget is different: it needs its card's room first (a list over a second card), then a shorter whole sentence, the picture off last; all are the wall designer's, not this round's, so leave that finding unrepaired and say it needs the wall designer. A success-criteria step is never reworded by anyone, so for one of those say instead that its card needs room (its list over two cards, its picture off only when nothing else fits).",
+     "text": "A panel too tall for its page, or a second three-line sticky fact, is a layout fault you can repair without touching a word: put the card's items, in their order, on two cards of the same type and title, when the wall holds only one teaching card (it takes two). `check-repair-scope.py` accepts a list split that way. An item over its own character budget is different: it needs its card's room first (a list over a second card), then a shorter whole sentence, the picture never off; all are the wall designer's, not this round's, so leave that finding unrepaired and say it needs the wall designer. A success-criteria step is never reworded by anyone, so for one of those say instead that its card needs room (its list over two cards; its picture never comes off).",
      "section": {
       "heading": "## Repair and check",
       "occurrence": 0,
@@ -7912,7 +7912,7 @@
   },
   {
    "id": "SC-O26",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place On 30 September 2026 a pictureFirst card puts that item first, as the question line above the picture; the older layout still ends with it.",
    "present": [
     {
      "file": "references/working-wall-preferences.md",
@@ -7934,7 +7934,7 @@
     },
     {
      "file": "references/working-wall-preferences.md",
-     "text": "- Always end a worked example card with one labelled `\"Worked example\"` item that shows the model applied to a concrete case.",
+     "text": "- Always give a worked example card one labelled `\"Worked example\"` item that shows the model applied to a concrete case.",
      "section": {
       "heading": "## Step labels in worked examples",
       "occurrence": 0,

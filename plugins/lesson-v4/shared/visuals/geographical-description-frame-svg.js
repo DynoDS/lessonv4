@@ -168,7 +168,7 @@ function tightSvg(data = {}, profile) {
     parts.push(`<rect x="${panel.x}" y="${panel.y}" width="${panel.w}" height="${panel.h}" rx="${PANEL_RX}" fill="${PANEL_FILL}" stroke="${C.PANEL_STROKE_COLOUR}" stroke-width="${PANEL_STROKE}"/>`);
     parts.push(`<path d="M ${panel.x + PANEL_RX} ${panel.y} H ${panel.x + panel.w - PANEL_RX} Q ${panel.x + panel.w} ${panel.y} ${panel.x + panel.w} ${panel.y + PANEL_RX} V ${panel.y + HEADER_H} H ${panel.x} V ${panel.y + PANEL_RX} Q ${panel.x} ${panel.y} ${panel.x + PANEL_RX} ${panel.y} Z" fill="${C.HEADER_FILL}"/>`);
     parts.push(`<line x1="${panel.x}" y1="${panel.y + HEADER_H}" x2="${panel.x + panel.w}" y2="${panel.y + HEADER_H}" stroke="${C.PANEL_STROKE_COLOUR}" stroke-width="${PANEL_STROKE}"/>`);
-    parts.push(`<text x="${panel.x + TEXT_PAD_X}" y="${panel.y + HEADER_H / 2}" dominant-baseline="central" font-family="${FONT}" font-size="${HEADING_FS}" font-weight="bold" fill="${C.HEADING_COLOUR}">${esc(panel.heading)}</text>`);
+    parts.push(`<text x="${panel.x + TEXT_PAD_X}" y="${panel.y + HEADER_H / 2}" dy="0.36em" font-family="${FONT}" font-size="${HEADING_FS}" font-weight="bold" fill="${C.HEADING_COLOUR}">${esc(panel.heading)}</text>`);
     parts.push(textBlock(panel.prompt.x, panel.prompt.y, panel.prompt, C.TEXT_COLOUR, 'bold'));
 
     if (panel.answer && panel.answerWrap) {

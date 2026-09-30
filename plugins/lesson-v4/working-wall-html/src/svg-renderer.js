@@ -216,17 +216,29 @@ const lineGraphWall = sharedAtWidth(lineGraphShared, WALL_CHART_WIDTH_MM);
 
 
 
-// ─── Step badge (green numbered oval, white digit) ──────────────────────
-// Mirrors slide builder's drawSteps badge — green oval, white centred digit
-// in a heavy bold sans face. Rendered crisp at any wall card size.
+// ─── Step badge (green circle, white digit) ─────────────────────────────
+// Mirrors slide builder's drawSteps badge: a green circle with a white centred
+// digit, in the wall's own title font so the number matches the words beside it.
+//
+// The digit is placed by its baseline, not by dominant-baseline="central". The
+// badge is rasterised through sharp, and the SVG library in the pinned sharp
+// (0.33.5) ignores that attribute (0.34 honours it),
+// so the baseline landed on the centre line and every digit sat in the top half
+// of its circle (a teacher's report, 29 September 2026). A digit inks from its
+// baseline to about three-quarters of the font size above it (0.73-0.76 em in
+// Comic Sans and Arial Black alike), so dropping the baseline by DIGIT_HALF_EM
+// of the font size centres the ink whichever of the two fonts is found.
+const WALL_TITLE_FONT = require('../style.json').fonts.title;
+const DIGIT_HALF_EM = 0.375;
 function badgeSvg(number, sizePx = BADGE_PX, fillColour = '00B050') {
   const cx = sizePx / 2;
   const cy = sizePx / 2;
   const r  = sizePx / 2 - 4;
   const fontSize = Math.round(sizePx * 0.55);
+  const baseline = Math.round(cy + fontSize * DIGIT_HALF_EM);
   return `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${sizePx}" height="${sizePx}" viewBox="0 0 ${sizePx} ${sizePx}">`
     + `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#${fillColour}"/>`
-    + `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="central" font-family="Arial Black, Arial, sans-serif" font-size="${fontSize}" font-weight="900" fill="#FFFFFF">${number}</text>`
+    + `<text x="${cx}" y="${baseline}" text-anchor="middle" font-family="${WALL_TITLE_FONT}, Arial Black, Arial, sans-serif" font-size="${fontSize}" font-weight="bold" fill="#FFFFFF">${number}</text>`
     + `</svg>`;
 }
 
@@ -283,6 +295,7 @@ function resolveCallouts(callouts, anchors) {
   const out = [];
   let dropped = 0;
   for (const c of (callouts || [])) {
+    if (isStepCallout(c)) continue;
     let anchor = Array.isArray(c.anchor) ? c.anchor : resolveAnchorPart(c.part, anchors);
     if (!anchor) { dropped += 1; continue; }
     out.push({ anchor, label: c.label || '', label_at: c.label_at, given: c.given !== false });
@@ -290,8 +303,70 @@ function resolveCallouts(callouts, anchors) {
   return { callouts: out, dropped };
 }
 
+// ─── Step numbers pinned on a picture ───────────────────────────────────
+// A callout carrying `step` (a whole number) is not a word label. It prints a
+// worked example's step number in a green circle ON the picture, at the place
+// that step happens: step 4's circle on the +2 jump, so the teacher can point
+// at the jump and a child can match it to step 4 in the list below. It sits on
+// the drawing itself, with no leader line, because the point is that the step
+// and the place are one thing.
+//
+// It names its place the way a label callout does: `part`, a spot the drawing
+// names (a number line names "jump 1", "jump 2"... beside each jump's label),
+// or `anchor: [x%, y%]`. A named spot may carry its own circle size as a third
+// number; a raw anchor gets STEP_MARKER_SHARE of the drawing's shorter side.
+// A step that cannot be placed stops the build, because a number the list
+// promises and the picture never shows is exactly the mismatch this is for.
+const STEP_MARKER_SHARE = 0.11;
+function isStepCallout(c) {
+  return Boolean(c) && Number.isInteger(c.step) && c.step > 0;
+}
+
+function stepMarkersSvg(callouts, anchors, width, height, baseHref) {
+  const gap = Math.min(width, height) * 0.01;
+  const markers = callouts.map((c) => {
+    const anchor = Array.isArray(c.anchor) ? c.anchor : resolveAnchorPart(c.part, anchors);
+    if (!anchor) {
+      throw new Error(
+        `step ${c.step} is pinned to ${c.part ? `"${c.part}"` : 'no place'}, which this drawing does not name. ` +
+        'Name a part the drawing exposes (a number line names "jump 1", "jump 2"...) or give anchor: [x%, y%].'
+      );
+    }
+    const r = Number.isFinite(anchor[2]) ? (anchor[2] / 100) * height : Math.min(width, height) * STEP_MARKER_SHARE;
+    const cx = Math.min(Math.max((anchor[0] / 100) * width, r), width - r);
+    return { step: c.step, r, cx, cy: (anchor[1] / 100) * height };
+  });
+  // Two circles that would touch: the later one (left to right) rises clear of
+  // the earlier, so neither number is hidden.
+  markers.slice().sort((a, b) => a.cx - b.cx).forEach((m, i, sorted) => {
+    for (let k = 0; k < i; k += 1) {
+      const o = sorted[k];
+      const need = m.r + o.r + gap;
+      if (Math.abs(m.cx - o.cx) < need && Math.abs(m.cy - o.cy) < need) m.cy = o.cy - need;
+    }
+  });
+  // A spot above the drawing's top edge grows the canvas upward rather than
+  // being pushed down onto what it sits above.
+  const top = Math.max(0, ...markers.map((m) => m.r + gap - m.cy));
+  const bottom = Math.max(0, ...markers.map((m) => m.cy + m.r + gap - height));
+  const fullH = height + top + bottom;
+  const circles = markers.map((m) => {
+    const cy = m.cy + top;
+    const pt = m.r * 1.1;
+    return `<circle cx="${m.cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${m.r.toFixed(1)}" fill="${WALL_LABEL_GREEN}"/>` +
+      `<text x="${m.cx.toFixed(1)}" y="${(cy + pt * DIGIT_HALF_EM).toFixed(1)}" text-anchor="middle" ` +
+      `font-family="${WALL_TITLE_FONT}, Arial Black, Arial, sans-serif" font-size="${pt.toFixed(1)}" font-weight="bold" fill="#FFFFFF">${m.step}</text>`;
+  });
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${Math.ceil(fullH)}" viewBox="0 0 ${width} ${Math.ceil(fullH)}">` +
+    `<image href="${baseHref}" xlink:href="${baseHref}" x="0" y="${top.toFixed(1)}" width="${width}" height="${height}"/>` +
+    circles.join('') + `</svg>`;
+  return { svg, width, height: Math.ceil(fullH) };
+}
+
 // Render a primitive, then overlay its callouts, returning { png, aspect } in the
 // same shape the shared aspect-true primitives use so the card places it tight.
+// Step numbers go on first, onto the drawing itself, so any word labels are
+// then laid around a picture that already carries them.
 async function renderAnnotated(visual, prim, sharp) {
   let baseSvg, aspect, anchors = null;
   if (prim.tightFn) {
@@ -302,8 +377,19 @@ async function renderAnnotated(visual, prim, sharp) {
   }
 
   const baseResize = aspect >= 1 ? { width: ANNOTATED_BASE_PX } : { height: ANNOTATED_BASE_PX };
-  const basePng = await sharp(Buffer.from(baseSvg), { density: 144 }).resize(baseResize).png().toBuffer();
+  let basePng = await sharp(Buffer.from(baseSvg), { density: 144 }).resize(baseResize).png().toBuffer();
   const meta = await sharp(basePng).metadata();
+
+  const steps = (visual.callouts || []).filter(isStepCallout);
+  if (steps.length) {
+    const marked = stepMarkersSvg(steps, anchors, meta.width, meta.height, 'data:image/png;base64,' + basePng.toString('base64'));
+    basePng = await sharp(Buffer.from(marked.svg)).png().toBuffer();
+    meta.height = marked.height;
+    if (steps.length === visual.callouts.length) {
+      const png = await sharp(basePng).resize(meta.width >= meta.height ? { width: ANNOTATED_PX } : { height: ANNOTATED_PX }).png().toBuffer();
+      return { png, aspect: meta.width / meta.height };
+    }
+  }
 
   const { callouts, dropped } = resolveCallouts(visual.callouts, anchors);
   if (dropped > 0) {

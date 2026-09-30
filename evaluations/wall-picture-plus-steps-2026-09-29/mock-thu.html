@@ -1,0 +1,61 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@page { size: 420mm 297mm; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #fff; }
+body { width: 420mm; height: 297mm; padding: 10mm; display:flex; flex-direction:column; font-family: 'Comic Sans MS', sans-serif; font-weight: bold; }
+.title { background: #7030A0; color: #fff; text-align: center; font-size: 66pt; line-height: 1.2; padding: 1mm 0 3mm; }
+.panel { background: #EDE3F5; border: 1mm solid #7030A0; border-top: none; flex: 1 1 auto; min-height: 0; display: flex; }
+.hero { flex: 0 0 245mm; width: 245mm; overflow: hidden; padding: 8mm 6mm 6mm 10mm; display: flex; flex-direction: column; justify-content: space-around; }
+.side { flex: 0 0 153mm; width: 153mm; border-left: 1mm dashed #B79AD0; padding: 8mm 8mm 6mm 8mm; display: flex; flex-direction: column; justify-content: center; }
+.badge { flex: none; border-radius: 50%; background: #00B050; color: #fff; display: flex; align-items: center; justify-content: center; }
+.big .badge { width: 26mm; height: 26mm; font-size: 58pt; line-height: 1; padding-bottom: 2mm; }
+.small .badge { width: 16mm; height: 16mm; font-size: 32pt; line-height: 1; padding-bottom: 1mm; }
+.row { display: flex; align-items: center; }
+.big .row { gap: 8mm; }
+.sum { font-size: 86pt; word-spacing: -0.15em; line-height: 1; white-space: nowrap; }
+.g { color: #00A04A; }
+.o { color: #E36C09; }
+.small .row { align-items: flex-start; gap: 4mm; margin: 4mm 0; }
+.small .txt { font-size: 32pt; line-height: 1.25; }
+.small h3 { margin: 0 0 3mm; font-size: 40pt; color: #7030A0; }
+.ring { display: inline-block; border: 1.6mm solid #00A04A; border-radius: 50%; padding: 0 5mm; line-height: 1.05; }
+</style></head><body>
+<div class="title">How to add three numbers</div>
+<div class="panel">
+  <div class="hero big">
+    <div class="row">
+      <div class="badge">1</div>
+      <svg width="195mm" height="60mm" viewBox="0 0 800 248">
+        <g font-family="Comic Sans MS" font-weight="bold" font-size="140" text-anchor="middle">
+          <circle cx="90" cy="100" r="78" fill="#fff" stroke="#00A04A" stroke-width="7"/>
+          <text x="90" y="148" fill="#00A04A">7</text>
+          <text x="230" y="148">+</text>
+          <text x="370" y="148" fill="#E36C09">5</text>
+          <text x="510" y="148">+</text>
+          <circle cx="650" cy="100" r="78" fill="#fff" stroke="#00A04A" stroke-width="7"/>
+          <text x="650" y="148" fill="#00A04A">3</text>
+        </g>
+        <path d="M 90 182 Q 370 290 650 182" fill="none" stroke="#00A04A" stroke-width="7"/>
+        <rect x="300" y="180" width="140" height="68" rx="14" fill="#00A04A"/>
+        <text x="370" y="230" font-family="Comic Sans MS" font-weight="bold" font-size="58" fill="#fff" text-anchor="middle">10</text>
+      </svg>
+    </div>
+    <div class="row">
+      <div class="badge">2</div>
+      <div class="sum"><span class="g">7</span> + <span class="g">3</span> = <span class="g">10</span></div>
+    </div>
+    <div class="row">
+      <div class="badge">3</div>
+      <div class="sum"><span class="g">10</span> + <span class="o">5</span> = 15</div>
+    </div>
+  </div>
+  <div class="side small">
+    <h3>The steps</h3>
+    <div class="row"><div class="badge">1</div><div class="txt">Find two numbers that are a <span class="g">number bond</span> to 10. They might not be next to each other.</div></div>
+    <div class="row"><div class="badge">2</div><div class="txt">Add those two first: ___ + ___ = 10.</div></div>
+    <div class="row"><div class="badge">3</div><div class="txt">Add the <span class="o">last number</span> to 10: 10 + ___ = ___.</div></div>
+  </div>
+</div>
+</body></html>

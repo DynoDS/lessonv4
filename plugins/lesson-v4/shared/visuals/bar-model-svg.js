@@ -141,7 +141,7 @@ function tightSvg(data, profile) {
   function drawText(cx, cy, s, fs, anchor) {
     if (s == null || s === '') return;
     const a = anchor || 'middle';
-    parts.push(`<text x="${f(cx)}" y="${f(cy)}" text-anchor="${a}" dominant-baseline="central" font-family="${FONT}" font-size="${fs}" font-weight="bold" fill="${C.TEXT_COL}">${esc(s)}</text>`);
+    parts.push(`<text x="${f(cx)}" y="${f(cy)}" text-anchor="${a}" dy="0.36em" font-family="${FONT}" font-size="${fs}" font-weight="bold" fill="${C.TEXT_COL}">${esc(s)}</text>`);
     const w = textWidth(s, fs);
     let lx, rx;
     if (a === 'end')       { lx = cx - w; rx = cx; }

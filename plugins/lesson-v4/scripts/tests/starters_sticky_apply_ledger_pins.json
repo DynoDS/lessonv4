@@ -4910,11 +4910,11 @@
   },
   {
    "id": "SA-I06",
-   "outcome": "SA settled item 12, his \"yes\": out-of-date text corrected, no rule changed (the wall test and the designer say 106); then his answer of 26 September 2026 on a wall card whose sentence does not fit, asked whether the order should be the picture a little smaller first, then a bigger or second card, the picture off only when nothing else fits, and a sentence never cut: \"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"; the build shrinks the picture a little, a list goes over a second card, and the picture comes off only when nothing else fits (about 72 once it has); then his answer of 26 September 2026 on a sticky fact too long to sit beside its photo, asked whether the photo should shrink further, to about a third of the card, so the whole sentence fits beside it; only then the sentence rewritten as a shorter whole sentence; the photo off only as the very last move: \"yys\" (yes); the photo narrows to about a third and the fact runs to three lines at the floor size (about 106 beside a photo)",
+   "outcome": "SA settled item 12, his \"yes\": out-of-date text corrected, no rule changed (the wall test and the designer say 106); then his answer of 26 September 2026 on a wall card whose sentence does not fit, asked whether the order should be the picture a little smaller first, then a bigger or second card, the picture off only when nothing else fits, and a sentence never cut: \"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"; the build shrinks the picture a little, a list goes over a second card, and the picture comes off only when nothing else fits (about 72 once it has); then his answer of 26 September 2026 on a sticky fact too long to sit beside its photo, asked whether the photo should shrink further, to about a third of the card, so the whole sentence fits beside it; only then the sentence rewritten as a shorter whole sentence; the photo off only as the very last move: \"yys\" (yes); the photo narrows to about a third and the fact runs to three lines at the floor size (about 106 beside a photo) Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "references/working-wall-preferences.md",
-     "text": "≤ 62 characters on a card carrying a picture, and about 72 characters once the build has shrunk the picture a little; beside a photo, about 106 characters once the photo has narrowed to about a third of the card and the fact runs to three lines. A card with no picture has the full width, about 106 characters, and a text-led card may use it.",
+     "text": "≤ 62 characters on a card carrying a picture, and about 72 characters once the build has shrunk the picture a little; beside a photo, about 106 characters once the photo has narrowed to about a third of the card and the fact runs to three lines. A card whose picture sits beneath its words has the full width, about 106 characters.",
      "section": {
       "heading": "## Wording style — short, concrete, self-contained",
       "occurrence": 0,
@@ -4923,7 +4923,7 @@
     },
     {
      "file": "references/working-wall-preferences.md",
-     "text": "| Card type | Length budget per item (rough guide) | |---|---| | Worked-example step | ≤ 60 characters beside a picture — \"Read the conjunction — what job does it do?\" fits; a longer step you write needs splitting, but a success-criteria step is copied word for word and the card makes room instead (the list over two cards, and the picture off only when nothing else fits). | | Worked-example modelled answer | ≤ 70 characters — full sentences with one main clause, one subordinate clause, and a strong noun. Drop adjectives the lesson used for flavour. | | Sticky-knowledge item | ≤ 62 characters on a card carrying a picture, and about 72 characters once the build has shrunk the picture a little; beside a photo, about 106 characters once the photo has narrowed to about a third of the card and the fact runs to three lines. A card with no picture has the full width, about 106 characters, and a text-led card may use it. | | Sentence-stem item | ≤ 80 characters including the blank. | | Misconception \"Don't\" / \"Do\" | ≤ 50 characters each side. | | Reference table cell | ≤ 30 characters — and check the longest single word fits (no narrow-column hyphens). |",
+     "text": "| Card type | Length budget per item (rough guide) | |---|---| | Worked-example step | ≤ 60 characters beside a picture — \"Read the conjunction — what job does it do?\" fits; a longer step you write needs splitting, but a success-criteria step is copied word for word and the card makes room instead (the list over two cards; the picture never comes off). | | Worked-example modelled answer | ≤ 70 characters — full sentences with one main clause, one subordinate clause, and a strong noun. Drop adjectives the lesson used for flavour. | | Sticky-knowledge item | ≤ 62 characters on a card carrying a picture, and about 72 characters once the build has shrunk the picture a little; beside a photo, about 106 characters once the photo has narrowed to about a third of the card and the fact runs to three lines. A card whose picture sits beneath its words has the full width, about 106 characters. | | Sentence-stem item | ≤ 80 characters including the blank. | | Misconception \"Don't\" / \"Do\" | ≤ 50 characters each side. | | Reference table cell | ≤ 30 characters — and check the longest single word fits (no narrow-column hyphens). |",
      "section": {
       "heading": "## Wording style — short, concrete, self-contained",
       "occurrence": 0,
@@ -5148,7 +5148,7 @@
   },
   {
    "id": "SA-I15",
-   "outcome": "changed by the colours release (7C, 4.2.292, committed before 7A); its pins are the colours release's own: reworded: decision 22, its colour half (\"yes\": the wall uses the board's colour meanings; the mapping derived from it, rendered for him): the sticky card says \"fact\" by its shape",
+   "outcome": "changed by the colours release (7C, 4.2.292, committed before 7A); its pins are the colours release's own: reworded: decision 22, its colour half (\"yes\": the wall uses the board's colour meanings; the mapping derived from it, rendered for him): the sticky card says \"fact\" by its shape Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "references/working-wall-visual-language.md",
@@ -5161,7 +5161,7 @@
     },
     {
      "file": "references/working-wall-visual-language.md",
-     "text": "| Anti-pattern | Why it hurts | |---|---| | Long titles that wrap | The title bar is a glance-target. A wrapped title turns the bar into a paragraph and the card stops looking like a poster. | | Three or four items on one card | One concept per page is the whole game. Three items on a card means three half-cards, none of them readable from a desk. | | All-text cards (any subject) | A card a child can only read word-by-word can't be read from across the room, so it isn't wall furniture - it's slide content. Carry a visual (diagram, photo, or emoji cue), or leave the content on the slides, unless it passes the wall-worthy test as a text-led reference (`working-wall-card-contracts.md`), as the lesson's step-by-step success criteria often do. | | A procedure on a sticky-knowledge panel | The sticky card says \"fact\": one sentence to keep, where a method has numbered steps. A procedure on it reads as a fact, not a method, and children stop trusting what the card types mean across the unit. | | Filler cards to hit a count | An empty wall is fine. A wall full of weak cards is worse than a wall with one strong card and two empty hooks. The rationaleNote is where you explain skipping. | | Reference tables as bullet lists | When the lesson used a grid, the wall uses a grid. Reformatting to a list throws away the shape recognition children navigate by. |",
+     "text": "| Anti-pattern | Why it hurts | |---|---| | Long titles that wrap | The title bar is a glance-target. A wrapped title turns the bar into a paragraph and the card stops looking like a poster. | | Three or four items on one card | One concept per page is the whole game. Three items on a card means three half-cards, none of them readable from a desk. | | All-text cards (any subject) | A card a child can only read word-by-word can't be read from across the room, so it isn't wall furniture - it's slide content. Carry a picture of the learning (diagram, photo, or a genuine cue), or leave the content on the slides. A method's success criteria are no exception: draw its worked example and pin the steps to it. | | A procedure on a sticky-knowledge panel | The sticky card says \"fact\": one sentence to keep, where a method has numbered steps. A procedure on it reads as a fact, not a method, and children stop trusting what the card types mean across the unit. | | Filler cards to hit a count | An empty wall is fine. A wall full of weak cards is worse than a wall with one strong card and two empty hooks. The rationaleNote is where you explain skipping. | | Reference tables as bullet lists | When the lesson used a grid, the wall uses a grid. Reformatting to a list throws away the shape recognition children navigate by. |",
      "section": {
       "heading": "## Anti-patterns — what breaks the visual language",
       "occurrence": 0,
@@ -5271,11 +5271,11 @@
   },
   {
    "id": "SA-I20",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "references/working-wall-visual-language.md",
-     "text": "3. **The card benefits from the diagram.** Worked examples and sticky knowledge often need drawn relationships;",
+     "text": "3. **The diagram shows this card's learning.** Worked examples and sticky knowledge usually need the drawn relationship itself.",
      "section": {
       "heading": "## When to attach a `visual`",
       "occurrence": 0,
@@ -8669,7 +8669,7 @@
   },
   {
    "id": "SA-ADD-05-WALL-COPIES",
-   "outcome": "SA decision 7, his \"Yes\": the lesson's own words on the wall, shortened only when they genuinely cannot fit, and then still a whole sentence a teacher would say and PF decision 22, its wording half, his \"yes\": the wall keeps children's sentences whole, a bigger (no-picture) or second card rather than a clipped one: the wall designer's and the wall preferences' other copies say room first, then a whole sentence",
+   "outcome": "SA decision 7, his \"Yes\": the lesson's own words on the wall, shortened only when they genuinely cannot fit, and then still a whole sentence a teacher would say and PF decision 22, its wording half, his \"yes\": the wall keeps children's sentences whole, a bigger (no-picture) or second card rather than a clipped one: the wall designer's and the wall preferences' other copies say room first, then a whole sentence Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "agents/working-wall-designer.md",
@@ -8682,7 +8682,7 @@
     },
     {
      "file": "agents/working-wall-designer.md",
-     "text": "Making room is the *first* move when an item overruns, not the last: the build narrows the picture (a sticky fact's photo to a third; one such fact a card), then a list goes over a second card, then a shorter whole sentence; the picture comes off last (his walls rarely have a card without one).",
+     "text": "Making room is the *first* move when an item overruns, not the last: the build narrows the picture (a sticky fact's photo to a third; one such fact a card), then a list goes over a second card, then a shorter whole sentence; the picture never comes off (rule 2).",
      "section": {
       "heading": "## Rules That Never Change",
       "occurrence": 0,
@@ -8727,7 +8727,7 @@
     },
     {
      "file": "references/working-wall-preferences.md",
-     "text": "make room first (the picture narrowed, a list over two cards), then shorten faithful display text to a whole sentence (never a success-criteria step, which is copied word for word), take the picture off,",
+     "text": "make room first (the picture narrowed, a list over two cards), then shorten faithful display text to a whole sentence (never a success-criteria step, which is copied word for word), simplify the layout, or remove the card (the picture never comes off),",
      "section": {
       "heading": "## Wording style — short, concrete, self-contained",
       "occurrence": 0,
@@ -8745,7 +8745,7 @@
     },
     {
      "file": "agents/working-wall-designer-focused-repair.md",
-     "text": "it needs its card's room first (a list over a second card), then a shorter whole sentence, the picture off last; all are the wall designer's, not this round's",
+     "text": "it needs its card's room first (a list over a second card), then a shorter whole sentence, the picture never off; all are the wall designer's, not this round's",
      "section": {
       "heading": "## Repair and check",
       "occurrence": 0,
@@ -8799,7 +8799,7 @@
   },
   {
    "id": "SA-ADD-09-WALL-ORDER",
-   "outcome": "his answer of 26 September 2026 on a wall card whose sentence does not fit, asked whether the order should be the picture a little smaller first, then a bigger or second card, the picture off only when nothing else fits, and a sentence never cut: \"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"; the build shrinks the picture a little, a list goes over a second card, and the picture comes off only when nothing else fits: the fitter's own first move, the picture giving up a little width (the words' share from 60% to at most 70%) before the build refuses; a card whose words fit keeps the full share",
+   "outcome": "his answer of 26 September 2026 on a wall card whose sentence does not fit, asked whether the order should be the picture a little smaller first, then a bigger or second card, the picture off only when nothing else fits, and a sentence never cut: \"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"; the build shrinks the picture a little, a list goes over a second card, and the picture comes off only when nothing else fits: the fitter's own first move, the picture giving up a little width (the words' share from 60% to at most 70%) before the build refuses; a card whose words fit keeps the full share Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "working-wall-html/src/visuals.js",
@@ -8843,7 +8843,7 @@
     },
     {
      "file": "agents/working-wall-designer.md",
-     "text": "If the full SC won't fit at the wall's fixed A3 size, make room: drop non-SC extras, carry the list in order over two cards of the same type and title when the wall has room for both, and only when nothing else fits take the card's picture off, unless the steps need it (about 106 characters a step instead of 62);",
+     "text": "If the full SC won't fit at the wall's fixed A3 size, make room: drop non-SC extras, carry the list in order over two cards of the same type and title when the wall has room for both; if it still will not fit, omit the card. Never take the picture off, and never reword the steps.",
      "section": {
       "heading": "## Rules That Never Change",
       "occurrence": 0,
@@ -8852,7 +8852,7 @@
     },
     {
      "file": "references/working-wall-preferences.md",
-     "text": "the card makes room instead (the list over two cards, and the picture off only when nothing else fits).",
+     "text": "the card makes room instead (the list over two cards; the picture never comes off).",
      "section": {
       "heading": "## Wording style — short, concrete, self-contained",
       "occurrence": 0,
@@ -8861,7 +8861,7 @@
     },
     {
      "file": "agents/working-wall-designer-focused-repair.md",
-     "text": "say instead that its card needs room (its list over two cards, its picture off only when nothing else fits).",
+     "text": "say instead that its card needs room (its list over two cards; its picture never comes off).",
      "section": {
       "heading": "## Repair and check",
       "occurrence": 0,
@@ -9197,7 +9197,7 @@
   },
   {
    "id": "SA-ADD-12-STICKY-THIRD",
-   "outcome": "his answer of 26 September 2026 on a sticky fact too long to sit beside its photo, asked whether the photo should shrink further, to about a third of the card, so the whole sentence fits beside it; only then the sentence rewritten as a shorter whole sentence; the photo off only as the very last move: \"yys\" (yes); the photo narrows to about a third and the fact runs to three lines at the floor size: after the photo gives way a little, a sticky fact that still does not fit keeps its photo, narrowed to about a third, and its whole sentence, on up to three lines at the floor size; then the wall designer's shorter whole sentence, and the picture off last of all",
+   "outcome": "his answer of 26 September 2026 on a sticky fact too long to sit beside its photo, asked whether the photo should shrink further, to about a third of the card, so the whole sentence fits beside it; only then the sentence rewritten as a shorter whole sentence; the photo off only as the very last move: \"yys\" (yes); the photo narrows to about a third and the fact runs to three lines at the floor size: after the photo gives way a little, a sticky fact that still does not fit keeps its photo, narrowed to about a third, and its whole sentence, on up to three lines at the floor size; then the wall designer's shorter whole sentence, and the picture off last of all Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "present": [
     {
      "file": "working-wall-html/src/visuals.js",
@@ -9235,7 +9235,7 @@
     },
     {
      "file": "agents/working-wall-designer.md",
-     "text": "4. **Take the picture off** (rule 8). 5. **Drop the card**, and only here.",
+     "text": "4. **Drop the card**, and only here.",
      "section": {
       "heading": "## Write to the card's character budget",
       "occurrence": 0,
@@ -10197,7 +10197,7 @@
   },
   {
    "id": "PF-B75",
-   "outcome": "PF decision 22, its wording half, his \"yes\": the wall keeps children's sentences whole, a bigger (no-picture) or second card rather than a clipped one; then his answer of 26 September 2026 on a wall card whose sentence does not fit, asked whether the order should be the picture a little smaller first, then a bigger or second card, the picture off only when nothing else fits, and a sentence never cut: \"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"; the build shrinks the picture a little, a list goes over a second card, and the picture comes off only when nothing else fits; then his answer of 26 September 2026 on a sticky fact too long to sit beside its photo, asked whether the photo should shrink further, to about a third of the card, so the whole sentence fits beside it; only then the sentence rewritten as a shorter whole sentence; the photo off only as the very last move: \"yys\" (yes); the photo narrows to about a third and the fact runs to three lines at the floor size; then his answer of 26 September 2026 on how many long facts one wall card holds, asked whether a long fact may run to three lines but a card holds only one of them, any other going on a second card: \"yes\"",
+   "outcome": "PF decision 22, its wording half, his \"yes\": the wall keeps children's sentences whole, a bigger (no-picture) or second card rather than a clipped one; then his answer of 26 September 2026 on a wall card whose sentence does not fit, asked whether the order should be the picture a little smaller first, then a bigger or second card, the picture off only when nothing else fits, and a sentence never cut: \"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"; the build shrinks the picture a little, a list goes over a second card, and the picture comes off only when nothing else fits; then his answer of 26 September 2026 on a sticky fact too long to sit beside its photo, asked whether the photo should shrink further, to about a third of the card, so the whole sentence fits beside it; only then the sentence rewritten as a shorter whole sentence; the photo off only as the very last move: \"yys\" (yes); the photo narrows to about a third and the fact runs to three lines at the floor size; then his answer of 26 September 2026 on how many long facts one wall card holds, asked whether a long fact may run to three lines but a card holds only one of them, any other going on a second card: \"yes\" Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "ledgerFile": "agents/working-wall-designer.md",
    "present": [
     {
@@ -10220,7 +10220,7 @@
     },
     {
      "file": "agents/working-wall-designer.md",
-     "text": "Making room is the *first* move when an item overruns, not the last: the build narrows the picture (a sticky fact's photo to a third; one such fact a card), then a list goes over a second card, then a shorter whole sentence; the picture comes off last (his walls rarely have a card without one).",
+     "text": "Making room is the *first* move when an item overruns, not the last: the build narrows the picture (a sticky fact's photo to a third; one such fact a card), then a list goes over a second card, then a shorter whole sentence; the picture never comes off (rule 2).",
      "section": {
       "heading": "## Rules That Never Change",
       "occurrence": 0,
@@ -10239,7 +10239,7 @@
     },
     {
      "file": "agents/working-wall-designer.md",
-     "text": "Making room is the *first* move when an item overruns, not the last: the build narrows the picture (a sticky fact's photo to a third; one such fact a card), then a list goes over a second card, then a shorter whole sentence; the picture comes off last (his walls rarely have a card without one). A one-sentence fact that goes eight characters over is not a card that failed to earn its place: it is a sentence whose card needs room. Drop the card only when the meaning genuinely cannot survive the budget; a safety line lost off the wall is a real cost to a real class, and \"it was three characters too long\" is not a reason a teacher would accept. When you do shorten, say so in `rationaleNote` with the lesson's original wording, so the teacher can see what changed.",
+     "text": "Making room is the *first* move when an item overruns, not the last: the build narrows the picture (a sticky fact's photo to a third; one such fact a card), then a list goes over a second card, then a shorter whole sentence; the picture never comes off (rule 2). A one-sentence fact that goes eight characters over is not a card that failed to earn its place: it is a sentence whose card needs room. Drop the card only when the meaning genuinely cannot survive the budget; a safety line lost off the wall is a real cost to a real class, and \"it was three characters too long\" is not a reason a teacher would accept. When you do shorten, say so in `rationaleNote` with the lesson's original wording, so the teacher can see what changed.",
      "section": {
       "heading": "## Rules That Never Change",
       "occurrence": 0,
@@ -10265,12 +10265,12 @@
   },
   {
    "id": "PF-B76",
-   "outcome": "PF decision 22, its wording half, his \"yes\": the wall keeps children's sentences whole, a bigger (no-picture) or second card rather than a clipped one; then his answer of 26 September 2026 on a wall card whose sentence does not fit, asked whether the order should be the picture a little smaller first, then a bigger or second card, the picture off only when nothing else fits, and a sentence never cut: \"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"; the build shrinks the picture a little, a list goes over a second card, and the picture comes off only when nothing else fits; then his answer of 26 September 2026 on a sticky fact too long to sit beside its photo, asked whether the photo should shrink further, to about a third of the card, so the whole sentence fits beside it; only then the sentence rewritten as a shorter whole sentence; the photo off only as the very last move: \"yys\" (yes); the photo narrows to about a third and the fact runs to three lines at the floor size",
+   "outcome": "PF decision 22, its wording half, his \"yes\": the wall keeps children's sentences whole, a bigger (no-picture) or second card rather than a clipped one; then his answer of 26 September 2026 on a wall card whose sentence does not fit, asked whether the order should be the picture a little smaller first, then a bigger or second card, the picture off only when nothing else fits, and a sentence never cut: \"answer to your wall question, I guess, but I rarely also use cards with no picture or helper, so?\"; the build shrinks the picture a little, a list goes over a second card, and the picture comes off only when nothing else fits; then his answer of 26 September 2026 on a sticky fact too long to sit beside its photo, asked whether the photo should shrink further, to about a third of the card, so the whole sentence fits beside it; only then the sentence rewritten as a shorter whole sentence; the photo off only as the very last move: \"yys\" (yes); the photo narrows to about a third and the fact runs to three lines at the floor size Superseded on 29 September 2026 by his ruling that every working wall sheet carries a picture, a diagram or a helper, never only words: the picture never comes off, and a card that cannot keep it is left off the wall.",
    "ledgerFile": "agents/working-wall-designer-focused-repair.md",
    "present": [
     {
      "file": "agents/working-wall-designer-focused-repair.md",
-     "text": "An item over its own character budget is different: it needs its card's room first (a list over a second card), then a shorter whole sentence, the picture off last; all are the wall designer's, not this round's, so leave that finding unrepaired and say it needs the wall designer.",
+     "text": "An item over its own character budget is different: it needs its card's room first (a list over a second card), then a shorter whole sentence, the picture never off; all are the wall designer's, not this round's, so leave that finding unrepaired and say it needs the wall designer.",
      "section": {
       "heading": "## Repair and check",
       "occurrence": 0,
@@ -10279,7 +10279,7 @@
     },
     {
      "file": "agents/working-wall-designer-focused-repair.md",
-     "text": "A panel too tall for its page, or a second three-line sticky fact, is a layout fault you can repair without touching a word: put the card's items, in their order, on two cards of the same type and title, when the wall holds only one teaching card (it takes two). `check-repair-scope.py` accepts a list split that way. An item over its own character budget is different: it needs its card's room first (a list over a second card), then a shorter whole sentence, the picture off last; all are the wall designer's, not this round's, so leave that finding unrepaired and say it needs the wall designer. A success-criteria step is never reworded by anyone, so for one of those say instead that its card needs room (its list over two cards, its picture off only when nothing else fits).",
+     "text": "A panel too tall for its page, or a second three-line sticky fact, is a layout fault you can repair without touching a word: put the card's items, in their order, on two cards of the same type and title, when the wall holds only one teaching card (it takes two). `check-repair-scope.py` accepts a list split that way. An item over its own character budget is different: it needs its card's room first (a list over a second card), then a shorter whole sentence, the picture never off; all are the wall designer's, not this round's, so leave that finding unrepaired and say it needs the wall designer. A success-criteria step is never reworded by anyone, so for one of those say instead that its card needs room (its list over two cards; its picture never comes off).",
      "section": {
       "heading": "## Repair and check",
       "occurrence": 0,

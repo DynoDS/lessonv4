@@ -1,0 +1,32 @@
+{
+  "topic": "Why do we remember Lord Shaftesbury?",
+  "yearGroup": "Year 4",
+  "lessonSlug": "history",
+  "rationaleNote": "One heroCallouts sheet (the teacher's kept shape): Shaftesbury's portrait with the lesson's own work and learning changes, including the older-boys limit, kept for Lesson 5, where the teacher points at it to explain why children's time out of work changed. The significance steps (sc-001), the John Pounds comparison and the 1944 name change stay on the board because Lesson 5 asks about change, not significance; the only edit is 'He' made 'Shaftesbury' in 'He helped support schools that others ran.'",
+  "cards": [
+    {
+      "type": "heroCallouts",
+      "page": { "size": "A3", "orientation": "landscape" },
+      "title": "Lord Shaftesbury",
+      "heroPhoto": "unsplash/shaftesbury-portrait.jpg",
+      "heroCaption": "Lord Shaftesbury campaigned with others to protect children through laws.",
+      "groups": [
+        {
+          "title": "Work",
+          "items": [
+            "Shaftesbury supported the 1842 Mines Act.",
+            "It banned underground work for women, girls and boys under ten.",
+            "Boys aged ten and over could still work underground."
+          ]
+        },
+        {
+          "title": "Learning",
+          "items": [
+            "Ragged schools gave poorer children a chance to learn without paying school fees.",
+            "Shaftesbury helped support schools that others ran."
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -33,6 +33,7 @@ const {
   PHOTO_AT_A_THIRD,
 } = require("./visuals");
 const { badgeKey } = require("./svg-renderer");
+const { renderPictureFirstWorkedExample } = require("./render-method");
 const { esc, markedHtml, mm, hash, imgTag, visualTag, titleBarHtml, panelHtml, panelWithVisualHtml, twoUpPanelsHtml } = require("./shared");
 const { criteriaSegments, plainCriteria } = require("../../shared/text/criteria-marks");
 
@@ -361,6 +362,15 @@ function modelExampleParagraphHtml(label, text, bodyPt, labelPt, accentColour, s
 }
 
 function renderWorkedExample(card, style, specDir, ctx = {}) {
+  // The picture-led layout: the worked example drawn large and each step beside
+  // its own working (render-method.js says why).
+  if (card.layout === "pictureFirst") return renderPictureFirstWorkedExample(card, style, specDir, ctx);
+  if ((card.items || []).some((item) => item && item.working)) {
+    throw new Error(
+      `Worked example "${card.title || "untitled"}" gives its steps working, which prints only on a ` +
+      `\`layout: "pictureFirst"\` card, where each step sits beside its own working.`
+    );
+  }
   const items = card.items || [];
   // Steps copied from the board keep their colour marks; the fit reads only
   // the words a child sees.

@@ -12,9 +12,9 @@ A card earns its place only when it passes all of its family's criteria below, a
 
 Why this replaced the older test, which asked whether a child who missed the lesson could use the card alone: that test aims at the wrong reader. A card written for a child who was not there has to explain itself from scratch, so it comes out general and lifeless, and across 45 built lessons the teacher put up two of the 56 sheets it produced. The two he kept were the two he could point at a week later. The card still has to be usable by the child standing in front of it, with enough context, an example or a picture to help without the teacher explaining its layout; it does not have to reteach a missed lesson.
 
-**The visual a card carries.** Choose the visual the card's learning needs, following `working-wall-visual-language.md` → Choose visuals for the card's learning. Preserve a defining representation: the diagram, source or photograph a child recognises the learning by. A concise text-led reference is valid where it is clear and usable. An unrelated picture does not make a weak card useful, and a decoration is never what earns a card its place.
+**The visual a card carries.** Choose the visual the card's learning needs, following `working-wall-visual-language.md` → Choose visuals for the card's learning. Preserve a defining representation: the diagram, source or photograph a child recognises the learning by. Every card carries a picture of its learning, never only words: the packet check refuses a teaching card without one, and the answer to a card with no honest picture is to leave it off. An unrelated picture does not make a weak card useful, and a decoration is never what earns a card its place.
 
-Why this replaced the older visual gate, which required every card to carry something a child recognises by sight with one exception for a step-by-step success-criteria card: the gate decided cards on whether a picture existed rather than on whether the reference was useful, so it omitted clear text-led references the teacher wanted and waved through a weak card that happened to carry a picture. What earns a card its place is the point-at test above, and whether the child in front of it can use it.
+This is not the older visual gate: on 6 September 2026 the point-at test replaced the older gate, which asked whether a picture existed in the lesson, excused a step-by-step success-criteria card, and waved through a weak card that happened to carry a picture. The teacher's rule of 29 September 2026 asks whether each sheet carries a picture that shows its learning, success criteria included: a method goes up as its worked example drawn large with the steps pinned to it. A picture still does not earn a card its place; the point-at test above does, and whether the child in front of it can use it.
 
 The wall is finite. The normal output is one coherent overview of the lesson's main learning; a second teaching card is exceptional and must do a genuinely different, repeatedly consulted job that the first cannot absorb; the exception is a list or table too long for one card, carried in order over two cards of the same title, which is one job split for room (the wall build already offers it, and for success criteria it is how the card makes room, since their words never change). Never more than two teaching cards. Wall furniture (a banner, section headings) is produced only on an explicit request from the teacher or the spawn prompt and counts as physical output.
 
@@ -187,37 +187,38 @@ Example:
 
 **The worked example works one case through to an answer, and finishes somewhere other than where it started.** A card covering more than one operation shows one example of each, never one example and its undo. A "10 and 100 more or less" wall card carried `2,950 + 100 = 3,050; 3,050 - 100 = 2,950`: it adds a hundred and takes it straight back off, so a child reading it sees the two operations cancel and learns nothing about finding either. The lesson itself had written the clean version, `100 more than 2,950 is 3,050`, and the card manufactured the return trip to make one example cover both halves of its title. Copy the lesson's example. If the card genuinely needs both directions, give both directions their own worked line from different starting numbers, or let the title cover only the direction the example shows.
 
-**Default orientation:** **Landscape**: needs room for steps without cramping
+**Default orientation:** **Landscape**: needs room for steps without cramping. A wide figure (a number line) over four or five steps reads better in **portrait**.
+
+**Build it picture-first.** Set `layout: "pictureFirst"`: the question line across the top, the figure large beneath it, then each step beside its own line of working. The four ideas behind it are in `working-wall-visual-language.md` → Choose visuals for the card's learning. The older layout, steps down the left and the example as one line under them, still draws a card written without `layout`, but it is the shape the teacher took down.
 
 | Field | Notes |
 |---|---|
+| `cards[].layout` | `"pictureFirst"` for the picture-led method sheet. It needs a `visual` (or a lesson `photo`) and at least one step; the build refuses it without either. The steps print at a lower floor than the rest of the wall (28pt), as the close-up support beside a large picture; the question and the working print larger. When the steps and working still cannot fit beside the picture, the build says so, and the card is left off: the picture never comes off. |
+| `cards[].items[].working` | On a `pictureFirst` card, the line of working a step does, printed on one line in a white box beside the step: `"48 + 20 = 68"`. Copy it from the board's own method frame, line for line. A step the board gave no line of working (a yes/no decision) has none; do not invent a sentence to fill the box. Rejected on any other layout. |
+| `cards[].visual.callouts[].step` | A whole number. Instead of a word label, the callout prints that step's number in a green circle ON the picture at the place the step happens, with no leader line. Name the place with `part` (a number line names `"jump 1"`, `"jump 2"`... in the order its `jumps` are listed, each spot just above that jump's label) or `anchor: [x%, y%]`. A step that names a place the drawing does not have stops the build. Pin only the steps the picture shows. |
 | `cards[].items` | Used by `workedExample`, `stickyKnowledge`, `sentenceStem`, `misconception`, `mnemonicPoster`. One or more entries. For `mnemonicPoster`, each item is `{ "letter": "R", "phrase": "Read carefully", "colour": "9333EA" }` — `colour` optional (palette default). For all other types, `label` optional, `text` required. **For `sentenceStem`, items optionally carry `filled` — the fully-modelled version of the same stem with the blank completed.** Populate `filled` when the lesson-design models the completion (the My Turn slide shows the worked sentence, the SC carries the modelled version). The card prints the gappy text on top in black and the `filled` text directly beneath in the green panel accent so children read the pair as one card. Leave `filled` out when children are meant to invent their own completion; see `working-wall-preferences.md` for the full rule. |
 
-Example:
+Example, the Year 4 wall this layout was built for. The board showed the tens jump and the bridging jumps on separate slides; the figure joins them into the one worked example's whole journey, 45 to 75 so the short jumps keep room for their labels. Step 3 is a decision with no line of working on the board, so it has none here and no pin on the line.
 
 ```json
 {
   "type": "workedExample",
-  "page": {
-    "size": "A3",
-    "orientation": "landscape"
-  },
-  "title": "How to add fractions",
+  "layout": "pictureFirst",
+  "page": { "size": "A3", "orientation": "portrait" },
+  "title": "Tens, then ones",
   "items": [
-    {
-      "label": "Step 1",
-      "text": "Check the bottom numbers (denominators) match."
-    },
-    {
-      "label": "Step 2",
-      "text": "Add only the top numbers (numerators). Keep the bottom number."
-    },
-    {
-      "label": "Worked example",
-      "text": "2/5 + 1/5 = 3/5"
-    }
+    { "label": "Worked example", "text": "48 + 25 = 73" },
+    { "label": "Step 1", "text": "{{Partition}} the second number into tens and ones.", "working": "25 = 20 + 5" },
+    { "label": "Step 2", "text": "Count on the <<tens>> from the first number.", "working": "48 + 20 = 68" },
+    { "label": "Step 3", "text": "Will the ones go past the next ten? If not, add them." },
+    { "label": "Step 4", "text": "If they will, add enough ones to <<reach the next ten>>.", "working": "68 + 2 = 70" },
+    { "label": "Step 5", "text": "Add the ones that are left.", "working": "70 + 3 = 73" }
   ],
-  "photo": null
+  "visual": {
+    "type": "numberLine", "start": 45, "end": 75, "interval": 1, "labels": [48, 68, 70, 73],
+    "jumps": [ { "from": 48, "to": 68, "label": "+20" }, { "from": 68, "to": 70, "label": "+2" }, { "from": 70, "to": 73, "label": "+3" } ],
+    "callouts": [ { "part": "jump 1", "step": 2 }, { "part": "jump 2", "step": 4 }, { "part": "jump 3", "step": 5 } ]
+  }
 }
 ```
 
@@ -563,7 +564,7 @@ The real Royal Mint pictures, coins to scale with each other, left to right; `"|
 
 ### numberLine
 
-The same number line the board draws, from the same fields: copy the slide's `numberline` object and change only `type`.
+The same number line the board draws, from the same fields: copy the slide's `numberline` object and change only `type`. The one exception is a method the board drew across several slides: there the wall's line may join them into the whole journey of the one worked example (`working-wall-visual-language.md` → Choose visuals for the card's learning), and that permission overrides copying the object as it stands.
 
 Spec: `{ "type": "numberLine", "start": 1200, "end": 2000, "interval": 200, "labels": "all", "answer": { "at": 1800, "text": "A = 1,800" } }`
 

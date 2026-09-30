@@ -470,7 +470,7 @@ function labelParts(band, B, opts, T) {
     let y = b.mid - totalH(rows) / 2;
     rows.forEach(function (r) {
       parts.push(
-        `<text x="${f(gx + LEADER_LEN)}" y="${f(y + r.lh / 2)}" text-anchor="start" dominant-baseline="central" ` +
+        `<text x="${f(gx + LEADER_LEN)}" y="${f(y + r.lh / 2)}" text-anchor="start" dy="0.36em" ` +
         `font-family="${FONT}" font-size="${f(r.font)}"${r.bold ? ' font-weight="bold"' : ''} fill="${r.fill}">${esc(r.t)}</text>`
       );
       y += r.lh;
@@ -480,12 +480,12 @@ function labelParts(band, B, opts, T) {
 
   const nameY = hasHeight ? b.mid - 10 : b.mid;
   parts.push(
-    `<text x="${f(gx + LEADER_LEN)}" y="${f(nameY)}" text-anchor="start" dominant-baseline="central" ` +
+    `<text x="${f(gx + LEADER_LEN)}" y="${f(nameY)}" text-anchor="start" dy="0.36em" ` +
     `font-family="${FONT}" font-size="${NAME_FONT}" font-weight="bold" fill="${T.TEXT_DARK}">${DISPLAY_NAME[band]}</text>`
   );
   if (hasHeight) {
     parts.push(
-      `<text x="${f(gx + LEADER_LEN)}" y="${f(b.mid + 62)}" text-anchor="start" dominant-baseline="central" ` +
+      `<text x="${f(gx + LEADER_LEN)}" y="${f(b.mid + 62)}" text-anchor="start" dy="0.36em" ` +
       `font-family="${FONT}" font-size="${HEIGHT_FONT}" fill="${T.TEXT_MUTED}">${HEIGHT_TEXT[band]}</text>`
     );
   }
@@ -575,7 +575,7 @@ function tightSvg(data, profile) {
     // The number that makes the thinning concrete, printed on the dark floor.
     const fb = B['forest-floor'];
     parts.push(
-      `<text x="${f(DIAG_W / 2)}" y="${f(fb.mid + 24)}" text-anchor="middle" dominant-baseline="central" ` +
+      `<text x="${f(DIAG_W / 2)}" y="${f(fb.mid + 24)}" text-anchor="middle" dy="0.36em" ` +
       `font-family="${FONT}" font-size="${NOTE_FONT}" font-weight="bold" fill="${T.FLOOR_TEXT}">about 2 rays in every 100</text>`
     );
   }

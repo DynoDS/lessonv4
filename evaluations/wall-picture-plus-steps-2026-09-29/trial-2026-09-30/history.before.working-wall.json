@@ -1,0 +1,34 @@
+{
+  "topic": "How did Lord Shaftesbury help to change the lives of children?",
+  "yearGroup": 4,
+  "lessonSlug": "year-4-history-lesson-4",
+  "rationaleNote": "This overview earns one sheet because Lesson 5 can point back to the concrete work-and-learning changes, their reach and their limits when children explain later changes in childhood. Separate misconception and vocabulary sheets were cut because they do not add a distinct recurring job.",
+  "cards": [
+    {
+      "type": "heroCallouts",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Why Shaftesbury mattered",
+      "heroPhoto": "unsplash/shaftesbury-portrait.jpg",
+      "heroCaption": "Lord Shaftesbury campaigned with others to protect children through laws.",
+      "groups": [
+        {
+          "title": "Work",
+          "items": [
+            "The 1842 Mines Act banned underground work for women, girls and boys under ten.",
+            "Boys aged ten and over could still work underground."
+          ]
+        },
+        {
+          "title": "Learning",
+          "items": [
+            "Shaftesbury supported ragged schools, where volunteer teachers gave poorer children free lessons.",
+            "In 1944, long after his death, the charity supporting ragged schools changed its name from the Ragged School Union to the Shaftesbury Society."
+          ]
+        }
+      ]
+    }
+  ]
+}
