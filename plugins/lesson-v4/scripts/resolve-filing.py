@@ -160,6 +160,21 @@ def numbered_previous(working_root, year, subject, current_folder):
     return best[1] if best else ""
 
 
+def not_this_lesson_or_later(folder, current_folder):
+    """A fallback previous lesson, unless the plan numbers say it is this lesson or a later one.
+
+    When no earlier-numbered lesson has been built, the fallback is whichever
+    lesson was built last, and that can be an older build of this same lesson:
+    history lesson 4 was handed its own earlier copy as the lesson before it
+    (1 October 2026).
+    """
+    current = lesson_number(current_folder) if current_folder else None
+    number = lesson_number(folder) if folder else None
+    if current is not None and number is not None and number >= current:
+        return ""
+    return folder
+
+
 def earlier_lessons(working_root, year, subject, current_folder, previous, limit=3):
     """Up to `limit` lessons before `previous`, nearest first: by plan number when
     this run's folder carries one, otherwise by when each was built."""
@@ -395,7 +410,7 @@ class SortedFiling:
         print(f"DRIVE_CHECKED={'yes' if slot['checked'] else 'no'}")
         if self.working_root:
             previous = numbered_previous(self.working_root, self.year, self.subject, CURRENT_FOLDER) \
-                or self.previous_lesson(slot['term'], slot['week'], slot['day'])
+                or not_this_lesson_or_later(self.previous_lesson(slot['term'], slot['week'], slot['day']), CURRENT_FOLDER)
             print(f"PREVIOUS_LESSON={previous}")
             earlier = earlier_lessons(self.working_root, self.year, self.subject, CURRENT_FOLDER, previous) if previous else []
             print(f"EARLIER_LESSONS={' | '.join(earlier)}")
@@ -458,7 +473,7 @@ def main(argv=None):
         return filing.run(today())
     if working_root:
         previous = numbered_previous(working_root, year, subject, CURRENT_FOLDER) \
-            or latest_lesson(working_root, year, subject)
+            or not_this_lesson_or_later(latest_lesson(working_root, year, subject), CURRENT_FOLDER)
         print(f"PREVIOUS_LESSON={previous}")
         earlier = earlier_lessons(working_root, year, subject, CURRENT_FOLDER, previous) if previous else []
         print(f"EARLIER_LESSONS={' | '.join(earlier)}")

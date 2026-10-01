@@ -349,6 +349,21 @@ def test_a_rebuilt_copy_of_the_previous_lesson_is_chosen_by_which_was_built_last
         assert Path(kv.get("PREVIOUS_LESSON", "")).name == rebuilt.name, out.stdout
 
 
+def test_an_older_build_of_this_same_lesson_is_never_its_previous_lesson():
+    # 1 October 2026: history lesson 4's run, with no lesson 1 to 3 built, fell
+    # back to the latest build and was handed an older copy of lesson 4 itself.
+    import time
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        w = base / "working"
+        _design(w, "year-4-maths-lesson-4", 4, "Maths")
+        time.sleep(0.05)
+        _design(w, "year-4-maths-lesson-4 (1)", 4, "Maths")
+        (w / "year-4-maths-lesson-4-why-shaftesbury").mkdir()
+        kv, out = _numbered_run(base, "year-4-maths-lesson-4-why-shaftesbury", {"folder": False})
+        assert kv.get("PREVIOUS_LESSON", "x") == "", out.stdout
+
+
 def test_without_a_lesson_number_the_latest_built_lesson_still_decides():
     import time
     with tempfile.TemporaryDirectory() as tmp:
