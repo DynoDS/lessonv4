@@ -51,8 +51,25 @@ async function emitted(pptx) {
   }));
 }
 
+// A numbered-questions starter sizes its question slide on its own: sharing
+// the answer slide's size left short questions small in big empty boxes, and
+// the teacher accepted the questions shrinking when the answers appear
+// (1 October 2026). The answer slide keeps the pair's fit group.
+test('numbered-questions sizes its question slide on its own and keeps the pair group on the answer slide', async () => {
+  const spec = lesson('numbered-questions',
+    [{ id: 'a', text: 'VII' }, { id: 'b', text: 'IV' }, { id: 'c', text: 'IX' }, { id: 'd', text: 'XII' }],
+    [{ id: 'a', text: '||VII is seven' }, { id: 'b', text: '||IV is four' },
+      { id: 'c', text: '||IX is nine' }, { id: 'd', text: '||XII is twelve' }]
+  );
+  const [question, answer] = await emitted(drawPair(spec, drawNumberedQuestions));
+  assert.equal(question.filter((shape) => /GROWFIT__revealpair-/.test(shape)).length, 0,
+    'the question slide is not held to the answer slide size');
+  assert.match(textOf(answer[answer.length - 1]), /twelve/);
+  assert.match(answer.join(''), /00B050/i, 'answer green is emitted');
+  assert.ok(answer.some((shape) => /GROWFIT__revealpair-/.test(shape)), 'the answer slide keeps the pair group');
+});
+
 for (const [type, draw] of [
-  ['numbered-questions', drawNumberedQuestions],
   ['question-cards', drawQuestionCards]
 ]) {
   test(`${type} shares emitted card, label and text geometry with longer answers`, async () => {
@@ -133,7 +150,8 @@ test('two valid pair IDs receive different emitted final-fit groups', async () =
   });
   const bytes = await pptx.write({ outputType: 'nodebuffer' });
   const zip = await JSZip.loadAsync(bytes);
-  const xml = await Promise.all([1, 3].map((n) => zip.file(`ppt/slides/slide${n}.xml`).async('string')));
+  // The answer slides carry the pair's group; question slides size on their own.
+  const xml = await Promise.all([2, 4].map((n) => zip.file(`ppt/slides/slide${n}.xml`).async('string')));
   const groups = xml.map((slide) => /GROWFIT__(revealpair-[^_]+)__/.exec(slide)?.[1]);
   assert.ok(groups[0] && groups[1]);
   assert.notEqual(groups[0], groups[1]);

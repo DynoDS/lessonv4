@@ -305,7 +305,14 @@ function widerArrangement(questions, options) {
 
 function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
   const answerBoxes = data.answerBoxes === true;
-  const pair = data[PAIRED_LAYOUT] || pairedEntries(data, ctx);
+  const pairFull = data[PAIRED_LAYOUT] || pairedEntries(data, ctx);
+  // The question slide sizes its questions on their own. Sharing the answer
+  // slide's size left short questions small in big empty boxes (the
+  // Shaftesbury starter at 21% and 26% of its boxes); the teacher judged the
+  // questions shrinking when the answers appear acceptable (1 October 2026).
+  // The answer slide still lays its question and answer out together.
+  const questionSide = !!(pairFull && data.revealPair && data.revealPair.state === 'question');
+  const pair = questionSide ? null : pairFull;
   const entries = (Array.isArray(data.questions) ? data.questions : [])
     .map(function (q) {
       return { source: q, text: stripLeadingLabel(itemText(q)) };
