@@ -121,3 +121,18 @@ test('a words-only sort draws no picture and keeps its words beside their names'
   const words = named(slide, '').filter((o) => /sort-bank-card-\d+$/.test(o.options.objectName));
   words.forEach((o) => assert.equal(o.options.align, 'left'));
 });
+
+test('the places are a heading and room for a letter, so twelve picture cards fit', () => {
+  const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
+  const slide = draw({
+    bank: Array.from({ length: 12 }, (_, i) => ({ label: String.fromCharCode(65 + i), imagePath: 'abcd'[i % 4] + '.png' })),
+    groups: ordinals.map((label) => ({ label: label }))
+  });
+  assert.equal(images(slide).length, 12);
+  const panels = slide._slideObjects.filter((o) => o.options && o.options.line && o.options.line.dashType === 'dash');
+  assert.equal(panels.length, 6);
+  // One row of places, none deeper than an inch and a quarter.
+  assert.equal(new Set(panels.map((p) => p.options.y.toFixed(3))).size, 1);
+  panels.forEach((p) => assert.ok(p.options.h <= 1.25, `a place is ${p.options.h.toFixed(2)}in deep`));
+  images(slide).forEach((p) => assert.ok(box(p).h >= 0.9));
+});

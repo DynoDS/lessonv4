@@ -57,10 +57,8 @@ const BANK_INSTRUCTION_H = 0.52;
 const BANK_INSTRUCTION_GAP = 0.18;
 const BANK_GAP = 0.36;
 const BANK_CARD_GAP = 0.14;
-const BANK_GROUP_SHARE = 0.27;
-const BANK_GROUP_MIN_H = 1.05;
-const BANK_GROUP_ROOM = 0.4;
-const BANK_HEADING_FLOOR_PT = 24;
+const BANK_GROUP_ROOM = 0.5;
+const BANK_HEADING_PT = 24;
 const BANK_CARD_MIN_H = 0.55;
 const BANK_CARD_FONT_MAX = 36;
 const BANK_LABEL_FONT_MAX = 24;
@@ -69,7 +67,7 @@ const BANK_LABEL_FONT_MAX = 24;
 // card where it can, and never less than a picture the back row can make out.
 const BANK_PICTURE_WORDS_PT = 28;
 const BANK_PICTURE_HALF = 0.5;
-const BANK_LABEL_BESIDE_W = 0.5;
+const BANK_LABEL_BESIDE_W = 0.7;
 const BANK_PICTURE_MIN_H = 0.9;
 const BANK_PICTURE_GAP = 0.06;
 const GROUP_LINES = [COLOURS.title, COLOURS.orange, COLOURS.sticky, COLOURS.green, '8E44AD', '16A085'];
@@ -157,7 +155,7 @@ function cardTextFits(card, w, h, pt) {
 function picturedLayoutWith(bank, w, h, labelBeside) {
   const inner = h - 2 * PANEL_PAD;
   const labelled = bank.some(function (card) { return card.label; });
-  const labelH = labelled ? Math.min(0.45, inner * 0.2) : 0;
+  const labelH = labelled ? Math.min(0.45, inner * 0.3) : 0;
   const labelW = labelled && labelBeside ? BANK_LABEL_BESIDE_W : 0;
   const rest = inner - (labelBeside ? 0 : labelH);
   const base = { labelH: labelH, labelBeside: !!labelBeside, pictureW: w - 2 * PANEL_PAD - 2 * labelW };
@@ -248,30 +246,34 @@ function drawSortTask(pptx, slide, zone, data, groups, ctx) {
     h -= instructionH + BANK_INSTRUCTION_GAP;
   }
 
-  const groupRows = groups.length > 3 ? 2 : 1;
-  const gCols = Math.ceil(groups.length / groupRows);
-  const panelW = (innerW - PANEL_GAP * (gCols - 1)) / gCols;
-  // A heading may be a whole sentence (a meaning a card goes under), so each
-  // place is at least tall enough for its heading at 24pt with room left below
-  // it to read as a place to put things.
-  const headingNeed = Math.max.apply(null, groups.map(function (group) {
-    return wordsHeight({ text: group.label }, panelW, BANK_HEADING_FLOOR_PT);
-  })) + PANEL_PAD * 0.5;
-  const groupsLeast = groupRows * Math.max(BANK_GROUP_MIN_H, headingNeed + BANK_GROUP_ROOM);
-  // The groups keep about a quarter of the height, enough to read as a place
-  // to put things; when the cards cannot print at 20pt in what is left, the
-  // groups give back all but their least, because the cards are what the
-  // class reads.
-  let groupsH = Math.max(groupsLeast, h * BANK_GROUP_SHARE);
-  let bankH = h - BANK_GAP - groupsH;
+  // On the board nothing is put in a place: the class says or the teacher
+  // writes the card's letter. So a place is its heading and room for a letter,
+  // no more, and the places take one row or two, whichever is shorter; every
+  // inch they do not need goes to the cards. Empty places a quarter of the
+  // slide deep were dead space the teacher pointed at (1 October 2026).
+  const placesIn = function (rowsOfPlaces) {
+    const across = Math.ceil(groups.length / rowsOfPlaces);
+    const width = (innerW - PANEL_GAP * (across - 1)) / across;
+    const heading = Math.max.apply(null, groups.map(function (group) {
+      return wordsHeight({ text: group.label }, width, BANK_HEADING_PT);
+    })) + PANEL_PAD * 0.5;
+    const panel = heading + BANK_GROUP_ROOM;
+    return { rows: rowsOfPlaces, cols: across, panelW: width, headingNeed: heading,
+      height: rowsOfPlaces * panel + PANEL_GAP * (rowsOfPlaces - 1) };
+  };
+  const oneRow = placesIn(1);
+  const places = groups.length > 3 && Number.isFinite(oneRow.height)
+    ? [oneRow, placesIn(2)].sort(function (a, b) { return a.height - b.height; })[0]
+    : (Number.isFinite(oneRow.height) ? oneRow : placesIn(2));
+  const groupRows = places.rows;
+  const gCols = places.cols;
+  const panelW = places.panelW;
+  const headingNeed = places.headingNeed;
+  const groupsH = places.height;
+  const bankH = h - BANK_GAP - groupsH;
   // The arrangement is the one that lets the cards print largest; a pictured
   // sort's is the one with the largest pictures whose words still read.
-  let arrangement = bestArrangement(bank, innerW, bankH, pictured);
-  if (arrangement.pt < 20 && groupsH > groupsLeast) {
-    groupsH = groupsLeast;
-    bankH = h - BANK_GAP - groupsH;
-    arrangement = bestArrangement(bank, innerW, bankH, pictured);
-  }
+  const arrangement = bestArrangement(bank, innerW, bankH, pictured);
   const { cols, rows, cardW, cardH } = arrangement;
   if (pictured && !arrangement.pt) {
     throw new Error(
@@ -359,7 +361,7 @@ function drawSortTask(pptx, slide, zone, data, groups, ctx) {
     });
     slide.addText(splitAnswerRuns(group.label, true, line), {
       x: x + PANEL_PAD, y: gy + PANEL_PAD * 0.5, w: panelW - 2 * PANEL_PAD,
-      h: Math.max(Math.min(HEADER_H, panelH * 0.45), Math.min(headingNeed, panelH - BANK_GROUP_ROOM)),
+      h: headingNeed,
       fontFace: FONT, fontSize: 28, bold: true, color: line,
       align: 'center', valign: 'top', margin: 0, fit: FIT,
       objectName: growFitObjectName(headerGroup, 28, 'sort-heading-' + index)
