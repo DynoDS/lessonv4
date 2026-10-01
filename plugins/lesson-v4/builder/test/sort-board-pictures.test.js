@@ -74,15 +74,16 @@ test('each pictured card draws its picture whole, above its words, inside its ca
   assert.equal(new Set(pictures.map((p) => p.options.y.toFixed(3))).size, 1);
 });
 
-test('a picture-only order fills each card with its picture', () => {
+test('a picture order gives each picture most of its card, with its short title under it', () => {
+  const titles = ['The angel visits Mary', 'Jesus is born', 'The shepherds visit', 'The wise men visit'];
   const slide = draw({
-    bank: ['a', 'b', 'c', 'd'].map((n, i) => ({ label: 'ABCD'[i], imagePath: n + '.png' })),
+    bank: ['a', 'b', 'c', 'd'].map((n, i) => ({ label: 'ABCD'[i], text: titles[i], imagePath: n + '.png' })),
     groups: [{ label: '1st' }, { label: '2nd' }, { label: '3rd' }, { label: '4th' }]
   }, { w: 300, h: 400 });
   const pictures = images(slide);
   assert.equal(pictures.length, 4);
-  assert.equal(named(slide, 'GROWFIT').filter((o) => /sort-bank-card-/.test(o.options.objectName)).length, 0);
-  pictures.forEach((picture) => assert.ok(box(picture).h >= 2, `a picture card's picture is ${box(picture).h.toFixed(2)}in tall`));
+  assert.equal(named(slide, 'GROWFIT').filter((o) => /sort-bank-card-/.test(o.options.objectName)).length, 4);
+  pictures.forEach((picture) => assert.ok(box(picture).h >= 1.5, `a picture card's picture is ${box(picture).h.toFixed(2)}in tall`));
 });
 
 test('a sentence heading prints at 24pt or more in its place', () => {
@@ -101,7 +102,11 @@ test('a sentence heading prints at 24pt or more in its place', () => {
   });
 });
 
-test('a missing picture, or a sort only partly pictured, is refused by name', () => {
+test('a missing picture, a picture with no title, or a sort only partly pictured, is refused by name', () => {
+  assert.throws(() => draw({
+    bank: [{ label: 'A', imagePath: 'a.png' }, { label: 'B', text: 'Wise men', imagePath: 'b.png' }],
+    groups: MEANINGS.slice(0, 2)
+  }), /SORT_BOARD_BANK_PICTURE_UNTITLED: card 1/);
   assert.throws(() => draw({
     bank: [{ text: 'Shepherds', imagePath: 'a.png' }, { text: 'Wise men', imagePath: 'nowhere.png' }],
     groups: MEANINGS.slice(0, 2)
@@ -125,7 +130,7 @@ test('a words-only sort draws no picture and keeps its words beside their names'
 test('the places are a heading and room for a letter, so twelve picture cards fit', () => {
   const ordinals = ['1st', '2nd', '3rd', '4th', '5th', '6th'];
   const slide = draw({
-    bank: Array.from({ length: 12 }, (_, i) => ({ label: String.fromCharCode(65 + i), imagePath: 'abcd'[i % 4] + '.png' })),
+    bank: Array.from({ length: 12 }, (_, i) => ({ label: String.fromCharCode(65 + i), text: 'Part ' + (i + 1), imagePath: 'abcd'[i % 4] + '.png' })),
     groups: ordinals.map((label) => ({ label: label }))
   });
   assert.equal(images(slide).length, 12);

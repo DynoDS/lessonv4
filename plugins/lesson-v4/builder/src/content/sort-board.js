@@ -67,8 +67,11 @@ const BANK_LABEL_FONT_MAX = 24;
 // card where it can, and never less than a picture the back row can make out.
 const BANK_PICTURE_WORDS_PT = 28;
 const BANK_PICTURE_HALF = 0.5;
-const BANK_LABEL_BESIDE_W = 0.7;
 const BANK_PICTURE_MIN_H = 0.9;
+// The smallest picture as drawn, not the space it was given: a wide picture
+// in a narrow card draws far shorter than its band, and ten pictures under an
+// inch tall could not be told apart (1 October 2026).
+const BANK_PICTURE_MIN_AREA = 1.2;
 const BANK_PICTURE_GAP = 0.06;
 const GROUP_LINES = [COLOURS.title, COLOURS.orange, COLOURS.sticky, COLOURS.green, '8E44AD', '16A085'];
 const GROUP_FILLS = ['EAF2FB', 'FDEFE3', 'F1E6F8', 'E6F6EC', 'F3E5F5', 'E0F2F1'];
@@ -101,6 +104,15 @@ function resolveBankPictures(bank, ctx) {
   bank.forEach(function (card, index) {
     const imagePath = card.imagePath;
     if (!imagePath) return;
+    // A picture alone is hard to read from a seat: a painting of the shepherds
+    // can pass for the wise men. Every picture card names what it shows, as
+    // the printed card does (the teacher, 1 October 2026).
+    if (!card.text.trim()) {
+      throw new Error(
+        `SORT_BOARD_BANK_PICTURE_UNTITLED: card ${index + 1}${card.label ? ` ("${card.label}")` : ''} is a picture with no words. ` +
+        'Give it a short title naming what the picture shows (`The angels visit the shepherds`), so the class can tell the pictures apart.'
+      );
+    }
     const resolved = resolveForEmbed(imagePath, ctx);
     if (!resolved || !fs.existsSync(resolved)) {
       throw new Error(
@@ -145,31 +157,31 @@ function cardTextFits(card, w, h, pt) {
   return wordsHeight(card, w, pt) <= cardParts(card, h).textH - 0.03;
 }
 
+// A pictured card's words: its letter, then its title, on one line where they
+// fit. The letter leads the title rather than taking a line of its own, so the
+// picture keeps that room.
+function titleWords(card) {
+  return (card.label ? card.label + '  ' : '') + card.text;
+}
+
 // Every card in a pictured sort shares one layout, so the pictures line up and
-// the words share one size: the label, the picture, then the words. The label
-// sits on its own line above the picture, or beside the picture's top corner
-// when that leaves the picture larger. The words take the height they need at
-// the largest size that still leaves the picture half the card; failing that,
-// at the largest size that leaves a picture the class can make out. `pt` is 0
-// when even 20pt leaves too little.
-function picturedLayoutWith(bank, w, h, labelBeside) {
-  const inner = h - 2 * PANEL_PAD;
-  const labelled = bank.some(function (card) { return card.label; });
-  const labelH = labelled ? Math.min(0.45, inner * 0.3) : 0;
-  const labelW = labelled && labelBeside ? BANK_LABEL_BESIDE_W : 0;
-  const rest = inner - (labelBeside ? 0 : labelH);
-  const base = { labelH: labelH, labelBeside: !!labelBeside, pictureW: w - 2 * PANEL_PAD - 2 * labelW };
-  if (!bank.some(function (card) { return card.text; })) {
-    return Object.assign(base, { pt: BANK_CARD_FONT_MAX, pictureH: rest, textH: 0 });
-  }
+// the titles share one size: the picture, then the letter and title under it.
+// The title takes the height it needs at the largest size that still leaves
+// the picture half the card; failing that, at the largest size that leaves a
+// picture the class can make out. `pt` is 0 when even 20pt leaves too little.
+function picturedLayout(bank, w, h) {
+  const rest = h - 2 * PANEL_PAD;
+  const base = { labelH: 0, pictureW: w - 2 * PANEL_PAD };
   const at = function (pt) {
-    const textH = Math.max.apply(null, bank.map(function (card) { return wordsHeight(card, w, pt); })) + 0.03;
+    const textH = Math.max.apply(null, bank.map(function (card) {
+      return wordsHeight({ text: titleWords(card) }, w, pt);
+    })) + 0.03;
     return Object.assign({}, base, { pt: pt, pictureH: rest - textH - BANK_PICTURE_GAP, textH: textH });
   };
   for (const floor of [Math.max(BANK_PICTURE_MIN_H, rest * BANK_PICTURE_HALF), BANK_PICTURE_MIN_H]) {
     for (let pt = BANK_PICTURE_WORDS_PT; pt >= 20; pt -= 1) {
       const layout = at(pt);
-      if (layout.pictureH >= floor) return layout;
+      if (layout.pictureH >= floor && smallestPictureArea(bank, layout) >= BANK_PICTURE_MIN_AREA) return layout;
     }
   }
   return Object.assign(at(20), { pt: 0 });
@@ -182,14 +194,6 @@ function smallestPictureArea(bank, layout) {
     const drawW = Math.min(layout.pictureW, layout.pictureH * card.image.aspect);
     return drawW * drawW / card.image.aspect;
   }));
-}
-
-function picturedLayout(bank, w, h) {
-  const above = picturedLayoutWith(bank, w, h, false);
-  if (!bank.some(function (card) { return card.label; })) return above;
-  const beside = picturedLayoutWith(bank, w, h, true);
-  if ((beside.pt > 0) !== (above.pt > 0)) return beside.pt > 0 ? beside : above;
-  return smallestPictureArea(bank, beside) > smallestPictureArea(bank, above) + 1e-6 ? beside : above;
 }
 
 function bestArrangement(bank, innerW, bankH, pictured) {
@@ -277,9 +281,9 @@ function drawSortTask(pptx, slide, zone, data, groups, ctx) {
   const { cols, rows, cardW, cardH } = arrangement;
   if (pictured && !arrangement.pt) {
     throw new Error(
-      `SORT_BOARD_BANK_PICTURE_CAPACITY: ${bank.length} pictured cards in ${rows} row(s) leave each picture ` +
-      `${Math.max(0, arrangement.layout.pictureH).toFixed(2)}in tall once the words print at 20pt, below the ` +
-      `${BANK_PICTURE_MIN_H.toFixed(2)}in a class can make out from their seats. Give the sort a taller zone, ` +
+      `SORT_BOARD_BANK_PICTURE_CAPACITY: ${bank.length} pictured cards leave the smallest picture ` +
+      `${smallestPictureArea(bank, arrangement.layout).toFixed(2)} square inches once its title prints at 20pt, below the ` +
+      `${BANK_PICTURE_MIN_AREA.toFixed(2)} (about 1.3in by 0.9in) a class can make out from their seats. Use fewer cards, give the sort a taller zone, ` +
       'shorten the words under the pictures, or split it by complete groups across two slides; nothing was shrunk or cut.'
     );
   }
@@ -310,16 +314,6 @@ function drawSortTask(pptx, slide, zone, data, groups, ctx) {
     });
     const parts = pictured ? arrangement.layout : cardParts(card, cardH);
     let textY = cy + PANEL_PAD;
-    if (card.label) {
-      slide.addText(card.label, {
-        x: x + PANEL_PAD, y: textY,
-        w: parts.labelBeside ? BANK_LABEL_BESIDE_W : cardW - 2 * PANEL_PAD, h: parts.labelH,
-        fontFace: FONT, fontSize: BANK_LABEL_FONT_MAX, bold: true, color: COLOURS.body,
-        align: parts.labelBeside ? 'left' : 'center', valign: 'middle', margin: 0, fit: FIT,
-        objectName: growFitObjectName(labelGroup, BANK_LABEL_FONT_MAX, 'sort-bank-label-' + index)
-      });
-    }
-    if (!parts.labelBeside) textY += parts.labelH;
     if (card.image) {
       // The whole picture, centred in its band, never stretched or cropped.
       const drawW = Math.min(parts.pictureW, parts.pictureH * card.image.aspect);
@@ -332,14 +326,33 @@ function drawSortTask(pptx, slide, zone, data, groups, ctx) {
         altText: card.image.alt,
         objectName: 'sort-bank-picture-' + index
       });
-      textY += parts.pictureH + (card.text ? BANK_PICTURE_GAP : 0);
+      textY += parts.pictureH + BANK_PICTURE_GAP;
+      // The letter leads the title in house blue, so it reads as the name
+      // children say and the title as what the picture shows.
+      const title = splitAnswerRuns(card.text, true, COLOURS.body);
+      const runs = (card.label ? [{ text: card.label + '  ', options: { color: COLOURS.title, bold: true } }] : [])
+        .concat(typeof title === 'string' ? [{ text: title, options: { color: COLOURS.body, bold: true } }] : title);
+      slide.addText(runs, {
+        x: x + PANEL_PAD, y: textY, w: cardW - 2 * PANEL_PAD, h: parts.textH,
+        fontFace: FONT, fontSize: BANK_CARD_FONT_MAX, bold: true, color: COLOURS.body,
+        align: 'center', valign: 'middle', margin: 0, fit: FIT,
+        objectName: growFitObjectName(cardGroup, BANK_CARD_FONT_MAX, 'sort-bank-card-' + index)
+      });
+      return;
     }
-    if (!card.text) return;
-    const wordsUnderName = card.label && !card.image;
+    if (card.label) {
+      slide.addText(card.label, {
+        x: x + PANEL_PAD, y: textY, w: cardW - 2 * PANEL_PAD, h: parts.labelH,
+        fontFace: FONT, fontSize: BANK_LABEL_FONT_MAX, bold: true, color: COLOURS.body,
+        align: 'center', valign: 'middle', margin: 0, fit: FIT,
+        objectName: growFitObjectName(labelGroup, BANK_LABEL_FONT_MAX, 'sort-bank-label-' + index)
+      });
+      textY += parts.labelH;
+    }
     slide.addText(splitAnswerRuns(card.text, true, COLOURS.body), {
       x: x + PANEL_PAD, y: textY, w: cardW - 2 * PANEL_PAD, h: parts.textH,
       fontFace: FONT, fontSize: BANK_CARD_FONT_MAX, bold: true, color: COLOURS.body,
-      align: wordsUnderName ? 'left' : 'center', valign: wordsUnderName ? 'top' : 'middle', margin: 0, fit: FIT,
+      align: card.label ? 'left' : 'center', valign: card.label ? 'top' : 'middle', margin: 0, fit: FIT,
       objectName: growFitObjectName(cardGroup, BANK_CARD_FONT_MAX, 'sort-bank-card-' + index)
     });
   });
