@@ -1637,7 +1637,7 @@ A completed structured sort with 2 to 6 category panels. Use it for `answer.stru
   ] }
 ```
 
-**The sort children do** is the same helper with a `bank`: the cards to sort, and groups with no `items`. It draws the `instruction` (optional) on its own line in task blue, the cards as white cards at one text size in the arrangement that lets them print largest, a clear gap, then each group as a tinted panel with a dashed coloured border and its heading at the top, the rest left empty as the place the cards go. Cards and places never look alike. A card is a string, or `{ "label", "text" }` for a named card whose words sit under its name. Groups that already hold items are refused here (`SORT_BOARD_BANK_WITH_ANSWERS`): the finished sort is the answer slide's `sort-board` without a `bank`. When the cards do not fit, the board says so (`SORT_BOARD_BANK_CAPACITY`, or the fit pass's overload): split by complete groups across two slides or give it a taller zone.
+**The sort children do** is the same helper with a `bank`: the cards to sort, and groups with no `items`. It draws the `instruction` (optional) on its own line in task blue, the cards as white cards at one text size in the arrangement that lets them print largest, a clear gap, then each group as a tinted panel with a dashed coloured border and its heading at the top, the rest left empty as the place the cards go. Cards and places never look alike. A card is a string, or `{ "label", "text" }` for a named card whose words sit under its name. A card may also carry `"imagePath"`, the photo the lesson promised for that item: the picture prints whole above the card's words (the words may be left out for a picture-only card), its letter sits on the line above or beside its top corner, whichever leaves the picture larger, and the words print at 28pt where the picture can still take half the card. A pictured sort pictures every card (`SORT_BOARD_BANK_PICTURE_MIXED`), and a card whose picture is not in the lesson folder is refused (`SORT_BOARD_BANK_PICTURE_MISSING`) rather than printed blank; when the pictures cannot be made large enough to see from the back of the room the board says so (`SORT_BOARD_BANK_PICTURE_CAPACITY`). A heading may be a whole sentence (a meaning a card goes under): each place is made tall enough to print it at 24pt. Groups that already hold items are refused here (`SORT_BOARD_BANK_WITH_ANSWERS`): the finished sort is the answer slide's `sort-board` without a `bank`. When the cards do not fit, the board says so (`SORT_BOARD_BANK_CAPACITY`, or the fit pass's overload): split by complete groups across two slides or give it a taller zone.
 
 ```json
 { "type": "sort-board",
@@ -1645,6 +1645,16 @@ A completed structured sort with 2 to 6 category panels. Use it for `answer.stru
   "bank": ["Burn tar in the street to clean the air.", "Boil the water before you drink it."],
   "groups": [ { "label": "Things you'd try if you blamed the bad air" },
               { "label": "Things you wouldn't even think of" } ] }
+```
+
+A picture order, each card its letter and its picture:
+
+```json
+{ "type": "sort-board",
+  "bank": [ { "label": "A", "imagePath": "photos/shepherds.jpg" },
+            { "label": "B", "imagePath": "photos/wise-men.jpg" },
+            { "label": "C", "imagePath": "photos/manger.jpg" } ],
+  "groups": [ { "label": "1st" }, { "label": "2nd" }, { "label": "3rd" } ] }
 ```
 
 Use no more than 6 groups and 12 total items. When the board reports `SORT_BOARD_ITEM_CAPACITY`, split by complete groups or give it a larger zone. Do not shorten labels.

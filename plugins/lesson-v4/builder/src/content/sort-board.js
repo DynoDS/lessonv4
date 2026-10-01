@@ -1,7 +1,9 @@
 'use strict';
 
 const { FONT, COLOURS, FIT } = require('../styles');
+const fs = require('fs');
 const { fitGroupId, growFitObjectName } = require('../text-fit');
+const { resolveForEmbed } = require('../images/resolve');
 
 const PAD = 0.12;
 const PANEL_GAP = 0.16;
@@ -57,43 +59,160 @@ const BANK_GAP = 0.36;
 const BANK_CARD_GAP = 0.14;
 const BANK_GROUP_SHARE = 0.27;
 const BANK_GROUP_MIN_H = 1.05;
+const BANK_GROUP_ROOM = 0.4;
+const BANK_HEADING_FLOOR_PT = 24;
 const BANK_CARD_MIN_H = 0.55;
 const BANK_CARD_FONT_MAX = 36;
 const BANK_LABEL_FONT_MAX = 24;
+// A pictured card prints its words at a size the class reads (28pt, giving way
+// to 20pt) and gives the picture everything else, never less than half the
+// card where it can, and never less than a picture the back row can make out.
+const BANK_PICTURE_WORDS_PT = 28;
+const BANK_PICTURE_HALF = 0.5;
+const BANK_LABEL_BESIDE_W = 0.5;
+const BANK_PICTURE_MIN_H = 0.9;
+const BANK_PICTURE_GAP = 0.06;
 const GROUP_LINES = [COLOURS.title, COLOURS.orange, COLOURS.sticky, COLOURS.green, '8E44AD', '16A085'];
 const GROUP_FILLS = ['EAF2FB', 'FDEFE3', 'F1E6F8', 'E6F6EC', 'F3E5F5', 'E0F2F1'];
 
 function normaliseBank(data) {
   return (Array.isArray(data.bank) ? data.bank : []).map(function (card) {
     if (card && typeof card === 'object') {
-      return { label: card.label == null ? '' : String(card.label), text: String(card.text == null ? '' : card.text) };
+      return {
+        label: card.label == null ? '' : String(card.label),
+        text: String(card.text == null ? '' : card.text),
+        imagePath: typeof card.imagePath === 'string' ? card.imagePath.trim() : ''
+      };
     }
-    return { label: '', text: String(card == null ? '' : card) };
-  }).filter(function (card) { return card.text || card.label; });
+    return { label: '', text: String(card == null ? '' : card), imagePath: '' };
+  }).filter(function (card) { return card.text || card.label || card.imagePath; });
 }
 
-function cardTextFits(card, w, h, pt) {
+// A card that shows a picture shows the real one, or the board says so. A sort
+// whose pictures quietly dropped out would leave children sorting words the
+// lesson meant them to see, or sorting blank cards.
+function resolveBankPictures(bank, ctx) {
+  const pictured = bank.filter(function (card) { return card.imagePath; }).length;
+  if (pictured && pictured < bank.length) {
+    throw new Error(
+      `SORT_BOARD_BANK_PICTURE_MIXED: ${pictured} of ${bank.length} cards to sort carry a picture. ` +
+      'Every card in a pictured sort carries its picture, so no card stands out from the rest; ' +
+      'give each card its picture, or none.'
+    );
+  }
+  bank.forEach(function (card, index) {
+    const imagePath = card.imagePath;
+    if (!imagePath) return;
+    const resolved = resolveForEmbed(imagePath, ctx);
+    if (!resolved || !fs.existsSync(resolved)) {
+      throw new Error(
+        `SORT_BOARD_BANK_PICTURE_MISSING: card ${index + 1} ("${card.label || card.text}") names the picture ` +
+        `"${imagePath}", which is not in the lesson folder. Source the picture, or give the card its words alone.`
+      );
+    }
+    const dims = ctx && ctx.imageDims ? ctx.imageDims[imagePath] : null;
+    card.image = {
+      resolvedPath: resolved,
+      aspect: dims && dims.w > 0 && dims.h > 0 ? dims.w / dims.h : 4 / 3,
+      alt: card.text || card.label
+    };
+  });
+  return pictured > 0;
+}
+
+// Where a words-only card's parts go: its label at the top, its words below.
+function cardParts(card, h) {
+  const inner = h - 2 * PANEL_PAD;
+  const labelH = card.label ? Math.min(0.45, inner * 0.3) : 0;
+  return { labelH: labelH, pictureH: 0, textH: inner - labelH };
+}
+
+// How tall a card's words stand at one size in one width.
+function wordsHeight(card, w, pt) {
   const { wrappedLineCount } = require('../glyph-width');
+  if (!card.text) return 0;
   const textW = w - 2 * PANEL_PAD - 0.05;
-  let textH = h - 2 * PANEL_PAD - 0.03;
-  if (card.label) textH -= Math.min(0.45, (h - 2 * PANEL_PAD) * 0.3);
   const plain = card.text.replace(/\{\{|\}\}|\[\[|\]\]|<<|>>|\*\*|\|\|/g, '');
   let ems = 0;
   for (const para of plain.split('\n')) {
     const n = para.trim() ? wrappedLineCount(para, pt, textW, true) : 1;
-    if (!Number.isFinite(n)) return false;
+    if (!Number.isFinite(n)) return Infinity;
     ems += (1.2 + 1.26 * (n - 1)) * 1.02;
   }
-  return ems * pt / 72 <= textH;
+  return ems * pt / 72;
 }
 
-function bestArrangement(bank, innerW, bankH) {
+function cardTextFits(card, w, h, pt) {
+  if (!card.text) return true;
+  return wordsHeight(card, w, pt) <= cardParts(card, h).textH - 0.03;
+}
+
+// Every card in a pictured sort shares one layout, so the pictures line up and
+// the words share one size: the label, the picture, then the words. The label
+// sits on its own line above the picture, or beside the picture's top corner
+// when that leaves the picture larger. The words take the height they need at
+// the largest size that still leaves the picture half the card; failing that,
+// at the largest size that leaves a picture the class can make out. `pt` is 0
+// when even 20pt leaves too little.
+function picturedLayoutWith(bank, w, h, labelBeside) {
+  const inner = h - 2 * PANEL_PAD;
+  const labelled = bank.some(function (card) { return card.label; });
+  const labelH = labelled ? Math.min(0.45, inner * 0.2) : 0;
+  const labelW = labelled && labelBeside ? BANK_LABEL_BESIDE_W : 0;
+  const rest = inner - (labelBeside ? 0 : labelH);
+  const base = { labelH: labelH, labelBeside: !!labelBeside, pictureW: w - 2 * PANEL_PAD - 2 * labelW };
+  if (!bank.some(function (card) { return card.text; })) {
+    return Object.assign(base, { pt: BANK_CARD_FONT_MAX, pictureH: rest, textH: 0 });
+  }
+  const at = function (pt) {
+    const textH = Math.max.apply(null, bank.map(function (card) { return wordsHeight(card, w, pt); })) + 0.03;
+    return Object.assign({}, base, { pt: pt, pictureH: rest - textH - BANK_PICTURE_GAP, textH: textH });
+  };
+  for (const floor of [Math.max(BANK_PICTURE_MIN_H, rest * BANK_PICTURE_HALF), BANK_PICTURE_MIN_H]) {
+    for (let pt = BANK_PICTURE_WORDS_PT; pt >= 20; pt -= 1) {
+      const layout = at(pt);
+      if (layout.pictureH >= floor) return layout;
+    }
+  }
+  return Object.assign(at(20), { pt: 0 });
+}
+
+// How much of the board the smallest picture covers when each is fitted whole.
+function smallestPictureArea(bank, layout) {
+  if (layout.pictureW <= 0 || layout.pictureH <= 0) return 0;
+  return Math.min.apply(null, bank.map(function (card) {
+    const drawW = Math.min(layout.pictureW, layout.pictureH * card.image.aspect);
+    return drawW * drawW / card.image.aspect;
+  }));
+}
+
+function picturedLayout(bank, w, h) {
+  const above = picturedLayoutWith(bank, w, h, false);
+  if (!bank.some(function (card) { return card.label; })) return above;
+  const beside = picturedLayoutWith(bank, w, h, true);
+  if ((beside.pt > 0) !== (above.pt > 0)) return beside.pt > 0 ? beside : above;
+  return smallestPictureArea(bank, beside) > smallestPictureArea(bank, above) + 1e-6 ? beside : above;
+}
+
+function bestArrangement(bank, innerW, bankH, pictured) {
   let best = null;
-  const most = Math.min(4, bank.length);
+  const most = Math.min(pictured ? 6 : 4, bank.length);
   for (let cols = 1; cols <= most; cols += 1) {
     const rows = Math.ceil(bank.length / cols);
     const cardW = (innerW - BANK_CARD_GAP * (cols - 1)) / cols;
     const cardH = (bankH - BANK_CARD_GAP * (rows - 1)) / rows;
+    if (pictured) {
+      // A pictured sort is read through its pictures: among the arrangements
+      // whose words still print at 20pt, the one with the largest smallest
+      // picture wins.
+      const layout = picturedLayout(bank, cardW, cardH);
+      const picture = layout.pt ? smallestPictureArea(bank, layout) : 0;
+      const better = !best || (layout.pt > 0) > (best.pt > 0) ||
+        ((layout.pt > 0) === (best.pt > 0) && (picture > best.picture + 1e-6 ||
+          (Math.abs(picture - best.picture) <= 1e-6 && layout.pt > best.pt)));
+      if (better) best = { cols: cols, rows: rows, cardW: cardW, cardH: cardH, pt: layout.pt, picture: picture, layout: layout };
+      continue;
+    }
     let pt = 0;
     for (let size = BANK_CARD_FONT_MAX; size >= 18; size -= 1) {
       if (bank.every(function (card) { return cardTextFits(card, cardW, cardH, size); })) { pt = size; break; }
@@ -105,9 +224,10 @@ function bestArrangement(bank, innerW, bankH) {
   return best;
 }
 
-function drawSortTask(pptx, slide, zone, data, groups) {
+function drawSortTask(pptx, slide, zone, data, groups, ctx) {
   const { splitAnswerRuns } = require('../answer-text');
   const bank = normaliseBank(data);
+  const pictured = resolveBankPictures(bank, ctx);
   const innerX = zone.x + PAD;
   const innerW = zone.w - 2 * PAD;
   let y = zone.y + PAD;
@@ -129,20 +249,38 @@ function drawSortTask(pptx, slide, zone, data, groups) {
   }
 
   const groupRows = groups.length > 3 ? 2 : 1;
+  const gCols = Math.ceil(groups.length / groupRows);
+  const panelW = (innerW - PANEL_GAP * (gCols - 1)) / gCols;
+  // A heading may be a whole sentence (a meaning a card goes under), so each
+  // place is at least tall enough for its heading at 24pt with room left below
+  // it to read as a place to put things.
+  const headingNeed = Math.max.apply(null, groups.map(function (group) {
+    return wordsHeight({ text: group.label }, panelW, BANK_HEADING_FLOOR_PT);
+  })) + PANEL_PAD * 0.5;
+  const groupsLeast = groupRows * Math.max(BANK_GROUP_MIN_H, headingNeed + BANK_GROUP_ROOM);
   // The groups keep about a quarter of the height, enough to read as a place
   // to put things; when the cards cannot print at 20pt in what is left, the
   // groups give back all but their least, because the cards are what the
   // class reads.
-  let groupsH = Math.max(BANK_GROUP_MIN_H * groupRows, h * BANK_GROUP_SHARE);
+  let groupsH = Math.max(groupsLeast, h * BANK_GROUP_SHARE);
   let bankH = h - BANK_GAP - groupsH;
-  // The arrangement is the one that lets the cards print largest.
-  let arrangement = bestArrangement(bank, innerW, bankH);
-  if (arrangement.pt < 20 && groupsH > BANK_GROUP_MIN_H * groupRows) {
-    groupsH = BANK_GROUP_MIN_H * groupRows;
+  // The arrangement is the one that lets the cards print largest; a pictured
+  // sort's is the one with the largest pictures whose words still read.
+  let arrangement = bestArrangement(bank, innerW, bankH, pictured);
+  if (arrangement.pt < 20 && groupsH > groupsLeast) {
+    groupsH = groupsLeast;
     bankH = h - BANK_GAP - groupsH;
-    arrangement = bestArrangement(bank, innerW, bankH);
+    arrangement = bestArrangement(bank, innerW, bankH, pictured);
   }
   const { cols, rows, cardW, cardH } = arrangement;
+  if (pictured && !arrangement.pt) {
+    throw new Error(
+      `SORT_BOARD_BANK_PICTURE_CAPACITY: ${bank.length} pictured cards in ${rows} row(s) leave each picture ` +
+      `${Math.max(0, arrangement.layout.pictureH).toFixed(2)}in tall once the words print at 20pt, below the ` +
+      `${BANK_PICTURE_MIN_H.toFixed(2)}in a class can make out from their seats. Give the sort a taller zone, ` +
+      'shorten the words under the pictures, or split it by complete groups across two slides; nothing was shrunk or cut.'
+    );
+  }
   if (cardH < BANK_CARD_MIN_H) {
     throw new Error(
       `SORT_BOARD_BANK_CAPACITY: ${bank.length} cards to sort in ${rows} row(s) leave each card ` +
@@ -168,30 +306,43 @@ function drawSortTask(pptx, slide, zone, data, groups) {
       rectRadius: PANEL_RADIUS,
       shadow: { type: 'outer', blur: 10, offset: 1, angle: 90, color: '000000', opacity: 0.18 }
     });
+    const parts = pictured ? arrangement.layout : cardParts(card, cardH);
     let textY = cy + PANEL_PAD;
-    let textH = cardH - 2 * PANEL_PAD;
     if (card.label) {
-      const labelH = Math.min(0.45, textH * 0.3);
       slide.addText(card.label, {
-        x: x + PANEL_PAD, y: textY, w: cardW - 2 * PANEL_PAD, h: labelH,
+        x: x + PANEL_PAD, y: textY,
+        w: parts.labelBeside ? BANK_LABEL_BESIDE_W : cardW - 2 * PANEL_PAD, h: parts.labelH,
         fontFace: FONT, fontSize: BANK_LABEL_FONT_MAX, bold: true, color: COLOURS.body,
-        align: 'center', valign: 'middle', margin: 0, fit: FIT,
+        align: parts.labelBeside ? 'left' : 'center', valign: 'middle', margin: 0, fit: FIT,
         objectName: growFitObjectName(labelGroup, BANK_LABEL_FONT_MAX, 'sort-bank-label-' + index)
       });
-      textY += labelH;
-      textH -= labelH;
     }
+    if (!parts.labelBeside) textY += parts.labelH;
+    if (card.image) {
+      // The whole picture, centred in its band, never stretched or cropped.
+      const drawW = Math.min(parts.pictureW, parts.pictureH * card.image.aspect);
+      const drawH = drawW / card.image.aspect;
+      slide.addImage({
+        path: card.image.resolvedPath,
+        x: x + (cardW - drawW) / 2,
+        y: textY + (parts.pictureH - drawH) / 2,
+        w: drawW, h: drawH,
+        altText: card.image.alt,
+        objectName: 'sort-bank-picture-' + index
+      });
+      textY += parts.pictureH + (card.text ? BANK_PICTURE_GAP : 0);
+    }
+    if (!card.text) return;
+    const wordsUnderName = card.label && !card.image;
     slide.addText(splitAnswerRuns(card.text, true, COLOURS.body), {
-      x: x + PANEL_PAD, y: textY, w: cardW - 2 * PANEL_PAD, h: textH,
+      x: x + PANEL_PAD, y: textY, w: cardW - 2 * PANEL_PAD, h: parts.textH,
       fontFace: FONT, fontSize: BANK_CARD_FONT_MAX, bold: true, color: COLOURS.body,
-      align: card.label ? 'left' : 'center', valign: card.label ? 'top' : 'middle', margin: 0, fit: FIT,
+      align: wordsUnderName ? 'left' : 'center', valign: wordsUnderName ? 'top' : 'middle', margin: 0, fit: FIT,
       objectName: growFitObjectName(cardGroup, BANK_CARD_FONT_MAX, 'sort-bank-card-' + index)
     });
   });
 
   const groupsY = y + bankH + BANK_GAP;
-  const gCols = Math.ceil(groups.length / groupRows);
-  const panelW = (innerW - PANEL_GAP * (gCols - 1)) / gCols;
   const panelH = (groupsH - PANEL_GAP * (groupRows - 1)) / groupRows;
   const headerGroup = fitGroupId(zone, 'sort-board-headings');
   groups.forEach(function (group, index) {
@@ -208,7 +359,7 @@ function drawSortTask(pptx, slide, zone, data, groups) {
     });
     slide.addText(splitAnswerRuns(group.label, true, line), {
       x: x + PANEL_PAD, y: gy + PANEL_PAD * 0.5, w: panelW - 2 * PANEL_PAD,
-      h: Math.min(HEADER_H, panelH * 0.45),
+      h: Math.max(Math.min(HEADER_H, panelH * 0.45), Math.min(headingNeed, panelH - BANK_GROUP_ROOM)),
       fontFace: FONT, fontSize: 28, bold: true, color: line,
       align: 'center', valign: 'top', margin: 0, fit: FIT,
       objectName: growFitObjectName(headerGroup, 28, 'sort-heading-' + index)
@@ -216,7 +367,7 @@ function drawSortTask(pptx, slide, zone, data, groups) {
   });
 }
 
-function drawSortBoard(pptx, slide, zone, data) {
+function drawSortBoard(pptx, slide, zone, data, ctx) {
   const groups = normaliseGroups(data);
   if (groups.length < 2 || groups.length > 6) {
     throw new Error('SORT_BOARD_GROUP_COUNT: sort-board requires 2 to 6 groups.');
@@ -229,7 +380,7 @@ function drawSortBoard(pptx, slide, zone, data) {
         'without a `bank`, its items in their groups.'
       );
     }
-    return drawSortTask(pptx, slide, zone, data, groups);
+    return drawSortTask(pptx, slide, zone, data, groups, ctx);
   }
 
   const rows = groups.length > 3 ? 2 : 1;
