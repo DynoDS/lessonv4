@@ -234,14 +234,17 @@ function makeNumberer() {
     );
   }
 
-  // A group's shared task line, printed once as the whole question: "(2) Write
-  // each number as Roman numerals." above (2a) 62, (2b) 85. The Lesson Design
+  // A group's shared task line, printed once above all its Parts: "Write each
+  // number as Roman numerals." above (2a) 62, (2b) 85. The Lesson Design
   // holds it as the group's `groupPrompt`, apart from its Parts, and the sheet
   // carries it on the first Part. With nowhere else to go it used to print
   // inside that Part, so a Year 4 sheet read "(2a) Write each number as Roman
   // numerals. 62" and the task looked like part a's alone (Daniel, 28
-  // September 2026). It takes the group's main number but no answer of its
-  // own: the Parts are what the key answers.
+  // September 2026). It then took the group's main number, "(3) Write the
+  // number bond to 10 first, then the total." above (3a) to (3d), and a number
+  // on a line with nothing to answer was not wanted either (Daniel, 1 October
+  // 2026). So it prints as plain words: no number and no answer of its own,
+  // because the Parts are what the child answers and the key marks.
   function groupPromptLine(node, label, zoneId) {
     const text = node.groupPrompt;
     if (text === undefined || text === null) return null;
@@ -260,7 +263,7 @@ function makeNumberer() {
           `prints it once above all the Parts.`
       );
     }
-    return { number: Number(grouped[1]), helper: "instruction", text, groupPrompt: true };
+    return { helper: "instruction", text, groupPrompt: true };
   }
 
   // A Part with a task line walks to two items, the line and the Part; inside

@@ -709,6 +709,18 @@ def repair_command(args) -> int:
             for value in node: collect(value)
     collect(receipt_data)
     row = dict(matching[0])
+    # The repair searches under its own batch's work root, so each step of the
+    # entry's compiled schedule points there; carried over unchanged it pointed
+    # at the original batch's folders, and the validator refused every result
+    # the repair could write (1 October 2026).
+    new_root = (Path(args.working_dir).resolve() / "unsplash" / "_picture-work" / args.batch_id).resolve()
+    if isinstance(row.get("search_schedule"), list):
+        row["search_schedule"] = [
+            {**step, "summary_path": str((new_root / row["entry_key"] / f"{step['source']}-r{step['round']}"
+                                          / f"_search-summary-{step['source']}-r{step['round']}.json").resolve())}
+            if isinstance(step, dict) and "source" in step and "round" in step and "entry_key" in row else step
+            for step in row["search_schedule"]
+        ]
     repair = {"fault_file": str(fault), "fault_sha256": fault_hash, "previous_receipt": str(receipt), "previous_receipt_sha256": receipt_hash, "prior_summaries": prior_summaries, "prior_staged_assets": staged_assets, "additional_real_searches": 1}
     output = Path(args.output).resolve()
     repaired = {"schema_version": 2, "kind": "image", "batch_id": args.batch_id, "requirements": assignment["requirements"], "work_root": str((Path(args.working_dir).resolve() / "unsplash" / "_picture-work" / args.batch_id).resolve()), "entries": [row]}

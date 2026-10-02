@@ -124,13 +124,20 @@ function renderRow(item) {
     console.warn(`[stick-in] "${item.label || item.visual}": ${missingInRow}, so this item is skipped rather than tiled as blank copies.`);
     return null;
   }
-  const boxWMm = item.spec?.figureWidthMm ?? def.defaultFigureWidthMm;
+  const naturalBoxWMm = item.spec?.figureWidthMm ?? def.defaultFigureWidthMm;
   // Most row figures share one box height so every write-on line sits level and
   // no figure looks bigger than its neighbours. A figure whose usability depends
   // on printed detail rather than overall shape - dotty-paper pegs a child counts
   // one at a time - declares its own, and every cell in ITS strip uses that, so
   // the strip is still internally level.
-  const boxHMm = def.boxHeightMm ?? ROW_BOX_H_MM;
+  const naturalBoxHMm = def.boxHeightMm ?? ROW_BOX_H_MM;
+  // A row printed as a whole page is asked for at a width, like any figure:
+  // every box grows by the same factor, so the strip stays level and the
+  // write-on lines keep their place under each figure.
+  const naturalWidthMm = Math.min(figs.length, ROW_PER_ROW) * (naturalBoxWMm + 2 * ROW_CELL_PAD_MM);
+  const grow = Number.isFinite(item.widthMm) && item.widthMm > 0 ? item.widthMm / naturalWidthMm : 1;
+  const boxWMm = naturalBoxWMm * grow;
+  const boxHMm = naturalBoxHMm * grow;
   const cellWMm = boxWMm + 2 * ROW_CELL_PAD_MM;
   const withLabels = Boolean(item.spec?.writeOnLabels);
 

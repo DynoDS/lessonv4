@@ -164,11 +164,33 @@ def actual_family(
         meta = spec.get("meta")
         lesson = meta.get("lesson") if isinstance(meta, dict) else None
         base = safe_filename_component(plugin_root, lesson, "Lesson")
-        return [
-            output / f"{base} - Stick-in Sheets.pdf",
-            output / f"{base} - Stick-in Sheets.html",
-            output / f"{base} - Stick-in Sheets - Answers.txt",
+        # Each printed piece is its own file (`... - Stick-in Sheets - [piece].pdf`),
+        # so the family is every file carrying the lesson's stick-in stem, plus
+        # the single-file name older builds wrote. Matched by prefix, not glob,
+        # because the stem can hold square brackets.
+        stem = f"{base} - Stick-in Sheets"
+        paths = [
+            output / f"{stem}.pdf",
+            output / f"{stem}.html",
+            output / f"{stem} - Answers.txt",
         ]
+        paths.extend(
+            sorted(
+                path
+                for path in output.iterdir()
+                if path.is_file()
+                and path.name.startswith(f"{stem} - ")
+                and path.suffix.lower() in (".pdf", ".html")
+                and path not in paths
+            )
+            if output.is_dir() else []
+        )
+        # Since 1 October 2026 each printed activity is its own file in the
+        # lesson's activities folder (`Activity 1 - Sarah's words.pdf`).
+        activities = output / f"{base} - Activities"
+        if activities.is_dir():
+            paths.extend(sorted(path for path in activities.iterdir() if path.is_file()))
+        return paths
 
     return []
 
@@ -372,19 +394,14 @@ def expected_outputs(args, stdout: str) -> tuple[list[Path], bool]:
         return paths, "PDF_SKIPPED" in stdout
 
     if args.kind == "stick-in":
+        # One file per printed piece, so one Built: line each.
         paths = marker_paths(stdout, "Built")
-        if len(paths) != 1:
+        if not paths:
             raise FixedResourceError(
-                "stick-in build exited zero without exactly one Built: output"
+                "stick-in build exited zero without a Built: output"
             )
-        # A pack holding a card kit also writes the teacher's key beside it
-        # (`Built answers:`), never for a pack of write-on pieces alone.
-        answers = marker_paths(stdout, "Built answers")
-        if len(answers) > 1:
-            raise FixedResourceError(
-                "stick-in build exited zero with more than one Built answers: output"
-            )
-        paths = [*paths, *answers]
+        # No answers file: a printed activity's key is in the slide notes
+        # (1 October 2026).
         require_inside_output(paths, output)
         return paths, "PDF_SKIPPED" in stdout
 

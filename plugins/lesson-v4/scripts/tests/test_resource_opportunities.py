@@ -142,12 +142,15 @@ def test_none_is_refused_while_children_write_on_a_representation():
     validator.validate_design(design, photos)
 
 
-def test_a_board_sort_does_not_contradict_none_but_a_card_sort_does():
+def test_every_sort_is_printed_so_any_sort_contradicts_none():
+    # 1 October 2026: a sort is always printed as well as shown on the board,
+    # so a lesson with a sort always has something for the pack to print.
     design, photos = design_with(NONE)
     unit = design["teachingSequence"][-1]
     unit["pupilInstruction"] = "Sort each shape into the right group."
     unit["taskStructure"] = {
         "kind": "sort",
+        "handling": {"kind": "sheet", "per": "pair", "groupCount": None, "where": "At tables, one sheet between two."},
         "groups": [
             {"id": "group-001", "label": "Has a right angle"},
             {"id": "group-002", "label": "No right angle"},
@@ -157,17 +160,15 @@ def test_a_board_sort_does_not_contradict_none_but_a_card_sort_does():
             {"id": "item-002", "label": "equilateral triangle", "detail": None, "photoRef": None},
         ],
     }
-    # Done from the board: nothing to print, so the honest none stands.
-    validator.validate_design(design, photos)
-    assert run_command(design).stdout.strip() == f"STICK_IN_SKIP: {NONE['reason']}"
+    message = failure(design, photos)
+    assert "contradicted by" in message and "whole sheet" in message, message
+    assert unit["sourceUnitId"] in message
 
-    # The same sort done with printed cards is a card kit, so none is refused.
     unit["taskStructure"]["handling"] = {
         "kind": "cards", "per": "pair", "groupCount": None, "where": "At tables, one set between two."
     }
     message = failure(design, photos)
     assert "contradicted by" in message and "printed cards" in message, message
-    assert unit["sourceUnitId"] in message
 
 
 def test_wall_entry_never_contradicts_on_write_on_evidence():

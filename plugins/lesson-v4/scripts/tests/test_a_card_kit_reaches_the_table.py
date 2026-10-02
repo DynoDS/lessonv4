@@ -10,8 +10,8 @@ stick-in moment, copied from the unit's own sort:
 - the design says a sort is handled as cards (`taskStructure.handling`);
 - the stick-in spec carries a `card-set` for that unit, and the orchestrator's
   `stick-in-kits` check refuses one that drifts from the unit or is missing;
-- the build prints the cards and headings with cut guides and writes the key
-  to a separate teacher file, which delivery already carries;
+- the build prints the cards and headings with cut guides; the key is in the
+  slide notes, so no answers file is written (1 October 2026);
 - the run report cannot close COMPLETE while the kit is undelivered, and cannot
   leave it unmentioned.
 
@@ -138,8 +138,12 @@ class TheDesignSaysHowASortIsHandledTests(unittest.TestCase):
             sort["handling"] = handling
         return self.module.validate_task_structure(sort, "taskStructure", unit_photo_refs=set())
 
-    def test_a_board_sort_needs_no_handling_block(self):
-        self.structure(None)
+    def test_every_sort_says_how_it_is_printed(self):
+        # 1 October 2026: a sort is always printed as well as shown, so the
+        # teacher chooses on the day; a design that leaves it out is refused.
+        with self.assertRaises(self.module.ContractError) as caught:
+            self.structure(None)
+        self.assertIn("always printed", str(caught.exception))
 
     def test_cards_per_pair_validates(self):
         self.structure(HANDLING)
@@ -161,8 +165,6 @@ class TheDesignSaysHowASortIsHandledTests(unittest.TestCase):
         sort = copy.deepcopy(SORT)
         sort["items"][0]["photoRef"] = "bakery"
         self.module.validate_task_structure(sort, "taskStructure", unit_photo_refs={"bakery"})
-        sort.pop("handling")
-        self.module.validate_task_structure(sort, "taskStructure", unit_photo_refs={"bakery"})
         with self.assertRaises(self.module.ContractError):
             self.module.validate_task_structure(sort, "taskStructure", unit_photo_refs=set())
 
@@ -176,8 +178,8 @@ class TheDesignSaysHowASortIsHandledTests(unittest.TestCase):
 class AWholeDesignWithACardSortStillValidatesTests(unittest.TestCase):
     """End to end through the real validator: a saved-style content design
     whose Do beat is a card sort validates, the same design without the block
-    validates (every saved design keeps its meaning), and a malformed block is
-    refused by name."""
+    is refused (every sort is printed as well as shown, 1 October 2026), and a
+    malformed block is refused by name."""
 
     def setUp(self):
         sys.path.insert(0, str(TESTS))
@@ -197,11 +199,11 @@ class AWholeDesignWithACardSortStillValidatesTests(unittest.TestCase):
         }
         return design, photos
 
-    def test_the_design_validates_with_and_without_handling(self):
+    def test_the_design_validates_with_handling_and_is_refused_without(self):
         design, photos = self.design_with_card_sort()
         self.contract.module.validate_design(design, photos)
         design["teachingSequence"][2]["taskStructure"].pop("handling")
-        self.contract.module.validate_design(design, photos)
+        self.contract.assert_invalid_contract(design, photos, "always printed")
 
     def test_a_malformed_handling_block_is_refused_by_name(self):
         design, photos = self.design_with_card_sort()
@@ -318,23 +320,40 @@ class TheKitMatchesTheUnitTests(unittest.TestCase):
 
 
 class TheBuildReportsTheTeacherFileTests(unittest.TestCase):
-    def test_the_stick_in_outputs_carry_the_answers_file_when_the_build_wrote_one(self):
+    def test_the_stick_in_outputs_are_the_printed_pieces_only(self):
+        # 1 October 2026: no answers file; an old build's key is still archived
+        # on a rebuild, so it is never left beside the new pack.
         module = load("run_fixed_kits", "run-fixed-resource.py")
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp)
             pack = out / "Lesson - Stick-in Sheets.pdf"
-            answers = out / "Lesson - Stick-in Sheets - Answers.txt"
             args = types.SimpleNamespace(kind="stick-in", output_dir=str(out))
-            paths, degraded = module.expected_outputs(args, f"Built: {pack}\nBuilt answers: {answers}\n")
-            self.assertEqual([p.name for p in paths], [pack.name, answers.name])
-            self.assertFalse(degraded)
-            paths, _ = module.expected_outputs(args, f"Built: {pack}\n")
+            paths, degraded = module.expected_outputs(args, f"Built: {pack}\n")
             self.assertEqual([p.name for p in paths], [pack.name])
+            self.assertFalse(degraded)
             family = module.actual_family
             self.assertIn("Stick-in Sheets - Answers.txt", " ".join(str(p) for p in family(
                 "stick-in", ROOT, self._working_with_spec(out), out, "Lesson"
             )))
+
+    def test_each_printed_piece_is_its_own_file_and_all_of_them_are_reported(self):
+        # 1 October 2026: the teacher wants each printed piece separate, so a
+        # pack of three pieces is three files, every one reported and archived.
+        module = load("run_fixed_kits_pieces", "run-fixed-resource.py")
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            pieces = [out / f"Lesson - Stick-in Sheets - {name}.pdf" for name in ("Sarah's own words", "Story cards", "Three children")]
+            args = types.SimpleNamespace(kind="stick-in", output_dir=str(out))
+            stdout = "".join(f"Built: {p}\n" for p in pieces)
+            paths, _ = module.expected_outputs(args, stdout)
+            self.assertEqual([p.name for p in paths], [p.name for p in pieces])
+            for p in pieces:
+                p.write_bytes(b"piece")
+            family = [p.name for p in module.actual_family("stick-in", ROOT, self._working_with_spec(out), out, "Lesson")]
+            for p in pieces:
+                self.assertIn(p.name, family)
 
     @staticmethod
     def _working_with_spec(out: Path) -> Path:
@@ -381,8 +400,6 @@ class TheRunCannotCloseWithoutTheKitTests(RunReportCase):
     def test_a_delivered_kit_closes_normally(self):
         pack = self.output / "Beatrix Potter - Stick-in Sheets.pdf"
         pack.write_bytes(b"pack fixture")
-        answers = self.output / "Beatrix Potter - Stick-in Sheets - Answers.txt"
-        answers.write_bytes(b"key fixture")
         self.write_json(self.working / "stick-in-sheets.json", {"items": [faithful_card_set()]})
         report = self.write_report(
             overrides={
@@ -391,8 +408,7 @@ class TheRunCannotCloseWithoutTheKitTests(RunReportCase):
                     f"- slides: `{self.slides_out}`\n"
                     f"- worksheets: `{self.worksheets_out}`\n"
                     f"- worksheets: `{self.answers_out}`\n"
-                    f"- stick-in sheets: `{pack}`\n"
-                    f"- stick-in sheets: `{answers}`"
+                    f"- stick-in sheets: `{pack}`"
                 ),
             }
         )
@@ -401,16 +417,17 @@ class TheRunCannotCloseWithoutTheKitTests(RunReportCase):
 
 
 class TheRouteIsWiredTests(unittest.TestCase):
-    def test_the_playbook_runs_the_kit_check_and_delivers_the_teacher_file(self):
+    def test_the_playbook_runs_the_kit_check_and_delivers_no_answers_file(self):
         text = flat(ROOT / "skills" / "make-lesson" / "playbook-lite.md")
         self.assertIn("resource-opportunities.py\" stick-in-kits", text)
         self.assertIn("Require `STICK_IN_KITS_OK`", text)
-        self.assertIn("Stick-in Sheets - Answers.txt", text)
+        self.assertNotIn("Answers.txt", text)
+        self.assertIn("A printed activity has no answers file", text)
 
     def test_the_designer_and_the_stick_in_designer_know_the_third_purpose(self):
         designer = flat(ROOT / "agents" / "lesson-designer.md")
-        self.assertIn("a card kit for a sort children do with their hands at tables", designer)
-        self.assertIn("A kit the beat depends on is part of the lesson, not a bonus sheet", designer)
+        self.assertIn("the printed version of a sort children do at tables", designer)
+        self.assertIn("It is part of the lesson, not a bonus sheet", designer)
         stick = flat(ROOT / "agents" / "stick-in-sheets-designer.md")
         self.assertIn("Emit one `card-set` item for that unit", stick)
         pedagogy = flat(ROOT / "references" / "stick-in-sheets-pedagogy.md")

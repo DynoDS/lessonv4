@@ -1,8 +1,8 @@
 'use strict';
 
 const { FONT, COLOURS, SIZE_CEILINGS, FIT, CARD } = require('./styles');
-const { HEADER_TITLE, HEADER_STARTER, starterPrompt, instructionNeedsTwoLines, INSTRUCTION_TWO_LINE_H } = require('./layout');
-const { drawSignal, signalWidth } = require('./signals');
+const { HEADER_TITLE, HEADER_STARTER, starterPrompt, instructionNeedsTwoLines, INSTRUCTION_TWO_LINE_H, doSignRoom } = require('./layout');
+const { drawSignal, signalWidth, DO_SIGNS } = require('./signals');
 
 // Card look: a white pill hugging a header text, so the title and the task
 // prompt read as objects on the slide the way every content block now does,
@@ -68,6 +68,9 @@ function drawTitleHeader(slide, data, ctx) {
       underline: { style: 'sng' }, margin: 0, fit: FIT
     });
   }
+  // The Do beat's badge at the header's far right; the instruction keeps clear.
+  const badge = DO_SIGNS[data.doSign];
+  const badgeRoom = badge ? doSignRoom(data) : 0;
   if (instruction) {
     let textX = 0;
     // Two lines at the same size when one will not hold it (layout.js,
@@ -78,10 +81,10 @@ function drawTitleHeader(slide, data, ctx) {
     if (pills) {
       textX = drawHeaderPill(slide, instruction, SIZE_CEILINGS.instruction, {
         x: HEADER_TITLE.instructionX, y: HEADER_TITLE.instructionY,
-        w: HEADER_TITLE.instructionW, h: instructionH
+        w: HEADER_TITLE.instructionW - badgeRoom, h: instructionH
       }, 'right', data.signal);
     }
-    const right = HEADER_TITLE.instructionX + HEADER_TITLE.instructionW;
+    const right = HEADER_TITLE.instructionX + HEADER_TITLE.instructionW - badgeRoom;
     slide.addText(instruction, {
       x: textX || HEADER_TITLE.instructionX, y: HEADER_TITLE.instructionY,
       w: (right - (pills ? 0.12 : 0)) - (textX || HEADER_TITLE.instructionX),
@@ -89,6 +92,18 @@ function drawTitleHeader(slide, data, ctx) {
       fontFace: FONT, fontSize: SIZE_CEILINGS.instruction, bold: true,
       color: COLOURS.body, align: textX ? 'left' : (instructionH > HEADER_TITLE.instructionH ? 'center' : 'right'), valign: 'middle',
       margin: 0, fit: FIT
+    });
+  }
+  // Drawn last, so the instruction's pill can never sit on top of it: the
+  // sheet on the leisure deck's sort lost its left edge under the pill
+  // (1 October 2026).
+  if (badge) {
+    const h = 0.5;
+    const w = signalWidth(badge, h);
+    drawSignal(slide, badge, {
+      x: HEADER_TITLE.instructionX + HEADER_TITLE.instructionW - w,
+      y: HEADER_TITLE.instructionY + (HEADER_TITLE.instructionH - h) / 2,
+      h: h
     });
   }
 }

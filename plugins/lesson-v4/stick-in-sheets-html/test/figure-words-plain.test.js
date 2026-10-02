@@ -42,14 +42,17 @@ test("a labelled diagram in the stick-in pack draws its taught words plain", asy
   assert.ok(drawn.includes("enamel") && drawn.includes("root"), "the words themselves are drawn");
 });
 
-test("a one-moment pack's page caption prints a marked label plain", async () => {
-  // The fourth check: the caption printed "Sort the {{quadrilaterals}}" as written.
-  const { moments } = await renderMoments([
-    { visual: "venn", label: "Sort the {{quadrilaterals}}", spec: { label1: "even", label2: "odd" } },
-  ], __dirname);
-  const { html } = buildHtml(moments, 2);
-  const captions = html.match(/<div class="caption">[\s\S]*?<\/div>/g) || [];
-  assert.ok(captions.length, "no page caption");
-  assert.ok(captions.every((c) => !/\{\{|\}\}/.test(c)), captions.join("\n"));
-  assert.ok(captions[0].includes("Sort the quadrilaterals"), captions[0]);
+test("a full-page piece prints its task with a taught word plain", async () => {
+  // The fourth check: the page once printed "Sort the {{quadrilaterals}}" as written.
+  // Since 1 October 2026 a piece prints as a whole page under its task.
+  const { figurePages } = require("../src/render-activity-page");
+  const { renderPieceHtml } = require("../src/render-piece-html");
+  const item = { visual: "venn", label: "Sort the {{quadrilaterals}}", spec: { label1: "even", label2: "odd" } };
+  const natural = await renderPieceHtml(item, {});
+  const laid = await figurePages(item, natural, (widthMm) => renderPieceHtml({ ...item, widthMm }, {}), {
+    printableWMm: 277, printableHMm: 185, classSize: 2, pageHtml: (c, b) => `<div class="page">${b}</div>`,
+  });
+  const html = laid.pages.join("");
+  assert.ok(!/\{\{|\}\}/.test(html), "a taught word's braces reached the page");
+  assert.ok(html.includes("Sort the quadrilaterals"), "the task is printed on the page");
 });

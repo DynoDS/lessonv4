@@ -239,7 +239,26 @@ UNIT_FIELDS = {
 # design built the normal way cannot reach the pipeline without it. Leaving it
 # optional here keeps a hand-written or older design valid rather than making
 # every saved lesson unreadable for a field added on 18 September 2026.
-UNIT_OPTIONAL_FIELDS = {"taskStructure", "minutes"}
+UNIT_OPTIONAL_FIELDS = {"taskStructure", "minutes", "levels"}
+
+# Every beat where children do something is planned at the levels it sensibly
+# has (Daniel, 1 October 2026: "all do beats. There should be a decision"):
+# the board always; a printed sheet, a mini worksheet one between two, when it
+# changes how children do or record the task; and real things a prepared day
+# could get. `levels` is optional in the schema, like `minutes`, so a saved
+# design still reads, and compulsory in practice: the scaffold writes it as a
+# placeholder on these kinds, and an unresolved placeholder is refused.
+LEVEL_KINDS = {
+    "do", "our-turn", "your-turn", "practise", "explore", "make-sense",
+    "use-learning", "talk", "stimulus-talk", "do-task",
+}
+# What the pack can print for a beat. `sort` is a sort or order the unit's
+# taskStructure carries (its `handling` says sheet or cards); `source` is a
+# text or picture children read or look closely at; `figure` is a drawn figure
+# children write, mark or label on (a map, a timeline, a Venn, a table); `task`
+# is a task sheet: the task, what children work on, and room to answer.
+PRINTED_FORMS = {"sort", "source", "figure", "task"}
+PRINTED_PER = {"child", "pair", "group"}
 
 # The clock. A lesson aims for about 45 minutes and lives between 30 and 50
 # (the teacher, 18 September 2026: "don't make it strictly 45, do 30-50 mins, 45
@@ -1134,6 +1153,67 @@ SORT_HANDLING_KINDS = {"cards", "sheet"}
 SORT_HANDLING_PER = {"child", "pair", "group"}
 
 
+def validate_levels(raw: Any, path: str, unit: dict[str, Any]) -> None:
+    """The levels a beat where children do something is planned at.
+
+    The board is always there. `printed` is the sheet the pack makes, chosen
+    for how it changes what children do or record (tick each case against a
+    rule printed as the clue, order on a whole sheet, underline in a source,
+    write on a map), never the board's question reprinted; null when it would
+    only reprint the board, and then `boardOnlyBecause` says why in a sentence.
+    `realThings` is what a prepared day could get, or null.
+    """
+    kind = unit.get("kind")
+    levels = expect_dict(raw, path)
+    fields = {"printed", "boardOnlyBecause", "realThings"}
+    expect_exact_keys(levels, fields, fields, path)
+    printed = levels["printed"]
+    task = unit.get("taskStructure")
+    is_sort = isinstance(task, dict) and task.get("kind") == "sort"
+    if printed is None:
+        expect(
+            not is_sort,
+            f"{path}.printed is null on a sort: a sort is always printed as well as shown, form sort",
+        )
+        reason = expect_string(levels["boardOnlyBecause"], f"{path}.boardOnlyBecause")
+        expect(
+            len(reason.split()) >= 4,
+            f"{path}.boardOnlyBecause must say in a sentence why a printed sheet would only reprint "
+            "the board (a quick recall, a partner talk, a one-word answer)",
+        )
+    else:
+        expect(
+            levels["boardOnlyBecause"] is None,
+            f"{path}.boardOnlyBecause must be null when the beat is printed",
+        )
+        sheet = expect_dict(printed, f"{path}.printed")
+        expect_exact_keys(sheet, {"form", "per", "what"}, {"form", "per", "what"}, f"{path}.printed")
+        form = expect_string(sheet["form"], f"{path}.printed.form")
+        expect(form in PRINTED_FORMS, f"{path}.printed.form invalid: {form}; use one of {sorted(PRINTED_FORMS)}")
+        per = expect_string(sheet["per"], f"{path}.printed.per")
+        expect(per in PRINTED_PER, f"{path}.printed.per invalid: {per}")
+        what = expect_string(sheet["what"], f"{path}.printed.what")
+        expect(bool(what.strip()), f"{path}.printed.what must say what is on the sheet")
+        if form == "sort":
+            expect(is_sort, f"{path}.printed.form sort needs the beat's taskStructure to be a sort")
+        if is_sort:
+            expect(form == "sort", f"{path}.printed.form must be sort: this beat's task is a sort, printed from it")
+    if printed is not None:
+        notes = unit.get("speakerNotes") if isinstance(unit.get("speakerNotes"), dict) else {}
+        script = notes.get("script") if isinstance(notes.get("script"), str) else ""
+        expect(
+            "print" in script.lower(),
+            f"{path}.printed: the beat's script must tell the teacher when to hand the printed "
+            "sheet out, the way it would be said (`If you've printed the sheets, give one to each "
+            "pair now.`), because a sheet the lesson never mentions is a sheet nobody uses",
+        )
+    real = levels["realThings"]
+    if real is not None:
+        expect(bool(expect_string(real, f"{path}.realThings").strip()), f"{path}.realThings must say what to get, or be null")
+    if kind not in LEVEL_KINDS:
+        expect(printed is None and real is None, f"{path}: a {kind} beat has children doing nothing to print")
+
+
 def validate_sort_handling(raw: Any, path: str) -> None:
     """How a sort is done in the room, when it is not done on the board.
 
@@ -1145,8 +1225,20 @@ def validate_sort_handling(raw: Any, path: str) -> None:
     stated rather than guessed, because the plugin does not know the class.
     `where` is the teacher's one-line preparation note.
     """
-    if raw is None:
-        return
+    # Every sort is printed as well as shown, so the teacher chooses on the
+    # day whether it runs on the board or on the tables (Daniel, 1 October
+    # 2026). A Shaftesbury design had decided "board only" for both its sorts
+    # and the teacher never got the choice. The printed level is not the board
+    # copied onto paper: it is chosen for how it changes the way children do or
+    # record the task (a tick table with the rule printed as the clue, numbers
+    # written on a whole sheet, cards moved only when moving them is the task).
+    expect(
+        raw is not None,
+        f"{path} is missing: a sort is always printed as well as shown on the board, so the "
+        "teacher can choose on the day. Give it `sheet` (one whole page, nothing to cut, the "
+        "default) or `cards` (only when moving the cards is the task), who shares a set, and "
+        "the one-line preparation note.",
+    )
     handling = expect_dict(raw, path)
     expect_exact_keys(
         handling,
@@ -1737,8 +1829,8 @@ def validate_explanation_task_is_modelled(structure: str, sequence: list[dict[st
             "includes are not a good one shown). A child meeting the form for the first "
             "time in the task has to invent how the explanation goes and use the new learning at "
             "once, and the teacher has nothing on the board to point at. Give `launch.goodLooksLike` "
-            "a strong instance beside a weak one on a parallel case (the lesson's own taught case "
-            "works), or reveal the model answer of an earlier explanation beat to the class "
+            "a strong instance beside a weak one, on this task's own question by default (a parallel "
+            "case only where preferences.md names it), or reveal the model answer of an earlier explanation beat to the class "
             "(`answer.delivery: answer-slide`) so they have seen a good one before they write their own",
         )
 
@@ -2546,6 +2638,8 @@ def validate_source_unit(
         )
     kind = expect_string(unit["kind"], f"{path}.kind")
     expect(kind in allowed_kinds, f"{path}.kind invalid for this section/route: {kind}")
+    if "levels" in unit:
+        validate_levels(unit["levels"], f"{path}.levels", unit)
 
     skill_turn = kind in {"my-turn", "our-turn", "your-turn"}
     if skill_turn:
@@ -3670,10 +3764,17 @@ def write_on_evidence(unit: dict[str, Any]) -> str | None:
     evidence refused an honest `none` and launched a worker to find nothing
     (Year 4 history, 16 September 2026).
     """
+    levels = unit.get("levels")
+    printed = levels.get("printed") if isinstance(levels, dict) else None
+    if isinstance(printed, dict) and printed.get("form") != "sort":
+        return f"the design prints it as a {printed.get('form')} sheet: {printed.get('what')}"
     for ref in unit.get("representationRefs") or []:
         if isinstance(ref, dict) and ref.get("interaction") == "pupil-writes-on":
             return f"children write on {ref.get('ref')} (interaction pupil-writes-on)"
-    if sort_handled_as_cards(unit):
+    handling = sort_handled_as_cards(unit)
+    if handling:
+        if handling.get("kind") == "sheet":
+            return "its sort is printed as a whole sheet for the tables"
         return "its sort is done with printed cards, which is a card kit"
     return None
 

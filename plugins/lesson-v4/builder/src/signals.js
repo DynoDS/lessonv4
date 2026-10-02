@@ -23,7 +23,12 @@ const SIGNALS = {
   star:      { file: 'star.png',      aspect: 288 / 333 },
   magnifier: { file: 'magnifier.png', aspect: 245 / 338 },
   tick:      { file: 'tick.png',      aspect: 273 / 300 },
-  flipchart: { file: 'flipchart.png', aspect: 466 / 663 }
+  flipchart: { file: 'flipchart.png', aspect: 466 / 663 },
+  // The Do beat badges (Daniel's own pair, 1 October 2026): a lightning bolt
+  // for a quick check kept on the board, a sheet for a beat with a printed
+  // activity.
+  lightning: { file: 'lightning.png', aspect: 718 / 652 },
+  sheet:     { file: 'sheet.png',     aspect: 705 / 536 }
 };
 
 function signalMeta(name) {
@@ -70,4 +75,7 @@ function drawSignalTopRight(slide, name, box, opts) {
 // named by hand.
 const TASK_SIGNALS = new Set(['pencil', 'talk', 'magnifier', 'tick']);
 
-module.exports = { drawSignal, drawSignalTopRight, signalWidth, TASK_SIGNALS };
+// A Do beat's badge, named on the slide as `doSign` and drawn by the header.
+const DO_SIGNS = { quick: 'lightning', sheet: 'sheet' };
+
+module.exports = { drawSignal, drawSignalTopRight, signalWidth, TASK_SIGNALS, DO_SIGNS };

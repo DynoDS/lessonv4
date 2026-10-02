@@ -87,6 +87,18 @@ The section plus ordinal is the stable identity for the current authored structu
 
 `minutes` is how long this beat really takes with a class. Every source unit carries one, and the validator adds them up: the beats may take 40 minutes between them, and the rest of the 45 is books out, the date and objective, and moving children to tables and back. A lesson over the budget is refused rather than trimmed a minute at a time, because the beats were honest and it is the lesson that is too big (`lesson-designer.md`, writing each beat's `minutes`).
 
+`levels` is how a beat where children do something can be run: the board always, a printed sheet, and real things for a prepared day (`preferences.md` → `A hands-on task has a board version`). The scaffold writes it on every such beat (`do`, `our-turn`, `your-turn`, `practise`, `explore`, `make-sense`, `use-learning`, `talk`, `stimulus-talk`, `do-task`):
+
+```json
+"levels": {
+  "printed": { "form": "task", "per": "pair", "what": "Sam's claim in a speech box, the question, and lines to answer on." },
+  "boardOnlyBecause": null,
+  "realThings": null
+}
+```
+
+`printed.form` is `sort` (the beat's sort or order, printed from its `taskStructure`, whose `handling` says sheet or cards), `source` (their own copy of a text or picture to quote, underline or look at closely), `figure` (a drawn figure they write, mark or label on) or `task` (a task sheet: the task, the case, claim or worked answer, and room to answer); `per` is `child`, `pair` or `group`; `what` says in a line what is on the sheet. When nothing printed would change what children do, `printed` is `null` and `boardOnlyBecause` says why in a sentence. A sort is always printed. `realThings` names what to get, or is `null`. A printed beat's script says when to hand the sheet out.
+
 `sourceUnitId` stability means stability across label/text correction, **not** persistence across structural editing. Inserting, deleting or reordering an instructional source unit intentionally renumbers that section from the structural change onward. Treat that as an authoritative source change and let the existing source-snapshot/checkpoint invalidation rebuild affected work. Do not preserve stale ordinals across a purposeful redesign.
 
 ### Teacher orientation
@@ -509,13 +521,13 @@ Each field `id` is local to the source unit and uses `field-###`. Each item `id`
 
 Keep `pupilInstruction` short and non-null when `taskStructure` is present. It names only the action. Do not repeat group labels, item labels or item details inside `pupilInstruction` or `content.task`.
 
-A sort is done on the board unless the design says otherwise: the class sees the cards and headings on the slide and records placements on whiteboards or in books. When the lesson chooses to have children move printed cards under printed headings at tables, the sort carries an optional `handling` block, and the stick-in track then prints the kit and its teacher key:
+A sort is shown on the board and always printed as well, so the teacher chooses on the day: the class can record placements on whiteboards or in books from the slide, or work on the printed version at tables. The sort carries a `handling` block, and the stick-in track prints it with its teacher key:
 
 ```json
 "handling": { "kind": "cards", "per": "pair", "groupCount": null, "where": "At tables, one set between two, after the deal is taught." }
 ```
 
-`kind` is `cards` when children cut out and move the cards under heading cards, or `sheet` when every item prints on one page, as large as the page allows, with a box on each for the child to write the place or the group's letter in; `per` is `child`, `pair` or `group`; `groupCount` is a positive integer only when `per` is `group` (the plugin never guesses the class), otherwise `null`; `where` is the teacher's one-line preparation note. Leave `handling` out for a board sort. A printed kit carries each item's label, detail and picture, so a sort of pictures can go to the tables as well as a sort of words: a card whose item carries `photoRef` prints that picture above its label. An order children put cards into (the story's pictures, a life cycle's stages) is a sort whose groups are the places, `1st`, `2nd`, `3rd` and so on up to six, with one item placed under each. The kit is part of the main activity: a run whose design carries `handling` cannot close `COMPLETE` without the printed pack.
+`kind` is `cards` when children cut out and move the cards under heading cards, or `sheet` when every item prints on one page, as large as the page allows, with a box on each for the child to write the place or the group's letter in; `per` is `child`, `pair` or `group`; `groupCount` is a positive integer only when `per` is `group` (the plugin never guesses the class), otherwise `null`; `where` is the teacher's one-line preparation note. Choose `sheet` unless moving the cards is how children decide; a word sort into a few groups prints as a table children tick. A printed kit carries each item's label, detail and picture, so a sort of pictures can go to the tables as well as a sort of words: a card whose item carries `photoRef` prints that picture above its label. An order children put cards into (the story's pictures, a life cycle's stages) is a sort whose groups are the places, `1st`, `2nd`, `3rd` and so on up to six, with one item placed under each. The kit is part of the main activity: a run whose design carries `handling` cannot close `COMPLETE` without the printed pack.
 
 Each group `id` is local to the source unit and uses `group-###`. Each item `id` is local to the source unit and uses `item-###`. `label` and non-null `detail` are exact child-facing strings. `photoRef` is `null` or one ID already present in the source unit's `photoRefs`.
 

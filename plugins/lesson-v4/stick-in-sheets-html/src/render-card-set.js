@@ -10,8 +10,8 @@
 //
 // Three things this file protects, because each has cost a class a lesson:
 //
-// - The pupil pages never carry the answer. The key lives in a separate
-//   teacher text file, and the cards are printed in an order that is not the
+// - The pupil pages never carry the answer. The key lives in the slide notes
+//   for the same sort, and the cards are printed in an order that is not the
 //   key's order, all the same size and shape, with no number or colour that
 //   follows a heading.
 // - Every card keeps its identity after cutting: the set's short tag is
@@ -85,7 +85,7 @@ function wrapLines(text, charsPerLine) {
 }
 
 // A small deterministic generator so the printed order is stable between
-// builds (the teacher's answer file describes the kit that was printed) and
+// builds (the slide notes describe the kit that was printed) and
 // never the key's order.
 function seedFrom(text) {
   let h = 2166136261;
@@ -271,6 +271,9 @@ function normaliseCardSet(item, classSize, baseDir) {
     sourceUnitId: spec.sourceUnitId,
     form,
     instruction: typeof spec.instruction === "string" ? spec.instruction.trim() : "",
+    // What children decide against, printed under the task as the board shows
+    // it (the 1842 law above three real children to sort by it).
+    reference: typeof spec.reference === "string" ? spec.reference.trim() : "",
     label: item.label || "Card sort",
     tag: item.tag != null ? formatStickInHandle(item.tag) : null,
     headings,
@@ -314,7 +317,7 @@ function renderSetHtml(kit, geometry) {
       `display:flex;flex-direction:column;justify-content:center;">` +
       `<div style="border:${border};border-radius:2mm;height:100%;box-sizing:border-box;padding:2mm;` +
       `display:flex;flex-direction:column;justify-content:center;text-align:center;${font};color:${INK}">` +
-      `${tagHtml}${pictureHtml}<div>${esc(label)}</div>${detailHtml}</div></div>`
+      `${tagHtml}${pictureHtml}<div>${isHeading ? esc(label) : cardWordsHtml(label, 16)}</div>${detailHtml}</div></div>`
     );
   };
   // Headings first, then the cards, flowing through one grid so a set uses
@@ -384,7 +387,9 @@ function renderKitPages(kit, { printableWMm, printableHMm, pageHtml }) {
     };
   }
   const per = kit.per === "child" ? "one set per child" : kit.per === "pair" ? "one set between two" : "one set per group";
-  const baseCaption = `✂ ${kit.tag}: cut along the dashed lines. ${per[0].toUpperCase()}${per.slice(1)}; ${kit.setCount} set${kit.setCount === 1 ? "" : "s"}. Thick border = heading.`;
+  // No printed instructions to the teacher: the dashed lines say cut, and the
+  // teacher's notes say how many and who shares (1 October 2026).
+  const baseCaption = "";
   const pages = [];
   const pageHeights = [];
   const splitSet = set.heightMm > printableHMm;
@@ -421,7 +426,7 @@ function renderKitPages(kit, { printableWMm, printableHMm, pageHtml }) {
     if (run.length) runs.push(run);
     for (let s = 0; s < kit.setCount; s++) {
       runs.forEach((r, i) => {
-        const caption = `${baseCaption} Set ${s + 1}, page ${i + 1} of ${runs.length}: keep these pages together.`;
+        const caption = `Set ${s + 1}, page ${i + 1} of ${runs.length}: keep these pages together.`;
         pages.push(pageHtml(caption, rowsHtml(r)));
         pageHeights.push(r.reduce((sum, row) => sum + row.hMm, 0));
       });
@@ -446,11 +451,34 @@ function renderKitPages(kit, { printableWMm, printableHMm, pageHtml }) {
 // order set as numbered places (1st, 2nd, 3rd), otherwise a letter, with the
 // letters' meanings printed as a key at the top of the sheet.
 const ORDINAL = /^(\d+)(st|nd|rd|th)?$/i;
+// A card the board letters (`A  Most of Parliament voted...`) prints its
+// letter on its own, bold, above the words: run into the sentence, `C Young
+// children` reads as part of it (the teacher, 1 October 2026). Only a letter
+// set off by two spaces, a full stop, a bracket or a colon counts, so `A girl`
+// stays a sentence.
+const CARD_LETTER = /^([A-Z])(?:\s{2,}|[.):]\s*)(\S[\s\S]*)$/;
+
+function cardWordsHtml(label, letterPt) {
+  const match = String(label).match(CARD_LETTER);
+  if (!match) return esc(label);
+  return `<div style="font-weight:bold;font-size:${letterPt}pt;margin-bottom:1.5mm">${esc(match[1])}</div><div>${esc(match[2])}</div>`;
+}
+
 function headingCodes(headings) {
   const ordinal = headings.every((h) => ORDINAL.test(h.label.trim()));
+  // An order with a place for what does not belong (1st to 4th, then `Never
+  // happened`) keeps its numbers, and each extra place takes a letter.
+  const places = headings.filter((h) => ORDINAL.test(h.label.trim()));
+  const mixed = !ordinal && places.length >= 2;
+  let extra = 0;
   return {
     ordinal,
-    codes: new Map(headings.map((h, i) => [h.id, ordinal ? h.label.trim().match(ORDINAL)[1] : String.fromCharCode(65 + i)])),
+    mixed,
+    codes: new Map(headings.map((h, i) => {
+      if (ordinal || (mixed && ORDINAL.test(h.label.trim()))) return [h.id, h.label.trim().match(ORDINAL)[1]];
+      if (mixed) return [h.id, ["X", "Y", "Z"][extra++] || String.fromCharCode(65 + i)];
+      return [h.id, String.fromCharCode(65 + i)];
+    })),
   };
 }
 
@@ -479,11 +507,26 @@ function sheetGrid(n, widthMm, heightMm, labelMm) {
 // top, then every item filling the rest of the page with a box to write in.
 // Nothing is cut: the set is one page, printed per child, pair or group.
 function renderSheetPages(kit, { printableWMm, printableHMm, pageHtml }) {
-  const { ordinal, codes } = headingCodes(kit.headings);
+  const { ordinal, mixed, codes } = headingCodes(kit.headings);
+  // A sort of words into a few groups reads best as a table children tick:
+  // each item on its own row, the groups across the top (the teacher, 1
+  // October 2026, of three real children sorted by the 1842 law). Pictures and
+  // orders keep the box on each item.
+  if (!ordinal && !mixed && !(kit.pictures && kit.pictures.size > 0) && kit.headings.length <= 4) {
+    return renderTickTable(kit, { printableWMm, printableHMm, pageHtml });
+  }
   const top = [];
-  if (kit.instruction) top.push(`<div style="font-size:14pt;font-weight:bold">${esc(kit.instruction)}</div>`);
+  if (kit.instruction) top.push(`<div style="font-size:16pt;font-weight:bold">${esc(kit.instruction)}</div>`);
+  if (kit.reference) top.push(`<div style="font-size:13pt;margin:1mm 0">${esc(kit.reference)}</div>`);
   if (ordinal) {
-    top.push(`<div style="font-size:12pt">Write 1 to ${kit.headings.length} in the boxes.</div>`);
+    top.push(`<div style="font-size:13pt">Write 1 to ${kit.headings.length} in the boxes.</div>`);
+  } else if (mixed) {
+    const numbers = kit.headings.filter((h) => ORDINAL.test(h.label.trim())).map((h) => codes.get(h.id));
+    const others = kit.headings.filter((h) => !ORDINAL.test(h.label.trim()));
+    top.push(
+      `<div style="font-size:13pt">Write ${numbers[0]} to ${numbers[numbers.length - 1]} in the boxes` +
+      others.map((h) => `, or <b>${codes.get(h.id)}</b> for ${esc(h.label.toLowerCase())}`).join("") + `.</div>`
+    );
   } else {
     top.push(
       `<div style="font-size:12pt">Write the letter in each box: ` +
@@ -491,6 +534,7 @@ function renderSheetPages(kit, { printableWMm, printableHMm, pageHtml }) {
     );
   }
   const topLines = (kit.instruction ? Math.ceil(kit.instruction.length / 70) : 0) +
+    (kit.reference ? Math.ceil(kit.reference.length / 80) : 0) +
     (ordinal ? 1 : Math.ceil(kit.headings.reduce((n, h) => n + h.label.length + 6, 0) / 90));
   const topMm = topLines * SHEET_TOP_LINE_MM + 4;
   const pictured = kit.pictures && kit.pictures.size > 0;
@@ -511,8 +555,8 @@ function renderSheetPages(kit, { printableWMm, printableHMm, pageHtml }) {
       `border:0.8mm solid ${INK};background:#ffffff;border-radius:1.5mm"></div>`;
     const inner = picture
       ? `<img src="${picture}" alt="" style="display:block;width:100%;height:${grid.picH.toFixed(1)}mm;object-fit:contain">` +
-        `<div style="height:${labelMm.toFixed(1)}mm;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13pt">${esc(card.label)}</div>`
-      : `<div style="height:${(grid.cellH - 6).toFixed(1)}mm;display:flex;align-items:center;justify-content:center;text-align:center;font-size:16pt;padding:0 ${SHEET_BOX_MM + 3}mm">${esc(card.label)}</div>`;
+        `<div style="height:${labelMm.toFixed(1)}mm;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13pt"><div>${cardWordsHtml(card.label, 18)}</div></div>`
+      : `<div style="height:${(grid.cellH - 6).toFixed(1)}mm;display:flex;align-items:center;flex-direction:column;justify-content:center;text-align:center;font-size:18pt;padding:0 ${SHEET_BOX_MM + 3}mm"><div>${cardWordsHtml(card.label, 24)}</div></div>`;
     return `<div style="position:relative;width:${grid.cellW.toFixed(1)}mm;height:${grid.cellH.toFixed(1)}mm;box-sizing:border-box;` +
       `border:0.4mm solid ${INK};border-radius:2mm;padding:3mm">${inner}${box}</div>`;
   };
@@ -524,7 +568,7 @@ function renderSheetPages(kit, { printableWMm, printableHMm, pageHtml }) {
   }
   const body = `<div style="height:${topMm}mm;color:${INK}">${top.join("")}</div>${rows.join("")}`;
   const per = kit.per === "child" ? "one each" : kit.per === "pair" ? "one between two" : "one per group";
-  const caption = `${kit.tag}: ${kit.label}. ${per[0].toUpperCase()}${per.slice(1)}; ${kit.setCount} sheet${kit.setCount === 1 ? "" : "s"}. No cutting.`;
+  const caption = "";
   const pages = Array.from({ length: kit.setCount }, () => pageHtml(caption, body));
   return {
     pages,
@@ -539,34 +583,52 @@ function renderSheetPages(kit, { printableWMm, printableHMm, pageHtml }) {
   };
 }
 
-// The teacher's half: the key and the preparation note, in plain text, never
-// on a pupil page.
-function answersText(kits, lesson) {
-  const lines = [];
-  lines.push(`Card kits for ${lesson}: teacher notes. Keep this away from the pupil pages.`);
-  lines.push("");
-  for (const kit of kits) {
-    lines.push(`Kit${kit.tag ? ` ${kit.tag}` : ""}: ${kit.label}`);
-    lines.push(`Unit: ${kit.sourceUnitId}`);
-    lines.push(`Prepare: ${kit.where} (${kit.setCount} set${kit.setCount === 1 ? "" : "s"} printed, ${kit.per === "child" ? "one per child" : kit.per === "pair" ? "one between two" : "one per group"}).`);
-    if (kit.instruction) lines.push(`Children are told: ${kit.instruction}`);
-    if (kit.form === "sheet") {
-      const { codes } = headingCodes(kit.headings);
-      lines.push("Printed as a sheet: children write in the box on each item, no cutting.");
-      lines.push(`Headings: ${kit.headings.map((h) => `${codes.get(h.id)} = ${h.label}`).join(" | ")}`);
-    } else {
-      lines.push(`Headings: ${kit.headings.map((h) => h.label).join(" | ")}`);
-    }
-    lines.push("Answer:");
-    const headingLabel = new Map(kit.headings.map((h) => [h.id, h.label]));
-    for (const card of kit.cards) {
-      const picture = card.imagePath ? ` (picture: ${card.imagePath})` : "";
-      lines.push(`  ${card.label}${picture} -> ${headingLabel.get(kit.keyByCard.get(card.id))}`);
-    }
-    if (kit.alsoAccept) lines.push(`Also accept: ${kit.alsoAccept}`);
-    lines.push("");
+// The tick table: the task and what children decide against at the top, then
+// one row per item and one tick column per group, the rows sharing the rest
+// of the page so the sheet is full rather than a table at the top of a blank
+// page.
+function renderTickTable(kit, { printableWMm, printableHMm, pageHtml }) {
+  const top = [];
+  if (kit.instruction) top.push(`<div style="font-size:18pt;font-weight:bold;margin-bottom:2mm">${esc(kit.instruction)}</div>`);
+  if (kit.reference) {
+    top.push(`<div style="font-size:14pt;border:0.4mm solid ${INK};border-radius:2mm;padding:2mm 3mm;margin-bottom:2mm">${esc(kit.reference)}</div>`);
   }
-  return lines.join("\n");
+  top.push(`<div style="font-size:13pt;margin-bottom:3mm">Tick one box for each.</div>`);
+  const topMm = (kit.instruction ? Math.ceil(kit.instruction.length / 60) * 9 + 2 : 0) +
+    (kit.reference ? Math.ceil(kit.reference.length / 80) * 7 + 8 : 0) + 9;
+  const headerMm = Math.max(18, Math.ceil(Math.max(...kit.headings.map((h) => h.label.length)) / 18) * 7 + 6);
+  const rowMm = Math.max(14, Math.min(40, (printableHMm - topMm - headerMm - 4) / kit.cards.length));
+  if (rowMm < 14) {
+    return { error: `${kit.cards.length} items do not fit one page as a tick table; split the set` };
+  }
+  const tickColMm = Math.min(70, Math.max(45, (printableWMm * 0.55) / kit.headings.length));
+  const itemColMm = printableWMm - tickColMm * kit.headings.length;
+  const cellStyle = `border:0.4mm solid ${INK};box-sizing:border-box;`;
+  const header =
+    `<tr><th style="${cellStyle}width:${itemColMm}mm;height:${headerMm}mm"></th>` +
+    kit.headings.map((h) => `<th style="${cellStyle}width:${tickColMm}mm;font-size:14pt;padding:2mm">${esc(h.label)}</th>`).join("") +
+    `</tr>`;
+  const tick = `<div style="width:12mm;height:12mm;border:0.8mm solid ${INK};border-radius:1.5mm;margin:0 auto"></div>`;
+  const rows = kit.printOrder.map((card) =>
+    `<tr><td style="${cellStyle}height:${rowMm.toFixed(1)}mm;font-size:18pt;padding:0 4mm">${cardWordsHtml(card.label, 20)}</td>` +
+    kit.headings.map(() => `<td style="${cellStyle}text-align:center">${tick}</td>`).join("") + `</tr>`
+  ).join("");
+  const body =
+    `<div style="color:${INK}">${top.join("")}</div>` +
+    `<table style="border-collapse:collapse;width:${printableWMm}mm;color:${INK}">${header}${rows}</table>`;
+  const pages = Array.from({ length: kit.setCount }, () => pageHtml("", body));
+  return {
+    pages,
+    setsPerPage: 1,
+    splitSet: false,
+    pagesPerSet: 0,
+    setHeightMm: printableHMm,
+    pageHeightsMm: pages.map(() => printableHMm),
+    cardsPerSet: kit.cards.length,
+    pictureMm: 0,
+    grid: { cols: kit.headings.length, rows: kit.cards.length },
+    table: true,
+  };
 }
 
 module.exports = {
@@ -574,7 +636,6 @@ module.exports = {
   renderKitPages,
   renderSheetPages,
   sheetGrid,
-  answersText,
   orderForPrint,
   followsTheKey,
   CLASS_SIZE,

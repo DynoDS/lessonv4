@@ -126,14 +126,15 @@ class DeliverFilesTests(unittest.TestCase):
 
     def test_only_teaching_resources_reach_the_drive(self):
         """The teacher's drive gets the deck, worksheets, wall, stick-in
-        sheets, the worksheet answer sheet and the card kit's text key. A run
-        once filed its run report and walk-through into the day folder and the
-        teacher deleted them (13 September 2026). The answer sheet's HTML is a
-        build record, like each pupil sheet's."""
+        sheets and the worksheet answer sheet. A run once filed its run report
+        and walk-through into the day folder and the teacher deleted them (13
+        September 2026). The answer sheet's HTML is a build record, like each
+        pupil sheet's, and a printed activity's old text key is no resource:
+        its answers are in the slide notes (1 October 2026)."""
         names = [
             "Lesson.pptx", "Lesson - Worksheets.pdf", "Working Wall - Lesson.pdf",
             "Lesson - Stick-in Sheets.pdf", "Lesson - Answers.pdf",
-            "Lesson - Stick-in Sheets - Answers.txt",
+            "Activities - Answers.txt",
             "Lesson - walk-through.md", "Lesson - run report.md",
             "Lesson - Worksheets-expected.html", "Lesson - Answers.html", "notes.txt",
         ]
@@ -145,9 +146,49 @@ class DeliverFilesTests(unittest.TestCase):
             source=self.source, requested=names, dry_run=False,
         )
         copied = sorted(p.name for p in destination.iterdir())
-        self.assertEqual(copied, sorted(names[:6]))
-        self.assertEqual(sorted(p.name for p in skipped), sorted(names[6:]))
+        self.assertEqual(copied, sorted([
+            "Lesson.pptx", "Worksheets.pdf", "Working wall.pdf",
+            "Lesson - Stick-in Sheets.pdf", "Worksheet answers.pdf",
+        ]))
+        self.assertEqual(sorted(p.name for p in skipped), sorted(names[5:]))
         self.assertTrue((self.source / "Lesson - run report.md").is_file(), "records stay where the run made them")
+
+    def test_resources_arrive_named_by_what_they_are(self):
+        """1 October 2026: the lesson has its own folder, so the worksheets,
+        their answers and the wall are named plainly there; the deck keeps the
+        learning objective and each printed activity keeps its own name."""
+        activities = self.source / "Why was he significant - Activities"
+        activities.mkdir()
+        (activities / "Activity 1 - Answers.pdf").write_bytes(b"a")
+        built = [
+            "Why was he significant.pptx", "Why was he significant - Worksheets.pdf",
+            "Why was he significant - Answers.pdf", "Working Wall - Why was he significant.pdf",
+        ]
+        for name in built:
+            (self.source / name).write_bytes(b"x")
+        destination, _, _ = deliver_files.sync_files(
+            term_file=self.term_file, school_root=self.school_root, year_group=4,
+            term_folder="Autumn 1", week=2, subject="History", day="",
+            source=self.source,
+            requested=[*built, "Why was he significant - Activities/Activity 1 - Answers.pdf"],
+            dry_run=False,
+        )
+        self.assertEqual(sorted(p.name for p in destination.iterdir()), sorted([
+            "Why was he significant.pptx", "Worksheets.pdf", "Worksheet answers.pdf",
+            "Working wall.pdf", "Activity 1 - Answers.pdf",
+        ]))
+
+    def test_two_files_that_would_share_a_plain_name_are_refused(self):
+        for name in ("Fractions - Worksheets.pdf", "Decimals - Worksheets.pdf"):
+            (self.source / name).write_bytes(b"x")
+        with self.assertRaises(ValueError):
+            deliver_files.sync_files(
+                term_file=self.term_file, school_root=self.school_root, year_group=4,
+                term_folder="Autumn 1", week=2, subject="Maths", day="Monday",
+                source=self.source, requested=["Fractions - Worksheets.pdf", "Decimals - Worksheets.pdf"],
+                dry_run=False,
+            )
+        self.assertFalse((self.school_root / "2026-2027 - Year 4").exists(), "nothing is copied")
 
 
     def test_a_plain_save_folder_gets_the_resources_directly(self):

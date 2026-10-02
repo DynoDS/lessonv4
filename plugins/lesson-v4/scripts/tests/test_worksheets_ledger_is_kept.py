@@ -49,18 +49,24 @@ class TheTeachersDecisionsAreWritten(unittest.TestCase):
 
     def test_the_board_and_the_sheet_never_share_questions(self) -> None:
         """Decision 2: "I wouldn't want the same exact questions on both."\""""
-        self.assertIn("The practice slide keeps its own questions, and the sheet never carries them", self.FOR)
-        self.assertIn("in a lesson like PSHE that works towards one question, the sheet can be that question, answered once, on the sheet, as the proof", self.FOR)
+        self.assertIn("The practice slide keeps its own questions, and the sheet never carries them for a second go", self.FOR)
+        # 1 October 2026: his one-question case (first written for PSHE) is now
+        # the rule for every objective a child shows in one good answer, in any
+        # subject; it is still answered once, never on the board and the sheet.
+        self.assertIn("on a one-answer sheet the sheet is the final task's question, answered once, on the sheet, as the proof", self.FOR)
+        self.assertIn("**What the sheet is depends on what kind of learning the objective is.**", self.FOR)
+        self.assertIn("*name the parts of the digestive system* needs many goes, and *explain how the digestive system works* is one good answer", self.FOR)
+        self.assertNotIn("in a lesson like PSHE that works towards one question", self.FOR)
         # "Same performance" is the skill, and a test holds it; it must not
         # become "same questions".
         self.assertIn("When the sheet asks for essentially the same performance as the slide Practise", self.FOR)
         self.assertIn("the sheet never repeats the practice slide's questions", text("agents/design-reviewer.md"))
-        # His one-question case reaches the two pointers the lesson designer
+        # The one-answer case reaches the two pointers the lesson designer
         # reads while designing the sheet (the first check's finding 4).
         for rel in ("agents/lesson-designer.md", "references/lesson-designer-components.md"):
             with self.subTest(file=rel):
-                self.assertIn("never its questions (in a lesson like PSHE that works towards one question, "
-                              "the sheet can be that question, answered as the proof", text(rel))
+                self.assertIn("never its questions (on a one-answer lesson the sheet is the final task's question, "
+                              "answered as the proof", text(rel))
 
     def test_a_sheet_a_child_could_not_use_goes_back(self) -> None:
         """Decision 5: "agree, should probably go back to be redesigned"."""

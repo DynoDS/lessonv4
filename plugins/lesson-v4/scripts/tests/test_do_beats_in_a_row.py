@@ -124,6 +124,17 @@ class FromAChildsSeatTests(unittest.TestCase):
         self.assertIn("  Tasks counted against the two or three a lesson holds (the main work and anything "
                       "after it included, quick checks not): 3.", lines)
 
+    def test_a_short_beat_with_a_printed_sheet_counts_as_a_task(self) -> None:
+        # 1 October 2026: the Shaftesbury lesson printed its one-minute check
+        # and the teacher felt four tasks where the count showed three.
+        design = json.loads(json.dumps(SEAT))
+        design["teachingSequence"][1]["minutes"] = 2
+        design["teachingSequence"][1]["levels"] = {
+            "printed": {"form": "task", "per": "pair", "what": "x"}, "boardOnlyBecause": None, "realThings": None}
+        lines = run_design(design).stdout.splitlines()
+        self.assertTrue(any(line.startswith("  do ") and "True or false" in line for line in lines), lines)
+        self.assertTrue(any("True or false" in line and "printed task sheet" in line for line in lines), lines)
+
     def test_a_task_after_the_main_work_is_counted_and_the_starter_is_not(self) -> None:
         design = json.loads(json.dumps(SEAT))
         design["ending"] = {"included": True, "beat": {"kind": "apply", "sourceUnitId": "a", "label": "Is Freya right?",

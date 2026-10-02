@@ -441,6 +441,14 @@ def content_scaffold(kind: str) -> dict[str, Any]:
     }
 
 
+# Beats where children do something carry their levels (validate-lesson-design.py
+# LEVEL_KINDS): the board, a printed sheet or why not, and real things.
+LEVEL_KINDS = {
+    "do", "our-turn", "your-turn", "practise", "explore", "make-sense",
+    "use-learning", "talk", "stimulus-talk", "do-task",
+}
+
+
 def source_unit(
     source_unit_id: str,
     kind: str,
@@ -448,7 +456,7 @@ def source_unit(
     success_criteria_refs: list[str] | None = None,
     task_structure: str | None = None,
 ) -> dict[str, Any]:
-    return {
+    unit = {
         "sourceUnitId": source_unit_id,
         "label": PLACEHOLDER,
         "kind": kind,
@@ -472,6 +480,9 @@ def source_unit(
         "speakerNotes": notes_scaffold(kind),
         "answer": answer_scaffold(task_structure),
     }
+    if kind in LEVEL_KINDS:
+        unit["levels"] = {"printed": PLACEHOLDER, "boardOnlyBecause": PLACEHOLDER, "realThings": PLACEHOLDER}
+    return unit
 
 
 # A discovery lesson may discover more than one thing (the teacher's decision,

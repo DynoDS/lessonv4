@@ -232,10 +232,11 @@ def test_content_scaffold_assigns_mechanical_ids_and_envelopes():
     ]
 
     for unit in units:
-        assert set(unit) == (
-            validator.UNIT_FIELDS
-            | validator.UNIT_OPTIONAL_FIELDS
-        )
+        # A beat where children do something carries its levels; others do not.
+        expected = validator.UNIT_FIELDS | validator.UNIT_OPTIONAL_FIELDS
+        if unit["kind"] not in validator.LEVEL_KINDS:
+            expected = expected - {"levels"}
+        assert set(unit) == expected
         assert (
             unit["taskStructure"]
             == scaffold.PLACEHOLDER

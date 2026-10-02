@@ -1284,6 +1284,7 @@ def add_structured_sort(design):
     starter["pupilInstruction"] = "Sort each object into one group."
     starter["taskStructure"] = {
         "kind": "sort",
+        "handling": {"kind": "sheet", "per": "pair", "groupCount": None, "where": "At tables, one sheet between two."},
         "groups": [
             {"id": "group-001", "label": "Uses electricity"},
             {"id": "group-002", "label": "Does not use electricity"},
@@ -1411,6 +1412,7 @@ def structured_sort_on(unit):
     unit["pupilInstruction"] = "Sort each appliance into one group."
     unit["taskStructure"] = {
         "kind": "sort",
+        "handling": {"kind": "sheet", "per": "pair", "groupCount": None, "where": "At tables, one sheet between two."},
         "groups": [
             {"id": "group-001", "label": "Mains electricity"},
             {"id": "group-002", "label": "Battery"},

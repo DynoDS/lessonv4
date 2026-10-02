@@ -3,7 +3,7 @@ const assert = require("node:assert");
 const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
-const { build, buildKits, naturalAnswersFilename } = require("../build");
+const { build, buildKits } = require("../build");
 const { normaliseCardSet, orderForPrint, followsTheKey, renderKitPages, renderSheetPages } = require("../src/render-card-set");
 
 const FIXTURE = path.join(__dirname, "fixtures/card-kit.json");
@@ -84,18 +84,19 @@ test("a sheet prints every picture on one uncut page, far larger than a card, wi
   assert.strictEqual(html.split("<img ").length - 1, 5, "every picture is on the one page");
   assert.ok(html.includes("Write 1 to 5 in the boxes."), "an order tells children to write the places");
   assert.ok(laid.pictureMm >= 70, `pictures fill the page (${laid.pictureMm} mm), not a 30 mm card`);
-  const answers = require("../src/render-card-set").answersText([kit], "Test");
-  assert.ok(answers.includes("Printed as a sheet"), "the teacher's notes say it is a sheet, not cards");
 });
 
-test("a sheet for a sort into named groups gives each group a letter and prints the key at the top", () => {
+test("a sheet for a word sort into named groups prints as a tick table with the groups across the top", () => {
   const item = JSON.parse(JSON.stringify(spec().items[0]));
   item.spec.form = "sheet";
   const kit = normaliseCardSet(item, 30);
   const laid = renderSheetPages(kit, { printableWMm: 277, printableHMm: 185, pageHtml: (c, b) => `<div>${c}${b}</div>` });
   const html = laid.pages[0];
-  assert.ok(html.includes("Write the letter in each box"), "children are told to write a letter");
-  assert.ok(html.includes(`<b>A</b> = ${kit.headings[0].label}`), "the key names what each letter means");
+  // A word sort into a few groups prints as a table children tick (the
+  // teacher, 1 October 2026): each item a row, each group a column.
+  assert.ok(laid.table, "a word sort into a few groups prints as a tick table");
+  assert.ok(html.includes("Tick one box for each"), "children are told to tick");
+  for (const heading of kit.headings) assert.ok(html.includes(heading.label), `the column ${heading.label} is printed`);
 });
 
 test("a kit whose form is neither cards nor sheet is refused by name", () => {
@@ -106,7 +107,7 @@ test("a kit whose form is neither cards nor sheet is refused by name", () => {
 
 // ─── The teacher's half ──────────────────────────────────────────────────
 
-test("build writes the pack and a separate answers file naming the key, the preparation and the accepted alternative", async () => {
+test("build writes each printed piece as its own Activity file, and no answers file (the key is in the slide notes)", async () => {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), "stickin-kit-"));
   const before = process.exitCode;
   process.exitCode = 0;
@@ -117,17 +118,12 @@ test("build writes the pack and a separate answers file naming the key, the prep
   } finally {
     process.exitCode = before;
   }
-  assert.ok(result && fs.existsSync(result));
-  assert.match(path.basename(result), /Why did Tudor children work - Stick-in Sheets\.(pdf|html)$/);
-  const answers = path.join(out, naturalAnswersFilename("Why did Tudor children work"));
-  assert.ok(fs.existsSync(answers), "the answers file sits beside the pack");
-  assert.ok(answers.endsWith(" - Answers.txt"), "delivery already carries this suffix");
-  const text = fs.readFileSync(answers, "utf8");
-  assert.ok(text.includes("knowing when bread is baked just right -> Helped the child when he grew up"));
-  assert.ok(text.includes("Prepare: At tables, one set between two"));
-  assert.ok(text.includes("15 sets printed"));
-  assert.ok(text.includes("Also accept: The baking card under either heading"));
-  assert.ok(text.includes("lesson-section/teaching-sequence/unit-006"), "the kit names its source unit");
+  assert.ok(result && result.length && result.every((f) => fs.existsSync(f)));
+  // Each printed piece is its own "Activity N" file in the lesson's folder.
+  for (const f of result) assert.match(path.basename(f), /^Activity \d+ - .+\.(pdf|html)$/);
+  const folder = path.join(out, "Why did Tudor children work - Activities");
+  const written = fs.readdirSync(folder);
+  assert.ok(!written.some((f) => /answers/i.test(f)), `no answers file beside the activities: ${written.join(", ")}`);
 });
 
 // ─── A kit that cannot be printed faithfully is refused by name ──────────
@@ -182,13 +178,14 @@ test("a pack can hold write-on pieces and a card kit together, and the kit pages
   process.exitCode = 0;
   try {
     const result = await build(mixedPath, out);
-    assert.ok(result && fs.existsSync(result));
+    assert.ok(result && result.length && result.every((f) => fs.existsSync(f)));
     assert.strictEqual(process.exitCode, 0);
   } finally {
     process.exitCode = before;
   }
-  const answers = fs.readdirSync(out).find((f) => f.endsWith(" - Answers.txt"));
-  assert.ok(answers, "the kit's answers file is written even when pieces share the pack");
+  const folder = fs.readdirSync(out).find((f) => f.endsWith(" - Activities"));
+  assert.ok(folder, "the pieces and the kit share the lesson's activities folder");
+  assert.ok(!fs.readdirSync(path.join(out, folder)).some((f) => /answers/i.test(f)), "no answers file, even when pieces share the pack");
 });
 
 // ─── Everything on a card reaches the page, and nothing runs off it ──────
@@ -226,8 +223,6 @@ test("a picture card prints the picture the board shows, above its words, and ev
   assert.ok(html.includes("object-fit:contain"), "the picture is fitted whole, never cropped");
   const plainLaid = renderKitPages(plain, { printableWMm: 277, printableHMm: 190, pageHtml: (c, b) => `<div>${c}${b}</div>` });
   assert.ok(laid.setHeightMm > plainLaid.setHeightMm, "a picture makes every card in the set taller, so size gives nothing away");
-  const answers = require("../src/render-card-set").answersText([kit], "Test");
-  assert.ok(answers.includes("(picture: unsplash/stable.png)"), "the teacher's key names the picture on each card");
 });
 
 test("a picture card whose picture cannot be printed, a photoRef with no imagePath, or a kit with no tag, is refused by name rather than printed short", () => {

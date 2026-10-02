@@ -2083,7 +2083,7 @@
     },
     {
      "file": "stick-in-sheets-html/build.js",
-     "text": "const captionText = withoutTaughtMarks(moments.length === 1",
+     "text": "<span>${esc(withoutTaughtMarks(m.handle))}</span>",
      "section": null
     },
     {

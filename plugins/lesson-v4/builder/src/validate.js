@@ -270,6 +270,14 @@ function validateSignals(slide, n, errors, warnings) {
   if (!slide || typeof slide !== 'object') return;
   const { TASK_SIGNALS } = require('./signals');
   const names = [...TASK_SIGNALS].join(', ');
+  // A Do beat's badge: `quick` draws a lightning bolt (a quick check kept on
+  // the board), `sheet` a printed sheet (the beat has a printed activity).
+  if (slide.doSign !== undefined && slide.doSign !== 'quick' && slide.doSign !== 'sheet') {
+    errors.push(`slide ${n}: doSign ${JSON.stringify(slide.doSign)} is not a badge the deck draws; use "quick" or "sheet".`);
+  }
+  if (slide.doSign !== undefined && slide.headerStyle === 'starter') {
+    warnings.push(`slide ${n}: a starter header has no badge spot, so doSign ${JSON.stringify(slide.doSign)} will not appear.`);
+  }
   if (slide.signal !== undefined) {
     if (!TASK_SIGNALS.has(slide.signal)) {
       errors.push(`slide ${n}: signal ${JSON.stringify(slide.signal)} is not a sign the deck draws; use one of ${names}.`);

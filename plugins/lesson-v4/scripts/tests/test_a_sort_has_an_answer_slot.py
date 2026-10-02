@@ -77,7 +77,7 @@ def test_the_filled_sort_envelope_passes_the_validator():
         {"id": "item-001", "label": "ice", "detail": None, "photoRef": None},
         {"id": "item-002", "label": "milk", "detail": None, "photoRef": None},
     ]
-    task["handling"] = None
+    task["handling"] = {"kind": "sheet", "per": "pair", "groupCount": None, "where": "At tables, one sheet between two."}
     checked = validator.validate_task_structure(task, "taskStructure", unit_photo_refs=set())
 
     answer = copy.deepcopy(unit["answer"])

@@ -1,5 +1,19 @@
 # Build review log
 
+## 2026-10-02 Release 4.2.306: the work of 1 and 2 October, saved together
+
+Daniel asked for every change to the plugin to be saved and pushed, whichever session made it. This release gathers the uncommitted work of 1 and 2 October:
+
+- **Printed activities.** Every sort and order is printed as a full page, one between two, as its own "Activity N" file with the task on the sheet (`stick-in-sheets-html/src/render-activity-page.js`). The memory note records this work as half done.
+- **Worksheets show the objective, and drive names are plain.** Every worksheet section serves the objective; the drive gets "Worksheets", "Worksheet answers" and "Working wall".
+- **The sheet follows the kind of learning.** A many-goes objective gets a practice sheet and a short check; a one-good-answer objective gets the final task printed at three levels.
+- **Leisure deck review fixes.** The needs-the-lesson rule, the same-question model for the final task, talk words on the writing slide, and the badge and timeline bugs found that day.
+- **Do beat badges** (`builder/src/do-signs.js`). A beat with a printed activity shows a sheet; any task kept on the board now shows the lightning bolt, however long it runs. On 2 October a three-minute board task carried no mark, and Daniel looked for one where a Do should be.
+
+**Checks.** `run_all_checks.py` passed in full before the commit (Python 2,528, voice 21, builder 903, worksheet 801, stick-in 82, wall 176, shared 130, root 46).
+
+**Not in this release.** The designer-intelligence tests of 1 and 2 October (child who missed the lesson, three outlines, a slim rulebook) changed nothing in the plugin; their evidence is under `evaluations/`, and Daniel's blind judging kept the current designer.
+
 ## 2026-09-29 A books level prints its slips only, and every slip fits a book
 
 Daniel, on the Year 4 "Use number bonds to add three single-digit numbers" pack, asked for five things: a level marked books should print only its slips, never the write-on sheet as well; a slip should never be full width ("otherwise there's no point in it being a strip"); a slip should carry the book mark; every question should have a line between it and the next; and one-line sums like (3a) to (3d) should sit side by side. On a picture too wide for a slip: "I don't think we should just say just because it has this doesn't mean it should be a sheet ... That's for the designer to decide."

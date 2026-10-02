@@ -39,7 +39,7 @@ The verbs carry more than the connectives do. A child who writes `the acid cause
 
 ## Choosing `reasoningWords`
 
-Pick the few this task's explanation actually needs, at this year group. Not a bank.
+Pick the few this task's explanation actually needs, at this year group. Not a bank. When children talk before they write, these are the words printed beside the talk, so they include the two or three taught subject words the answer is built from (`law`, `school`, `leisure time`), with one or two connectives at most. Three bare connectives (`because`, `so`, `but`) printed for partner talk gave children nothing to say (the teacher, 1 October 2026): it is the generic frame again, and a child who has the knowledge words and the one link they need can start.
 
 | Year | What the explanation is doing | Useful language |
 |---|---|---|

@@ -102,15 +102,22 @@ test('a sentence heading prints at 24pt or more in its place', () => {
   });
 });
 
-test('a missing picture, a picture with no title, or a sort only partly pictured, is refused by name', () => {
+test('a picture still to come holds its place and is recorded; no title or a partly pictured sort is refused by name', () => {
   assert.throws(() => draw({
     bank: [{ label: 'A', imagePath: 'a.png' }, { label: 'B', text: 'Wise men', imagePath: 'b.png' }],
     groups: MEANINGS.slice(0, 2)
   }), /SORT_BOARD_BANK_PICTURE_UNTITLED: card 1/);
-  assert.throws(() => draw({
+  // A picture not there yet holds its card's place and is recorded as a
+  // missing required picture, which the final build refuses; the preview,
+  // built before the pictures land, still lays the sort out.
+  const { clearMissingPictures, missingPictureFindings } = require('../src/content/image');
+  clearMissingPictures();
+  const pending = draw({
     bank: [{ text: 'Shepherds', imagePath: 'a.png' }, { text: 'Wise men', imagePath: 'nowhere.png' }],
     groups: MEANINGS.slice(0, 2)
-  }), /SORT_BOARD_BANK_PICTURE_MISSING: card 2/);
+  });
+  assert.equal(images(pending).length, 1);
+  assert.ok(missingPictureFindings().some((f) => f.part === 'nowhere.png'), 'the missing picture is recorded');
   assert.throws(() => draw({
     bank: [{ text: 'Shepherds', imagePath: 'a.png' }, 'Wise men'],
     groups: MEANINGS.slice(0, 2)

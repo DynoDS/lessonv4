@@ -49,10 +49,13 @@ test("the source's own line breaks survive, because a witness answer per line is
   assert.ok(page.includes("Children&#x27;s Employment Commission") || page.includes("Children's Employment Commission"));
 });
 
-test("the cutting caption says how many copies there are and that nothing is written on it", () => {
-  const laid = renderSourceTextPages(normaliseSourceText(patience(), 32), PAGE);
-  assert.match(laid.pages[0], /One between two; 16 copies/);
-  assert.match(laid.pages[0], /Nothing is written on this one/);
+test("a source prints as a whole page each by default, one between two, with nothing to cut", () => {
+  // The teacher, 1 October 2026: "Always try to make it full page ... 1 between 2".
+  const laid = renderSourceTextPages(normaliseSourceText(patience({ instruction: "Underline the words that prove it." }), 32), PAGE);
+  assert.strictEqual(laid.perPage, 1);
+  assert.strictEqual(laid.pages.length, 16);
+  assert.match(laid.pages[0], /Underline the words that prove it\./);
+  assert.doesNotMatch(laid.pages[0], /dashed/);
 });
 
 test("an extract too tall for the page is refused with the height named, never cut short", () => {
@@ -65,8 +68,8 @@ test("an extract too tall for the page is refused with the height named, never c
   assert.match(laid.error, /will not shrink the words/);
 });
 
-test("copies tile several to a page with cut guides between them", () => {
-  const laid = renderSourceTextPages(normaliseSourceText(patience(), 32), PAGE);
+test("a source asked for as slips tiles several to a page with cut guides between them", () => {
+  const laid = renderSourceTextPages(normaliseSourceText(patience({ layout: "slips" }), 32), PAGE);
   assert.ok(laid.perPage >= 2, `expected more than one copy a page, got ${laid.perPage}`);
   assert.ok(laid.pages.length >= 1);
   assert.match(laid.pages[0], /dashed/);

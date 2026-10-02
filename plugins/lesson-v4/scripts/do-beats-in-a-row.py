@@ -221,12 +221,24 @@ def child_seat(design: dict) -> list[str]:
         cards = handling.get("kind") == "cards"
         together = (handling.get("per") in {"pair", "group"}) or bool(TOGETHER.search(flatten(told)))
         sheet = handling.get("kind") == "sheet"
+        levels = item.get("levels") if isinstance(item.get("levels"), dict) else {}
+        printed = levels.get("printed") if isinstance(levels.get("printed"), dict) else None
+        # The board version always runs; the printed level is what the teacher
+        # can hand out instead, shown so the run of beats reads as the class
+        # could live it on a prepared day as well as from the slides.
         where = (f"with printed cards, one set per {handling.get('per')}" if cards
                  else f"on a printed sheet, one per {handling.get('per')}" if sheet
+                 else f"from the board, or a printed {printed.get('form')} sheet one per {printed.get('per')}" if printed
                  else "from the board or in books")
+        if levels.get("realThings"):
+            where += f", or with {levels['realThings']}"
         who = "with a partner or group" if together else "on their own"
         planned = item.get("minutes")
-        quick = (item.get("kind") != "starter" and i != main_at
+        # A beat with a printed sheet is a task however short it was planned:
+        # handing out, doing and checking a sheet is not a one-minute check.
+        # The Shaftesbury lesson of 1 October 2026 planned three tasks and a
+        # quick check, printed the check, and the teacher felt four tasks.
+        quick = (item.get("kind") != "starter" and i != main_at and printed is None
                  and isinstance(planned, (int, float)) and planned <= QUICK_CHECK_MINUTES)
         tag = "MAIN" if i == main_at else ("quick" if quick else "do")
         minutes = f", {planned} min planned" if isinstance(planned, (int, float)) else ""

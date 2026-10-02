@@ -534,39 +534,22 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
         playbook = flat(ROOT / "references" / "slide-composition-playbook.md")
         self.assertIn("`rehearsal` takes its own short slide between the pair and the task", playbook)
 
-    def test_the_model_may_be_the_task_s_own_case_when_the_design_says_so(self) -> None:
+    def test_the_model_is_the_task_s_own_case_by_default(self) -> None:
         """The Viking defect was claiming the writing as each child's own after
-        answering its question a minute earlier, not showing the model. A class
-        usually needs a complete good one of the thing it is about to make, and
-        a parallel case costs transfer and classroom friction: the teacher, 18
-        September 2026, on toffees against squash - "they will see the toffee
-        one, then start talking about that"."""
+        answering its question a minute earlier, not showing the model. The
+        teacher's ruling of 1 October 2026: model the exact task children write,
+        because it shapes their own answer, and a parallel case cost a lesson a
+        second claim and a model about a different idea."""
         preferences = flat(ROOT / "references" / "preferences.md")
-        self.assertIn(
-            "Both are legitimate and the failure is only ever claiming the second "
-            "while planning it as the first",
-            preferences,
-        )
-        # The same-case route carries a price, and the price is named.
-        self.assertIn("this beat is supported rehearsal", preferences)
-        self.assertIn(
-            "A lesson that cannot point at that stage has no evidence and must use "
-            "the parallel case instead",
-            preferences,
-        )
+        self.assertIn("**Model this very task by default", preferences)
+        # The modelled writing is never claimed as unaided.
+        self.assertIn("never claim a modelled answer as unaided evidence", preferences)
+        self.assertNotIn("must use the parallel case instead", preferences)
         # A parallel case that varies something untaught is friction, not transfer.
         self.assertIn("parallel in name only", preferences)
-        self.assertIn(
-            "The instance is either a parallel case, which keeps the writing as evidence, "
-            "or a model of this very case",
-            flat(CONTENT_BASED),
-        )
-        # The reviewer's own test already reads on the claim rather than the
-        # model, and must keep doing so.
-        self.assertIn(
-            "repaired with a parallel case or an honest supported label, never by removing the model",
-            flat(DESIGN_REVIEWER),
-        )
+        self.assertIn("The instance is by default a model of this very task", flat(CONTENT_BASED))
+        # The reviewer's own test reads on the claim rather than the model.
+        self.assertIn("repaired with an honest supported label", flat(DESIGN_REVIEWER))
 
     def test_the_case_a_task_runs_on_is_supplied_orange(self) -> None:
         """The teacher coloured Sam's situation orange himself. It is the same

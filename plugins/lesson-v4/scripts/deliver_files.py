@@ -34,11 +34,32 @@ import plugin_settings
 # So the rule lives here, where every caller passes through it, rather than in
 # each caller's list. The answers go too: the teacher marks from them (Daniel,
 # 13 September 2026: "yes answer key too"). The worksheet's answer sheet is a
-# PDF since 4.2.305, so it travels as a resource; the stick-in card kit's key
-# is still a text file, and is the one text file that belongs with the
-# resources.
+# PDF since 4.2.305, so it travels as a resource. The printed activities have
+# no answers file: their answers are in the slide notes (Daniel, 1 October
+# 2026: "there shouldn't be stick in sheet answers ... the speaker notes have
+# answers anyway"), so a text file is always a run record.
 RESOURCE_EXTENSIONS = {".pptx", ".pdf", ".docx", ".xlsx"}
-ANSWER_KEY_SUFFIX = " - Answers.txt"
+
+# Each lesson has its own folder on the drive, so a resource there is named by
+# what it is, not by the lesson again (Daniel, 1 October 2026: worksheets are
+# "Worksheets" and "Worksheet answers", the wall is "Working wall", and the
+# deck keeps the learning objective). The build keeps the lesson in its names,
+# because every lesson builds into one shared output folder; the plain name is
+# given here, on the way to the drive. A name already plain is left alone, and
+# a printed activity keeps its own name whatever its label says.
+DELIVERED_NAMES = (
+    (re.compile(r"^(?!Activity \d).+ - Worksheets\.pdf$"), "Worksheets.pdf"),
+    (re.compile(r"^(?!Activity \d).+ - Answers\.pdf$"), "Worksheet answers.pdf"),
+    (re.compile(r"^Working Wall - .+\.pdf$"), "Working wall.pdf"),
+)
+
+
+def delivered_name(name: str) -> str:
+    """The name a built resource has on the drive."""
+    for pattern, plain in DELIVERED_NAMES:
+        if pattern.match(name):
+            return plain
+    return name
 
 
 def derive_school_year(term_file: Path) -> str:
@@ -54,8 +75,17 @@ def derive_school_year(term_file: Path) -> str:
 
 def validate_filename(filename: str) -> str:
     """Accept a filename only, never a path that can escape the source folder."""
+    # A plain filename, or one inside a single folder of the output folder: a
+    # lesson's printed activities sit in their own folder while it builds, so
+    # two lessons never share an `Activity 1`, and arrive by their plain names.
     candidate = Path(filename)
-    if candidate.is_absolute() or candidate.name != filename or filename in {"", ".", ".."}:
+    parts = candidate.parts
+    if (
+        candidate.is_absolute()
+        or not 1 <= len(parts) <= 2
+        or any(part in {"", ".", ".."} for part in parts)
+        or filename in {"", ".", ".."}
+    ):
         raise ValueError(f"Files to deliver must be plain filenames: {filename!r}")
     return filename
 
@@ -63,7 +93,7 @@ def validate_filename(filename: str) -> str:
 def is_resource(path: Path) -> bool:
     if path.name.startswith("~$"):
         return False
-    return path.suffix.lower() in RESOURCE_EXTENSIONS or path.name.endswith(ANSWER_KEY_SUFFIX)
+    return path.suffix.lower() in RESOURCE_EXTENSIONS
 
 
 def choose_files(source: Path, requested: list[str]) -> tuple[list[Path], list[Path]]:
@@ -76,9 +106,22 @@ def choose_files(source: Path, requested: list[str]) -> tuple[list[Path], list[P
             raise FileNotFoundError(
                 "Requested output files do not exist: " + ", ".join(missing)
             )
-        return [p for p in paths if is_resource(p)], [p for p in paths if not is_resource(p)]
-
-    return sorted(path for path in source.iterdir() if path.is_file() and is_resource(path)), []
+        files, skipped = [p for p in paths if is_resource(p)], [p for p in paths if not is_resource(p)]
+    else:
+        files, skipped = sorted(path for path in source.iterdir() if path.is_file() and is_resource(path)), []
+    # Two built files that would arrive under one plain name (two lessons'
+    # worksheets handed to one delivery) would leave only the second on the
+    # drive, so the delivery stops before copying either.
+    seen: dict[str, str] = {}
+    for path in files:
+        plain = delivered_name(path.name)
+        if plain in seen:
+            raise ValueError(
+                f"{seen[plain]} and {path.name} would both be saved as {plain}; "
+                "deliver one lesson at a time"
+            )
+        seen[plain] = path.name
+    return files, skipped
 
 
 def destination_for(
@@ -113,7 +156,7 @@ def copy_into(destination: Path, files: list[Path]) -> None:
     try:
         destination.mkdir(parents=True, exist_ok=True)
         for path in files:
-            target = destination / path.name
+            target = destination / delivered_name(path.name)
             # A run that built straight into its destination hands us a file
             # that is already where it belongs. Windows refuses that copy
             # (WinError 32), and a delivery that fails over a file already in
@@ -228,8 +271,8 @@ def write_lesson_folder(destination: Path, files: list[Path], *, lesson: str, ye
         "year": year,
         "subject": subject,
         "builtAt": now.isoformat(),
-        "files": [path.name for path in files],
-        "checks": {path.name: file_check(path) for path in files},
+        "files": [delivered_name(path.name) for path in files],
+        "checks": {delivered_name(path.name): file_check(path) for path in files},
     }
     if plan and plan_index:
         manifest["plan"] = plan
@@ -365,7 +408,7 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"LETTERBOX_FOLDER=lessons/{destination.name}")
                     print(f"DESTINATION={destination}")
                     for path in files:
-                        print(f"FILE={path.name}")
+                        print(f"FILE={delivered_name(path.name)}")
                     for path in skipped:
                         print(f"SKIPPED={path.name} (a run record, not a teaching resource; it stays in the output folder)")
                     print(f"STATUS={'DRY_RUN' if args.dry_run else 'STAGED'}")
@@ -409,7 +452,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"DESTINATION={destination}")
     for path in files:
-        print(f"FILE={path.name}")
+        print(f"FILE={delivered_name(path.name)}")
     for path in skipped:
         print(f"SKIPPED={path.name} (a run record, not a teaching resource; it stays in the output folder)")
     print(f"STATUS={'DRY_RUN' if args.dry_run else 'COPIED'}")

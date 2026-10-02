@@ -2,6 +2,7 @@
 'use strict';
 
 const fs = require('fs');
+const { applyDoSigns } = require('./src/do-signs');
 const path = require('path');
 const os = require('os');
 
@@ -224,6 +225,9 @@ async function main() {
     diagnostic('TEACH_LAYOUT_INVALID', 'composition', {}, err.message);
     process.exit(1);
   }
+  // Each Do beat's badge (a sheet, or a lightning bolt for a quick check) comes
+  // from the lesson design beside this file (src/do-signs.js).
+  applyDoSigns(raw, path.dirname(jsonPath));
   const lesson = sanitizeHouseStyle(raw);
   // A taught word's braces come off every figure before anything is drawn
   // or pre-rendered (src/figure-marks.js).

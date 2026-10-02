@@ -4,6 +4,8 @@ const { FONT, COLOURS, FIT } = require('../styles');
 const fs = require('fs');
 const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { resolveForEmbed } = require('../images/resolve');
+const { drawMissingImage } = require('../images/placeholder');
+const { recordMissingPicture } = require('./image');
 
 const PAD = 0.12;
 const PANEL_GAP = 0.16;
@@ -115,10 +117,14 @@ function resolveBankPictures(bank, ctx) {
     }
     const resolved = resolveForEmbed(imagePath, ctx);
     if (!resolved || !fs.existsSync(resolved)) {
-      throw new Error(
-        `SORT_BOARD_BANK_PICTURE_MISSING: card ${index + 1} ("${card.label || card.text}") names the picture ` +
-        `"${imagePath}", which is not in the lesson folder. Source the picture, or give the card its words alone.`
-      );
+      // A picture still being found holds its card's place as a grey square,
+      // the way every required picture does, and is recorded as missing: the
+      // composition preview runs before the pictures land and lays the sort
+      // out, and the final build refuses a deck still without it.
+      const slideNumber = ctx && Number.isInteger(ctx.slideIndex) ? ctx.slideIndex + 1 : undefined;
+      recordMissingPicture(slideNumber, imagePath);
+      card.image = { resolvedPath: null, aspect: 1, alt: card.text || card.label };
+      return;
     }
     const dims = ctx && ctx.imageDims ? ctx.imageDims[imagePath] : null;
     card.image = {
@@ -318,7 +324,9 @@ function drawSortTask(pptx, slide, zone, data, groups, ctx) {
       // The whole picture, centred in its band, never stretched or cropped.
       const drawW = Math.min(parts.pictureW, parts.pictureH * card.image.aspect);
       const drawH = drawW / card.image.aspect;
-      slide.addImage({
+      if (!card.image.resolvedPath) {
+        drawMissingImage(slide, { x: x + (cardW - drawW) / 2, y: textY + (parts.pictureH - drawH) / 2, w: drawW, h: drawH });
+      } else slide.addImage({
         path: card.image.resolvedPath,
         x: x + (cardW - drawW) / 2,
         y: textY + (parts.pictureH - drawH) / 2,

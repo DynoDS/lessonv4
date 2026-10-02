@@ -91,6 +91,17 @@ function clearMissingPictures() {
   missingPictures.clear();
 }
 
+// A helper that draws a required picture of its own (a sort card's picture)
+// records it the same way, so the final build refuses a deck missing it while
+// the composition preview, built before the pictures land, still lays it out.
+function recordMissingPicture(slideNumber, raw) {
+  if (recording()) missingPictures.set(JSON.stringify([slideNumber, raw]), {
+    slide: slideNumber,
+    part: raw,
+    message: `slide ${slideNumber === undefined ? '?' : slideNumber}: required image "${raw}" could not be drawn; only a placeholder was rendered.`,
+  });
+}
+
 function missingPictureFindings() {
   return Array.from(missingPictures.values(), (finding) => ({ ...finding }));
 }
@@ -713,5 +724,6 @@ module.exports = {
   clearPictureFloor,
   clearMissingPictures,
   missingPictureFindings,
+  recordMissingPicture,
   detailRect,
 };

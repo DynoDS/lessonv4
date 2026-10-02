@@ -8,8 +8,11 @@ const { build, buildHtml, renderMoments } = require("../build");
 test("build writes a PDF or fallback HTML when items exist", async () => {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), "stickin-"));
   const result = await build(path.join(__dirname, "fixtures/two-moments.json"), out);
-  assert.ok(result && fs.existsSync(result));
-  assert.match(path.basename(result), /To identify angles - Stick-in Sheets\.(pdf|html)$/);
+  assert.ok(result && result.length && result.every((f) => fs.existsSync(f)));
+  // One file per piece, each named for what it is (Daniel, 1 October 2026).
+  assert.strictEqual(result.length, 2);
+  for (const f of result) assert.match(path.basename(f), /^Activity \d - .+\.(pdf|html)$/);
+  assert.notStrictEqual(result[0], result[1]);
 });
 
 test("each cut-out in a multi-piece pack is stamped with its question handle", async () => {
@@ -62,7 +65,7 @@ test("a pack missing one of its moments names it and does not report success", a
 
   // The partial pack is still written, deliberately: it is how you see which
   // moments did work, the same reasoning the slide builder uses.
-  assert.ok(result && fs.existsSync(result), "the partial pack should still be written");
+  assert.ok(result && result.length && result.every((f) => fs.existsSync(f)), "the partial pack should still be written");
   assert.notStrictEqual(exitCode, 0, "a short pack reported success, so nothing downstream would stop");
 });
 
@@ -86,6 +89,6 @@ test("every moment failing is told apart from a lesson that had none", async () 
 test("a pack with every moment drawn still reports success", async () => {
   const out = fs.mkdtempSync(path.join(os.tmpdir(), "stickin-"));
   const { result, exitCode } = await buildCapturingExitCode("fixtures/two-moments.json", out);
-  assert.ok(result && fs.existsSync(result));
+  assert.ok(result && result.length && result.every((f) => fs.existsSync(f)));
   assert.strictEqual(exitCode, 0, "a complete pack must not be reported as a failure");
 });

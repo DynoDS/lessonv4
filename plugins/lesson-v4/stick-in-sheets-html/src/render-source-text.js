@@ -74,11 +74,62 @@ function normaliseSourceText(item, classSize) {
     tag: item.tag || "Source",
     title: String(spec.title).trim(),
     attribution: filled(spec.attribution) ? String(spec.attribution).trim() : null,
+    instruction: filled(spec.instruction) ? String(spec.instruction).trim() : null,
     paragraphs: paragraphsOf(spec.text),
     per,
     copies,
     widthMm,
+    // A whole page each, handed out one between two with nothing to cut, is
+    // the default (the teacher, 1 October 2026: "Always try to make it full
+    // page ... try to avoid cutting and sticking unless that's the task").
+    // `layout: "slips"` keeps the older several-to-a-page copies for the rare
+    // source a child cuts out and sticks in.
+    layout: spec.layout === "slips" ? "slips" : "page",
   };
+}
+
+// One copy filling the page: the task across the top as a worksheet carries
+// it, then the source at the largest size its words fit, its attribution under
+// it. A reading width keeps lines from running the whole landscape page.
+const PAGE_READING_WIDTH_MM = 230;
+
+function fullPageHtml(source, printableWMm, printableHMm) {
+  const widthMm = Math.min(PAGE_READING_WIDTH_MM, printableWMm);
+  const inner = widthMm - 2 * PAD_MM;
+  const instructionMm = source.instruction ? Math.ceil(source.instruction.length / 60) * 9 + 4 : 0;
+  const fits = (pt) => {
+    const k = pt / 12;
+    const bodyChars = Math.max(10, Math.floor(inner / (CHAR_MM * k)));
+    const titleChars = Math.max(10, Math.floor(inner / (TITLE_CHAR_MM * k)));
+    let mm = 2 * PAD_MM + instructionMm;
+    mm += printedLines(source.title, titleChars) * TITLE_LINE_MM * k + PARA_GAP_MM;
+    source.paragraphs.forEach((lines) => {
+      mm += lines.reduce((sum, line) => sum + printedLines(line, bodyChars) * BODY_LINE_MM * k, 0) + PARA_GAP_MM;
+    });
+    if (source.attribution) mm += PARA_GAP_MM + printedLines(source.attribution, bodyChars) * ATTRIB_LINE_MM * k;
+    return mm <= printableHMm * 0.92;
+  };
+  let pt = 12;
+  for (let size = 30; size > 12; size -= 1) {
+    if (fits(size)) { pt = size; break; }
+  }
+  const k = pt / 12;
+  const body = source.paragraphs
+    .map((lines) => `<div style="margin-bottom:${PARA_GAP_MM * k}mm">${lines.map(esc).join("<br>")}</div>`)
+    .join("");
+  const instruction = source.instruction
+    ? `<div style="font-weight:bold;font-size:18pt;line-height:9mm;margin-bottom:4mm;color:${INK}">${esc(source.instruction)}</div>`
+    : "";
+  const attribution = source.attribution
+    ? `<div style="font-size:${Math.round(10 * k)}pt;color:${GREY};margin-top:${PARA_GAP_MM * k}mm">${esc(source.attribution)}</div>`
+    : "";
+  return (
+    `<div style="width:${widthMm}mm;margin:0 auto">${instruction}` +
+    `<div style="box-sizing:border-box;padding:${PAD_MM * k}mm;border:0.4mm solid ${INK};border-radius:2mm;color:${INK}">` +
+    `<div style="font-weight:bold;font-size:${Math.round(13 * k)}pt;line-height:${TITLE_LINE_MM * k}mm;margin-bottom:${PARA_GAP_MM * k}mm">${esc(source.title)}</div>` +
+    `<div style="font-size:${pt}pt;line-height:${BODY_LINE_MM * k}mm">${body}</div>` +
+    `${attribution}</div></div>`
+  );
 }
 
 function heightMmOf(source) {
@@ -120,6 +171,19 @@ function slipHtml(source) {
 // source with its last paragraph missing is a different source.
 function renderSourceTextPages(source, { printableWMm, printableHMm, pageHtml }) {
   const heightMm = heightMmOf(source);
+  if (source.layout === "page") {
+    if (heightMm > printableHMm) {
+      return {
+        error:
+          `the source needs ${Math.ceil(heightMm)} mm of page height even at its smallest and the page holds ` +
+          `${printableHMm} mm; shorten the extract to the part children actually read, because the ` +
+          "piece will not shrink the words or cut the end off",
+      };
+    }
+    const page = fullPageHtml(source, printableWMm, printableHMm);
+    const pages = Array.from({ length: source.copies }, () => pageHtml("", page));
+    return { pages, heightMm: printableHMm, perPage: 1, cols: 1, rows: 1 };
+  }
   if (heightMm > printableHMm) {
     return {
       error:
@@ -139,10 +203,7 @@ function renderSourceTextPages(source, { printableWMm, printableHMm, pageHtml })
   const rows = Math.max(1, Math.floor((printableHMm + SLIP_GAP_MM) / (heightMm + SLIP_GAP_MM)));
   const perPage = cols * rows;
   const per = source.per === "child" ? "one each" : "one between two";
-  const caption =
-    `✂ ${source.tag}: ${source.label}. Cut along the dashed lines. ` +
-    `${per[0].toUpperCase()}${per.slice(1)}; ${source.copies} cop${source.copies === 1 ? "y" : "ies"}. ` +
-    "Nothing is written on this one.";
+  const caption = "";
 
   const slip = slipHtml(source);
   const pages = [];

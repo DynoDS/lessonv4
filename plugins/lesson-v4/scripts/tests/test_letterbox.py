@@ -177,6 +177,9 @@ class LetterboxJourneyTests(unittest.TestCase):
         # 16 September 2026: Git for Windows turns on line-ending conversion for
         # every repository, so the letterbox clone checked out the answers text
         # with a longer ending on each line and the filer refused it as damaged.
+        # The answers now travel as a PDF (1 October 2026), and a PDF can be
+        # mostly plain text, so the same protection is tested on one, saved
+        # under its plain name on the drive.
         global_config = self.root / "converting.gitconfig"
         global_config.write_text("[core]\n\tautocrlf = true\n", encoding="utf-8")
         previous = os.environ.get("GIT_CONFIG_GLOBAL")
@@ -184,9 +187,9 @@ class LetterboxJourneyTests(unittest.TestCase):
         try:
             self.settings(sorting=False)
             answers = b"Round to 10 - Answer Key\n(1) 40\n(2) 70\n"
-            (self.built / "Round to 10 - Answers.txt").write_bytes(answers)
+            (self.built / "Round to 10 - Answers.pdf").write_bytes(answers)
             deliver_files.send_to_letterbox(
-                clone=self.cloud, branch=BRANCH, source=self.built, requested=["Round to 10 - Answers.txt"],
+                clone=self.cloud, branch=BRANCH, source=self.built, requested=["Round to 10 - Answers.pdf"],
                 year=4, subject="Maths", lesson="Round to 10", dry_run=False,
                 now=datetime(2026, 9, 15, 6, 0, tzinfo=timezone.utc),
             )
@@ -196,7 +199,7 @@ class LetterboxJourneyTests(unittest.TestCase):
                 os.environ.pop("GIT_CONFIG_GLOBAL", None)
             else:
                 os.environ["GIT_CONFIG_GLOBAL"] = previous
-        self.assertEqual((self.drive / "Round to 10 - Answers.txt").read_bytes(), answers)
+        self.assertEqual((self.drive / "Worksheet answers.pdf").read_bytes(), answers)
         self.assertEqual(self.waiting(), [])
 
     def test_a_lesson_saved_before_a_failed_clear_is_not_saved_twice(self):

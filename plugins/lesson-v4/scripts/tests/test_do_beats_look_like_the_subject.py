@@ -43,7 +43,7 @@ class ADoBeatLooksLikeTheSubject(unittest.TestCase):
 class AQuickMatchUsesFreshCases(unittest.TestCase):
     def test_preferences_owns_the_fresh_cases_rule_with_its_limit(self) -> None:
         text = flat(REF / "preferences.md")
-        self.assertIn("**A quick match, sort or label is a real Do beat when the things on the cards are new.**", text)
+        self.assertIn("**A quick match, sort or label is a real Do beat when the things on the cards are new and placing them needs the idea.**", text)
         self.assertIn("gets one card that belongs nowhere", text)
         # Quick-checks decision 3 (23 September 2026): a label check straight
         # after the Teach is on a new picture; the same picture only where no

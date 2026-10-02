@@ -41,10 +41,14 @@ const ERA_H_MAX = 2.4; // era band height at full size ...
 const ERA_H_MIN = 1.5; // ... and the shortest a band may be squeezed to
 const ERA_PAD_H = 0.28; // inset between a band edge and its label
 const ERA_GAP = 0.2; // between the bands and the line
-const LINE_THICK = 0.28;
-const END_CAP_W = 0.24;
+// One stroke for the line, its end caps and every tick. Three weights (0.28,
+// 0.24, 0.2) read on the board as intervals drawn at different thicknesses
+// (leisure deck, 1 October 2026).
+const STROKE = 0.24;
+const LINE_THICK = STROKE;
+const END_CAP_W = STROKE;
 const END_CAP_H = 1.36;
-const TICK_W = 0.2;
+const TICK_W = STROKE;
 const TICK_H = 1.2; // hangs from the line down to the label
 const MARK_GAP = 0.2; // between a tick's foot and its label
 const MARK_LABEL_LINES = 2; // a date label may wrap to this many lines

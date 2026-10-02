@@ -450,7 +450,7 @@ test("one-line written answers sit side by side, inside a group the zone holds o
     number: n,
     stack: [{ helper: "written-answers", showNumbers: false, items: [{ text, lines: 1 }], slip: true }],
   });
-  const line = { number: 1, helper: "instruction", text: "Write the number bond to 10 first, then the total.", groupPrompt: true };
+  const line = { helper: "instruction", text: "Write the number bond to 10 first, then the total.", groupPrompt: true };
   const zone = { stack: [{ stack: [line, part("1a", "8 + 6 + 2 ="), part("1b", "4 + 9 + 6 ="), part("1c", "7 + 3 + 3 =")] }] };
   const [laid] = slipNodesFor([zone], 2);
   const group = laid.stack[0].stack;
@@ -511,7 +511,7 @@ test("the designer is told which picture keeps a books sheet off its slips, and 
 });
 
 test("a group's task line keeps its own line above its packed parts", () => {
-  const line = { number: 2, helper: "instruction", text: "Write each number as Roman numerals.", groupPrompt: true };
+  const line = { helper: "instruction", text: "Write each number as Roman numerals.", groupPrompt: true };
   const q = (n, text) => ({ number: n, helper: "questions", showNumbers: false, items: [text] });
   const [laid] = slipNodesFor([{ stack: [line, q("2a", "62"), q("2b", "85")] }], 1);
   assert.equal(laid.stack[0], line);

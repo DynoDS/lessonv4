@@ -1282,8 +1282,8 @@ an empty list ends the track.
   --summary-output "[WORKING_DIR]/build-results/stick-in.json"
 ```
 
-Require `ok: true` and its exact output paths (a card kit adds the teacher's
-`- Stick-in Sheets - Answers.txt`). One semantic diagnostic permits one
+Require `ok: true` and its exact output paths. A printed activity has no
+answers file: its key is in the slide notes. One semantic diagnostic permits one
 focused stick-in designer repair and one rebuild.
 
 ---
@@ -1590,10 +1590,10 @@ walk-through says the lesson left something for another lesson, say what in one 
 ## Phase 5 - Save the Resources
 
 Once every branch has settled, build the explicit list from the teaching
-resources only: the deck, worksheets, answer sheet, working wall, stick-in
-sheets and, when the pack holds a card kit, its `- Stick-in Sheets -
-Answers.txt` teacher file. The walk-through stays in `OUTPUT_DIR` for the teacher to
-read there; the delivery script skips it if passed.
+resources only: the deck, worksheets, answer sheet, working wall, and each
+printed activity. The activities sit in `[lesson] - Activities`; pass each as
+`--file "[lesson] - Activities/[file]"` as the stick-in summary names it. The
+walk-through stays in `OUTPUT_DIR`. `FILE=` lines give the drive's names.
 
 When `filing.txt` says `DELIVERY=folder`, `DELIVERY=sorted` or
 `DELIVERY=letterbox`, run `run-fixed-resource.py deliver` directly with

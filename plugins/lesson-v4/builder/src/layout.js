@@ -105,6 +105,16 @@ const INSTRUCTION_TEXT_INSET = 0.12;
 const INSTRUCTION_TWO_LINE_H = 0.62;
 const HEADER_TITLE_TWO_LINE_H = 0.74;
 
+// The Do beat's badge (`doSign`): a lightning bolt on any task kept on
+// the board, a sheet where the beat has a printed activity, so the teacher sees
+// at a glance which is which (1 October 2026). It sits at the header's far
+// right, and the instruction gives it this much room: the badge's own 0.66in,
+// the 0.05in a header pill reaches past its box, and a clear gap between them.
+const DO_SIGN_ROOM = 0.82;
+function doSignRoom(data) {
+  return data && (data.doSign === 'quick' || data.doSign === 'sheet') ? DO_SIGN_ROOM : 0;
+}
+
 function instructionNeedsTwoLines(data) {
   const text = data && typeof data.instruction === 'string' ? data.instruction.trim() : '';
   if (!text) return false;
@@ -112,7 +122,7 @@ function instructionNeedsTwoLines(data) {
   // The narrowest the text frame is drawn: inside the pill's inset, and after a
   // signal icon when the slide names one.
   const iconRoom = data.signal ? 0.55 : 0;
-  const width = HEADER_TITLE.instructionW - INSTRUCTION_TEXT_INSET - iconRoom;
+  const width = HEADER_TITLE.instructionW - INSTRUCTION_TEXT_INSET - iconRoom - doSignRoom(data);
   return textBoxWidthIn(text, INSTRUCTION_PT, true) > width;
 }
 
@@ -145,6 +155,6 @@ module.exports = {
   HEADER_TITLE_H, HEADER_STARTER_H, STARTER_PROMPT_H,
   HEADER_TITLE, HEADER_STARTER,
   starterPrompt, starterHeaderHeight,
-  instructionNeedsTwoLines, titleHeaderHeight, INSTRUCTION_TWO_LINE_H,
+  instructionNeedsTwoLines, titleHeaderHeight, INSTRUCTION_TWO_LINE_H, doSignRoom,
   bodyZone
 };

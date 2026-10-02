@@ -177,7 +177,13 @@ def resource_names(bullets: list[str]) -> set[str]:
     for bullet in bullets:
         match = re.match(r"^-\s*(?P<name>[^:]+?)\s*:", bullet)
         if match:
-            names.add(match.group("name").strip().lower())
+            # A note in brackets is not part of the name, and since 1 October
+            # 2026 the stick-in pack is delivered as printed activities, one
+            # file each (`Activity 1 - ...`), which is the same resource.
+            name = re.sub(r"\s*\([^)]*\)", "", match.group("name")).strip().lower()
+            if name in {"printed activity", "printed activities", "activity", "activities"}:
+                name = "stick-in sheets"
+            names.add(name)
     return names
 
 

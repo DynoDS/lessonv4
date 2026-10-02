@@ -29,8 +29,9 @@ const { pieceHandle, A4, CLASS_SIZE, HANDLE_BAND_MM } = require("./src/layout-ru
 const { selectContextPictureSet } = require("../shared/context-picture-set");
 const { renderPieceHtml, esc } = require("./src/render-piece-html");
 const { withoutTaughtMarks } = require("../shared/text/criteria-marks");
-const { normaliseCardSet, renderKitPages, renderSheetPages, answersText } = require("./src/render-card-set");
+const { normaliseCardSet, renderKitPages, renderSheetPages } = require("./src/render-card-set");
 const { normaliseSourceText, renderSourceTextPages } = require("./src/render-source-text");
+const { figurePages, normaliseTaskSheet, taskSheetPages } = require("./src/render-activity-page");
 
 const GREY = "#999999";
 
@@ -38,8 +39,22 @@ const GREY = "#999999";
 const PRINTABLE_W_MM = A4.heightMm - 2 * A4.marginMm;      // 297 − 20 = 277
 const PRINTABLE_H_MM = A4.widthMm - 2 * A4.marginMm - 5;   // 210 − 20 − 5 = 185
 
-function naturalFilename(lesson, ext) {
-  return `${safeFilenameComponent(lesson)} - Stick-in Sheets.${ext}`;
+// Every printed piece is its own file, named for the activity it serves and
+// numbered in the order the lesson meets them (`Activity 2 - Story cards to
+// order.pdf`), so a teacher prints only what they want (Daniel, 1 October
+// 2026: "I'd want them seperate ... just the activity"). The files sit in the
+// lesson's own folder while the run builds, so two lessons built side by side
+// never share an `Activity 1`; delivery copies them out by their plain names.
+function activitiesFolder(outDir, lesson) {
+  return path.join(outDir, `${safeFilenameComponent(lesson)} - Activities`);
+}
+
+function pieceFilename(number, label, ext, taken) {
+  const stem = `Activity ${number} - ${safeFilenameComponent(label || "Printed piece")}`;
+  let name = `${stem}.${ext}`;
+  for (let n = 2; taken.has(name.toLowerCase()); n += 1) name = `${stem} (${n}).${ext}`;
+  taken.add(name.toLowerCase());
+  return name;
 }
 
 // Render every moment once for its footprint, dropping (and naming) the ones
@@ -185,9 +200,8 @@ function buildHtml(moments, classSize) {
   const handles = moments.map((m) => m.handle).filter(Boolean);
   // A piece's label or handle may carry a taught word's mark; the caption and
   // the handle print the word plain, never its braces (the fourth check).
-  const captionText = withoutTaughtMarks(moments.length === 1
-    ? `✂ ${moments[0].handle ? `${moments[0].handle} ` : ""}${moments[0].item.label || moments[0].item.visual} (cut along the dashed lines and stick in).`
-    : `✂ Cut along the dashed lines and stick in. Every child gets one of each labelled piece${handles.length ? `: ${handles.join(", ")}` : ""}.`);
+  // The dashed lines say cut; the page carries no instruction to the teacher.
+  const captionText = "";
 
   const pageDivs = pages.map((rows) => {
     const shelfDivs = rows.map((row, r) => {
@@ -245,14 +259,11 @@ body { font-family: "Comic Sans MS", "Segoe Print", cursive; }
 </style></head><body>${pageDivs.join("")}</body></html>`;
 }
 
-function naturalAnswersFilename(lesson) {
-  return `${safeFilenameComponent(lesson)} - Stick-in Sheets - Answers.txt`;
-}
-
 // The card kits: each `card-set` item becomes its own run of pages (sets of
-// heading and item cards with cut guides), and the key for every kit goes to
-// one teacher text file beside the pack. A kit whose spec cannot be printed
-// faithfully is refused by name, like a moment that cannot draw.
+// heading and item cards with cut guides). No answers file goes with them: the
+// key is in the slide notes for the same sort, where the teacher already reads
+// it (Daniel, 1 October 2026). A kit whose spec cannot be printed faithfully is
+// refused by name, like a moment that cannot draw.
 function buildKits(cardSetItems, classSize, baseDir) {
   const kits = [];
   const dropped = [];
@@ -263,11 +274,12 @@ function buildKits(cardSetItems, classSize, baseDir) {
       dropped.push(item.label || "card-set");
       continue;
     }
-    kits.push(kit);
+    kits.push(Object.assign(kit, { sourceItem: item }));
   }
   const pageDivs = [];
   const summaries = [];
   const laidOut = [];
+  const perItem = [];
   for (const kit of kits) {
     const laid = (kit.form === "sheet" ? renderSheetPages : renderKitPages)(kit, {
       printableWMm: PRINTABLE_W_MM,
@@ -281,6 +293,7 @@ function buildKits(cardSetItems, classSize, baseDir) {
     }
     laidOut.push(kit);
     pageDivs.push(...laid.pages);
+    perItem.push({ item: kit.sourceItem, label: kit.label, pages: laid.pages, sheet: kit.form === "sheet" });
     const fit = kit.form === "sheet"
       ? `printed as a whole sheet, no cutting${laid.pictureMm ? `, pictures about ${laid.pictureMm} mm wide` : ""}`
       : laid.splitSet
@@ -291,7 +304,7 @@ function buildKits(cardSetItems, classSize, baseDir) {
       `${kit.cards.length} cards under ${kit.headings.length} headings, ${fit}`
     );
   }
-  return { kits: laidOut, pageDivs, summaries, dropped };
+  return { kits: laidOut, pageDivs, summaries, dropped, perItem };
 }
 
 // The text sources: each `source-text` item becomes its own run of pages, the
@@ -303,6 +316,7 @@ function buildSourceTexts(sourceTextItems, classSize) {
   const pageDivs = [];
   const summaries = [];
   const dropped = [];
+  const perItem = [];
   for (const item of sourceTextItems) {
     const source = normaliseSourceText(item, classSize);
     if (typeof source === "string") {
@@ -321,12 +335,13 @@ function buildSourceTexts(sourceTextItems, classSize) {
       continue;
     }
     pageDivs.push(...laid.pages);
+    perItem.push({ item, label: source.label, pages: laid.pages });
     summaries.push(
       `${source.tag} ${source.label}: ${source.copies} cop${source.copies === 1 ? "y" : "ies"} ` +
       `(${source.per === "child" ? "one each" : "one between two"}), ${laid.perPage} a page`
     );
   }
-  return { pageDivs, summaries, dropped };
+  return { pageDivs, summaries, dropped, perItem };
 }
 
 async function build(specPath, outDir) {
@@ -344,13 +359,28 @@ async function build(specPath, outDir) {
   const classSize = Number.isFinite(spec.classSize) && spec.classSize > 0 ? spec.classSize : CLASS_SIZE;
   const cardSetItems = items.filter((item) => item && item.visual === "card-set");
   const sourceTextItems = items.filter((item) => item && item.visual === "source-text");
-  const pieceItems = items.filter((item) => item && item.visual !== "card-set" && item.visual !== "source-text");
+  const taskSheetItems = items.filter((item) => item && item.visual === "task-sheet");
+  const pieceItems = items.filter((item) => item && !["card-set", "source-text", "task-sheet"].includes(item.visual));
   const { moments, dropped } = await renderMoments(pieceItems, baseDir);
   const kitsBuilt = buildKits(cardSetItems, classSize, baseDir);
   const sourcesBuilt = buildSourceTexts(sourceTextItems, classSize);
-  const allDropped = [...dropped, ...kitsBuilt.dropped, ...sourcesBuilt.dropped];
+  const taskSheets = [];
+  const sheetDropped = [];
+  for (const item of taskSheetItems) {
+    const sheet = normaliseTaskSheet(item);
+    const laid = typeof sheet === "string" ? { error: sheet } : taskSheetPages(sheet, {
+      printableWMm: PRINTABLE_W_MM, printableHMm: PRINTABLE_H_MM, classSize, pageHtml: pageDiv, baseDir,
+    });
+    if (laid.error) {
+      console.warn(`[stick-in] task sheet "${item.label || "task-sheet"}": ${laid.error} - this sheet is NOT in the pack.`);
+      sheetDropped.push(item.label || "task-sheet");
+      continue;
+    }
+    taskSheets.push({ item, label: item.label || sheet.label, pages: laid.pages });
+  }
+  const allDropped = [...dropped, ...kitsBuilt.dropped, ...sourcesBuilt.dropped, ...sheetDropped];
 
-  if (moments.length === 0 && kitsBuilt.kits.length === 0 && sourcesBuilt.pageDivs.length === 0) {
+  if (moments.length === 0 && kitsBuilt.kits.length === 0 && sourcesBuilt.pageDivs.length === 0 && taskSheets.length === 0) {
     console.error(
       `None of the ${items.length} moment${items.length === 1 ? "" : "s"} could be drawn, ` +
       `so no Stick-in Sheets file was written.`
@@ -360,42 +390,78 @@ async function build(specPath, outDir) {
     return null;
   }
 
-  let pageDivs = [];
+  // One print per piece, in the order the lesson meets them: each write-on
+  // moment laid out for the whole class on its own pages, each text source,
+  // each card kit or picture sheet.
   let pages = 0;
   let totalSlips = 0;
-  if (moments.length > 0) {
-    const laid = buildHtml(moments, classSize);
-    pageDivs = laid.pageDivs;
-    pages = laid.pages;
-    totalSlips = laid.totalSlips;
+  const prints = [];
+  for (const item of items) {
+    const moment = moments.find((m) => m.item === item);
+    if (moment && item.layout === "slips") {
+      // Cut out and stuck in, when gluing it into the book is the task.
+      const laid = buildHtml([moment], classSize);
+      pages += laid.pages;
+      totalSlips += laid.totalSlips;
+      prints.push({ label: item.label || item.visual, pageDivs: laid.pageDivs });
+      continue;
+    }
+    if (moment) {
+      // A whole page under its task, one between two, two to a page when the
+      // figure is small enough to keep its size.
+      const plain = Object.assign({}, item);
+      delete plain.tag;
+      const laid = await figurePages(item, moment.piece,
+        (widthMm) => renderPieceHtml(Object.assign({}, plain, { widthMm }), { baseDir }), {
+          printableWMm: PRINTABLE_W_MM, printableHMm: PRINTABLE_H_MM, classSize, pageHtml: pageDiv,
+        });
+      pages += laid.pages.length;
+      prints.push({ label: item.label || item.visual, pageDivs: laid.pages });
+      continue;
+    }
+    const built = [...sourcesBuilt.perItem, ...kitsBuilt.perItem, ...taskSheets].find((p) => p.item === item);
+    if (built) prints.push({ label: built.label, pageDivs: built.pages });
   }
-  pageDivs = [...pageDivs, ...sourcesBuilt.pageDivs, ...kitsBuilt.pageDivs];
-  const html = wrapDocument(pageDivs);
   const lesson = spec.meta && spec.meta.lesson;
 
   // PDF through the worksheets' Chrome step; the HTML itself when that step
   // cannot run, flagged with the same PDF_SKIPPED signal the worksheets use so
   // the orchestrator treats both builders' fallbacks the same way.
-  let outPath;
+  const outPaths = [];
+  const taken = new Set();
+  const folder = activitiesFolder(outDir, lesson);
+  fs.mkdirSync(folder, { recursive: true });
+  let htmlToPdf = null;
+  let skipped = null;
   try {
-    const { htmlToPdf } = require("../worksheet-html/src/chrome");
-    const pdf = await htmlToPdf(html, { landscape: true });
-    outPath = path.join(outDir, naturalFilename(lesson, "pdf"));
-    fs.writeFileSync(outPath, pdf);
+    ({ htmlToPdf } = require("../worksheet-html/src/chrome"));
   } catch (err) {
-    outPath = path.join(outDir, naturalFilename(lesson, "html"));
-    fs.writeFileSync(outPath, html);
-    console.log(`PDF_SKIPPED: ${err && err.message ? err.message.split("\n")[0] : err}`);
+    skipped = err;
+  }
+  for (const [index, print] of prints.entries()) {
+    const html = wrapDocument(print.pageDivs);
+    let outPath = null;
+    if (!skipped) {
+      try {
+        const pdf = await htmlToPdf(html, { landscape: true });
+        outPath = path.join(folder, pieceFilename(index + 1, print.label, "pdf", taken));
+        fs.writeFileSync(outPath, pdf);
+      } catch (err) {
+        skipped = err;
+      }
+    }
+    if (!outPath) {
+      outPath = path.join(folder, pieceFilename(index + 1, print.label, "html", taken));
+      fs.writeFileSync(outPath, html);
+    }
+    outPaths.push(outPath);
+    console.log(`Built: ${outPath}`);
+  }
+  if (skipped) {
+    console.log(`PDF_SKIPPED: ${skipped && skipped.message ? skipped.message.split("\n")[0] : skipped}`);
   }
 
-  console.log(`Built: ${outPath}`);
-
-  // The teacher's key for every card kit, beside the pack and never on a
-  // pupil page. Delivery already carries any file ending " - Answers.txt".
   if (kitsBuilt.kits.length > 0) {
-    const answersPath = path.join(outDir, naturalAnswersFilename(lesson));
-    fs.writeFileSync(answersPath, answersText(kitsBuilt.kits, lesson || "this lesson"), "utf8");
-    console.log(`Built answers: ${answersPath}`);
     console.log(`Kits: ${kitsBuilt.kits.length} (${kitsBuilt.summaries.join("; ")})`);
   }
 
@@ -409,7 +475,7 @@ async function build(specPath, outDir) {
 
   const classSetLine = moments.length > 0
     ? `Class set: ${moments.length} moment${moments.length === 1 ? "" : "s"} × ${classSize} children = ` +
-      `${totalSlips} slips, laid out so each child's set stays together, across ${pages} page${pages === 1 ? "" : "s"}`
+      `${totalSlips} slips, each moment in its own file, across ${pages} page${pages === 1 ? "" : "s"}`
     : `Class set: no write-on pieces; the pack is ${kitsBuilt.kits.length} card kit${kitsBuilt.kits.length === 1 ? "" : "s"} across ${kitsBuilt.pageDivs.length} page${kitsBuilt.pageDivs.length === 1 ? "" : "s"}`;
 
   if (allDropped.length) {
@@ -427,9 +493,10 @@ async function build(specPath, outDir) {
     const allSheets = moments.length === 0 && kitsBuilt.kits.length > 0 && kitsBuilt.kits.every((k) => k.form === "sheet");
     console.log(allSheets
       ? `${classSetLine} - print once and hand out; the sheets are not cut.`
-      : `${classSetLine} - print once, cut along the dashed lines, each child's set comes off together.`);
+      : `${classSetLine} - print each file you want, cut along the dashed lines.`);
   }
-  return outPath;
+  console.log(`Files: ${outPaths.length}, one per printed piece, so each can be printed on its own.`);
+  return outPaths;
 }
 
 if (require.main === module) {
@@ -445,4 +512,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { build, buildHtml, renderMoments, buildKits, wrapDocument, naturalAnswersFilename };
+module.exports = { build, buildHtml, renderMoments, buildKits, wrapDocument };

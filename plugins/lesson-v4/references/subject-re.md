@@ -45,7 +45,7 @@ Children observe and reason about practices in these beats; none asks them to pe
 
 ## What a worksheet looks like in RE
 
-A sheet takes the shape its RE needs, and these are shapes that work on real Year 3 and 4 RE sheets, to choose from by the lesson's thinking. A sheet can be one of them done well, or two joined, and none is the default: a single well-built activity is as complete a sheet as one with sections. Below and Greater Depth choose from the same set, often keeping the Expected shape and changing how much is already filled in or how hard the cases are.
+A sheet takes the shape its RE needs, and these are shapes that work on real Year 3 and 4 RE sheets, to choose from by the lesson's thinking. A sheet can be one of them done well, or two joined, and none is the default: a single well-built activity is as complete a sheet as one with sections. Below and Greater Depth choose from the same set, often keeping the Expected shape and changing how much is already filled in or how hard the cases are. First decide what kind of learning the objective is (`preferences.md` → What the sheet is for): when a child shows it in one good answer, the sheet is the lesson's final task printed, in whichever of these shapes that task already takes, with Below and Greater Depth answering the same question with more help or more depth; the shapes that put a quick task before another are for an objective that needs many goes.
 
 - **Who understands it best?** Two or three people say what a teaching means; the child decides and finishes `... shows an accurate understanding because...`.
 - **One sentence is wrong.** Jun explains why Makkah matters to Muslims and one of his sentences is incorrect: find it and say why.

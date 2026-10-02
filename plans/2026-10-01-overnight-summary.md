@@ -48,7 +48,7 @@ For Daniel, to read in the morning. Everything below is saved on one branch, rea
 
 **The checker said nothing about the lesson question.** It approved the digestion lesson and fixed two real problems, but it never commented on the question. So we know it didn't object, not that it looked closely.
 
-**A gap I found and didn't fix.** Printed card sets can now carry pictures, but a card sort shown on the board can't. In one test the slide designer couldn't lay out the Nativity picture cards on the board. That's a job for another day.
+**A gap I found, fixed on 1 October.** A card sort shown on the board can now carry pictures too, like the printed cards. Tried with real Nativity pictures: a sort under four meaning headings, and a put-in-order with four pictures.
 
 ## Where the evidence is
 

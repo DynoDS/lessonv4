@@ -299,6 +299,53 @@ def kit_faults(design: dict, stick_in: dict, photo_files: dict | None = None) ->
             faults.append(f"{unit_id}: card-set sets differ from the unit's handling")
         if (teacher.get("where") or "").strip() != (handling.get("where") or "").strip():
             faults.append(f"{unit_id}: card-set teacher.where differs from the unit's handling.where")
+    faults.extend(level_faults(design, items))
+    return faults
+
+
+# Which stick-in visuals print each `levels.printed.form` (validate-lesson-design.py
+# PRINTED_FORMS). A sort is checked above, card by card; the rest are checked
+# here for being there at all, because a printed level the lesson promised and
+# the pack forgot is the Shaftesbury fault (1 October 2026): the plan said
+# "To print: Sarah's words" and nothing made sure it arrived.
+SOURCE_VISUALS = {"source-text", "source-copy"}
+TASK_VISUALS = {"task-sheet"}
+NOT_FIGURES = {"card-set", *SOURCE_VISUALS, *TASK_VISUALS}
+
+
+def item_unit(item: dict) -> str | None:
+    spec = item.get("spec") if isinstance(item.get("spec"), dict) else {}
+    unit_id = item.get("sourceUnitId") or spec.get("sourceUnitId")
+    return unit_id if isinstance(unit_id, str) else None
+
+
+def level_faults(design: dict, items: list) -> list[str]:
+    """Every beat whose `levels.printed` the design set has its printed piece,
+    in the form it chose, named back to it by `sourceUnitId`."""
+    faults: list[str] = []
+    by_unit: dict[str, list[dict]] = {}
+    for item in items:
+        if isinstance(item, dict) and item_unit(item):
+            by_unit.setdefault(item_unit(item), []).append(item)
+    for unit in lesson_units(design):
+        levels = unit.get("levels")
+        printed = levels.get("printed") if isinstance(levels, dict) else None
+        if not isinstance(printed, dict) or printed.get("form") == "sort":
+            continue
+        unit_id = unit.get("sourceUnitId")
+        form = printed.get("form")
+        visuals = {item.get("visual") for item in by_unit.get(unit_id, [])}
+        if form == "source":
+            ok = bool(visuals & SOURCE_VISUALS)
+        elif form == "task":
+            ok = bool(visuals & TASK_VISUALS)
+        else:
+            ok = bool(visuals - NOT_FIGURES)
+        if not ok:
+            faults.append(
+                f"{unit_id}: the design prints this beat as a {form} sheet ({printed.get('what')}) and the "
+                f"stick-in spec has no {form} piece naming this unit in sourceUnitId"
+            )
     return faults
 
 

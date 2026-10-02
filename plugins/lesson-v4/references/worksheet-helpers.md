@@ -313,8 +313,8 @@ reading order. Both mistakes are refused rather than guessed at, since either
 way round the engine would be inventing a relationship or discarding one.
 
 A group's shared task line goes on its first Part as `groupPrompt`, never in a
-Part's own text. It prints once as the whole question with the Parts beneath
-it, and the answer key still answers the Parts:
+Part's own text. It prints once, with no number of its own, above the Parts,
+and the answer key answers the Parts:
 
 ```json
 { "question": true, "questionGroupId": "qg-2", "groupPrompt": "Write each number as Roman numerals.",
@@ -323,7 +323,7 @@ it, and the answer key still answers the Parts:
 ```
 
 ```text
-(2) Write each number as Roman numerals.
+Write each number as Roman numerals.
 (2a) 62
 (2b) 85
 ```
