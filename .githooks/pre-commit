@@ -24,8 +24,10 @@ fi
 unset GIT_INDEX_FILE GIT_DIR GIT_WORK_TREE GIT_PREFIX GIT_COMMON_DIR GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES
 
 if command -v python >/dev/null 2>&1; then py=python; else py=python3; fi
-echo "lesson-v4 checks: running every automatic check before this commit (about a minute)..."
-if "$py" -X utf8 "$runner"; then
+# Every check runs unless all of them passed within the hour on exactly these
+# files (the run an agent makes just before committing): see run_all_checks.py.
+echo "lesson-v4 checks: checking the plugin before this commit (about a minute and a half, unless every check has just passed on these same files)..."
+if "$py" -X utf8 "$runner" --unless-unchanged; then
   exit 0
 fi
 

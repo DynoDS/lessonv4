@@ -34,6 +34,35 @@ def run(*args: str) -> subprocess.CompletedProcess:
     )
 
 
+def run_with_made_up_role(role: str, frontmatter: list[str], *args: str) -> subprocess.CompletedProcess:
+    """Run a copy of the script beside an agents folder holding one made-up role.
+
+    The script finds its roles in the `agents` folder beside its own `scripts`
+    folder, so the copy reads the made-up role and nothing else. Written into the
+    plugin's own agents folder, as these roles once were, the file was met by
+    every other check reading the roles at that moment: on 3 October 2026 that
+    turned two full runs in ten red, on checks that had nothing wrong.
+    """
+    import shutil
+    import tempfile
+
+    with tempfile.TemporaryDirectory(prefix="worker-launch-role-") as tmp:
+        copy = Path(tmp) / "scripts" / SCRIPT.name
+        copy.parent.mkdir()
+        shutil.copy2(SCRIPT, copy)
+        agents = Path(tmp) / "agents"
+        agents.mkdir()
+        (agents / f"{role}.md").write_text(
+            "\n".join(["---", f"name: {role}", *frontmatter, "---", "", "Body.", ""]),
+            encoding="utf-8",
+        )
+        return subprocess.run(
+            [sys.executable, str(copy), *args, "--role", role],
+            capture_output=True,
+            text=True,
+        )
+
+
 def write_session(path: Path, launches: list[dict]) -> Path:
     """Write a session record in the shape the host actually produces."""
     lines = []
@@ -237,30 +266,15 @@ class SpecTests(unittest.TestCase):
         fails. So the miss is reported against the host that cannot launch it, and
         the other host is left working.
         """
-        half = AGENTS / "_test-half-filled-role.md"
-        half.write_text(
-            "\n".join(
-                [
-                    "---",
-                    "name: _test-half-filled-role",
-                    "description: Codex settings declared, Claude settings missing.",
-                    "codex_model: astra",
-                    "codex_effort: medium",
-                    "---",
-                    "",
-                    "Body.",
-                    "",
-                ]
-            ),
-            encoding="utf-8",
+        half = [
+            "description: Codex settings declared, Claude settings missing.",
+            "codex_model: astra",
+            "codex_effort: medium",
+        ]
+        on_codex = run_with_made_up_role("_test-half-filled-role", half, "spec")
+        on_claude = run_with_made_up_role(
+            "_test-half-filled-role", half, "spec", "--host", "claude"
         )
-        try:
-            on_codex = run("spec", "--role", "_test-half-filled-role")
-            on_claude = run(
-                "spec", "--host", "claude", "--role", "_test-half-filled-role"
-            )
-        finally:
-            half.unlink()
 
         self.assertEqual(on_codex.returncode, 0, on_codex.stderr)
         self.assertIn("model: gpt-6-astra", on_codex.stdout)
@@ -275,27 +289,15 @@ class SpecTests(unittest.TestCase):
         Claude Code would have put all twenty-one workers on the controller's own
         model and finished looking exactly like a correct one.
         """
-        stray = AGENTS / "_test-stray-model-role.md"
-        stray.write_text(
-            "\n".join(
-                [
-                    "---",
-                    "name: _test-stray-model-role",
-                    "description: A role naming a model Claude Code never heard of.",
-                    "model: astra",
-                    "effort: medium",
-                    "---",
-                    "",
-                    "Body.",
-                    "",
-                ]
-            ),
-            encoding="utf-8",
+        result = run_with_made_up_role(
+            "_test-stray-model-role",
+            [
+                "description: A role naming a model Claude Code never heard of.",
+                "model: astra",
+                "effort: medium",
+            ],
+            "spec", "--host", "claude",
         )
-        try:
-            result = run("spec", "--host", "claude", "--role", "_test-stray-model-role")
-        finally:
-            stray.unlink()
 
         self.assertEqual(result.returncode, 2)
         self.assertIn("astra", result.stderr)

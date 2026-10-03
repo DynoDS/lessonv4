@@ -307,9 +307,20 @@ def _locked(log: Path):
     lock = log.with_name(log.name + ".lock")
     handle = None
     deadline = _now() + 5
+    refusals = 0
     while handle is None:
         try:
             handle = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        except PermissionError:
+            # Windows answers "permission denied", not "already there", for the
+            # instant another read is deleting its lock. Letting that through
+            # printed a second page beside the first, about once in forty sets
+            # of reads started together (3 October 2026). A folder that really
+            # cannot be written keeps refusing, and loses the guard as before.
+            refusals += 1
+            if refusals > 50:
+                raise
+            time.sleep(0.02)
         except FileExistsError:
             try:
                 if _now() - lock.stat().st_mtime > 10:

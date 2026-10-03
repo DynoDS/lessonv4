@@ -5,20 +5,34 @@ the Node checks of the slide builder, the worksheet, stick-in and wall engines,
 the shared drawings (`shared/test` and `shared/text`) and the plugin root's own
 `test/`. They all start at once; the Python checks, the slowest group, are split
 into small batches that the next free lane picks up, so no lane waits on
-another. Splitting changes only how long the run takes: every check still runs
-once, on the same files.
+another. Each Node group runs only a few of its check files at a time. Left to
+itself Node starts one per processor in every group, and with all the groups
+doing that beside the Python lanes the machine spent its time switching between
+them: 154 seconds on 3 October 2026 for checks that take about 90 held to a
+share each (one wall check took 152 seconds there and 15 on its own). Splitting
+and sharing change only how long the run takes: every check still runs once, on
+the same files.
 
 Usage (from anywhere):
-    python -X utf8 scripts/tests/run_all_checks.py [--lanes N] [--batch N] [--logs DIR]
+    python -X utf8 scripts/tests/run_all_checks.py [--lanes N] [--batch N] [--node-files N] [--logs DIR]
+                                                   [--unless-unchanged]
 
 Each group's full output is kept in the log folder (a temporary one unless
 `--logs` names it) and the failures are printed under the summary. Exit 0 means
 every group passed; exit 1 means at least one check failed or a group did not run.
+
+A run in which every group passed leaves a note of exactly which files it
+passed on. The commit guard asks with `--unless-unchanged`, and is answered from
+that note when the plugin is the same, file for file, as it was then: an agent
+runs every check and commits a moment later, and the guard used to run them all
+a second time on the identical folder. Any difference at all, a failed run, or
+a note more than an hour old, and every check runs.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import os
 import re
 import subprocess
@@ -42,6 +56,54 @@ NODE_GROUPS = [
     ("shared", ROOT, ["node", "--test", "shared/test/*.test.js", "shared/text/*.test.js"]),
     ("root", ROOT, ["node", "--test", "test/*.test.js"]),
 ]
+
+
+# How long a pass stands for an unchanged plugin. The checks also read things the
+# note cannot see (the saved walls beside the plugin, the installed Node and
+# Chrome), so a pass is trusted for the length of a working session, not for good.
+PASS_STANDS_SECONDS = 3600
+
+
+def fingerprint(env: dict[str, str]) -> str | None:
+    """One hash of the name and content of every plugin file git tracks or would
+    track (so not `node_modules` or build output), as the folder stands. None
+    where git cannot list them, such as an installed copy."""
+    try:
+        listed = subprocess.run(["git", "ls-files", "-co", "--exclude-standard", "-z", "--", "."],
+                                cwd=ROOT, capture_output=True, env=env, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    names = sorted(name for name in listed.split(b"\0") if name)
+    if not names:
+        return None
+    digest = hashlib.sha256()
+    for name in names:
+        try:
+            content = (ROOT / os.fsdecode(name)).read_bytes()
+        except OSError:
+            content = b"\0missing"
+        digest.update(name + b"\0" + hashlib.sha256(content).digest())
+    return digest.hexdigest()
+
+
+def pass_note() -> Path:
+    """Where the last full pass on this copy of the plugin is noted: outside the
+    plugin, so noting it changes no file the checks or an install read."""
+    copy = hashlib.sha256(str(ROOT).encode("utf-8")).hexdigest()[:16]
+    return Path(tempfile.gettempdir()) / f"lesson-v4-checks-passed-{copy}.txt"
+
+
+def minutes_since_pass(note: Path, files: str | None, now: float) -> int | None:
+    """Whole minutes since every check passed on exactly these files, or None
+    when there is no such pass or it is too old to stand."""
+    try:
+        passed_on, when = note.read_text(encoding="utf-8").split()
+        age = now - float(when)
+    except (OSError, ValueError):
+        return None
+    if files is None or passed_on != files or not 0 <= age < PASS_STANDS_SECONDS:
+        return None
+    return int(age // 60)
 
 
 def python_batches(size: int) -> list[list[str]]:
@@ -77,21 +139,35 @@ def main() -> int:
     parser.add_argument("--lanes", type=int, default=min(8, os.cpu_count() or 4),
                         help="how many Python batches run at once (default: up to 8)")
     parser.add_argument("--batch", type=int, default=3, help="Python check files per batch (default 3)")
+    parser.add_argument("--node-files", type=int, default=max(2, (os.cpu_count() or 4) // 6),
+                        help="how many check files each Node group runs at once (default: a sixth of the processors)")
     parser.add_argument("--logs", type=Path, help="folder for each group's full output")
+    parser.add_argument("--unless-unchanged", action="store_true",
+                        help="skip the run when every check passed within the hour on exactly these files")
     args = parser.parse_args()
 
-    logs = args.logs or Path(tempfile.mkdtemp(prefix="lesson-v4-checks-"))
-    logs.mkdir(parents=True, exist_ok=True)
     # Run from a git hook, the environment names the commit's own index and
     # repository; checks that run git in folders of their own must not see it.
     env = {key: value for key, value in os.environ.items()
            if key not in GIT_LOCATORS}
     env["PYTHONUTF8"] = "1"
+
+    note = pass_note()
+    files = fingerprint(env)
+    if args.unless_unchanged:
+        minutes = minutes_since_pass(note, files, time.time())
+        if minutes is not None:
+            ago = "a moment ago" if minutes == 0 else f"{minutes} minute(s) ago"
+            print(f"every check passed {ago} on exactly these files, so they were not run again")
+            return 0
+
+    logs = args.logs or Path(tempfile.mkdtemp(prefix="lesson-v4-checks-"))
+    logs.mkdir(parents=True, exist_ok=True)
     python = [sys.executable, "-X", "utf8", "-m", "pytest", "-q", "-p", "no:cacheprovider", "-rfE"]
 
     # The tap reporter prints one "not ok" line per failure and plain totals.
     fixed = [("voice", ROOT, python + ["evals/teacher-voice"])]
-    fixed += [(name, folder, command[:2] + ["--test-reporter=tap"] + command[2:])
+    fixed += [(name, folder, command[:2] + ["--test-reporter=tap", f"--test-concurrency={args.node_files}"] + command[2:])
               for name, folder, command in NODE_GROUPS]
     waiting = [(f"python {n}", ROOT, python + batch)
                for n, batch in enumerate(python_batches(args.batch), start=1)]
@@ -144,6 +220,14 @@ def main() -> int:
     for name, *_, lines in rows:
         for line in lines:
             print(f"  {name}: {line[:220]}")
+    # The pass is noted only for files that stood still while the checks ran.
+    try:
+        if not ok:
+            note.unlink(missing_ok=True)
+        elif files is not None and fingerprint(env) == files:
+            note.write_text(f"{files} {time.time():.0f}", encoding="utf-8")
+    except OSError:
+        pass
     return 0 if ok else 1
 
 
