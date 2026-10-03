@@ -420,9 +420,24 @@ rediscovering Python (13 September 2026).
 
 A `SETUP_NOTE:` names something this run will do without: slides nobody could
 look at to check, modern photographs, the optional drawings. None of them stops
-the run. Give each note to the teacher in its own words in the opening update,
-and put it again under `Teacher flags` in the final report, because a teacher
-told only at the start reads the finished deck as checked. When the teacher
+the run. Give each note to the teacher whole, in the note's wording, in the
+opening update: what the lesson will go without, the likely cause, and the fix
+or offer it ends on. The note is already written for a teacher, and its last
+sentence is the part they can act on, so a shortened or reassuring version
+leaves them knowing something is missing and not what to do about it. Put it
+again under `Teacher flags` in the final report, because a teacher
+told only at the start reads the finished deck as checked.
+
+The one exception is the note that this session can't reach the internet. On
+Codex with its sandbox's network restricted, that note describes an ordinary
+command, and the picture workers do not download with ordinary commands there:
+their references tell them to request network access per download, which Codex
+reviews itself. So before passing that note on, run the same check once more
+with a request for escalated permissions and network access, justified as "May
+I download pictures for this lesson?". Read only its `SETUP_NOTE:` lines and
+keep the `PYTHON=` from the first, unelevated run. If the note is gone, the
+pictures can download: say nothing about it and add no flag. If it is still
+there, or the request was denied, give the note as written. When the teacher
 takes up a note's offer, follow the matching section of `computer-setup.md`.
 When they turn down the Unsplash offer, run
 `node "[PLUGIN_ROOT]/scripts/check-setup.js" --decline unsplash` so it is not

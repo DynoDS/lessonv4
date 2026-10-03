@@ -737,6 +737,19 @@ useful alternatives:
 
 `node "[PLUGIN_ROOT]/scripts/search-educational-svg.js" --query "<concept>" --query "<useful-alternative>" --about "<what this picture has to show, in your own words>" --limit 6`
 
+**This command uses the internet, so ask for it where the host makes you ask.**
+The search downloads the drawings it names. On Codex, when your session's
+sandbox says network access is restricted, an ordinary command is refused at the
+socket and every drawing comes back as `EDUCATIONAL_SVG_NOT_FETCHED`, which
+reads exactly like a library with nothing suitable and is how whole decks were
+delivered bare. So on that host run each search with a request for escalated
+permissions and network access, justified as "May I download pictures for this
+lesson?", from the first search rather than after one has failed. Codex reviews
+the request itself and the teacher is not interrupted. If a request is denied,
+run the search as an ordinary command and take what it gives. Where the sandbox
+already has the network, or the host has no such request (Claude Code, a cloud
+box), run the command as written.
+
 **Always pass `--about`, and pass the requirement rather than the search terms.**
 The queries are words to match against 261,000 file names; `--about` is what the
 picture actually has to show, and it is the only part of the command that can

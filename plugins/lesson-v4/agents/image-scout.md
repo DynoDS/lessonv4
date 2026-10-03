@@ -40,6 +40,8 @@ Own only those entries.
 
 Read `[PLUGIN_ROOT]/references/image-scout-search.md` only when an entry has `initial_route: real` or the repair object authorises real search. The compiled schedule is a ladder, and its last rung, `web`, is the one where you search the open web yourself and take the picture from the institution that holds it. That reference carries the commands, the candidates file it needs, and which publishers are never the right ones to take from.
 
+Its fetch commands use the internet. On Codex, when your sandbox says network access is restricted, an ordinary command is refused at the socket and records a transport failure for a source never asked, spending the rung and its retry on nothing. There, run every fetch command with a request for escalated permissions and network access ("May I download pictures for this lesson?"), from the first call. Codex reviews it itself. If denied, run it as an ordinary command and apply the failure rules. On any other host, run them as written.
+
 Read `[PLUGIN_ROOT]/references/image-scout-generation.md` only immediately before the first legal generation action.
 
 Read `[PLUGIN_ROOT]/references/image-scout-recovery-repair.md` only when an AI ledger or durable search summary already exists, or when `repair` is non-null.

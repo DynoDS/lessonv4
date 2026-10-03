@@ -329,8 +329,13 @@ async function inspect(options = {}) {
         (warm
           ? 'Drawings already on this computer will still be used, so slides may come out part covered.'
           : 'Slides will come out with no pictures on them.') +
-        " Your broadband is probably fine: it's usually the sandbox Codex runs commands in. Say 'why can't " +
-        "you reach the internet' and I'll check the setting."
+        // The fix is named here because the offer this note used to make ("say
+        // 'why can't you reach the internet' and I'll check the setting") sent
+        // Codex to a config file that does not decide it, and on 3 October 2026
+        // the teacher asked and was told only that the lesson would cope. The
+        // chat's own permission control is what grants or refuses the network.
+        " Your broadband is probably fine. In Codex on your own computer the cause is this chat's permission " +
+        "setting: change it from 'Approve for me' to 'Full access', then ask for the lesson again."
     );
   }
 
