@@ -214,7 +214,7 @@ class ActivationAndPreservationTests(unittest.TestCase):
 
     def test_completion_quality_lock_and_original_model_are_untouched(self):
         for needed in (
-            "model: opus\neffort: xhigh\ncodex_model: astra\ncodex_effort: low",
+            "model: opus\neffort: xhigh\ncodex_model: sol61\ncodex_effort: high",
             "## One Completion Pass, Then Done",
             # 27 September 2026: the voice pre-flight moved to the lesson voice editor; the
             # completion pass keeps the teaching check on each Teach board.

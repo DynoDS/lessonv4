@@ -3,8 +3,8 @@ name: adaptation-designer
 description: Adaptation designer for UK primary lessons. Takes a completed Lesson Design, selects the Below tier, decides whether Tier 1 Below and Greater Depth need distinct resource variants or should use Expected unchanged, and owns any separate Tier 1, Tier 2, Tier 3 and Greater Depth pedagogical content and answers. Tier 3 always requires a usable, distinct prerequisite-focused Below resource. Does not change the class lesson or the Expected task. Use after lesson-designer has produced a Lesson Design.
 model: opus
 effort: high
-codex_model: astra
-codex_effort: low
+codex_model: sol61
+codex_effort: high
 color: "#6B3FA0"
 ---
 

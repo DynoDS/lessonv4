@@ -207,6 +207,74 @@ class WhatTheIndependentCheckFound(unittest.TestCase):
         self.assertTrue(any("answer.content is not words the class sees" in f for f in self.faults()))
 
 
+class TheStepsBesideTheModel(unittest.TestCase):
+    """2 October 2026: a Year 6 check for 6 printed `Is the digit sum in the 3
+    times table? Then the even number is divisible by 6.` as one step, and
+    `Digit sum:` on the frame beside it. The teacher's repair split the step in
+    two and said the action (`Add the digits:`, `the total`) where the taught
+    word only named its result. The editor could make neither change: a step
+    count was a piece, and the taught word was locked on every board."""
+
+    STEPS = ("successCriteria", 0, "content", "steps")
+
+    def setUp(self) -> None:
+        self.before, self.photos = fixtures.valid_content_contract()
+        self.before["successCriteria"][0]["content"]["steps"] = [
+            "Find the road on the map.",
+            "Count the trees each side of it. Then add the two totals.",
+        ]
+        self.before["teachingSequence"][2]["successCriteriaRefs"] = ["sc-001"]
+        self.after = copy.deepcopy(self.before)
+        self.steps = self.after["successCriteria"][0]["content"]["steps"]
+
+    def faults(self) -> list[str]:
+        return checker.check(self.before, self.after)
+
+    def test_the_steps_are_shown_to_the_class(self) -> None:
+        packet = checker.load_packet()
+        shown = "\n".join("\n".join(strings) for _label, strings in packet.class_view_blocks(self.before))
+        self.assertIn("Find the road on the map.", shown)
+
+    def test_a_step_holding_two_actions_may_become_two(self) -> None:
+        self.steps[1:] = ["Count the trees each side of it.", "Add the two totals."]
+        self.assertEqual(self.faults(), [])
+
+    def test_a_step_may_say_the_action_instead_of_the_taught_word(self) -> None:
+        self.steps[0] = "Find the wide path on the map."
+        self.assertEqual(self.faults(), [])
+
+    def test_the_taught_word_is_still_kept_on_a_teaching_board(self) -> None:
+        teach = self.after["teachingSequence"][1]["content"]
+        teach["headline"] = teach["headline"].replace("road", "path").replace("Road", "Path")
+        teach["explanation"] = teach["explanation"].replace("road", "path").replace("Road", "Path")
+        teach["takeaway"]["text"] = teach["takeaway"]["text"].replace("road", "path").replace("Road", "Path")
+        teach["keyQuestions"] = [q.replace("road", "path") for q in teach["keyQuestions"]]
+        self.after["teachingSequence"][1]["label"] = self.after["teachingSequence"][1]["label"].replace("road", "path").replace("Road", "Path")
+        found = self.faults()
+        self.assertTrue(any("no longer says 'road'" in f for f in found), found)
+
+    def test_a_number_brought_in_while_splitting_is_refused_and_the_list_goes_back_whole(self) -> None:
+        self.steps[1:] = ["Count the trees each side of it.", "Add the 2 totals.", "Check you have 3 numbers."]
+        found = self.faults()
+        self.assertTrue(any("successCriteria[0].content.steps changed its numbers" in f for f in found), found)
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp)
+            (work / "lesson-design.json").write_text(json.dumps(self.before), encoding="utf-8")
+            (work / "photo-requirements.json").write_text(json.dumps(self.photos), encoding="utf-8")
+            run = lambda *a: subprocess.run([sys.executable, str(SCRIPT), *a, "--working-dir", str(work)],
+                                            capture_output=True, text=True, encoding="utf-8")
+            self.assertIn("VOICE_EDIT_SNAPSHOT_OK", run("snapshot").stdout)
+            (work / "lesson-design.json").write_text(json.dumps(self.after), encoding="utf-8")
+            self.assertIn("VOICE_EDIT_SETTLED", run("settle").stdout)
+            settled = json.loads((work / "lesson-design.json").read_text(encoding="utf-8"))
+            self.assertEqual(settled["successCriteria"][0]["content"]["steps"],
+                             self.before["successCriteria"][0]["content"]["steps"])
+
+    def test_another_list_still_may_not_grow(self) -> None:
+        self.after["teachingSequence"][1]["content"]["keyQuestions"].append("A brand new question?")
+        self.assertTrue(any("was added" in f for f in self.faults()))
+
+
 def with_a_drawing(design: dict, used: bool = True) -> dict:
     """The sample lesson with a process chain whose boxes the lesson designer
     has written for children, the way a real run should have: on 28 September

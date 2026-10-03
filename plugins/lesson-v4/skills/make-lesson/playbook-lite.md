@@ -147,6 +147,9 @@ whatever the mode.
   they name wins: rewrite `filing.txt`. `OPENING_WEEK=yes`: ask which week.
   `DRIVE_CHECKED=no`: say the day is unchecked. Other errors: plan to leave the
   resources in `OUTPUT_DIR`; saving never gates the lesson.
+- A folder the teacher names for this lesson wins over any saved mode except a
+  letterbox: rewrite `filing.txt` as `DELIVERY=folder` with that
+  `SAVE_FOLDER=`, keeping its `PREVIOUS_LESSON=` and `EARLIER_LESSONS=` lines.
 
 For direct fixed slides, worksheets and stick-in sheets, let
 `run-fixed-resource.py` own output-family collision archiving. The retained wall
@@ -1331,8 +1334,10 @@ what did arrive. Add or respecify the visual as a picture requirement,
 real-first with an authorised fallback (a real place's geography publishes only
 after its visual check confirms it), point the affected representation use at
 that filename, keep the picture cap. A replacement for a spent filename takes a
-new id and filename, and pitches the evidence at the level the teaching needs,
-which is the designer's own rule. Every beat that leaned on the lost source is
+new id and filename (above every id used so far); the lost entry leaves the
+contract and nothing is renumbered, since every stage knows a picture by its
+number (validate without `--initial-photo-namespace`). The replacement pitches the evidence at the level the teaching needs, which is the designer's
+own rule. Every beat that leaned on the lost source is
 re-judged, not trimmed around: a timeline that held three sources across two
 periods is orientation once it holds two dates from one period, and an
 ordering task whose only remaining items are printed in date order has no job
@@ -1347,7 +1352,8 @@ without a second review was the one the teacher refused to teach. The review
 costs three minutes; a redesign it returns follows the Phase 1.25 rules.
 Then snapshot the revision as the next wave number, run the supplemental-wave
 mechanics over that snapshot, naming already-terminal filenames so nothing
-finished reopens, and relaunch the blocked designer on the published picture. One wave per run; a gap that
+finished reopens, and relaunch the blocked designer on the published picture and the current
+`photo-requirements.json`. One wave per run; a gap that
 survives it excludes as before, the pending helper still built for
 `/install-helper`.
 
@@ -1440,7 +1446,9 @@ into the run report as a teacher flag.
 
 For a picture that published and is wrong, use the one-filename repair slice and
 the prior picture receipt, finalise with `--replace yes`, then rebuild only the
-resources naming that filename. A picture that never published at all is the
+resources naming that filename. A build refused with `PUBLISHED_PICTURE_CHANGED`
+is this case too: a worker deleted or overwrote a published file, and the
+repair restores it. A picture that never published at all is the
 different fault the tracks reconcile before they build, where the resource owner
 re-points that one reference and keeps the learning it was serving.
 

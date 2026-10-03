@@ -119,7 +119,7 @@ A non-zero call, `complete: false`, auth failure, rate limit, transport failure 
 
 Retry one clearly transient transport failure once, in a `retry-1` child directory inside that step's output directory, named `retry-1/<the same compiled summary filename>`. Never overwrite the first failed summary. Never retry authentication or rate limit as if it were a semantic search.
 
-If a compiled step stays unavailable after its one retry, walk on to the next step, and here alone that includes a `standby_only` rung: a source never reached has answered nothing. The schedule orders preference, not validity, so a later rung's faithful photograph is a full answer. Record the outage; never restart or re-retry it.
+If a compiled step stays unavailable after its one retry, or hit `rate_limit`, walk on to the next step, here alone including a `standby_only` rung: a source never reached has answered nothing. The schedule orders preference, not validity, so a later rung's faithful photograph is a full answer. Record the outage; never restart or re-retry it.
 
 Only with no rung left does the contract decide. When `fallback_action` is `ai` and a prompt file exists, continue to generation and report its outcome. Otherwise report `real_source_unavailable`: no substitute is authorised, and an invented picture would be provenance the contract refused.
 

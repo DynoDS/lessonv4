@@ -24,6 +24,7 @@ const conceptMapShared = require("../../../shared/visuals/concept-map-svg");
 const fishboneShared = require("../../../shared/visuals/fishbone-svg");
 const continuumLineShared = require("../../../shared/visuals/continuum-line-svg");
 const sourcePathwayShared = require("../../../shared/visuals/source-pathway-svg");
+const annotatedTextShared = require("../../../shared/visuals/annotated-text-svg");
 
 const WIDEST_ZONE_MM = 261;
 
@@ -82,6 +83,8 @@ const helpers = {
   fishbone: withSheetText(atPrintedWidth(fishboneShared, { toSpec: withoutText, minWidthMm: 140 })),
   "continuum-line": withSheetText(atPrintedWidth(continuumLineShared, { toSpec: withoutText, minWidthMm: 90 })),
   "source-pathway": withSheetText(atPrintedWidth(sourcePathwayShared, { toSpec: withoutText, minWidthMm: 110 })),
+  // A marked passage needs its margins beside it for the notes and arrows.
+  "annotated-text": withSheetText(atPrintedWidth(annotatedTextShared, { toSpec: withoutText, minWidthMm: 110 })),
 };
 
 module.exports = { helpers, css };

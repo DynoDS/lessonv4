@@ -412,7 +412,8 @@ def source_schedule(photo: dict, generation_available: bool = True) -> list[dict
         #
         # `standby_only` is what keeps the cost argument intact: the scout may
         # only walk this rung when an earlier one recorded a transport failure
-        # that survived its retry, which is the outage `step_stayed_unreachable`
+        # that survived its retry, or a spent quota (`rate_limit`, never
+        # retried), which is the outage `step_stayed_unreachable`
         # in validate-image-scout.py already knows how to recognise and accept.
         # On a healthy run the rung above completes and this one is never
         # touched, so it costs nothing at all.

@@ -77,6 +77,9 @@ HOST_MODELS = {
         # moves no other: the lesson voice editor was tested on it (27 September
         # 2026), while the roles on `sol` keep the model they were set to.
         "sol6": "gpt-6-sol",
+        # The newer rungs the roles moved to on 3 October 2026.
+        "sol61": "gpt-6.1-sol",
+        "luna6": "gpt-6-luna",
         "terra": "gpt-5.6-terra",
         "luna": "gpt-5.6-luna",
         "haiku": "gpt-5.6-luna",
@@ -96,6 +99,8 @@ HOST_EFFORTS = {
         "gpt-6-astra": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-5.6-sol": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-6-sol": ("low", "medium", "high", "xhigh"),
+        "gpt-6.1-sol": ("low", "medium", "high", "xhigh", "max", "ultra"),
+        "gpt-6-luna": ("low", "medium", "high", "xhigh", "max"),
         "gpt-5.6-terra": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-5.6-luna": ("low", "medium", "high", "xhigh", "max"),
     },

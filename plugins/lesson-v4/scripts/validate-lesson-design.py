@@ -3939,10 +3939,25 @@ def run_design_checks(
             for photo_id in photo_by_id
             if photo_id.startswith(prefix)
         )
-        if ordinals:
+        if not ordinals:
+            continue
+        if initial_photo_namespace or prefix == "adaptation-photo-":
             expect(
                 ordinals == list(range(1, len(ordinals) + 1)),
                 f"{prefix} IDs must be contiguous from 001 with no skipped or reused ordinal",
+            )
+        else:
+            # After Phase 1 a revision may take a picture out (a content-gap
+            # wave replacing a lost one), and the replacement takes a new id,
+            # as the playbook says. Requiring no gaps here forced designers to
+            # reuse a spent id or renumber a published picture, and every later
+            # stage then disagreed about which picture photo-004 was (Nativity,
+            # 30 September 2026: the wise men became photo-004 and provenance,
+            # the slides and the adaptation all broke on it). Gaps are allowed;
+            # duplicates never are, and ids still read photo-001 upward.
+            expect(
+                len(set(ordinals)) == len(ordinals) and ordinals[0] >= 1,
+                f"{prefix} IDs must be unique and start at 001 or above",
             )
 
     initial_photo_ids = {photo_id for photo_id in photo_by_id if photo_id.startswith("photo-")}
@@ -4554,6 +4569,41 @@ def validate_lesson_question(raw: Any, photo_by_id: dict) -> None:
     expect(bool(reason.strip()), f"{path}.reason must say why this lesson earns a question and how its final task answers it")
 
 
+def check_no_spent_photo_id_reused(photos: object, folder: Path) -> None:
+    """A picture number, once a frozen contract used it, names that file for good.
+
+    After Phase 2 the picture stage, its receipts and every resource know a
+    picture by its number, so a revision that gives a spent number to a new
+    file makes one id mean two pictures (Nativity, 30 September 2026). The
+    frozen Phase 2 contract and each wave's contract sit beside the live one;
+    any of them that named this id with another filename refuses the reuse.
+    Before Phase 2 there is no frozen contract, and nothing is checked.
+    """
+    frozen = [folder / "phase2-initial-photo-requirements.json"]
+    frozen += sorted(folder.glob("photo-requirements-w-*.json"))
+    spent: dict[str, str] = {}
+    for path in frozen:
+        if not path.is_file():
+            continue
+        try:
+            entries = json.loads(path.read_text(encoding="utf-8")).get("photos")
+        except (OSError, ValueError, AttributeError):
+            continue
+        for entry in entries if isinstance(entries, list) else []:
+            if isinstance(entry, dict) and isinstance(entry.get("id"), str) and isinstance(entry.get("filename"), str):
+                spent.setdefault(entry["id"], entry["filename"])
+    items = photos.get("photos") if isinstance(photos, dict) else None
+    for entry in items if isinstance(items, list) else []:
+        if not isinstance(entry, dict):
+            continue
+        photo_id, filename = entry.get("id"), entry.get("filename")
+        if photo_id in spent and spent[photo_id] != filename:
+            raise ContractError(
+                f"{photo_id} already named {spent[photo_id]} in a frozen picture contract; "
+                f"give {filename} a number no contract has used, above every id so far"
+            )
+
+
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     initial_photo_namespace = False
@@ -4577,6 +4627,8 @@ def main(argv: list[str] | None = None) -> int:
             photos,
             initial_photo_namespace=initial_photo_namespace,
         )
+        if not initial_photo_namespace:
+            check_no_spent_photo_id_reused(photos, Path(args[1]).resolve().parent)
     except (OSError, json.JSONDecodeError, ContractError) as exc:
         print(f"LESSON_DESIGN_INVALID: {exc}", file=sys.stderr)
         return 1

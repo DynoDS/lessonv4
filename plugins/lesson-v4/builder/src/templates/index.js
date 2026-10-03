@@ -120,10 +120,42 @@ function drawSlide(pptx, slide, data, ctx) {
     drawDecorationLayer(slide, ctx.decorationPlan, "low", ctx.slideIndex);
   }
 
-  fn(pptx, slide, data, ctx);
+  const read = new Set();
+  const watched = data && typeof data === 'object'
+    ? new Proxy(data, {
+        get(target, key, receiver) {
+          read.add(key);
+          return Reflect.get(target, key, receiver);
+        },
+      })
+    : data;
+  fn(pptx, slide, watched, ctx);
+  refuseUndrawnContent(data, read, name);
 
   if (ctx && ctx.decorationPlan) {
     drawDecorationLayer(slide, ctx.decorationPlan, "high", ctx.slideIndex);
+  }
+}
+
+// A content object sitting under a key the template never reads is not drawn,
+// and nothing else notices: a Year 6 repair moved a slide to `body-full` with
+// its stack still under `primary`, every check passed, and the slide rendered
+// with an empty body (2 October 2026). Each template reads its own slots, so
+// the slots are learnt from the drawing itself rather than from a list that
+// would drift from the templates.
+function refuseUndrawnContent(data, read, name) {
+  if (!data || typeof data !== 'object') return;
+  const undrawn = Object.keys(data).filter((key) => {
+    const value = data[key];
+    return !read.has(key) && value && typeof value === 'object' && !Array.isArray(value) &&
+      typeof value.type === 'string';
+  });
+  if (undrawn.length) {
+    throw new Error(
+      `SLOT_NOT_DRAWN: "${undrawn.join('", "')}" holds content the ${name} template does not ` +
+      'draw, so it would leave that part of the slide blank. Move it to a slot this template ' +
+      'reads (templates.md lists them), or choose the template it was written for.'
+    );
   }
 }
 

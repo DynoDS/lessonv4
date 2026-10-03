@@ -10,7 +10,7 @@ const requireGlobal = require('./src/require-global');
 const PptxGenJS = requireGlobal('pptxgenjs');
 
 const { SLIDE_W, SLIDE_H } = require('./src/layout');
-const { FONT, COLOURS, SUBJECT_COLOURS } = require('./src/styles');
+const { FONT, COLOURS, subjectBackground } = require('./src/styles');
 const { drawSlide } = require('./src/templates');
 const { getWarnings, clearWarnings, note } = require('./src/warnings');
 const { validateLesson, friendlyParseError } = require('./src/validate');
@@ -412,7 +412,7 @@ async function main() {
 
   slides.forEach((slideData, i) => {
     const slide = pptx.addSlide();
-    slide.background = { color: SUBJECT_COLOURS[lesson.subject] || COLOURS.bg };
+    slide.background = { color: subjectBackground(lesson.subject) };
 
     const coreSlideData = coreSlides[i] || withoutDecorations(slideData);
     const ctx = {

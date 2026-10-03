@@ -65,7 +65,10 @@ The board draws the same frame, so the child meets one picture in both places. A
 - `place-value-counter-chart` - counters in columns. Filled, it asks "what
   number is shown?"; empty, it asks the child to draw counters to show a number.
 - `place-value-chart` - the chart digits are written into, or read from.
-- `digit-cards` - "here are four digit cards", for making numbers from.
+- `digit-cards` - a number as large digit cards with the working of a digit check
+  marked on it (the digit to look at boxed or outlined, a bracket or + signs
+  joining the digits, lines of working beneath), the same drawing as the board;
+  or, with `digits`, "here are four digit cards", for making numbers from.
 
 The counter chart is a wide object. A four-column one wants most of a portrait
 page's width (about 157mm of the 180, standing only about 45mm tall), and that

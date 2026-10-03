@@ -3,7 +3,7 @@ name: lesson-designer-focused-repair
 description: Repair-only entry point for the existing lesson-designer owner. Makes a finished design pass the lesson-design validator after the designer's own repair passes ran out, without loading the full Lesson Designer instructions or reopening the lesson's decisions. Use only from the make-lesson Phase 1 validator hand-back, never for a reviewer's REDESIGN REQUIRED.
 model: opus
 effort: xhigh
-codex_model: astra
+codex_model: sol61
 codex_effort: medium
 color: "#0A1E3F"
 ---

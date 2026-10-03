@@ -335,6 +335,66 @@ class ProvenanceEarlyWaveTests(unittest.TestCase):
             finalizer.provenance_command(self.args(str(outside)))
 
 
+class ProvenanceRetiredPictureTests(unittest.TestCase):
+    """A picture a content-gap revision took out of the contract is history.
+
+    The Nativity and Leisure runs (30 September and 1 October 2026) lost their
+    provenance file to "extra terminal evidence" for exactly these receipts.
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.working = Path(self.tmp.name) / "working"
+        self.working.mkdir()
+        lost = photo("photo-001", "generated/lost.png")
+        kept = photo("photo-002", "generated/kept.png")
+        replacement = photo("photo-003", "generated/new.png")
+        self.initial = write_json(self.working / "phase2-initial-photo-requirements.json", contract([lost, kept]))
+        self.wave = write_json(self.working / "photo-requirements-w-1.json", contract([kept, replacement]))
+        self.final = write_json(self.working / "photo-requirements.json", contract([kept, replacement]))
+        receipt_for(self.working, "generated/lost.png", self.initial, "omitted")
+        receipt_for(self.working, "generated/kept.png", self.initial, "omitted")
+        receipt_for(self.working, "generated/new.png", self.wave, "omitted")
+
+    def args(self):
+        return SimpleNamespace(
+            requirements=str(self.final),
+            terminal_receipts_dir=str(self.working / "orchestration-receipts" / "picture-terminal"),
+            working_dir=str(self.working),
+            output=str(self.working / "picture-provenance.json"),
+            summary_output=str(self.working / "picture-provenance-summary.json"),
+            early_wave_snapshot=None,
+        )
+
+    def test_a_retired_picture_is_kept_on_record_not_refused(self):
+        import io
+        from contextlib import redirect_stdout
+
+        out = io.StringIO()
+        with redirect_stdout(out):
+            self.assertEqual(finalizer.provenance_command(self.args()), 0)
+        self.assertIn("PICTURE_RETIRED: generated/lost.png", out.getvalue())
+        payload = json.loads((self.working / "picture-provenance.json").read_text(encoding="utf-8"))
+        self.assertEqual([row["filename"] for row in payload["retiredRows"]], ["generated/lost.png"])
+        self.assertEqual([row["filename"] for row in payload["rows"]], ["generated/kept.png", "generated/new.png"])
+
+    def test_a_picture_no_later_wave_dropped_is_still_stray(self):
+        # An entry deleted from the contract without a wave revision is not retired.
+        self.wave.unlink()
+        receipt_path = finalizer.receipt_path(self.working, "generated/new.png")
+        receipt_path.unlink()
+        self.final.write_text(json.dumps(contract([photo("photo-002", "generated/kept.png")])), encoding="utf-8")
+        with self.assertRaises(finalizer.FinalizeError) as caught:
+            finalizer.provenance_command(self.args())
+        self.assertIn("no later picture wave", str(caught.exception))
+
+    def test_a_retired_receipt_whose_snapshot_changed_is_refused(self):
+        self.initial.write_text(self.initial.read_text(encoding="utf-8") + " ", encoding="utf-8")
+        with self.assertRaises(finalizer.FinalizeError):
+            finalizer.provenance_command(self.args())
+
+
 class PlaybookEarlyWaveTests(unittest.TestCase):
     def section(self, start: str, end: str) -> str:
         parts = PLAYBOOK.split(start, 1)

@@ -443,6 +443,39 @@ print('STATUS=COPIED')
         # find the lesson that came before it.
         self.assertIn("--subject", summary["command"])
 
+    def test_a_folder_named_for_one_lesson_outranks_the_saved_sorting(self) -> None:
+        # Both Year 6 runs of 2 October 2026: the teacher asked for a desktop
+        # folder, filing.txt said DELIVERY=folder, and the saved sorted setting
+        # refused for want of a term and week. Uses the real delivery script.
+        import os
+        import shutil
+        from unittest import mock
+
+        scripts = SCRIPT.parent
+        for name in ("deliver_files.py", "plugin_settings.py"):
+            target = self.plugin / "scripts" / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(scripts / name, target)
+        home = self.root / "home"
+        home.mkdir()
+        (home / "settings.json").write_text(json.dumps({"delivery": {
+            "folder": str(self.root / "drive"), "sorting": True,
+            "termDates": str(home / "term-dates.md"), "offered": True,
+        }}), encoding="utf-8")
+        (self.output / "Lesson.pptx").write_text("x", encoding="utf-8")
+        named = self.root / "Desktop folder"
+        (self.working / "filing.txt").write_text(
+            f"DELIVERY=folder\nSAVE_FOLDER={named}\nPREVIOUS_LESSON=\nEARLIER_LESSONS=\n",
+            encoding="utf-8",
+        )
+        env = {"LESSON_RESOURCES_HOME": str(home), "LESSON_RESOURCES_LETTERBOX": ""}
+        with mock.patch.dict(os.environ, env):
+            self.run_script(
+                "deliver", "--year", "6", "--subject", "Writing", "--file", "Lesson.pptx",
+            )
+        self.assertTrue((named / "Lesson.pptx").is_file())
+        self.assertFalse((self.root / "drive").exists())
+
     def test_a_year_written_as_the_teacher_writes_it_is_accepted(self) -> None:
         # A cloud run passed "Year 4", copied from the filing step, and the
         # delivery was refused as an invalid integer (13 September 2026).
@@ -485,6 +518,57 @@ console.log('SHEET_STANDS_IN: Below - the Expected sheet stands in for Below, an
         self.assertIn("adaptation-photo-002", summary["standInSheets"][0]["why"])
         self.assertEqual(summary["omittedSheets"], [])
         self.assertIn("FIXED_RESOURCE_FLAGGED worksheets: Below", completed.stdout)
+
+    def publish_pictures(self) -> None:
+        # Two published pictures and one that never arrived, recorded the way
+        # finalize-picture-assignment.py records them.
+        import hashlib
+
+        rows = []
+        for name, data in (("daffodil", b"daffodil"), ("leaves", b"leaves")):
+            path = self.working / "unsplash" / f"{name}.jpg"
+            path.parent.mkdir(exist_ok=True)
+            path.write_bytes(data)
+            rows.append({
+                "filename": f"unsplash/{name}.jpg",
+                "terminalState": "published",
+                "canonicalSha256": hashlib.sha256(data).hexdigest(),
+            })
+        rows.append({"filename": "unsplash/heron.jpg", "terminalState": "unsatisfied"})
+        (self.working / "picture-provenance.json").write_text(
+            json.dumps({"rows": rows}), encoding="utf-8"
+        )
+        self.js_writer(
+            "builder/build.js",
+            """const fs=require('fs'); const p=require('path');
+const out=p.join(process.argv[3], 'Lesson.pptx');
+fs.writeFileSync(out, 'pptx');
+console.log('Wrote: ' + out);
+""",
+        )
+
+    def test_untouched_published_pictures_build(self) -> None:
+        self.publish_pictures()
+        self.run_script("slides", "--lesson-name", "Lesson")
+
+    def test_a_published_picture_overwritten_by_a_worker_refuses_the_build(self) -> None:
+        # Year 6 renga, 2 October 2026: a layout test copied the autumn-leaves
+        # photo over the published daffodil. Left there, the sheet prints
+        # leaves captioned as a daffodil and nothing else would notice.
+        self.publish_pictures()
+        (self.working / "unsplash" / "daffodil.jpg").write_bytes(b"leaves")
+        completed = self.run_script("slides", "--lesson-name", "Lesson", expected=1)
+        self.assertIn("PUBLISHED_PICTURE_CHANGED: unsplash/daffodil.jpg (overwritten)", completed.stderr)
+        self.assertNotIn("leaves.jpg", completed.stderr)
+        summary = json.loads((self.root / "summary.json").read_text(encoding="utf-8"))
+        self.assertFalse(summary["ok"])
+        self.assertFalse((self.output / "Lesson.pptx").exists())
+
+    def test_a_deleted_published_picture_refuses_the_build(self) -> None:
+        self.publish_pictures()
+        (self.working / "unsplash" / "daffodil.jpg").unlink()
+        completed = self.run_script("slides", "--lesson-name", "Lesson", expected=1)
+        self.assertIn("unsplash/daffodil.jpg (deleted)", completed.stderr)
 
 
 if __name__ == "__main__":

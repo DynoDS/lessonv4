@@ -388,6 +388,13 @@ def triggers_for(design: dict, lesson: dict | None, photos: list[dict], primitiv
         words = [w for w in re.split(r"[-_]|(?=[A-Z])", key) if w]
         if words and all(re.search(rf"\b{re.escape(word)}", representation_text, re.I) for word in words):
             used_primitives.append(key)
+    # A method the board recorded only as a method frame may go on the wall
+    # drawn onto its example's own digits (visual language, Choose visuals,
+    # idea 1), so the digit cards' contract is offered whenever a frame is on
+    # the board. Without it the 2 October 2026 divisibility wall was told the
+    # route existed and handed no fields to take it.
+    if "method-frame" in rendered_types and "digit-cards" in primitives and "digit-cards" not in used_primitives:
+        used_primitives.append("digit-cards")
     if lesson is None:
         used_primitives = list(primitives)
 

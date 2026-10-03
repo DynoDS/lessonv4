@@ -71,6 +71,7 @@ const FIGURES = {
   'process-chain': { module: require('../../../shared/visuals/process-chain-svg'), name: 'process chain' },
   'classification-key': { module: require('../../../shared/visuals/classification-key-svg'), name: 'classification key' },
   'concept-map': { module: require('../../../shared/visuals/concept-map-svg'), name: 'concept map' },
+  'annotated-text': { module: require('../../../shared/visuals/annotated-text-svg'), name: 'annotated text' },
   fishbone: { module: require('../../../shared/visuals/fishbone-svg'), name: 'fishbone' },
   'continuum-line': { module: require('../../../shared/visuals/continuum-line-svg'), name: 'continuum line' },
   'source-pathway': { module: require('../../../shared/visuals/source-pathway-svg'), name: 'source pathway' },
@@ -96,6 +97,7 @@ const FIGURES = {
   'part-whole-model': { module: require('../../../shared/visuals/part-whole-model-svg'), name: 'part-whole model' },
   pyramid: { module: require('../../../shared/visuals/pyramid-svg'), name: 'pyramid' },
   'mult-grid': { module: require('../../../shared/visuals/mult-grid-svg'), name: 'multiplication grid' },
+  'digit-cards': { module: require('../../../shared/visuals/digit-cards-svg'), name: 'digit cards' },
 };
 
 function captionFor(type, data) {

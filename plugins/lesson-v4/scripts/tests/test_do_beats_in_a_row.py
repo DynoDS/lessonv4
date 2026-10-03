@@ -97,9 +97,16 @@ class FromAChildsSeatTests(unittest.TestCase):
 
     def test_listening_is_counted_in_words_and_time_to_say(self) -> None:
         self.assertIn("  listen  The story (300 words, about 2.5 minutes to say)", self.seat)
-        self.assertIn("  Children only listen to 460 words in all, about 4 minutes to say.", self.seat)
+        self.assertIn("  On the Teach slides and word cards alone, children listen to 460 words, about 4 minutes to say.", self.seat)
         self.assertIn("  The longest listening stretch is 360 words, about 3 minutes to say: "
                       "word card: Nativity; The story.", self.seat)
+
+    def test_all_the_talk_is_counted_including_the_talk_on_task_slides(self) -> None:
+        # The starter says 3 words; word card 60, Teach 300 and 100; the Dos
+        # and the main work say nothing in this design.
+        self.assertIn("  Everything the teacher says, the talk on each task's own slides included: 463 words, "
+                      "about 4 minutes to say. That is the lesson's listening; asking and answering add to it.",
+                      self.seat)
 
     def test_it_says_how_and_with_whom_children_work(self) -> None:
         self.assertTrue(any("True or false" in line and "from the board or in books, on their own" in line
@@ -204,6 +211,30 @@ class DoBeatsInARowTests(unittest.TestCase):
         lines = run_design(design).stdout.splitlines()
         self.assertIn('  answered as: sort from the board; told: "Sort the animals."', lines)
         self.assertIn('  answered as: sort with printed cards, one set per pair; told: "Sort the animals."', lines)
+
+    def test_the_clock_adds_up_the_planned_minutes_and_the_dos_after_each_idea(self) -> None:
+        # The divisibility lesson of 2 October 2026: a round for each check, the
+        # worksheet left a few minutes, and nothing the reviewer read said so.
+        def cycle(ref, our):
+            units = [{"kind": "my-turn", "conceptRef": ref, "minutes": 3}]
+            if our:
+                units.append({"kind": "our-turn", "conceptRef": ref, "minutes": 2})
+            return units + [{"kind": "your-turn", "conceptRef": ref, "minutes": 2}]
+        design = {
+            "lesson": {"durationMinutes": 45},
+            "concepts": [{"id": "c1", "name": "Check for 4"}, {"id": "c2", "name": "Check for 6"}],
+            "starter": {"kind": "starter", "minutes": 5},
+            "teachingSequence": cycle("c1", True) + cycle("c2", False)
+            + [{"kind": "practise", "label": "Worksheet", "minutes": 12}],
+        }
+        out = run_design(design).stdout
+        self.assertIn("Planned minutes add up to 29 of the lesson's 45, leaving 16", out)
+        self.assertIn("Dos after each taught idea, before the next: Check for 4: 2; Check for 6: 1 (2 ideas, 3 Dos).", out)
+
+        design["concepts"] = design["concepts"][:1]
+        design["teachingSequence"] = cycle("c1", True)
+        self.assertNotIn("Dos after each taught idea", run_design(design).stdout,
+                         "one idea has nothing to compare, so the line stays out")
 
     def test_called_without_a_design_is_its_own_exit_code(self) -> None:
         result = run()

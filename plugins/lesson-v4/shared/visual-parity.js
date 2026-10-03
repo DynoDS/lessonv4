@@ -257,6 +257,9 @@ const PRIMITIVES = [
     ] },
   { id: 'concept-map', depicts: 'data', slides: 'concept-map', worksheets: 'concept-map', wall: 'concept-map', stickin: 'concept-map',
     geometrySource: 'shared/visuals/concept-map-svg.js' },
+  { id: 'annotated-text', depicts: 'data', slides: 'annotated-text', worksheets: 'annotated-text', wall: 'annotated-text', stickin: 'annotated-text',
+    geometrySource: 'shared/visuals/annotated-text-svg.js',
+    note: 'A passage (a poem, a model paragraph, a sentence, a source extract) set in the middle and marked up as a teacher marks a model text: words underlined, circled, boxed, highlighted or coloured, arrows joining one word to another, and short notes in the margins joined to their words. Marks name their words rather than a position, so they survive the text rewrapping on every surface. The write-on form leaves wide margins and ruled note lines for the child to annotate by hand.' },
   { id: 'source-pathway', depicts: 'data', slides: 'source-pathway', worksheets: 'source-pathway', wall: 'source-pathway', stickin: 'source-pathway',
     geometrySource: 'shared/visuals/source-pathway-svg.js',
     note: 'A fan-in figure: several distinct source nodes visibly joining one named intermediate state and continuing to one outcome.' },
@@ -305,6 +308,9 @@ const PRIMITIVES = [
     geometrySource: 'shared/visuals/process-chain-svg.js' },
   { id: 'classification-key', depicts: 'data', slides: 'classification-key', worksheets: 'classification-key', wall: 'classification-key', stickin: 'classification-key',
     geometrySource: 'shared/visuals/classification-key-svg.js' },
+  { id: 'digit-cards', depicts: 'data', slides: 'digit-cards', worksheets: 'digit-cards', wall: 'digit-cards', stickin: 'digit-cards',
+    geometrySource: 'shared/visuals/digit-cards-svg.js',
+    note: 'A number drawn large as digit cards with the working of a digit check marked on the number itself: digits boxed, ringed, outlined, greyed or coloured, a bracket or an arc between cards, + signs joining to a digit sum, and lines of working beneath with down arrows. Built 2 October 2026 from a Year 6 divisibility wall the teacher said he would "100% have up" for its number cards, lines, arrows and colours. Marks name digits by position, never a point, so they stay on their digits at any size; it leaves room for a wall step pin beside any part a callout names. It also draws the sheet\'s loose `digits` row, which was typed boxes (WORKSHEET_LAYOUT_EXEMPT) until then.' },
 ];
 
 // Every visual primitive is explicitly audited for Success Criteria use. This
@@ -356,6 +362,8 @@ const SUCCESS_CRITERIA_AUDIT = Object.freeze({
   callout: { classification: 'unsuitable', reason: 'It is a presentation container, not a child-made mark.' },
   'area-grid': { classification: 'SC-inline', reason: 'Rows and columns remain a stable array action.' },
   'concept-map': { classification: 'full-size', reason: 'Nodes and relationships are content-specific.' },
+  'digit-cards': { classification: 'full-size', reason: 'The marks mean something only on the lesson\'s own number and its working; a tiny row of cards cues nothing a step\'s words do not.' },
+  'annotated-text': { classification: 'full-size', reason: 'The words and what is marked on them are the content; a passage cannot be read at step-slot size.' },
   'source-pathway': { classification: 'full-size', reason: 'The sources, joining state and outcome are the content-specific task.' },
   'continuum-line': { classification: 'full-size', reason: 'Endpoints and item positions define the judgement.' },
   timeline: { classification: 'full-size', reason: 'The era bands and dated marks are the content; a tiny line cues nothing.' },
@@ -428,13 +436,13 @@ const TYPED_LAYOUT = Object.freeze([
 // picture above, so a new drawing on paper cannot appear without a shared
 // drawing and a place on every surface.
 const WORKSHEET_LAYOUT_EXEMPT = Object.freeze([
-  'instruction', 'questions', 'written-answers', 'section-label', 'source-text',
+  'instruction', 'questions', 'written-answers', 'section-label', 'source-text', 'poem',
   'data-table', 'recording-table', 'multiple-choice', 'sort-grid', 'drawing-space',
   'column-method-grid', 'short-multiplication-grid', 'long-multiplication-grid',
   'bus-stop-grid', 'long-division-grid', 'match-up', 'card-row', 'speech-scene',
   'named-claim', 'fact-file', 'writing-frame', 'steps', 'storyboard',
   'compare-row', 'inequality-with-boxes', 'number-sentence', 'order-numbers',
-  'order-table', 'data-table-with-ordering', 'circle-the-answer', 'digit-cards',
+  'order-table', 'data-table-with-ordering', 'circle-the-answer',
   'stacked-fraction', 'fraction-sequence', 'cause-path-grid', 'evidence-chain-frame',
   'method-frame', 'chip-bank',
 ]);

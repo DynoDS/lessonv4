@@ -38,11 +38,22 @@ const COLOURS = {
   gridLine:    '8C8C8C'
 };
 
-// Per-subject slide background, keyed by lesson.json's "subject" field.
-// Subjects not listed here fall back to COLOURS.bg (the warm peach).
+// Per-subject slide background, keyed by lesson.json's "subject" field and
+// matched ignoring case and spaces at the ends (decks have been written with
+// "maths" as well as "Maths"). Subjects not listed here fall back to
+// COLOURS.bg (the warm peach).
 const SUBJECT_COLOURS = {
-  Maths: 'D5E3F0'
+  Maths: 'D5E3F0',
+  Geography: 'CCE4BE',
+  History: 'CCE4BE',
+  Writing: 'FFEBB3'
 };
+
+function subjectBackground(subject) {
+  const wanted = String(subject || '').trim().toLowerCase();
+  const key = Object.keys(SUBJECT_COLOURS).find(k => k.toLowerCase() === wanted);
+  return key ? SUBJECT_COLOURS[key] : COLOURS.bg;
+}
 
 // Ceilings, in points. Several sat below MIN_FONT_PT, which is incoherent: a
 // ceiling under the floor caps its text below the smallest size the deck says
@@ -148,4 +159,4 @@ const SAFE = {
   shadow: () => ({ type: 'outer', blur: 6, offset: 2, color: '000000', opacity: 0.15 })
 };
 
-module.exports = { FONT, COLOURS, SUBJECT_COLOURS, SIZE_CEILINGS, FIT, MIN_FONT_PT, SAFE, CARD, CARD_COMPACT };
+module.exports = { FONT, COLOURS, SUBJECT_COLOURS, subjectBackground, SIZE_CEILINGS, FIT, MIN_FONT_PT, SAFE, CARD, CARD_COMPACT };

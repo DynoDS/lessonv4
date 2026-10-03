@@ -165,7 +165,9 @@ function panelWithVisualHtml(innerHtml, visual, visualLabel, fillColour, borderC
 
   // Stacked: a wide diagram becomes a thumbnail beside a narrow panel, so it
   // is placed full-width beneath a full-width panel instead.
-  if (panelFraction >= 0.99 && aspect >= WIDE_ASPECT) {
+  // A card made `full` is stacked whatever its picture's shape: the reserve it
+  // was planned with is passed in, and only a stacked card is given one.
+  if (panelFraction >= 0.99 && (aspect >= WIDE_ASPECT || opts.maxVisualHeightIn > 0)) {
     const panelEl = panelHtml(innerHtml, fillColour, borderColour, style, size, orientation, { widthMm: mm(dims.width), paddingDxa });
     let visualHtml = "";
     if (visual && (visual.buf || visual.emoji)) {

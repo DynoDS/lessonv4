@@ -7,6 +7,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -367,6 +368,65 @@ def receipt_matches_final_contract(
         raise FinalizeError(f"terminal receipt photo contract is stale or changed: {filename}")
 
 
+def retired_receipt_photo(receipt: dict, filename: str, working_dir: Path) -> dict:
+    """The photo a retired picture's own wave ran from, proving the receipt is real.
+
+    The receipt must point at an unchanged contract snapshot inside the working
+    folder that holds exactly one entry for this filename. That is the same
+    evidence a live receipt gives, read against the snapshot it was written
+    for instead of the final contract, which no longer names it.
+    """
+    reference = receipt.get("requirements")
+    if not isinstance(reference, dict) or set(reference) != {"path", "sha256"}:
+        raise FinalizeError(f"extra terminal evidence: {filename} (its receipt names no contract snapshot)")
+    snapshot = Path(reference["path"]).resolve()
+    # Only the lesson's own picture waves can have pictures a revision then
+    # retired: the Phase 2 wave and each supplemental wave. A picture the early
+    # adaptation wave sourced and the sheet did not take is an unused early
+    # picture, accounted for (and its file removed) only through
+    # --early-wave-snapshot, so it is never quietly kept as retired here.
+    if not (snapshot.name == "phase2-initial-photo-requirements.json"
+            or re.fullmatch(r"photo-requirements-w-\d+\.json", snapshot.name)):
+        raise FinalizeError(f"extra terminal evidence: {filename}")
+    if not inside(snapshot, working_dir) or not snapshot.is_file() or sha256(snapshot) != reference["sha256"]:
+        raise FinalizeError(f"extra terminal evidence: {filename} (its contract snapshot is missing or changed)")
+    document = read_json(snapshot, "retired picture's contract snapshot")
+    matches = [photo for photo in document.get("photos", []) if isinstance(photo, dict) and photo.get("filename") == filename]
+    if len(matches) != 1:
+        raise FinalizeError(f"extra terminal evidence: {filename} (its contract snapshot does not name it)")
+    # Proof that a revision took it out, not a worker deleting the entry to get
+    # unstuck: a later wave snapshot, written from the re-reviewed revision,
+    # that no longer names it.
+    if not removed_by_a_later_wave(working_dir, snapshot, filename):
+        raise FinalizeError(
+            f"extra terminal evidence: {filename} (no later picture wave's contract dropped it, "
+            "so nothing shows an approved revision took it out)"
+        )
+    return matches[0]
+
+
+def wave_number(snapshot: Path) -> int:
+    """0 for the Phase 2 contract, N for photo-requirements-w-N.json."""
+    match = re.fullmatch(r"photo-requirements-w-(\d+)\.json", snapshot.name)
+    return int(match.group(1)) if match else 0
+
+
+def removed_by_a_later_wave(working_dir: Path, snapshot: Path, filename: str) -> bool:
+    after = wave_number(snapshot)
+    for later in working_dir.glob("photo-requirements-w-*.json"):
+        if wave_number(later) <= after:
+            continue
+        try:
+            photos = json.loads(later.read_text(encoding="utf-8")).get("photos")
+        except (OSError, ValueError, AttributeError):
+            continue
+        if isinstance(photos, list) and all(
+            not (isinstance(photo, dict) and photo.get("filename") == filename) for photo in photos
+        ):
+            return True
+    return False
+
+
 def early_wave_snapshot(args, working: Path) -> tuple[Path, dict[str, dict]] | None:
     """The immutable contract the early adaptation wave compiled from.
 
@@ -421,6 +481,9 @@ def provenance_command(args) -> int:
     receipt_dir = Path(args.terminal_receipts_dir).resolve(); paths = sorted(receipt_dir.glob("*.json")); by_name = {}
     # Receipts the early wave wrote for pictures the final contract never took.
     unused: dict[str, dict] = {}
+    # Receipts for pictures an approved revision retired, and their own photos.
+    retired: dict[str, dict] = {}
+    by_name_retired: dict[str, dict] = {}
     for path in paths:
         receipt = read_json(path, "terminal receipt")
         if receipt.get("schemaVersion") != 2 or not isinstance(receipt.get("filename"), str): raise FinalizeError(f"invalid terminal receipt: {path}")
@@ -432,9 +495,18 @@ def provenance_command(args) -> int:
         if filename not in final_by_filename:
             # Only a receipt the early wave wrote, against the early snapshot,
             # for a picture that snapshot holds, is an unused early picture.
-            # Anything else outside the final contract is what it always was.
             if early is None or filename not in early[1] or not receipt_bound_to(receipt, early[0]):
-                raise FinalizeError(f"extra terminal evidence: {filename}")
+                # A picture an approved design revision took out of the
+                # contract (a content-gap wave replacing a lost or unfaithful
+                # picture) is history, not stray evidence. Its receipt must
+                # still match the contract snapshot its own wave ran from, so
+                # a receipt nobody's wave wrote is refused as it always was.
+                # Refusing these cost the Nativity and Leisure runs their
+                # provenance file (30 September and 1 October 2026).
+                retired[filename] = retired_receipt_photo(receipt, filename, working)
+                if filename in by_name_retired: raise FinalizeError(f"duplicate terminal evidence: {filename}")
+                by_name_retired[filename] = receipt
+                continue
             receipt_matches_final_contract(receipt, filename, early[1][filename], working)
             if filename in unused: raise FinalizeError(f"duplicate terminal evidence: {filename}")
             unused[filename] = receipt
@@ -484,7 +556,20 @@ def provenance_command(args) -> int:
             print(f"PICTURE_UNUSED_REMOVED: {filename}")
         unused_rows.append({"filename": filename, "terminalState": receipt.get("terminalState"), "canonicalPath": None, "canonicalSha256": publication.get("canonicalSha256"), "canonicalRemoved": removed, "provenance": receipt.get("provenance"), "terminalReason": receipt.get("terminalReason")})
 
+    # A retired picture keeps its receipt and its licence on record, and its
+    # file is left where it is: whether anything still shows it is the run
+    # report's question, and it is answered there against the built specs.
+    retired_rows = []
+    for filename in sorted(by_name_retired):
+        receipt = by_name_retired[filename]
+        verify_receipt_provenance(receipt, filename)
+        publication = receipt.get("publication", {})
+        retired_rows.append({"filename": filename, "id": retired[filename].get("id"), "terminalState": receipt.get("terminalState"), "canonicalSha256": publication.get("canonicalSha256"), "provenance": receipt.get("provenance"), "terminalReason": receipt.get("terminalReason")})
+        print(f"PICTURE_RETIRED: {filename} ({receipt.get('terminalState')}), taken out of the contract by a design revision")
+
     payload = {"schema_version": 2, "kind": "picture-provenance", "requirements": {"path": str(requirements_path), "sha256": sha256(requirements_path)}, "rows": rows}
+    if retired_rows:
+        payload["retiredRows"] = retired_rows
     summary = {"schema_version": 2, "ok": True, "rows": len(rows), "output": str(Path(args.output).resolve())}
 
     # Which rung of the ladder each published picture came off. The teacher is

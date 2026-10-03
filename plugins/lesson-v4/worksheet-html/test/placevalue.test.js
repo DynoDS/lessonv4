@@ -15,6 +15,7 @@ const pvChart = require("../../shared/visuals/place-value-chart-svg");
 const multGrid = require("../../shared/visuals/mult-grid-svg");
 const pyramid = require("../../shared/visuals/pyramid-svg");
 const blocks = require("../../shared/visuals/base-ten-blocks-svg");
+const digitCards = require("../../shared/visuals/digit-cards-svg");
 
 const A_HALF_COLUMN_MM = 87;
 const FULL_WIDTH_MM = 180;
@@ -52,16 +53,17 @@ test("every place value helper signs the whole contract", () => {
 });
 
 test("every picture here is placed from its one shared drawing", () => {
-  for (const name of ["base-ten-blocks", "place-value-counter-chart", "counter-group", "place-value-chart", "place-value-mini", "times-table-grid", "number-pyramid"]) {
+  for (const name of ["base-ten-blocks", "place-value-counter-chart", "counter-group", "place-value-chart", "place-value-mini", "digit-cards", "times-table-grid", "number-pyramid"]) {
     assert.equal(helpers[name].physical, true, `${name} is not laid out at printed size`);
     assert.ok(helpers[name].geometry && typeof helpers[name].geometry.tightSvg === "function", `${name} draws its own picture`);
   }
 });
 
-test("every line-height is the 1.35 the height estimates assume", () => {
-  const declared = css.match(/line-height:\s*([\d.]+)/g) || [];
-  assert.ok(declared.length > 0, "no line-height is pinned anywhere");
-  for (const rule of declared) assert.equal(Number(rule.split(":")[1]), 1.35, `"${rule.trim()}" is not 1.35`);
+// The digit cards were the last typed boxes here, and the 1.35 line-height
+// their height estimate assumed went with them (2 October 2026). A picture
+// laid out at its printed size measures itself, so nothing here is styled.
+test("the family adds no typed styling now every picture is shared", () => {
+  assert.equal(css.trim(), "");
 });
 
 test("a stated minimum height is one the helper can actually be drawn in", () => {
@@ -305,8 +307,10 @@ test("a sheet chart is the board's chart: the column colours, and a green ring",
 // ─── digit-cards ─────────────────────────────────────────────────────────
 
 test("digit cards draw one card per digit, zero included", () => {
+  const layout = digitCards.describeLayout({ digits: [0, 3, 4, 7] }, sheet());
+  assert.deepEqual(layout.cards.map((c) => c.ch), ["0", "3", "4", "7"]);
   const html = h("digit-cards").render({ digits: [0, 3, 4, 7] });
-  assert.deepEqual([...html.matchAll(/class="h-digitcard">([^<]*)</g)].map((m) => m[1]), ["0", "3", "4", "7"]);
+  for (const d of ["0", "3", "4", "7"]) assert.ok(html.includes(`>${d}</text>`), `the ${d} card prints no digit`);
 });
 
 test("a longer set of digit cards needs a longer row", () => {

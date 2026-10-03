@@ -27,6 +27,7 @@ const drawTimeline = drawerFor('timeline');
 const drawProcessChain = drawerFor('process-chain');
 const drawClassificationKey = drawerFor('classification-key');
 const drawConceptMap = drawerFor('concept-map');
+const drawAnnotatedText = drawerFor('annotated-text');
 const drawFishbone = drawerFor('fishbone');
 const drawContinuumLine = drawerFor('continuum-line');
 const drawSourcePathway = drawerFor('source-pathway');
@@ -41,6 +42,7 @@ const drawCounterGroup = drawerFor('counter-group');
 const drawPartWholeModel = drawerFor('part-whole-model');
 const drawPyramid = drawerFor('pyramid');
 const drawMultGrid = drawerFor('mult-grid');
+const drawDigitCards = drawerFor('digit-cards');
 const { drawStack } = require('./stack');
 const { drawRow } = require('./row');
 const { drawNumberedQuestions } = require('./numbered-questions');
@@ -106,6 +108,9 @@ const ZONE_COMPAT = {
   callout:             ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   pyramid:             ['A', 'B', 'C', 'E-wide'],
   'mult-grid':         ['A', 'B', 'C', 'E-wide'],
+  // A number as large digit cards with its working beneath: it wants the depth
+  // of a full zone, so not the F strip or the G side rail.
+  'digit-cards':       ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow'],
   matching:            ['A', 'B', 'C', 'E-wide'],
   clock:               ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'diamond-nine':      ['A', 'C', 'E-wide'],
@@ -120,6 +125,8 @@ const ZONE_COMPAT = {
   'process-chain':     ['A', 'B', 'C', 'E-wide'],
   'classification-key': ['A', 'C', 'E-wide'],
   'concept-map':       ['A', 'C', 'E-wide'],
+  // A marked passage wants width for its margin notes and arrows.
+  'annotated-text':    ['A', 'B', 'C', 'E-wide'],
   'source-pathway':    ['A', 'C', 'E-wide'],
   'coordinate-grid':   ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow'],
   polygon:             ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
@@ -197,6 +204,7 @@ const HELPERS = {
   callout:             drawCallout,
   pyramid:             drawPyramid,
   'mult-grid':         drawMultGrid,
+  'digit-cards':       drawDigitCards,
   matching:            drawMatching,
   clock:               drawClock,
   'diamond-nine':      drawDiamondNine,
@@ -207,6 +215,7 @@ const HELPERS = {
   'process-chain':     drawProcessChain,
   'classification-key': drawClassificationKey,
   'concept-map':       drawConceptMap,
+  'annotated-text':    drawAnnotatedText,
   'source-pathway':    drawSourcePathway,
   'coordinate-grid':   drawCoordinateGrid,
   polygon:             drawPolygon,
@@ -280,6 +289,15 @@ const TRANSPARENT = new Set(['stack', 'row']);
 // draw must not leave an empty white box behind).
 const MEASURE = {
   'place-value-chart': placedRectFor('place-value-chart'),
+  // The cards and their working are laid out to the zone and may stop short of
+  // it; the card hugs what is drawn. A zone they refuse draws no card.
+  'digit-cards': (zone, data) => {
+    try {
+      return placedRectFor('digit-cards')(zone, data);
+    } catch (error) {
+      return null;
+    }
+  },
   'comparison-slot': measurerFor('comparison-slot'),
   text: measureText,
   image: measureImage,
@@ -590,7 +608,10 @@ function measureContentExtent(zone, data, ctx) {
 // items that will use it. Declare a cap only where the helper truly refuses
 // more width - a wrong cap here shrinks content that wanted the room.
 const MAX_USEFUL_WIDTH = {
-  'comparison-slot': maxUsefulWidthFor('comparison-slot')
+  'comparison-slot': maxUsefulWidthFor('comparison-slot'),
+  // Its words stop growing at the board's ceiling, so past that width a row's
+  // spare room is better given to the items beside it.
+  'digit-cards': maxUsefulWidthFor('digit-cards')
 };
 
 function maxUsefulWidth(item) {

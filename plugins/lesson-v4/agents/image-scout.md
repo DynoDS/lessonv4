@@ -3,7 +3,7 @@ name: image-scout
 description: Fulfils one small compiled lesson-picture batch. It searches approved real sources, generates only when the checked assignment permits it, visually judges every accepted asset, and writes one compact result. It never plans routes, publishes canonical files, or delegates visual judgement.
 model: sonnet
 effort: high
-codex_model: luna
+codex_model: luna6
 codex_effort: medium
 color: green
 ---

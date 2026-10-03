@@ -32,6 +32,8 @@ module.exports = {
     "engine sizes the lines to the zone; `lines` sets an exact count.",
   "section-label":
     "The mode-of-work heading a block sits under: Fluency, Practise, Apply. Marks the kind of thinking, never the topic. Put it at the top of a stack.",
+  poem:
+    "A poem the child reads line by line, its stanzas kept apart, with a box after each line to write in (a syllable count) when it needs one.",
   "source-text":
     "A passage, account or extract the child reads and works from.",
   steps:
@@ -175,7 +177,7 @@ module.exports = {
   "place-value-mini":
     "The small place-value picture from a vocabulary card: a digit mapping to its value, one column picked out, ten tens becoming a hundred, or the zeros in a numeral.",
   "digit-cards":
-    "A row of cards, one digit each, handed to the child to make numbers from.",
+    "A number as large digit cards with a digit check's working marked on its digits, or loose `digits` cards to make numbers from; copy the slide's object.",
   "times-table-grid":
     "The multiplication-facts grid: headers across and down, products in the body, blanks to find.",
   "number-pyramid":
@@ -224,6 +226,8 @@ module.exports = {
     "Cause and effect: causes on ribs off a spine that points at the effect.",
   "continuum-line":
     "A line between two opposite ends (disagree to agree) for a child to mark a position on, with optional ticks and a question above.",
+  "annotated-text":
+    "A passage in the middle with words underlined, circled, boxed or highlighted in colour, arrows between words and margin notes, or wide margins left for the child to annotate.",
   "source-pathway":
     "Two to six separate sources joining one middle state and then one outcome, for when the shared middle is the learning.",
 

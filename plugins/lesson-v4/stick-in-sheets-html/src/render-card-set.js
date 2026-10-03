@@ -67,21 +67,32 @@ const PER_SET = new Set(["child", "pair", "group"]);
 // task where moving things round helps children decide.
 const FORMS = new Set(["cards", "sheet"]);
 
+// A card's own line breaks are part of what it says: a stanza card is three
+// lines or two, and the renga lesson of 2 October 2026 asked children to check
+// "3 lines, 2 lines" on cards that had printed every stanza as one run of prose.
+// Each written line wraps on its own and never joins the next.
 function wrapLines(text, charsPerLine) {
-  const words = String(text).trim().split(/\s+/);
   const lines = [];
-  let cur = "";
-  for (const word of words) {
-    const next = cur ? `${cur} ${word}` : word;
-    if (next.length > charsPerLine && cur) {
-      lines.push(cur);
-      cur = word;
-    } else {
-      cur = next;
+  for (const written of String(text).trim().split(/\r?\n/)) {
+    const words = written.trim().split(/\s+/).filter(Boolean);
+    let cur = "";
+    for (const word of words) {
+      const next = cur ? `${cur} ${word}` : word;
+      if (next.length > charsPerLine && cur) {
+        lines.push(cur);
+        cur = word;
+      } else {
+        cur = next;
+      }
     }
+    lines.push(cur);
   }
-  if (cur) lines.push(cur);
   return lines.length ? lines : [""];
+}
+
+// Escaped words with their written line breaks kept.
+function wordsHtml(text) {
+  return String(text).trim().split(/\r?\n/).map((line) => esc(line.trim())).join("<br>");
 }
 
 // A small deterministic generator so the printed order is stable between
@@ -224,6 +235,9 @@ function normaliseCardSet(item, classSize, baseDir) {
     if (card.detail != null && typeof card.detail !== "string") {
       return fault(`card "${card.label}" has a detail that is not text`);
     }
+    if (card.letter != null && !/^[A-Z]$/.test(String(card.letter))) {
+      return fault(`card "${card.label}" has a letter that is not one capital letter`);
+    }
   }
   if (typeof item.tag !== "string" || !item.tag.trim()) {
     return fault("no tag: every card is stamped with the kit's tag so a card found after cutting still says which activity it belongs to");
@@ -292,6 +306,10 @@ function normaliseCardSet(item, classSize, baseDir) {
 // cards in print order, every card the same size, dashed guides between them.
 function renderSetHtml(kit, geometry) {
   const { cardWMm, cardHMm, headingHMm, cols } = geometry;
+  // A set laid out to fill its page (`fillLayout`) carries its own sizes:
+  // the cards' and headings' widths, columns and type. Otherwise every size is
+  // the standard one.
+  const fill = geometry.fill || null;
   const tagHtml = kit.tag
     ? `<div style="font-size:8pt;color:${GREY};height:${TAG_BAND_MM}mm;line-height:${TAG_BAND_MM}mm">${esc(kit.tag)}</div>`
     : "";
@@ -299,47 +317,55 @@ function renderSetHtml(kit, geometry) {
   // share rows. A set with pictures gives the heading cards their own short
   // rows: a heading only needs its words, and a heading as tall as a picture
   // card doubled the paper a set took (a five-picture story ran to two pages a
-  // set, thirty pages for a class). The item cards are still all one size.
+  // set, thirty pages for a class). A set printed large to fill its page does
+  // the same, so the room goes to the cards children read. The item cards are
+  // still all one size.
   const pictured = kit.pictures && kit.pictures.size > 0;
-  const h = pictured ? cardHMm : Math.max(headingHMm, cardHMm);
-  const pictureW = cardWMm - 2 * CARD_PAD_MM - 4;
-  const cell = (label, detail, isHeading, picture, cellH = h) => {
+  const split = pictured || Boolean(fill);
+  const h = split ? cardHMm : Math.max(headingHMm, cardHMm);
+  const cardPt = fill ? fill.cardPt : 12;
+  const headingPt = fill ? fill.headingPt : 13;
+  const letterPt = fill ? fill.letterPt : 16;
+  const cell = (label, detail, isHeading, picture, cellH, letter, widthMm) => {
     const border = isHeading ? `0.6mm solid ${INK}` : `0.3mm solid ${INK}`;
-    const font = isHeading ? "font-weight:bold;font-size:13pt" : "font-size:12pt";
+    const font = isHeading ? `font-weight:bold;font-size:${headingPt}pt` : `font-size:${cardPt}pt`;
     const detailHtml = detail
       ? `<div style="font-size:${DETAIL_PT}pt;margin-top:1mm">${esc(detail)}</div>`
       : "";
+    const pictureW = widthMm - 2 * CARD_PAD_MM - 4;
     const pictureHtml = picture
       ? `<img src="${picture}" alt="" style="display:block;margin:0 auto ${PICTURE_GAP_MM}mm;width:${pictureW}mm;height:${PICTURE_H_MM}mm;object-fit:contain">`
       : "";
     return (
-      `<div style="width:${cardWMm}mm;height:${cellH}mm;box-sizing:border-box;padding:${CARD_PAD_MM}mm;` +
+      `<div style="width:${widthMm}mm;height:${cellH}mm;box-sizing:border-box;padding:${CARD_PAD_MM}mm;` +
       `display:flex;flex-direction:column;justify-content:center;">` +
       `<div style="border:${border};border-radius:2mm;height:100%;box-sizing:border-box;padding:2mm;` +
       `display:flex;flex-direction:column;justify-content:center;text-align:center;${font};color:${INK}">` +
-      `${tagHtml}${pictureHtml}<div>${isHeading ? esc(label) : cardWordsHtml(label, 16)}</div>${detailHtml}</div></div>`
+      `${tagHtml}${pictureHtml}<div>${isHeading ? esc(label) : cardWordsHtml(label, letterPt, letter)}</div>${detailHtml}</div></div>`
     );
   };
   // Headings first, then the cards, flowing through one grid so a set uses
   // the page rather than leaving the heading row half empty. Every cell in the
   // set is the same size, so a row's height is the taller of the two kinds.
-  const cardCells = kit.printOrder.map((c) => cell(c.label, c.detail, false, kit.pictures.get(c.id) || null));
-  const groups = pictured
+  const cardCells = kit.printOrder.map((c) =>
+    cell(c.label, c.detail, false, kit.pictures.get(c.id) || null, h, c.letter || null, cardWMm));
+  const headingW = fill ? fill.headingWMm : cardWMm;
+  const groups = split
     ? [
-        { cells: kit.headings.map((hd) => cell(hd.label, null, true, null, headingHMm)), hMm: headingHMm },
-        { cells: cardCells, hMm: h },
+        { cells: kit.headings.map((hd) => cell(hd.label, null, true, null, headingHMm, null, headingW)), hMm: headingHMm, cols: fill ? fill.headingCols : cols },
+        { cells: cardCells, hMm: h, cols },
       ]
-    : [{ cells: [...kit.headings.map((hd) => cell(hd.label, null, true, null)), ...cardCells], hMm: h }];
+    : [{ cells: [...kit.headings.map((hd) => cell(hd.label, null, true, null, h, null, cardWMm)), ...cardCells], hMm: h, cols }];
   const rows = [];
   for (const group of groups) {
-    for (let i = 0; i < group.cells.length; i += cols) {
-      const rowCells = group.cells.slice(i, i + cols)
+    for (let i = 0; i < group.cells.length; i += group.cols) {
+      const rowCells = group.cells.slice(i, i + group.cols)
         .map((c, j, all) => `<div style="${j + 1 < all.length ? `border-right:0.3mm dashed ${GREY};` : ""}">${c}</div>`)
         .join("");
       rows.push({ cells: rowCells, hMm: group.hMm });
     }
   }
-  return { rows, heightMm: rows.reduce((s, r) => s + r.hMm, 0) };
+  return { rows, heightMm: rows.reduce((sum, r) => sum + r.hMm, 0) };
 }
 
 function rowsHtml(rows) {
@@ -351,9 +377,13 @@ function rowsHtml(rows) {
     .join("");
 }
 
+// The letter's own line above a card's words, at 16pt with its gap.
+const LETTER_LINE_MM = 8;
+
 function geometryFor(kit, printableWMm) {
   const cardLines = Math.max(...kit.cards.map((c) =>
     wrapLines(c.label, CHARS_PER_LINE).length * LINE_MM +
+    (c.letter || CARD_LETTER.test(String(c.label)) ? LETTER_LINE_MM : 0) +
     (c.detail ? wrapLines(c.detail, DETAIL_CHARS_PER_LINE).length * DETAIL_LINE_MM + 1 : 0)
   ));
   const headingLines = Math.max(...kit.headings.map((h) => wrapLines(h.label, CHARS_PER_LINE - 2).length));
@@ -368,6 +398,66 @@ function geometryFor(kit, printableWMm) {
   return { cardWMm, cardHMm, headingHMm, cols };
 }
 
+// Width one character takes at 1pt, from the standard card: 19 characters at
+// 12pt across its 52mm of text room.
+const CHAR_MM_PER_PT = 52 / 19 / 12;
+const FILL_MAX_PT = 24;
+const HEADING_MIN_W_MM = 40;
+
+// A set that gets a page to itself fills it. Cards are sized so several sets
+// share a page; when even two do not fit, the one set prints as large as the
+// page allows (the teacher, 30 September and 1 October 2026: "as big as
+// possible to fill the paper", no dead space). The headings take short rows of
+// their own, and the cards take the type size and number of columns that print
+// them largest, with this proviso: a card whose words have their own line
+// breaks (a stanza, three lines or two) keeps every line on one printed line,
+// because a child counting a stanza's lines counts what is printed. Words-only
+// sets only: a picture card's picture already takes the room it was given.
+// Returns null when the standard layout stands.
+function fillLayout(kit, printableWMm, printableHMm) {
+  if (kit.pictures && kit.pictures.size) return null;
+  const standard = renderSetHtml(kit, geometryFor(kit, printableWMm)).heightMm;
+  if (standard * 2 + 4 <= printableHMm || standard > printableHMm) return null;
+  const tagMm = kit.tag ? TAG_BAND_MM : 0;
+  const keepLines = kit.cards.some((c) => /\n/.test(String(c.label)));
+  const headingCols = Math.max(1, Math.min(kit.headings.length,
+    Math.floor(printableWMm / HEADING_MIN_W_MM)));
+  const headingWMm = +(printableWMm / headingCols).toFixed(1);
+  let best = null;
+  for (let cols = 1; cols <= 4; cols++) {
+    const cardWMm = +(printableWMm / cols).toFixed(1);
+    const textMm = cardWMm - 2 * CARD_PAD_MM - 5;
+    for (let pt = FILL_MAX_PT; pt >= 12; pt -= 0.5) {
+      const chars = Math.floor(textMm / (pt * CHAR_MM_PER_PT));
+      const fits = kit.cards.every((c) => !keepLines ||
+        String(c.label).split(/\r?\n/).every((line) => line.trim().length <= chars));
+      if (!fits) continue;
+      const lineMm = LINE_MM * pt / 12;
+      const letterMm = LETTER_LINE_MM * pt / 12;
+      const cardHMm = Math.max(...kit.cards.map((c) =>
+        wrapLines(c.label, chars).length * lineMm +
+        (c.letter || CARD_LETTER.test(String(c.label)) ? letterMm : 0) +
+        (c.detail ? wrapLines(c.detail, DETAIL_CHARS_PER_LINE).length * DETAIL_LINE_MM + 1 : 0)
+      )) + 2 * CARD_PAD_MM + 5 + tagMm;
+      const headingPt = Math.min(22, Math.round(13 * pt / 12));
+      const headingChars = Math.floor((headingWMm - 2 * CARD_PAD_MM - 5) / (headingPt * CHAR_MM_PER_PT));
+      const headingHMm = Math.max(...kit.headings.map((hd) => wrapLines(hd.label, headingChars).length)) *
+        HEADING_LINE_MM * headingPt / 13 + 2 * CARD_PAD_MM + 5 + tagMm;
+      const height = Math.ceil(kit.headings.length / headingCols) * headingHMm +
+        Math.ceil(kit.cards.length / cols) * cardHMm;
+      if (height > printableHMm) continue;
+      if (!best || pt > best.fill.cardPt) {
+        best = {
+          cardWMm, cardHMm: +cardHMm.toFixed(1), headingHMm: +headingHMm.toFixed(1), cols,
+          fill: { cardPt: pt, headingPt, letterPt: Math.round(16 * pt / 12), headingCols, headingWMm },
+        };
+      }
+      break;
+    }
+  }
+  return best && best.fill.cardPt > 12 ? best : null;
+}
+
 // Lay the kit's sets onto landscape pages. Whole sets share a page while they
 // fit, with a thicker dashed guide between sets. A set taller than one page
 // continues onto the next page at a row boundary, with its caption saying so,
@@ -375,7 +465,7 @@ function geometryFor(kit, printableWMm) {
 // allowed to run off the page: a single row taller than the page is refused
 // with the heights named. Returns { error } instead of pages when refused.
 function renderKitPages(kit, { printableWMm, printableHMm, pageHtml }) {
-  const geometry = geometryFor(kit, printableWMm);
+  const geometry = fillLayout(kit, printableWMm, printableHMm) || geometryFor(kit, printableWMm);
   const set = renderSetHtml(kit, geometry);
   const SET_GAP_MM = 4;
   const tallestRow = Math.max(...set.rows.map((r) => r.hMm));
@@ -458,10 +548,14 @@ const ORDINAL = /^(\d+)(st|nd|rd|th)?$/i;
 // stays a sentence.
 const CARD_LETTER = /^([A-Z])(?:\s{2,}|[.):]\s*)(\S[\s\S]*)$/;
 
-function cardWordsHtml(label, letterPt) {
-  const match = String(label).match(CARD_LETTER);
-  if (!match) return esc(label);
-  return `<div style="font-weight:bold;font-size:${letterPt}pt;margin-bottom:1.5mm">${esc(match[1])}</div><div>${esc(match[2])}</div>`;
+// `letter` is the card's letter on the board, when the board letters its cards
+// (the build reads it from the lesson's slides): the printed card has to say
+// what the board and the answer slide say, or "write the letters in order"
+// matches nothing on the table.
+function cardWordsHtml(label, letterPt, letter) {
+  const match = letter ? [null, letter, label] : String(label).match(CARD_LETTER);
+  if (!match) return wordsHtml(label);
+  return `<div style="font-weight:bold;font-size:${letterPt}pt;margin-bottom:1.5mm">${esc(match[1])}</div><div>${wordsHtml(match[2])}</div>`;
 }
 
 function headingCodes(headings) {
@@ -555,8 +649,8 @@ function renderSheetPages(kit, { printableWMm, printableHMm, pageHtml }) {
       `border:0.8mm solid ${INK};background:#ffffff;border-radius:1.5mm"></div>`;
     const inner = picture
       ? `<img src="${picture}" alt="" style="display:block;width:100%;height:${grid.picH.toFixed(1)}mm;object-fit:contain">` +
-        `<div style="height:${labelMm.toFixed(1)}mm;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13pt"><div>${cardWordsHtml(card.label, 18)}</div></div>`
-      : `<div style="height:${(grid.cellH - 6).toFixed(1)}mm;display:flex;align-items:center;flex-direction:column;justify-content:center;text-align:center;font-size:18pt;padding:0 ${SHEET_BOX_MM + 3}mm"><div>${cardWordsHtml(card.label, 24)}</div></div>`;
+        `<div style="height:${labelMm.toFixed(1)}mm;display:flex;align-items:center;justify-content:center;text-align:center;font-size:13pt"><div>${cardWordsHtml(card.label, 18, card.letter || null)}</div></div>`
+      : `<div style="height:${(grid.cellH - 6).toFixed(1)}mm;display:flex;align-items:center;flex-direction:column;justify-content:center;text-align:center;font-size:18pt;padding:0 ${SHEET_BOX_MM + 3}mm"><div>${cardWordsHtml(card.label, 24, card.letter || null)}</div></div>`;
     return `<div style="position:relative;width:${grid.cellW.toFixed(1)}mm;height:${grid.cellH.toFixed(1)}mm;box-sizing:border-box;` +
       `border:0.4mm solid ${INK};border-radius:2mm;padding:3mm">${inner}${box}</div>`;
   };
@@ -610,7 +704,7 @@ function renderTickTable(kit, { printableWMm, printableHMm, pageHtml }) {
     `</tr>`;
   const tick = `<div style="width:12mm;height:12mm;border:0.8mm solid ${INK};border-radius:1.5mm;margin:0 auto"></div>`;
   const rows = kit.printOrder.map((card) =>
-    `<tr><td style="${cellStyle}height:${rowMm.toFixed(1)}mm;font-size:18pt;padding:0 4mm">${cardWordsHtml(card.label, 20)}</td>` +
+    `<tr><td style="${cellStyle}height:${rowMm.toFixed(1)}mm;font-size:18pt;padding:0 4mm">${cardWordsHtml(card.label, 20, card.letter || null)}</td>` +
     kit.headings.map(() => `<td style="${cellStyle}text-align:center">${tick}</td>`).join("") + `</tr>`
   ).join("");
   const body =

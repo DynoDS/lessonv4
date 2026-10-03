@@ -153,6 +153,18 @@ PRESENTATION_KEYS = {
     "weight",
     "weights",
     "flex",
+    # A table's column shares are the same thing for a table: how the width is
+    # divided, never a value a child reads. Counted as content, every repair
+    # that resized a column failed (Year 6 divisibility, 2 October 2026), and
+    # the orchestrator had to overrule the check by hand.
+    "columnWidths",
+    # Which design picture a slide answers to. No builder prints it: it is the
+    # slide's pointer back to photo-requirements.json, and it is re-pointed
+    # when a content-gap revision replaces a picture. Counted as content,
+    # the correct re-point failed twice (Nativity, Shaftesbury, 30 September
+    # 2026) and one repair left a stale id in place to pass. The picture a
+    # slide carries is still counted, as its picture object.
+    "photoRefs",
 }
 
 # Sizes a repair may legitimately grow. Counting "4" as content would call a
@@ -783,6 +795,80 @@ def without_sheets_sent_back(before: object, after: object) -> object:
     return trimmed
 
 
+# The keys that only say which picture file an object shows. Releasing them
+# releases the picture and nothing a child reads.
+PICTURE_POINTER_KEYS = {"imagePath", "imageHref", "photoRef", "alt"}
+# A bare picture object: type, file, how it is drawn, and its caption.
+BARE_PICTURE_KEYS = PICTURE_POINTER_KEYS | {
+    "type", "fit", "essential", "caption", "crop", "focus", "width", "height", "frame",
+}
+
+
+def without_omitted_pictures(spec: object, omitted: set[str]) -> object:
+    """The specification with every picture object naming an omitted file taken out.
+
+    A picture the picture stage ended as omitted or unsatisfied will never
+    exist, and the repair route is told it may compose the beat without it. A
+    census that still counted that picture object refused the one repair it
+    allows: the renga deck's slide 4 (2 October 2026) came back
+    REPAIR_SCOPE_FAILED for an image count of 5 before and 4 after. Taking
+    the object out of both sides lets the repair drop it, re-point it or keep
+    it, and nothing else about the slide is released.
+    """
+    if not omitted:
+        return spec
+
+    def names_omitted(node: dict) -> bool:
+        return any(isinstance(node.get(key), str) and node[key] in omitted
+                   for key in ("imagePath", "imageHref"))
+
+    def bare_picture(node: dict) -> bool:
+        # A picture object and nothing else: its keys say what it is, where its
+        # file is and how it is drawn. A card, cell or label that carries a
+        # picture also carries words, and only its picture is released.
+        return node.get("type") == "image" and set(node) <= BARE_PICTURE_KEYS
+
+    def strip(node: object) -> object:
+        if isinstance(node, list):
+            return [strip(item) for item in node
+                    if not (isinstance(item, dict) and names_omitted(item) and bare_picture(item))]
+        if isinstance(node, dict):
+            if names_omitted(node):
+                node = {key: value for key, value in node.items()
+                        if key not in PICTURE_POINTER_KEYS}
+            return {key: strip(value) for key, value in node.items()}
+        return node
+
+    return strip(spec)
+
+
+def receipted_omissions(after_path: Path) -> set[str]:
+    """Pictures the picture stage itself ended without a file, read from its receipts.
+
+    The repair route is told it may compose a beat without a terminally
+    unavailable picture, so the check must know which those are without the
+    repairer having to say. The picture stage's terminal receipts sit beside the
+    specification, one per filename; a receipt ending `omitted` or
+    `unsatisfied` with no file at that name is the proof. Nothing else is
+    released.
+    """
+    root = after_path.resolve().parent
+    folder = root / "orchestration-receipts" / "picture-terminal"
+    found: set[str] = set()
+    if not folder.is_dir():
+        return found
+    for path in folder.glob("*.json"):
+        try:
+            receipt = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        name = receipt.get("filename") if isinstance(receipt, dict) else None
+        if (isinstance(name, str) and receipt.get("terminalState") in {"omitted", "unsatisfied"}
+                and not (root / name).exists()):
+            found.add(name)
+    return found
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Prove a repair preserved what children work from."
@@ -791,8 +877,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--after", required=True, help="The specification the repair produced")
     args = parser.parse_args(argv)
 
-    before_spec = read_spec(Path(args.before), "--before")
-    after_spec = read_spec(Path(args.after), "--after")
+    # Only the picture stage's own receipts prove a picture will never arrive.
+    # A file merely missing from disk is not proof: a published picture a
+    # worker deleted by mistake (2 October 2026) is restored, not dropped.
+    omitted = receipted_omissions(Path(args.after))
+
+    before_spec = without_omitted_pictures(read_spec(Path(args.before), "--before"), omitted)
+    after_spec = without_omitted_pictures(read_spec(Path(args.after), "--after"), omitted)
     taken_away = returns_taken_away(before_spec, after_spec)
     if taken_away:
         report(

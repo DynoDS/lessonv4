@@ -84,7 +84,7 @@ test('a family of number bonds lays out in columns', () => {
 
 // ─── 3. the method frame keeps each step on one line ──────────────────────
 
-test('method frame labels stay on one line and the panel hugs its steps', () => {
+test('method frame labels take at most two lines, broken by the builder, and the panel hugs its steps', () => {
   const { pptx, slide } = slideFor();
   const zone = { x: 0.22, y: 2.05, w: 7.99, h: 5.2, class: 'B' };
   drawContent(pptx, slide, zone, { type: 'method-frame', numbered: true, lines: [
@@ -95,10 +95,17 @@ test('method frame labels stay on one line and the panel hugs its steps', () => 
     || (o.options && o.options.line && o.options.line.color === '7030A0' && o.options.h > 0.5));
   assert.ok(panel, 'no purple panel drawn');
   assert.ok(panel.options.h < zone.h * 0.6, `the panel is ${panel.options.h.toFixed(2)}in tall in a ${zone.h}in zone`);
-  const labels = texts(slide).filter((o) => /make 10:|last number:/.test(textOf(o)));
+  // Since 2 October 2026 a label may take a second line when that prints the
+  // frame at least 3pt bigger (the teacher chose it after seeing both); what
+  // this pins is that the break is the builder's, written in, never a third
+  // line, and never a line PowerPoint would wrap again.
+  const labels = texts(slide).filter((o) => /make 10:|last number:/.test(textOf(o).replace(/\n/g, ' ')));
+  assert.equal(labels.length, 2, 'a label is missing');
   labels.forEach((o) => {
-    assert.ok(textBoxWidthIn(textOf(o), o.options.fontSize, true) <= o.options.w + 1e-6,
-      `"${textOf(o)}" is wider than its box and would wrap`);
+    const lines = textOf(o).split('\n');
+    assert.ok(lines.length <= 2, `"${textOf(o)}" took ${lines.length} lines`);
+    lines.forEach((line) => assert.ok(textBoxWidthIn(line, o.options.fontSize, true) <= o.options.w + 1e-6,
+      `"${line}" is wider than its box and would wrap`));
   });
   const circles = slide._slideObjects.filter((o) => o.options && o.options.fill && o.options.fill.color === '00B050');
   assert.equal(circles.length, 2, 'the steps are not numbered');

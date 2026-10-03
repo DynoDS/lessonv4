@@ -37,6 +37,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `map` | A real map of a real place, drawn from a map image this package ships, with the lesson's own places, regions and rivers marked on top of it |
 | `table` | Header row + body rows |
 | `mult-grid` | A multiplication-facts grid (the SATs "missing numbers in this multiplication grid" shape): `×` corner, headers across and down, product cells. Big numbers, blank cells, green `||` answers. Use for a times-tables grid, not the generic `table` |
+| `digit-cards` | A number drawn large as digit cards, one digit each, with the working of a digit check marked on the number itself: the digits a step looks at boxed or outlined, the ones it ignores greyed, a bracket, an arc or + signs joining them, and lines of working beneath with down arrows. For divisibility checks, rounding ("look at the digit to the right"), the digit that changed, digit sums |
 | `matching` | A "draw a line to match" layout: two columns of boxes joined by connector lines. One example line on the question, every line green on the answer slide. Use for any match-these-to-those starter or task |
 | `numberline` | Number line with ticks, question arrow, answer dot, jumps along the spaces and a highlighted interval |
 | `place-value-chart` | Coloured column grid for digits, with optional row labels, column-aligned place-value counters (set `counterLabels: true` on a row for the value on each counter; enlarge the chart if labels cannot fit), and a ring round the digit that changed. A `pair` field instead draws ONE before-and-after comparison and can add counter populations plus explicit ten-for-one exchange cues; omitting counters gives the original compact digit-only chart |
@@ -95,6 +96,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `process-chain` | Boxes joined by arrows: a food chain, a life cycle, the order of events. An empty box is one the child fills |
 | `classification-key` | A branching yes/no identification key down to named answers |
 | `concept-map` | A radial concept map: a centre idea with spokes to connected ideas |
+| `annotated-text` | A passage (poem, model paragraph, sentence, source extract) in the middle, marked up as a teacher marks a model text: words underlined, circled, boxed, highlighted or coloured, arrows from one word to another, short notes in the margins joined to their words |
 | `callout` | A small coloured box holding one short line of text, with an arrow leaving any side of it to point at the thing the line is about — the chart above it, the number line beside it, a part of a photograph. Set `points` (up/down/left/right) and `at` (how far along that edge the arrow tip lands). Key words in the line carry colour with the ordinary inline markers. Use whenever a slide needs to point at its own content and say one thing about it, instead of leaving that sentence to a text panel or the speaker notes |
 | `sc-panel` | Wraps a success criteria in its green "✓ Success Criteria" box, so the criteria reads as the standard wherever it sits — use when the success criteria has to go somewhere the `maths-*-sc` panel can't reach (a wide visual reference in a full-width strip, a free-template zone). Inside a `*-sc` template's own criteria slot the box is already drawn, so there pass the bare criteria, not this. Carries an optional `flipchart: true` for a draw-live criteria — same corner flipchart drawing as the `*-sc` panels; set it on the `sc-panel` object itself here with `criteriaRef` naming the displayed source criterion |
 
@@ -881,6 +883,37 @@ The multiplication-facts grid — the SATs "write the missing numbers in this mu
 - **Answers reveal in the grid, in green.** On the answer slide, fill the previously-empty cells (and any missing header) with the `||` marker — `"||21"`, `"||7"` — and they render green right inside the grid while the givens stay black. No separate answer list is needed; the completed grid *is* the reveal.
 - **One grid everywhere.** The worksheet's `times-table-grid`, the wall and the stick-in pack draw this same grid from these fields.
 - **Match the paper's scale.** If the question being recreated is a 3×3 grid, build a 3×3 grid — shrinking it to 2×2 changes the task. The grid sizes its own cells; give it a class-A, class-C, or E-wide zone and set `workingSpace: false` on the template so it gets the full width (see the working-space note under `maths-turn-sc`).
+
+### `digit-cards`
+
+A number drawn large as a row of digit cards, with the working of a digit-based check marked on the number itself. Reach for it whenever a method reads a number digit by digit: is it divisible (look at the last digit, the last two digits, add the digits), rounding (look at the digit to the right), place value (which digit changed). Written working under a number in a text box tells the class where to look; this shows them: the 16 boxed in blue with "half of 16 is 8" under it and an arrow between.
+
+```json
+{ "type": "digit-cards",
+  "text": "Is 316 divisible by 4?",
+  "value": "316",
+  "marks": [ { "digits": 1, "style": "dim" },
+             { "digits": "last 2", "style": "box", "colour": "blue", "label": "last two digits: 16" },
+             { "digits": 3, "style": "none", "note": "even ✓" } ],
+  "working": [ { "text": "half of 16 is 8", "arrow": true },
+               { "text": "8 is even, so yes ✓", "colour": "green" } ] }
+```
+
+**`number`:** the number as children write it, `"5,463"` or `"3.47"`; commas and a decimal point are drawn between the cards. `digits: [0, 3, 4, 7]` instead gives loose cards spaced apart to make numbers from (`""` leaves a card empty).
+
+**Which digits:** every mark, bracket and arc names its digits by position, counting digits from the left and starting at 1 (commas are not digits), as a number (`3`), a list (`[2, 3]`) or a phrase: `"first"`, `"last"`, `"first 2"`, `"last 2"`, `"all"`.
+
+**`marks`:** `style` is `outline` (default: the card's own edge in the colour, for the one digit being judged), `box` (one box round a run of cards), `ring`, `dim` (greyed: a digit the step ignores), `colour` (the digit itself in the colour) or `none` (only words). `colour` is `blue`, `purple`, `green`, `orange`, `grey` or `ink`. `label` prints under the marked digits; `note` is a short word beside them ("even ✓"), in the side margin when the mark reaches that end of the number. `""` for either leaves a ruled line for the class to write on.
+
+**Joining the digits:** `bracket` (`{ "digits": "all", "label": "1 + 1 + 4 = 6" }`) draws a bracket under a run of cards with its label beneath; `arc` (`{ "from": 1, "to": 2, "label": "same!" }`) arcs an arrow over the cards from one digit to another, orange unless told; `sum` (`{ "label": "digit sum: 18", "colour": "purple" }`) puts + between every card and joins them with lines to one total. Use a bracket or a sum, not both.
+
+**`working`:** lines beneath, in order, each `{ "text", "colour", "arrow", "beside" }`. `arrow: true` draws a down arrow into the line from what is above it, and the lines after it stand under the same arrow. `beside: true` sets a line beside the one before, so two checks read side by side ("in 3 times table" | "in 9 times table"). A line that means yes is `green`; a tick (✓) always prints green. `""` leaves a ruled line.
+
+**Colours keep the board's meanings:** blue what to look at, orange the one digit being judged, green a yes or an answer, purple a taught word, grey what the step ignores. `text` prints the question above the cards.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so the wall's worked example is the one the class watched on the board. On the slide it is one placed picture: the digits and words are drawn, so move and resize it as a whole. The digits grow to fill the zone and the words stop growing at the board's text size; working that cannot fit a shallow zone is refused by name, and the repair is fewer lines (the rest go in the speaker's steps) or a taller zone.
+
+Zone class compatibility: fits A, B, C, D, E-wide, E-narrow.
 
 ### `matching`
 
@@ -2114,6 +2147,37 @@ Boxes joined by arrows: a food chain, a life cycle, the order of events. The arr
 
 Zone class compatibility: fits A, B, C, E-wide.
 
+### `annotated-text`
+
+A passage set in the middle and marked up the way you would mark a model text on the board: the words that matter underlined, circled, boxed, highlighted or printed in colour, an arrow from one word to another, and a short note in the margin joined to its words by a line. It is for any text the lesson reads closely - a poem whose stanzas link, a model paragraph with its features labelled, one sentence with its clauses marked, a source extract with the telling phrase picked out. Reach for it instead of a `stack` of `text` items whenever what is marked on the words is the teaching: a stack can colour a word, but it cannot ring it, join it to another word or put a note beside it.
+
+```json
+{ "type": "annotated-text",
+  "lines": ["Rain taps on the glass.", "Grey clouds sit low on the roofs.", "Puddles fill the street.", "",
+            "I jump into the puddle", "and splash my sister's school socks."],
+  "marks": [ { "find": "Puddles", "style": "circle", "colour": "blue", "note": "Mateo's idea" },
+             { "find": "puddle", "id": "puddle-2", "style": "circle", "colour": "blue", "note": "Layla picks it up" } ],
+  "links": [ { "from": "Puddles", "to": "puddle-2" } ] }
+```
+
+**The passage:** `lines` for a poem or anything whose line breaks are the author's (one entry per line, `""` between stanzas; a poem's lines are kept whole, and the drawing shrinks before it wraps one), or `passage` for prose, which wraps to the room (`"\n\n"` starts a new paragraph). Optional `title` prints a heading above it; `text` prints a question above that.
+
+**`marks`:** each names the words it marks with `find`, exactly as printed (punctuation at a word's ends is ignored), and `nth` when the same words come more than once. `style` is `underline` (default), `wavy`, `circle`, `box`, `highlight` or `colour` (the words themselves in colour); `colour` is `blue` (default), `green`, `orange`, `red` or `purple`. `note` puts a short note in the margin with a dashed line to the words; `"note": ""` leaves a ruled line there for the class to write the label. `side` (`left`/`right`) picks the margin; left out, the nearer one. Give a mark an `id` when an arrow needs to tell two marks of the same word apart.
+
+**`links`:** arrows from one marked word to another (`from`, `to`: a mark's `id` or its `find`). They run through the gaps between lines and down the left margin, so they never cross the words.
+
+**`counts`** (with `lines`): one entry per entry of `lines`, `null` for a stanza gap, printed in a column just right of the passage so a pattern down the lines shows at a glance - a poem's syllables (`[5, 7, 5, null, 7, 7]`), or line numbers. `countColour` (default `blue`) keeps them apart from the marks.
+
+**`brackets`:** a note on a whole stanza or paragraph, drawn as a bracket down its right-hand side with the note beside it: `{ "stanza": 1, "note": "3 lines: 5, 7, 5" }` (`paragraph` for prose; `colour` default `purple`). This is where the form's rules go when the text is the model children write from: `Always ends on 2 lines`, `Opening: who, where, when`.
+
+**`"space": "annotate"`** leaves wide empty margins and roomy lines with no marks drawn: the passage a class annotates itself. Use colour the way the rest of the lesson does: one colour per kind of thing, so "orange is a fronted adverbial" holds across the slide, the sheet and the wall.
+
+**It is a picture, not editable text.** The words are drawn, so a teacher cannot retype one in PowerPoint; that is the price of marks that stay on their words. Where a passage needs no marks at all, ordinary `text` is still the better choice.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so the model text on the wall carries the same rings and arrows as the board.
+
+Zone class compatibility: fits A, B, C, E-wide.
+
 ### `classification-key`
 
 A branching yes/no identification key down to named answers. You give the questions and answers as a tree, never positions: every question sits over its two branches, so the lines never cross.
@@ -2764,7 +2828,7 @@ A **taught mental strategy printed as a fill-in method** available for live comp
 ] }
 ```
 
-Fully worked (an answer slide, or a worked example to copy):
+Fully worked (a worked example to copy):
 
 ```json
 { "type": "method-frame", "title": "Adjusting strategy", "lines": [
@@ -2773,14 +2837,16 @@ Fully worked (an answer slide, or a worked example to copy):
 ] }
 ```
 
+On an answer slide, mark each answer with the deck's reveal marker so it prints in answer green, as every other answer on the board does; the working before the marker stays black (`"1 + 1 + 4 = ||6"`, `"||yes"`). An answer slide whose frames carry no marker prints its answers black, and the build warns.
+
 - `title` — optional purple heading above the lines ("Adjusting strategy", "Round and compensate").
 - `frame` — draw the purple panel behind the lines. Default `true`; set `false` for the bare lines (e.g. a small reference zone where the panel would crowd).
 - `lines` — `[{ label, content, step }]`. `label` is optional (the method language); `content` is a string where `___` or `□` becomes a write-in box and everything else is bold text. Content need not be an equation — `"Take ___ from ___ to make ___"` works too. `step` is optional: a number printed in a small green circle before the label.
 - `numbered` — `true` numbers the lines 1, 2, 3 in the same green circles. Give a line its own `step` instead when the frame's steps should match the success criteria's numbers and they do not start at 1.
 
-Each step is one line: the step number, the label, then its boxes. Keep a label short (`"Make 10:"`, `"Add the last number:"`): it never wraps, so a long one makes the whole frame smaller. The purple panel is fitted to its lines and centred in its zone.
+Each step is the step number, the label, then its working and its box: the working runs straight on from its own label (`Add the digits: 3 + 1 + 2 =`) and only the boxes, or the answers, line up in one column. Write the label as the question or instruction the child needs (`"Is the total in the 3 times table?"`); a long label wraps onto a second line, split evenly, when that prints the frame at least 3pt bigger, and never onto a third. The purple panel is fitted to its lines and centred in its zone.
 
-**Sizing:** the lines print at the largest size, up to 32pt, at which every line fits the zone on one line, and the panel hugs them, so it reads at full-body and half-column widths alike. For a SINGLE-LINE equation frame, the worksheet's `inequality-with-boxes` already covers that pattern; `method-frame` is for the multi-line, labelled case. A FILLED method (no blanks) on the working wall is the `workedExample` card, not this — a wall card is a reference, never a fill-in.
+**Sizing:** the lines print at the largest size, up to 32pt, that fits the zone, and the panel hugs them, so it reads at full-body and half-column widths alike. Frames side by side in one `row` print at one size, the smallest any of them needs. For a SINGLE-LINE equation frame, the worksheet's `inequality-with-boxes` already covers that pattern; `method-frame` is for the multi-line, labelled case. A FILLED method (no blanks) on the working wall is the `workedExample` card, not this — a wall card is a reference, never a fill-in.
 
 ### `number-network`
 
@@ -3078,6 +3144,7 @@ Which content types fit which zone class.
 | `map`               | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
 | `table`             | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
 | `mult-grid`         | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
+| `digit-cards`       | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
 | `matching`          | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
 | `numberline`        | ✓ | ✓ | ✓ |   | ✓ | ✓ |   |   |
 | `place-value-chart` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
@@ -3107,6 +3174,7 @@ Which content types fit which zone class.
 | `process-chain`     | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
 | `classification-key` | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `concept-map`       | ✓ |   | ✓ |   | ✓ |   |   |   |
+| `annotated-text`    | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
 | `source-pathway`    | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `coordinate-grid`   | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
 | `polygon`           | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |

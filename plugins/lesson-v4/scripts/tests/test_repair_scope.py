@@ -58,18 +58,28 @@ BEFORE = {
 
 
 class RepairScopeCase(unittest.TestCase):
-    def run_check(self, before: dict, after: dict) -> subprocess.CompletedProcess:
+    def run_check(self, before: dict, after: dict, *,
+                  published: tuple = (), receipts: tuple = ()) -> subprocess.CompletedProcess:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             before_path = root / "before.json"
             after_path = root / "after.json"
             before_path.write_text(json.dumps(before), encoding="utf-8")
             after_path.write_text(json.dumps(after), encoding="utf-8")
+            for name in published:
+                (root / name).parent.mkdir(parents=True, exist_ok=True)
+                (root / name).write_bytes(b"picture")
+            folder = root / "orchestration-receipts" / "picture-terminal"
+            for index, receipt in enumerate(receipts):
+                folder.mkdir(parents=True, exist_ok=True)
+                (folder / f"{index}.json").write_text(json.dumps(receipt), encoding="utf-8")
+            extra: list[str] = []
             return subprocess.run(
                 [
                     sys.executable, "-S", str(SCRIPT),
                     "--before", str(before_path),
                     "--after", str(after_path),
+                    *extra,
                 ],
                 capture_output=True,
                 text=True,
@@ -198,6 +208,76 @@ class DecorationMayGoTests(RepairScopeCase):
         result = self.run_check(before, BEFORE)
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("image: 1 before the repair, 0 after", result.stdout)
+
+
+class APictureThatNeverArrivedTests(RepairScopeCase):
+    """The repair route may compose a beat without a terminally omitted picture.
+
+    Proof is the picture stage's own receipt, never a file missing from disk.
+    """
+
+    OMITTED = {"filename": "unsplash/funeral.jpg", "terminalState": "omitted"}
+
+    def with_photo(self, path="unsplash/funeral.jpg", refs=("photo-007",)):
+        spec = json.loads(json.dumps(BEFORE))
+        spec["slides"][0]["photoRefs"] = list(refs)
+        spec["slides"][0]["body"]["items"].append({"type": "image", "imagePath": path})
+        return spec
+
+    def without_photo(self):
+        after = json.loads(json.dumps(BEFORE)); after["slides"][0]["photoRefs"] = []
+        return after
+
+    def test_a_receipted_omitted_picture_may_be_dropped_with_its_ref(self):
+        result = self.run_check(self.with_photo(), self.without_photo(), receipts=(self.OMITTED,))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_without_a_receipt_the_drop_is_still_caught(self):
+        result = self.run_check(self.with_photo(), self.without_photo())
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("image: 1 before the repair, 0 after", result.stdout)
+
+    def test_a_published_receipt_releases_nothing(self):
+        receipt = {"filename": "unsplash/funeral.jpg", "terminalState": "published"}
+        result = self.run_check(self.with_photo(), self.without_photo(), receipts=(receipt,))
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_an_omitted_receipt_whose_file_exists_releases_nothing(self):
+        result = self.run_check(self.with_photo(), self.without_photo(), receipts=(self.OMITTED,),
+                                published=("unsplash/funeral.jpg",))
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_releasing_one_picture_releases_no_other(self):
+        before = self.with_photo()
+        before["slides"][0]["body"]["items"].append({"type": "image", "imagePath": "unsplash/portrait.jpg"})
+        result = self.run_check(before, self.with_photo(), receipts=(self.OMITTED,))
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_a_card_keeps_its_words_when_its_picture_is_released(self):
+        # A sort card carrying an omitted photo still carries a word children read.
+        before = json.loads(json.dumps(BEFORE))
+        before["slides"][0]["body"]["items"].append(
+            {"type": "card", "text": "Mary", "imagePath": "unsplash/funeral.jpg"})
+        dropped_card = json.loads(json.dumps(BEFORE))
+        result = self.run_check(before, dropped_card, receipts=(self.OMITTED,))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        kept_word = json.loads(json.dumps(BEFORE))
+        kept_word["slides"][0]["body"]["items"].append({"type": "card", "text": "Mary"})
+        result = self.run_check(before, kept_word, receipts=(self.OMITTED,))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_renumbered_photo_ref_is_not_a_lost_word(self):
+        result = self.run_check(self.with_photo(refs=("photo-010",)),
+                                self.with_photo(refs=("photo-004",)))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_resized_table_columns_are_layout(self):
+        before = json.loads(json.dumps(BEFORE))
+        before["slides"][0]["columnWidths"] = [1.3, 2.25, 2.95]
+        after = json.loads(json.dumps(BEFORE))
+        after["slides"][0]["columnWidths"] = [1.12, 2.1, 2.2]
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
 class EveryRepairerRunsItTests(unittest.TestCase):

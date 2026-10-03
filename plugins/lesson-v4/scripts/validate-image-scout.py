@@ -352,31 +352,52 @@ def step_stayed_unreachable(step: dict, label: str) -> bool:
     """An earlier rung the scout walked to and could not get an answer from.
 
     Narrower than `step_has_final_operational_failure` on purpose, and the
-    difference is the whole point of the rule this serves. Only a TRANSPORT
-    failure that survived its one authorised retry counts:
+    difference is the whole point of the rule this serves. A TRANSPORT
+    failure that survived its one authorised retry counts, and so does a
+    RATE_LIMIT:
 
     - `transport` is the source itself being unreachable. Nothing in the run
       can fix it, it is expected to clear on its own, and the retry is what
       separates a blip from an outage.
+    - `rate_limit` is a spent quota (Unsplash allows 50 searches an hour). It
+      clears only by waiting, and never within the picture stage, so the shelf
+      is shut for this run as surely as an outage is: the source answered, and
+      the answer was "not now". It is never retried. Blocking on it made the
+      teacher's lessons lose pictures a later rung had already found, and on
+      30 September 2026 a run sat out a whole hour to get them back.
     - `auth` is a missing or wrong credential. It is a configuration fault, it
       will not clear on its own, and routing around it quietly would leave the
       preferred source permanently invisible with nobody told. It keeps
-      blocking, so somebody fixes the key.
-    - `rate_limit` is self-inflicted and clears by waiting. It is deliberately
-      never retried, so it has no evidence of persistence to offer.
+      blocking, so somebody fixes the key. The fetchers tell it apart from a
+      spent quota by the quota header and the refusal's own words.
     """
     primary_path, retry_path = step_summary_paths(step)
     if not primary_path.is_file() or primary_path.is_symlink():
         return False
     primary = read_json(primary_path, f"{label} failed search summary")
     validate_step_summary_shape(primary, step, label)
-    if primary["complete"] is True or primary.get("failure_kind") != "transport":
+    if primary["complete"] is True:
+        return False
+    if primary.get("failure_kind") == "rate_limit":
+        return not retry_path.exists()
+    if primary.get("failure_kind") != "transport":
         return False
     if not retry_path.is_file() or retry_path.is_symlink():
         return False
     retry = read_json(retry_path, f"{label} failed retry summary")
     validate_step_summary_shape(retry, step, label)
     return retry["complete"] is not True
+
+
+
+def prior_step_kind(step: dict) -> str:
+    """How a rung the scout walked past stayed shut, in the outage note."""
+    primary_path, _ = step_summary_paths(step)
+    try:
+        kind = json.loads(primary_path.read_text(encoding="utf-8")).get("failure_kind")
+    except (OSError, ValueError):
+        kind = None
+    return "quota spent, not retried" if kind == "rate_limit" else "through its retry"
 
 
 def standby_is_owed(schedule: list, index: int, label: str) -> bool:
@@ -390,7 +411,7 @@ def standby_is_owed(schedule: list, index: int, label: str) -> bool:
     generated ones without a single search being made).
 
     So it is owed only when an earlier rung recorded a transport outage that
-    survived its retry, which is the same evidence `step_stayed_unreachable`
+    survived its retry, or a spent quota, which is the same evidence `step_stayed_unreachable`
     already accepts elsewhere. On a healthy run the rung above completes, this
     returns False, and the scout must NOT have walked it: a standby that gets
     searched anyway is the extra inspection the single-rung design exists to
@@ -587,13 +608,14 @@ def validate_result(args) -> None:
                     # SKIP a preferred shelf, and an outage recorded through its
                     # authorised retry is proof the rung was walked. Refusing it
                     # costs the lesson every picture, including ones already
-                    # found. See `step_stayed_unreachable` for why only a
-                    # transport outage counts.
+                    # found. See `step_stayed_unreachable` for why a
+                    # transport outage and a spent quota count, and a bad key
+                    # does not.
                     if step_stayed_unreachable(prior_step, label):
                         outage_notes.append(
                             f"PICTURE_SOURCE_OUTAGE: {label}: step {prior_index + 1} "
-                            f"({prior_step['source']} r{prior_step['round']}) stayed unreachable through its "
-                            f"retry; accepted {step['source']} r{step['round']} instead"
+                            f"({prior_step['source']} r{prior_step['round']}) stayed unreachable "
+                            f"({prior_step_kind(prior_step)}); accepted {step['source']} r{step['round']} instead"
                         )
                         continue
                     completed_step_summary(prior_step, label)

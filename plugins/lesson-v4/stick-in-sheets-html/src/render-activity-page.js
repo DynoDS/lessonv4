@@ -112,9 +112,54 @@ function normaliseTaskSheet(item) {
   };
 }
 
+// A box to write in, where the text marks one: `[ ]` (any spaces inside) or
+// the board's `☐`. A designer types it at the end of each line of a poem to
+// count; printed as typed it was a pair of brackets, not a box (2 October 2026).
+const BOX_MARK = /\s*(?:\[\s*\]|☐)\s*/g;
+// A mark at the end of a line is that line's box (a count written beside it);
+// a mark inside a line is a gap in the sentence and stays where it is.
+const END_BOX = /\s*(?:\[\s*\]|☐)\s*$/;
+const MIN_TEXT_PT = 16;
+const MAX_TEXT_PT = 26;
+const MIN_ANSWER_LINES = 3;
+
+const lineMmAt = (pt) => pt * 0.5;            // 16pt sets 8mm lines
+const charsAt = (pt, widthMm) => Math.max(20, Math.floor(widthMm / (pt * 0.24)));
+
+// How many printed lines the text takes at a size: each written line wraps on
+// its own, and an empty one (the gap between stanzas) is still a line. The old
+// count added the whole text's wrap to its line breaks, counted a ten-line poem
+// as seventeen, left no room for answer lines and printed half a page.
+function textLines(text, pt, widthMm) {
+  const chars = charsAt(pt, widthMm);
+  return text.split("\n").reduce((n, line) => n + Math.max(1, Math.ceil(line.replace(BOX_MARK, "").length / chars)), 0);
+}
+
+function textHtml(text, pt) {
+  const boxMm = (pt * 0.42).toFixed(1);
+  const box = `<span style="display:inline-block;width:${boxMm}mm;height:${boxMm}mm;border:0.5mm solid ${INK};border-radius:1mm;vertical-align:middle;background:#fff"></span>`;
+  // Every mark left inside a line is a gap drawn where it stands.
+  const inPlace = (words) => esc(words).replace(/\[\s*\]|\u2610/g, box);
+  const lines = text.split("\n");
+  if (!lines.some((line) => END_BOX.test(line))) {
+    return lines.map((line) => inPlace(line)).join("<br>");
+  }
+  // Lines that end in a box print as two columns, words then box, so the
+  // boxes line up down the page where the counts are written. The words'
+  // column may wrap, so a long line never pushes its box off the page.
+  const cells = lines.map((line) => {
+    if (!line.trim()) return `<div style="grid-column:1 / span 2;height:${(lineMmAt(pt) * 0.6).toFixed(1)}mm"></div>`;
+    const endBox = END_BOX.test(line);
+    const words = inPlace(line.replace(END_BOX, "").trim());
+    return `<div>${words}</div><div style="padding-left:6mm">${endBox ? box : ""}</div>`;
+  });
+  return `<div style="display:grid;grid-template-columns:minmax(0, max-content) auto;row-gap:1mm;align-items:center">${cells.join("")}</div>`;
+}
+
 // The task sheet: the task, the material in a frame (a named child's words in
 // a speech box, a short text, a picture), any smaller prompts, then ruled lines
-// down to the bottom of the page so nothing is left blank.
+// down to the bottom of the page so nothing is left blank. The material prints
+// as large as the page allows while leaving room to answer.
 function taskSheetPages(sheet, { printableWMm, printableHMm, classSize, pageHtml, baseDir }) {
   const parts = [taskHtml(sheet.task)];
   let used = taskHeightMm(sheet.task, printableWMm);
@@ -132,28 +177,57 @@ function taskSheetPages(sheet, { printableWMm, printableHMm, classSize, pageHtml
     );
     used += picH + (sheet.caption ? 6 : 0) + 3;
   }
+  const promptPt = (pt) => Math.max(14, Math.round(pt * 0.85));
+  const promptsMm = (pt) => sheet.prompts.reduce((mm, p) =>
+    mm + Math.ceil(p.length / charsAt(promptPt(pt), printableWMm)) * lineMmAt(promptPt(pt)) + 2, 0);
+  // The frame's padding, border and margin (11mm), then its lines as
+  // textHtml draws them: a boxed poem's stanza gaps are shorter than a line
+  // and its rows are 1mm apart.
+  const textMm = (pt) => {
+    if (!sheet.text) return 0;
+    const speakerMm = sheet.speaker ? 7 : 0;
+    const lines = sheet.text.split("\n");
+    if (!lines.some((line) => END_BOX.test(line))) {
+      return textLines(sheet.text, pt, printableWMm - 10) * lineMmAt(pt) + 11 + speakerMm;
+    }
+    const empty = lines.filter((line) => !line.trim()).length;
+    const full = textLines(lines.filter((line) => line.trim()).join("\n"), pt, printableWMm - 30);
+    return full * lineMmAt(pt) + empty * lineMmAt(pt) * 0.6 + (lines.length - 1) + 11 + speakerMm;
+  };
+  const wantLines = sheet.lines == null ? MIN_ANSWER_LINES : sheet.lines;
+  let pt = MIN_TEXT_PT;
+  for (let size = MAX_TEXT_PT; size > MIN_TEXT_PT; size -= 1) {
+    if (used + textMm(size) + promptsMm(size) + wantLines * RULE_MM + 2 <= printableHMm) {
+      pt = size;
+      break;
+    }
+  }
   if (sheet.text) {
-    const label = sheet.speaker ? `<div style="font-weight:bold;font-size:14pt;margin-bottom:1mm">${esc(sheet.speaker)} says:</div>` : "";
-    const lineCount = Math.ceil(sheet.text.length / 70) + sheet.text.split("\n").length - 1;
+    const label = sheet.speaker ? `<div style="font-weight:bold;font-size:${promptPt(pt)}pt;margin-bottom:1mm">${esc(sheet.speaker)} says:</div>` : "";
     parts.push(
       `<div style="border:0.5mm solid ${INK};border-radius:${sheet.speaker ? 5 : 2}mm;padding:3mm 4mm;margin-bottom:4mm;` +
-      `font-size:16pt;line-height:8mm;color:${INK}">${label}${esc(sheet.text).replace(/\n/g, "<br>")}</div>`
+      `font-size:${pt}pt;line-height:${lineMmAt(pt)}mm;color:${INK}">${label}${textHtml(sheet.text, pt)}</div>`
     );
-    used += lineCount * 8 + (sheet.speaker ? 7 : 0) + 10;
+    used += textMm(pt);
   }
   for (const prompt of sheet.prompts) {
-    parts.push(`<div style="font-size:14pt;margin-bottom:2mm;color:${INK}">${esc(prompt)}</div>`);
-    used += 8;
+    parts.push(`<div style="font-size:${promptPt(pt)}pt;margin-bottom:2mm;color:${INK}">${esc(prompt)}</div>`);
   }
+  used += promptsMm(pt);
   const room = Math.max(0, printableHMm - used - 2);
-  const lines = sheet.lines == null ? Math.floor(room / RULE_MM) : Math.min(sheet.lines, Math.floor(room / RULE_MM));
-  if (lines > 0) {
-    parts.push(
-      `<div>${Array.from({ length: lines }, () =>
-        `<div style="height:${RULE_MM}mm;border-bottom:0.3mm solid ${GREY}"></div>`).join("")}</div>`
-    );
+  const rule = `<div style="height:${RULE_MM}mm;flex:none;border-bottom:0.3mm solid ${GREY}"></div>`;
+  if (sheet.lines == null) {
+    // Lines down to the foot of the page, however tall the words above came
+    // out: the heights above are estimates, and an estimate that runs high
+    // left a quarter of a page blank (2 October 2026). The block takes the
+    // height that is left and shows the lines that fit in it.
+    const most = Math.ceil(printableHMm / RULE_MM);
+    parts.push(`<div style="flex:1 1 0;min-height:0;overflow:hidden;display:flex;flex-direction:column">${rule.repeat(most)}</div>`);
+  } else {
+    const lines = Math.min(sheet.lines, Math.floor(room / RULE_MM));
+    if (lines > 0) parts.push(`<div>${rule.repeat(lines)}</div>`);
   }
-  const body = `<div style="width:${printableWMm}mm">${parts.join("")}</div>`;
+  const body = `<div style="width:${printableWMm}mm;height:${printableHMm}mm;display:flex;flex-direction:column">${parts.join("")}</div>`;
   const copies = copiesFor(sheet.per, classSize);
   return { pages: Array.from({ length: copies }, () => pageHtml("", body)), perPage: 1 };
 }

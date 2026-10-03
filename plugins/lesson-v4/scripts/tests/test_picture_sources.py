@@ -101,6 +101,27 @@ class PictureSourceTests(unittest.TestCase):
             with self.subTest(fetcher=name):
                 self.assertIn("args.output = os.path.abspath(args.output)", (ROOT / name).read_text(encoding="utf-8"))
 
+    def test_a_spent_quota_is_a_rate_limit_and_a_refused_key_is_auth(self):
+        import email.message
+        import urllib.error
+        openverse = load("test_openverse_source_kinds", "openverse_fetch.py")
+
+        def error(code, body, remaining=None):
+            headers = email.message.Message()
+            if remaining is not None:
+                headers["X-Ratelimit-Remaining"] = remaining
+            return urllib.error.HTTPError("https://api.example/x", code, "Forbidden", headers, io.BytesIO(body))
+
+        for module in (unsplash, openverse):
+            with self.subTest(fetcher=module.__name__):
+                self.assertEqual(module.http_failure_kind(error(403, b"Rate Limit Exceeded", "0")), "rate_limit")
+                self.assertEqual(module.http_failure_kind(error(403, b"Rate Limit Exceeded")), "rate_limit")
+                self.assertEqual(module.http_failure_kind(error(403, b"", "0")), "rate_limit")
+                self.assertEqual(module.http_failure_kind(error(429, b"")), "rate_limit")
+                self.assertEqual(module.http_failure_kind(error(401, b"OAuth error: The access token is invalid", "49")), "auth")
+                self.assertEqual(module.http_failure_kind(error(403, b"Forbidden", "49")), "auth")
+                self.assertEqual(module.http_failure_kind(error(503, b"")), "transport")
+
     def test_wikimedia_complete_jpeg_records_full_decode_metadata(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = self.image(Path(tmp) / "candidate.jpg", "JPEG")
@@ -247,11 +268,48 @@ class PictureSourceTests(unittest.TestCase):
         args = self.result_fixture(1, earlier_failure="transport")
         with self.assertRaises(validator.ValidationError): validator.validate_result(args)
 
+    # A spent quota is a shut shelf for the whole run: Unsplash's hourly limit
+    # cost three Year 4 lessons pictures a later rung had already found
+    # (30 September and 1 October 2026).
+
+    def test_earlier_spent_quota_lets_a_later_real_winner_stand(self):
+        args = self.result_fixture(1, earlier_failure="rate_limit")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            validator.validate_result(args)
+        printed = out.getvalue()
+        self.assertIn("PICTURE_RESULT_OK", printed)
+        self.assertIn("PICTURE_SOURCE_OUTAGE", printed)
+        self.assertIn("quota spent", printed)
+
+    def test_a_retried_spent_quota_still_blocks_a_later_winner(self):
+        args = self.result_fixture(1, earlier_failure="rate_limit", earlier_retry_failure="rate_limit")
+        with self.assertRaises(validator.ValidationError): validator.validate_result(args)
+
     def test_an_earlier_step_that_never_ran_still_blocks_a_later_winner(self):
         # No summary at all is a skipped shelf, which is exactly what the rule
         # is for.
         args = self.result_fixture(1)
         with self.assertRaises(validator.ValidationError): validator.validate_result(args)
+
+
+class SpentPictureNumberTests(unittest.TestCase):
+    """A replacement after Phase 2 takes a new number; a spent one is refused."""
+
+    def run_on(self, frozen, live):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "phase2-initial-photo-requirements.json").write_text(json.dumps({"photos": frozen}), encoding="utf-8")
+            design_validator.check_no_spent_photo_id_reused({"photos": live}, root)
+
+    def test_a_new_number_with_a_gap_is_fine(self):
+        self.run_on([{"id": "photo-001", "filename": "a.jpg"}, {"id": "photo-002", "filename": "b.jpg"}],
+                    [{"id": "photo-002", "filename": "b.jpg"}, {"id": "photo-003", "filename": "c.jpg"}])
+
+    def test_a_spent_number_on_a_new_file_is_refused(self):
+        with self.assertRaises(design_validator.ContractError):
+            self.run_on([{"id": "photo-001", "filename": "a.jpg"}, {"id": "photo-002", "filename": "b.jpg"}],
+                        [{"id": "photo-001", "filename": "c.jpg"}, {"id": "photo-002", "filename": "b.jpg"}])
 
 
 class PictureRouteEnforcementAgreementTests(unittest.TestCase):

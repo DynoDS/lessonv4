@@ -254,6 +254,25 @@ def command_for(args) -> list[str]:
         # setting sorts by term and week, and are recorded either way so the
         # next run can find the lesson that came before it.
         command = [sys.executable, str(plugin_root / "scripts" / "deliver_files.py")]
+        # A folder the teacher names for this one lesson outranks the saved
+        # setting. Both Year 6 runs of 2 October 2026 recorded the teacher's
+        # desktop folder in filing.txt, nothing passed it on, and the saved
+        # sorted setting refused for want of a term and week. So the run's own
+        # filing record is read here rather than relayed by the orchestrator.
+        mode, folder = args.mode, args.folder
+        filing = working / "filing.txt"
+        if not mode and filing.is_file():
+            lines = dict(
+                line.split("=", 1)
+                for line in filing.read_text(encoding="utf-8").splitlines()
+                if "=" in line
+            )
+            if lines.get("DELIVERY", "").strip() == "folder" and lines.get("SAVE_FOLDER", "").strip():
+                mode, folder = "folder", folder or lines["SAVE_FOLDER"].strip()
+        if mode:
+            command.extend(["--mode", mode])
+        if folder:
+            command.extend(["--folder", folder])
         for flag, value in (
             ("--year", args.year),
             ("--term-folder", args.term_folder),
@@ -408,6 +427,32 @@ def expected_outputs(args, stdout: str) -> tuple[list[Path], bool]:
     return [], False
 
 
+def changed_published_pictures(working: Path) -> list[str]:
+    """Published pictures that are no longer the file the picture stage published.
+
+    A worksheet designer testing a layout copied its stand-in (an autumn-leaves
+    photo renamed as the daffodil) over the published daffodil, then deleted it
+    (Year 6 renga, 2 October 2026). The build caught only the deletion; had the
+    stand-in stayed, the sheet would have printed autumn leaves captioned as a
+    daffodil and every check would have passed. The finaliser records each
+    published file's hash, so a build compares against it first.
+    """
+    provenance = working / "picture-provenance.json"
+    if not provenance.is_file():
+        return []
+    rows = read_json(provenance, "picture provenance").get("rows") or []
+    changed = []
+    for row in rows:
+        if row.get("terminalState") != "published" or not row.get("canonicalSha256"):
+            continue
+        path = working / row["filename"]
+        if not path.is_file():
+            changed.append(f"{row['filename']} (deleted)")
+        elif sha256_file(path) != row["canonicalSha256"]:
+            changed.append(f"{row['filename']} (overwritten)")
+    return changed
+
+
 def run(args) -> int:
     plugin_root = Path(args.plugin_root).resolve()
     working = Path(args.working_dir).resolve()
@@ -416,6 +461,34 @@ def run(args) -> int:
         raise FixedResourceError(f"plugin root does not exist: {plugin_root}")
     if not working.is_dir():
         raise FixedResourceError(f"working dir does not exist: {working}")
+    if args.kind != "deliver":
+        changed = changed_published_pictures(working)
+        if changed:
+            message = (
+                "PUBLISHED_PICTURE_CHANGED: "
+                + ", ".join(changed)
+                + ". The file is no longer the one the picture stage published, so "
+                "nothing is built from it. Give each file the one-filename picture "
+                "repair (finalise with --replace yes), then rebuild."
+            )
+            atomic_write_json(
+                Path(args.summary_output),
+                {
+                    "schemaVersion": SCHEMA_VERSION,
+                    "ok": False,
+                    "kind": args.kind,
+                    "command": [],
+                    "exitCode": None,
+                    "stdout": "",
+                    "stderr": message,
+                    "archived": [],
+                    "degraded": False,
+                    "outputs": [],
+                },
+            )
+            print(message, file=sys.stderr)
+            print(f"FIXED_RESOURCE_FAILED {args.kind}", file=sys.stderr)
+            return 1
     output.mkdir(parents=True, exist_ok=True)
 
     archived = []
@@ -549,6 +622,15 @@ def parser() -> argparse.ArgumentParser:
     root.add_argument("--subject")
     root.add_argument("--day")
     root.add_argument("--file", action="append", default=[])
+    root.add_argument(
+        "--mode",
+        choices=("folder", "sorted", "letterbox"),
+        help="deliver only: filing.txt's DELIVERY, overriding the saved setting",
+    )
+    root.add_argument(
+        "--folder",
+        help="deliver only, folder mode: filing.txt's SAVE_FOLDER, overriding the saved folder",
+    )
     root.add_argument(
         "--omit-unfittable",
         action="store_true",

@@ -245,13 +245,20 @@ function pageDiv(caption, body) {
   return `<div class="page"><div class="caption">${esc(withoutTaughtMarks(caption))}</div>${body}</div>`;
 }
 
-function wrapDocument(pageDivs) {
+// A task sheet is a mini worksheet and prints upright like one (the teacher,
+// 1 October 2026: "like a mini worksheet ... full page"); a ten-line poem on a
+// sideways page left two thirds of it empty (2 October 2026). Everything else
+// keeps the landscape page its cards and figures are laid out for.
+const PORTRAIT_W_MM = A4.widthMm - 2 * A4.marginMm;        // 210 - 20 = 190
+const PORTRAIT_H_MM = A4.heightMm - 2 * A4.marginMm - 5;   // 297 - 20 - 5 = 272
+
+function wrapDocument(pageDivs, portrait = false) {
   return `<!doctype html><html><head><meta charset="utf-8"><style>
-@page { size: A4 landscape; margin: 0; }
+@page { size: A4 ${portrait ? "portrait" : "landscape"}; margin: 0; }
 html, body { margin: 0; padding: 0; }
 body { font-family: "Comic Sans MS", "Segoe Print", cursive; }
 .page {
-  width: ${A4.heightMm}mm; height: ${A4.widthMm}mm;
+  width: ${portrait ? A4.widthMm : A4.heightMm}mm; height: ${portrait ? A4.heightMm : A4.widthMm}mm;
   box-sizing: border-box; padding: ${A4.marginMm}mm;
   overflow: hidden; page-break-after: always;
 }
@@ -264,17 +271,72 @@ body { font-family: "Comic Sans MS", "Segoe Print", cursive; }
 // key is in the slide notes for the same sort, where the teacher already reads
 // it (Daniel, 1 October 2026). A kit whose spec cannot be printed faithfully is
 // refused by name, like a moment that cannot draw.
+// The letters the board gives a sort's cards, read from the lesson's own
+// slides beside the spec. A kit is copied from the lesson design, which has no
+// letters; the board letters the same cards A, B, C, and the answer slide and
+// the notes say "1st: C, 2nd: E". On 2 October 2026 a renga lesson printed six
+// stanza cards with no letters beside a board that lettered them, so pairs who
+// had the cards could not write or check the order. The printed card carries
+// the board's letter when every card can be matched to one; otherwise none.
+const lettersKey = (text) => String(text).toLowerCase().replace(/[^a-z0-9]+/g, "");
+
+function boardLettersFor(sourceUnitId, baseDir) {
+  const lessonPath = path.join(baseDir || ".", "lesson.json");
+  if (!sourceUnitId || !fs.existsSync(lessonPath)) return null;
+  let lesson;
+  try {
+    lesson = JSON.parse(fs.readFileSync(lessonPath, "utf8"));
+  } catch (err) {
+    return null;
+  }
+  const letters = new Map();
+  const visit = (node) => {
+    if (Array.isArray(node)) return node.forEach(visit);
+    if (!node || typeof node !== "object") return;
+    if (node.type === "sort-board" && Array.isArray(node.bank)) {
+      for (const card of node.bank) {
+        if (card && typeof card === "object" && /^[A-Z]$/.test(String(card.label || "")) && card.text) {
+          const key = lettersKey(card.text);
+          // Two boards giving the same card different letters: print none.
+          letters.set(key, letters.has(key) && letters.get(key) !== card.label ? null : card.label);
+        }
+      }
+    }
+    Object.values(node).forEach(visit);
+  };
+  for (const slide of Array.isArray(lesson.slides) ? lesson.slides : []) {
+    if (slide && slide.designUnitId === sourceUnitId) visit(slide);
+  }
+  return letters.size ? letters : null;
+}
+
+function withBoardLetters(item, baseDir) {
+  const spec = item && item.spec;
+  if (!spec || !Array.isArray(spec.cards) || spec.cards.some((c) => c && c.letter)) return item;
+  const letters = boardLettersFor(spec.sourceUnitId, baseDir);
+  if (!letters) return item;
+  const found = spec.cards.map((c) => letters.get(lettersKey(c && c.label)));
+  if (found.some((l) => !l)) {
+    console.warn(`[stick-in] card kit "${item.label || "card-set"}": the board letters this sort, but not every card matched a board card, so the printed cards carry no letters.`);
+    return item;
+  }
+  return Object.assign({}, item, {
+    spec: Object.assign({}, spec, { cards: spec.cards.map((c, i) => Object.assign({}, c, { letter: found[i] })) }),
+  });
+}
+
 function buildKits(cardSetItems, classSize, baseDir) {
   const kits = [];
   const dropped = [];
-  for (const item of cardSetItems) {
+  for (const original of cardSetItems) {
+    const item = withBoardLetters(original, baseDir);
     const kit = normaliseCardSet(item, classSize, baseDir);
     if (typeof kit === "string") {
       console.warn(`[stick-in] card kit "${item.label || "card-set"}": ${kit} - this kit is NOT in the pack.`);
       dropped.push(item.label || "card-set");
       continue;
     }
-    kits.push(Object.assign(kit, { sourceItem: item }));
+    kits.push(Object.assign(kit, { sourceItem: original }));
   }
   const pageDivs = [];
   const summaries = [];
@@ -369,14 +431,14 @@ async function build(specPath, outDir) {
   for (const item of taskSheetItems) {
     const sheet = normaliseTaskSheet(item);
     const laid = typeof sheet === "string" ? { error: sheet } : taskSheetPages(sheet, {
-      printableWMm: PRINTABLE_W_MM, printableHMm: PRINTABLE_H_MM, classSize, pageHtml: pageDiv, baseDir,
+      printableWMm: PORTRAIT_W_MM, printableHMm: PORTRAIT_H_MM, classSize, pageHtml: pageDiv, baseDir,
     });
     if (laid.error) {
       console.warn(`[stick-in] task sheet "${item.label || "task-sheet"}": ${laid.error} - this sheet is NOT in the pack.`);
       sheetDropped.push(item.label || "task-sheet");
       continue;
     }
-    taskSheets.push({ item, label: item.label || sheet.label, pages: laid.pages });
+    taskSheets.push({ item, label: item.label || sheet.label, pages: laid.pages, portrait: true });
   }
   const allDropped = [...dropped, ...kitsBuilt.dropped, ...sourcesBuilt.dropped, ...sheetDropped];
 
@@ -420,7 +482,7 @@ async function build(specPath, outDir) {
       continue;
     }
     const built = [...sourcesBuilt.perItem, ...kitsBuilt.perItem, ...taskSheets].find((p) => p.item === item);
-    if (built) prints.push({ label: built.label, pageDivs: built.pages });
+    if (built) prints.push({ label: built.label, pageDivs: built.pages, portrait: Boolean(built.portrait) });
   }
   const lesson = spec.meta && spec.meta.lesson;
 
@@ -439,11 +501,11 @@ async function build(specPath, outDir) {
     skipped = err;
   }
   for (const [index, print] of prints.entries()) {
-    const html = wrapDocument(print.pageDivs);
+    const html = wrapDocument(print.pageDivs, print.portrait);
     let outPath = null;
     if (!skipped) {
       try {
-        const pdf = await htmlToPdf(html, { landscape: true });
+        const pdf = await htmlToPdf(html, { landscape: !print.portrait });
         outPath = path.join(folder, pieceFilename(index + 1, print.label, "pdf", taken));
         fs.writeFileSync(outPath, pdf);
       } catch (err) {

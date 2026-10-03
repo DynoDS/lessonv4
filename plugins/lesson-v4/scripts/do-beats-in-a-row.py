@@ -192,6 +192,14 @@ def child_seat(design: dict) -> list[str]:
     lines = ["From a child's seat, in the order the class meets it (words the teacher says, "
              f"at about {WORDS_A_MINUTE} a minute, before any question is asked or answered):"]
     listened = 0
+    # Everything the teacher says, the talk on each task's own slides included.
+    # The renga lesson of 2 October 2026 printed "children only listen to 620
+    # words, about 5 minutes", its review repeated "listening totals about five
+    # minutes", and the script ran to 1,260 words: about 300 of them were the
+    # checklist, the good and weak join and the steps said on the main task's
+    # own slides before any child touched a card, which a count of the Teach
+    # slides alone never sees. The teacher read it and said it felt long.
+    said = 0
     stretch: list[tuple[str, int]] = []
     stretches: list[list[tuple[str, int]]] = []
     before_main = {"do": 0, "cards": 0, "together": 0, "quick": 0}
@@ -202,10 +210,12 @@ def child_seat(design: dict) -> list[str]:
             count = len(item["script"].split())
             lines.append(f"  listen  {name} ({count} words, {time_to_say(count)})")
             listened += count
+            said += count
             stretch.append((name, count))
             continue
         name = item.get("label") or item.get("sourceUnitId") or item.get("kind") or "beat"
         count = len(script_of(item).split())
+        said += count
         if item.get("kind") in LISTEN_KINDS:
             lines.append(f"  listen  {name} ({count} words, {time_to_say(count)})")
             listened += count
@@ -257,7 +267,10 @@ def child_seat(design: dict) -> list[str]:
     if stretch:
         stretches.append(stretch)
 
-    lines.append(f"  Children only listen to {listened} words in all, {time_to_say(listened)}.")
+    lines.append(f"  On the Teach slides and word cards alone, children listen to {listened} words, "
+                 f"{time_to_say(listened)}.")
+    lines.append(f"  Everything the teacher says, the talk on each task's own slides included: {said} words, "
+                 f"{time_to_say(said)}. That is the lesson's listening; asking and answering add to it.")
     if stretches:
         longest = max(stretches, key=lambda run: sum(count for _name, count in run))
         words_in = sum(count for _name, count in longest)
@@ -277,6 +290,42 @@ def child_seat(design: dict) -> list[str]:
         counted = before_main["do"] + 1 + after_main
         lines.append(f"  Tasks counted against the two or three a lesson holds (the main work and anything "
                      f"after it included, quick checks not): {counted}.")
+        lines.append("  A written piece children start once a sort or an order is done is a task of its own "
+                     "and adds one to that count, which this list cannot see.")
+    lines.extend(clock(design, order))
+    return lines
+
+
+DO_KINDS_IN_A_CYCLE = {"our-turn", "your-turn"}
+
+
+def clock(design: dict, order: list[tuple[str, dict]]) -> list[str]:
+    """The planned minutes against the lesson's length, and how many Dos each
+    taught idea takes before the next. A Year 6 divisibility lesson of
+    2 October 2026 gave each of four checks a My, Our and Your Turn: 34 slides,
+    38 planned minutes of 45, six left for the worksheet, and a review that
+    called every check "one short cycle in the 45 minutes". Its rebuild kept
+    every idea and one Do after each, and the teacher found it far better.
+    Neither number was printed anywhere the designer or the reviewer read."""
+    lines: list[str] = []
+    duration = (design.get("lesson") or {}).get("durationMinutes")
+    planned = sum(unit.get("minutes") for what, unit in order
+                  if what == "unit" and isinstance(unit.get("minutes"), (int, float)))
+    if isinstance(duration, (int, float)) and planned:
+        left = duration - planned
+        lines.append(f"  Planned minutes add up to {planned:g} of the lesson's {duration:g}, leaving {left:g} "
+                     "for the worksheet and for what no beat plans: handing out, moving, going through answers.")
+    names = {c.get("id"): c.get("name") or c.get("id") for c in design.get("concepts") or [] if isinstance(c, dict)}
+    dos: dict[str, int] = {}
+    for what, unit in order:
+        ref = unit.get("conceptRef") if what == "unit" else None
+        if ref in names:
+            dos.setdefault(ref, 0)
+            dos[ref] += unit.get("kind") in DO_KINDS_IN_A_CYCLE
+    if len(dos) > 1:
+        lines.append(f"  Dos after each taught idea, before the next: "
+                     + "; ".join(f"{names[ref]}: {n}" for ref, n in dos.items())
+                     + f" ({len(dos)} ideas, {sum(dos.values())} Dos).")
     return lines
 
 

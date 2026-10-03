@@ -266,6 +266,34 @@ class TheTwoBannedAnswersTests(CheckRunner):
                 self.assertEqual(result.returncode, 0, result.stderr)
 
 
+class VocabularySlideTests(CheckRunner):
+    # Eight of twelve runs from 29 September to 2 October 2026 recorded a
+    # vocabulary slide as `nothing-fits`: a decoration is not allowed there, and
+    # the measured room refused the only other answers.
+
+    def test_a_vocabulary_slide_says_so(self):
+        for slide in (
+            {"template": "key-vocabulary", "words": []},
+            {"template": "split-h", "body": {"type": "vocab", "words": [{"word": "renga"}]}},
+        ):
+            with self.subTest(slide=slide["template"]):
+                record = {"schemaVersion": 1, "slides": [
+                    {"slide": 1, "decision": "none", "reason": "vocabulary-slide"},
+                ]}
+                result = self.run_check(record, deck(slide), room=[
+                    {"slide": 1, "clearAreas": [{"x": 0.1, "y": 0.1, "w": 0.3, "h": 0.3}]},
+                ])
+                self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_an_ordinary_slide_cannot_claim_to_be_a_vocabulary_slide(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "none", "reason": "vocabulary-slide"},
+        ]}
+        result = self.run_check(record, deck(bare_slide()))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("not a vocabulary slide", result.stderr)
+
+
 class TheRecordMatchesTheDeckTests(CheckRunner):
     def test_a_used_entry_with_no_picture_on_the_slide_fails(self):
         record = {"schemaVersion": 1, "slides": [

@@ -3,7 +3,7 @@ name: slide-designer-focused-repair
 description: Repair-only entry point for the existing slide-designer semantic owner. Repairs one accepted slide-design finding without loading the full creation-mode Slide Designer instructions first. Use only from the make-lesson focused owner-repair route after slide-designer ownership has already been established.
 model: opus
 effort: xhigh
-codex_model: sol
+codex_model: sol61
 codex_effort: medium
 color: "#9932CC"
 ---

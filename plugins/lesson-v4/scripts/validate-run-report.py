@@ -332,6 +332,53 @@ def early_wave_evidence(working_dir: Path) -> tuple[Path | None, set[str]]:
     return snapshot.resolve(), names
 
 
+def dropped_by_a_wave(working_dir: Path, filename: str) -> bool:
+    """Whether a content-gap wave's contract dropped a picture an earlier contract held.
+
+    The waves are written from the re-reviewed revision, so this is the proof
+    that an approved revision took the picture out, rather than an entry
+    deleted from the contract to get a run unstuck.
+    """
+    def names(path: Path) -> bool | None:
+        try:
+            photos = json.loads(path.read_text(encoding="utf-8")).get("photos")
+        except (OSError, ValueError, AttributeError):
+            return None
+        if not isinstance(photos, list):
+            return None
+        return any(isinstance(p, dict) and p.get("filename") == filename for p in photos)
+
+    def wave(path: Path) -> int:
+        match = re.fullmatch(r"photo-requirements-w-(\d+)\.json", path.name)
+        return int(match.group(1)) if match else 0
+
+    contracts = [working_dir / "phase2-initial-photo-requirements.json"]
+    contracts += sorted(working_dir.glob("photo-requirements-w-*.json"), key=wave)
+    held = False
+    for path in contracts:
+        named = names(path)
+        if named is None:
+            continue
+        if named:
+            held = True
+        elif held and path.name != "phase2-initial-photo-requirements.json":
+            return True
+    return False
+
+
+def named_in_built_specs(working_dir: Path, filename: str) -> bool:
+    """Whether any built resource specification still names this picture file."""
+    token = json.dumps(filename)
+    for name in ("lesson.json", "worksheet.json", "working-wall.json", "stick-in-sheets.json"):
+        path = working_dir / name
+        try:
+            if path.is_file() and token in json.dumps(json.loads(path.read_text(encoding="utf-8"))):
+                return True
+        except (OSError, ValueError):
+            return True
+    return False
+
+
 def report_obligations(working_dir: Path, failures: list[str]) -> dict[str, list[str]]:
     obligations = {
         "picture": [],
@@ -917,7 +964,20 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                 "COMPLETE: the report carries PAGE_FIT_UNVERIFIED; an unverified review "
                 "cannot close as COMPLETE."
             )
-        missing_live_pictures = set(obligations["picture"]) - reviewed_retired_pictures(working)
+        # A picture a design revision took out of the contract (the content-gap
+        # wave replacing a lost one) is still named in the report as history,
+        # but it does not hold the package back once no built resource names
+        # it: the Nativity run (30 September 2026) was refused COMPLETE for
+        # three such pictures.
+        promised_now = set(promised_filenames(working))
+        retired_out_of_contract = {
+            name for name in obligations["picture"]
+            if name not in promised_now and not named_in_built_specs(working, name)
+            and dropped_by_a_wave(working, name)
+        }
+        missing_live_pictures = (
+            set(obligations["picture"]) - reviewed_retired_pictures(working) - retired_out_of_contract
+        )
         if missing_live_pictures:
             failures.append(
                 "COMPLETE: picture(s) the contract promised were never published: "

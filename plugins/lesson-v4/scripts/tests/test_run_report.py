@@ -552,6 +552,38 @@ class TestRunReport(RunReportCase):
         self.write_json(self.working / "design-review-postflight.json", post)
         self.assertEqual(self.validate(report).returncode, 1)
 
+    def test_a_picture_a_revision_took_out_does_not_hold_back_complete(self):
+        """The Nativity run (30 September 2026): three lost pictures replaced by
+        an approved content-gap revision kept the package from COMPLETE."""
+        self.write_json(self.working / "photo-requirements.json", {
+            "photos": [{"id": "photo-002", "filename": "unsplash/new-cross.jpg"}],
+        })
+        self.write_json(
+            self.working / "orchestration-receipts" / "picture-terminal" / "new.json",
+            {"schemaVersion": 1, "filename": "unsplash/new-cross.jpg", "terminalState": "published"},
+        )
+        self.write_json(
+            self.working / "orchestration-receipts" / "picture-terminal" / "old.json",
+            {"schemaVersion": 1, "filename": "unsplash/old-cross.jpg", "terminalState": "unsatisfied"},
+        )
+        self.write_json(self.working / "lesson.json", {"slides": [{"image": "unsplash/new-cross.jpg"}]})
+        report = self.write_report(overrides={"picture": "- unsplash/old-cross.jpg: unsatisfied, retired by the content-gap revision."})
+        self.write_json(self.working / "phase2-initial-photo-requirements.json", {
+            "photos": [{"id": "photo-001", "filename": "unsplash/old-cross.jpg"}],
+        })
+        # Deleting the entry is not proof: no wave's contract dropped it yet.
+        self.assertEqual(self.validate(report).returncode, 1)
+        self.write_json(self.working / "photo-requirements-w-1.json", {
+            "photos": [{"id": "photo-002", "filename": "unsplash/new-cross.jpg"}],
+        })
+        result = self.validate(report)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        # Its history is still owed in the report.
+        self.assertEqual(self.validate(self.write_report()).returncode, 1)
+        # And a resource that still shows it keeps it owed.
+        self.write_json(self.working / "lesson.json", {"slides": [{"image": "unsplash/old-cross.jpg"}]})
+        self.assertEqual(self.validate(report).returncode, 1)
+
     def test_legacy_helper_receipt_is_not_a_report_dependency(self):
         self.write_json(
             self.working / "orchestration-receipts" / "slide-designer-helper-1.json",

@@ -18,28 +18,28 @@ AGENTS = ROOT / "agents"
 FOCUSED_REPAIR_ENTRYPOINTS: dict[str, tuple[str, str, str, str, str]] = {
     "slide-designer": (
         "slide-designer-focused-repair.md",
-        "sol",
+        "sol61",
         "medium",
         "opus",
         "xhigh",
     ),
     "worksheet-designer": (
         "worksheet-designer-focused-repair.md",
-        "sol",
+        "luna6",
         "medium",
         "sonnet",
         "high",
     ),
     "working-wall-designer": (
         "working-wall-designer-focused-repair.md",
-        "sol",
+        "sol61",
         "medium",
         "opus",
         "high",
     ),
     "stick-in-sheets-designer": (
         "stick-in-sheets-designer-focused-repair.md",
-        "luna",
+        "luna6",
         "xhigh",
         "sonnet",
         "xhigh",

@@ -3,7 +3,7 @@ name: stick-in-sheets-designer-focused-repair
 description: Repair-only entry point for the existing stick-in-sheets-designer semantic owner. Repairs one accepted stick-in resource-design finding without loading the full creation-mode Stick-in Sheets Designer instructions first. Use only from the make-lesson focused owner-repair route after stick-in-sheets-designer ownership has already been established.
 model: sonnet
 effort: xhigh
-codex_model: luna
+codex_model: luna6
 codex_effort: xhigh
 color: "#1C6B32"
 ---

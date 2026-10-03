@@ -60,6 +60,22 @@ module.exports = {
   "section-label": {
     text: "Fluency",
   },
+  poem: {
+    // `lines` is the poem, one entry a line, an empty entry between stanzas.
+    // `boxes` puts a box after each line; `filled` prints a box done for the
+    // child, entry for entry with `lines`.
+    heading: "Leo and Ravi's spring renga",
+    lines: [
+      "Spring sun warms the ground.",
+      "A small green shoot pushes up.",
+      "Look, a daffodil!",
+      "",
+      "Its yellow trumpet opens,",
+      "and a bee crawls in to feed.",
+    ],
+    boxes: true,
+    filled: ["5", "7", "5"],
+  },
   "source-text": {
     heading: "From the school log book",
     paragraphs: [
@@ -439,7 +455,17 @@ module.exports = {
   },
   // The vocabulary-card picture, beside a word on a sheet.
   "place-value-mini": { mode: "digit-value", digit: 6, value: 600 },
-  "digit-cards": { digits: [0, 3, 4, 7] },
+  // A number with the working of a divisibility check marked on its digits.
+  // The loose cards a child makes numbers from are `{ digits: [0, 3, 4, 7] }`.
+  "digit-cards": {
+    text: "Is 316 divisible by 4?",
+    value: "316",
+    marks: [
+      { digits: 1, style: "dim" },
+      { digits: "last 2", style: "box", colour: "blue", label: "last two digits: 16" },
+    ],
+    working: [{ text: "half of 16 is 8", arrow: true }, { text: "8 is even, so yes ✓", colour: "green" }],
+  },
   "times-table-grid": {
     operator: "×",
     colHeaders: ["3", "4", "6", "8"],
@@ -595,6 +621,15 @@ module.exports = {
       cords: "Same cord length",
       loads: "Same load",
     },
+  },
+  "annotated-text": {
+    text: "Find the fronted adverbials. Label the third one.",
+    passage: "As the sun set, the old keeper climbed the spiral stairs. Slowly, carefully, he lit the great lamp. Out at sea, a small boat was heading for the rocks.",
+    marks: [
+      { find: "As the sun set,", style: "highlight", colour: "orange", note: "fronted adverbial" },
+      { find: "Slowly, carefully,", style: "highlight", colour: "orange", note: "fronted adverbial" },
+      { find: "Out at sea,", style: "underline", colour: "orange", note: "" },
+    ],
   },
   "concept-map": {
     text: "How was cacao used by the Maya?",

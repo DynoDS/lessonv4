@@ -23,6 +23,7 @@ const {
   processChainKey,
   classificationKeyKey,
   conceptMapKey,
+  annotatedTextKey,
   fishboneKey,
   continuumLineKey,
   sourcePathwayKey,
@@ -58,6 +59,7 @@ const {
   partWholeModelKey,
   pyramidKey,
   multGridKey,
+  digitCardsKey,
   circuitDiagramKey,
   parachuteForcesKey,
   blankSurfaceKey,
@@ -84,6 +86,7 @@ const VISUAL_KEY_FNS = {
   "process-chain": processChainKey,
   "classification-key": classificationKeyKey,
   "concept-map": conceptMapKey,
+  "annotated-text": annotatedTextKey,
   "fishbone": fishboneKey,
   "continuum-line": continuumLineKey,
   "source-pathway": sourcePathwayKey,
@@ -120,6 +123,7 @@ const VISUAL_KEY_FNS = {
   "part-whole-model": partWholeModelKey,
   "pyramid": pyramidKey,
   "mult-grid": multGridKey,
+  "digit-cards": digitCardsKey,
   "circuit-diagram": circuitDiagramKey,
   "parachute-forces": parachuteForcesKey,
   "blank-surface": blankSurfaceKey,
@@ -253,6 +257,7 @@ function panelFractionFor(card, ctx, hasPhoto) {
   if (!visual) return hasPhoto ? 0.6 : 1.0;
   const v = pickVisual(visual, ctx);
   if (card.visualScale === 'dominant') return 0.32;
+  if (card.visualScale === 'full') return 1.0;
   return (v && (v.aspect || 1) >= WIDE_ASPECT) ? 1.0 : 0.6;
 }
 
@@ -276,6 +281,12 @@ function panelFractionFor(card, ctx, hasPhoto) {
 // floor, never below the fifth that was always guaranteed. Nothing shrinks,
 // and no card can be pushed under its text floor by construction.
 const WIDE_VISUAL_SHARE_GENEROUS = 1 / 3;
+// A card whose picture IS the sheet (`visualScale: "full"`: a model text the
+// class writes from) offers the picture almost all of it, the panel above
+// keeping only the line or two it says. Beside the panel, as `dominant`, a
+// marked poem printed a size or two over the floor with most of its column
+// empty (2 October 2026), because a passage is wide and the column is not.
+const FULL_VISUAL_SHARE = 0.85;
 const WIDE_VISUAL_SHARE_GUARANTEED = 0.21;
 const RESERVE_STEP_INCHES = 0.1;
 
@@ -285,12 +296,13 @@ function wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor) {
   // keeps its full height. Reserving room under it anyway took height the page
   // never used, and the loose plan hid it until the body was planned as drawn.
   if (card.visualScale === "dominant") return 0;
+  const full = card.visualScale === "full";
   const v = pickVisual(card.visual, ctx);
-  if (!v || (v.aspect || 1) < WIDE_ASPECT) return 0;
+  if (!v || (!full && (v.aspect || 1) < WIDE_ASPECT)) return 0;
   const dims = printableInches(card.page.size, card.page.orientation, style);
   const byWidth = (dims.width * 0.96) / (v.aspect || 1);
   const guaranteed = Math.min(byWidth, dims.height * WIDE_VISUAL_SHARE_GUARANTEED) + 0.25;
-  const generous = Math.min(byWidth, dims.height * WIDE_VISUAL_SHARE_GENEROUS) + 0.25;
+  const generous = Math.min(byWidth, dims.height * (full ? FULL_VISUAL_SHARE : WIDE_VISUAL_SHARE_GENEROUS)) + 0.25;
   if (generous <= guaranteed + 0.01) return guaranteed;
   if (typeof bodyFitsAtFloor !== "function") return guaranteed;
   for (let reserve = generous; reserve > guaranteed; reserve -= RESERVE_STEP_INCHES) {

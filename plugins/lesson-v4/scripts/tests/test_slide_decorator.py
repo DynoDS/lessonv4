@@ -60,7 +60,7 @@ class SlideDecoratorRoleTests(unittest.TestCase):
         # Composition is settled before it runs; its judgement is room,
         # relevance and legibility, and the role says so beside the setting.
         # So it is the one designer deliberately left at medium on both hosts.
-        self.assertEqual(fields["codex_model"], "luna")
+        self.assertEqual(fields["codex_model"], "luna6")
         self.assertEqual(fields["codex_effort"], "medium")
         self.assertEqual(fields["model"], "sonnet")
         self.assertEqual(fields["effort"], "medium")

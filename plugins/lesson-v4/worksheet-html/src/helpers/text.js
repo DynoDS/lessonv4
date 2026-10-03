@@ -568,6 +568,43 @@ const SECTION_CHAR_MM = TYPE.sectionLabel * PT_MM * 0.5;
 // ─── source text ─────────────────────────────────────────────────────────
 // A passage, account or extract the child reads and works from.
 
+// A poem keeps its lines. `lines` prints one line of the poem per entry, with
+// an empty entry as the gap between stanzas, and `boxes: true` adds a box at
+// the end of each line to write in (a syllable count), lined up down the page;
+// `filled` gives a box its printed value, entry for entry with `lines`, for a
+// line done for the child. A renga sheet of 2 October 2026 had no way to print
+// a poem: it split the poem across two narrow recording tables, wrapped its
+// lines in half, and printed blank header rows above both. It prints under the
+// same quote bar a passage does, because it is read the same way.
+const POEM_BOX_MM = 9;
+const STANZA_GAP_RATIO = 0.6;
+
+function renderPoem(spec) {
+  const boxes = Boolean(spec.boxes);
+  const filled = Array.isArray(spec.filled) ? spec.filled : [];
+  const rows = spec.lines.map((line, i) => {
+    if (!String(line).trim()) return `<div class="h-poem-gap"></div>`;
+    const value = filled[i] == null ? "" : esc(String(filled[i]));
+    const box = boxes ? `<div class="h-poem-box">${value}</div>` : "";
+    return `<div class="h-poem-line">${esc(line)}</div>${box}`;
+  }).join("");
+  return `
+    <div class="h-source">
+      ${spec.heading ? `<h3>${esc(spec.heading)}</h3>` : ""}
+      <div class="h-poem${boxes ? " h-poem-boxed" : ""}">${rows}</div>
+    </div>`;
+}
+
+function measurePoem(spec, widthMm) {
+  // Each line of the poem is one row, as tall as its wrapped words or its
+  // box; a stanza gap is part of a line; rows sit 1mm apart.
+  const headingMm = spec.heading ? LINE_MM + 2 : 0;
+  const textW = widthMm - 8 - (spec.boxes ? POEM_BOX_MM + 4 : 0);
+  return headingMm + spec.lines.reduce((h, line) => h + (String(line).trim()
+    ? Math.max(linesFor(line, textW) * LINE_MM, spec.boxes ? POEM_BOX_MM : 0)
+    : LINE_MM * STANZA_GAP_RATIO) + 1, 0);
+}
+
 function renderSourceText(spec) {
   const paras = spec.paragraphs.map((p) => `<p>${esc(p)}</p>`).join("");
   return `
@@ -825,6 +862,16 @@ const css = `
     color: var(--colour-question); line-height: 1.35;
   }
   .h-source p { margin: 0 0 2mm; line-height: 1.35; }
+  .h-poem { display: grid; grid-template-columns: 1fr; row-gap: 1mm; align-items: center; }
+  .h-poem-boxed { grid-template-columns: minmax(0, max-content) ${POEM_BOX_MM}mm; column-gap: 4mm; }
+  .h-poem-line { line-height: 1.35; }
+  .h-poem-gap { grid-column: 1 / -1; height: ${(LINE_MM * STANZA_GAP_RATIO).toFixed(2)}mm; }
+  .h-poem-box {
+    width: ${POEM_BOX_MM}mm; height: ${POEM_BOX_MM}mm; box-sizing: border-box;
+    border: var(--rule-line) solid var(--colour-ink); border-radius: 1mm;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--colour-given); font-weight: bold;
+  }
   .h-source .h-attr {
     font-size: var(--type-note); color: var(--colour-quiet);
     font-style: italic; line-height: 1.35; margin-bottom: 0;
@@ -893,6 +940,13 @@ const helpers = {
     // white space between a block's name and the block, which reads as two
     // things rather than one.
     greed: 0,
+  },
+  poem: {
+    requires: ["lines"],
+    render: renderPoem,
+    measure: measurePoem,
+    needs: heightFromContent(measurePoem, 70),
+    greed: 0, // a poem is as long as it is
   },
   "source-text": {
     render: renderSourceText,

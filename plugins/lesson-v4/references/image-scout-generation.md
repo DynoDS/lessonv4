@@ -7,7 +7,7 @@ Read this reference immediately before the first legal generation action.
 Generation is legal only when the assignment entry has a prompt file and hash, and either:
 
 - `initial_route` is `ai`; or
-- `initial_route` is `real`, no compiled search step found a faithful winner, and every step either completed or, with `fallback_action: ai`, stayed operationally unavailable through its one authorised retry. An outage does not withdraw an authorised fallback; record it and generate.
+- `initial_route` is `real`, no compiled search step found a faithful winner, and every step either completed or, with `fallback_action: ai`, stayed operationally unavailable through its one authorised retry (or hit `rate_limit`). An outage does not withdraw an authorised fallback; record it, search any `standby_only` step it makes owed, and generate.
 
 Do not generate authentic evidence. Do not rewrite the checked initial prompt.
 

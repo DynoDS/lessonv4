@@ -290,6 +290,19 @@ function drawRow(pptx, slide, zone, data, ctx) {
   const matchCardHeight = !bands &&
     items.length > 1 && items.some(fillsHeight) && items.some(isPicture);
 
+  // Method frames side by side (an answer slide's 312 beside 5,463) print at
+  // one size, the smallest any of them needs: each sizes itself, and one whose
+  // long label could wrap would otherwise come out bigger than its neighbour
+  // (2 October 2026).
+  let methodFrameFontMax = null;
+  if (items.filter((item) => item && item.type === 'method-frame').length > 1) {
+    const { methodFrameFont } = require('./method-frame');
+    const fonts = items.map((item, i) => (item && item.type === 'method-frame'
+      ? methodFrameFont({ x: lefts[i], y: 0, w: widths[i], h: bands ? bands[i].h : zone.h }, item)
+      : null)).filter(Number.isFinite);
+    if (fonts.length) methodFrameFontMax = Math.min.apply(null, fonts);
+  }
+
   items.forEach(function (item, i) {
     const subZone = {
       x: lefts[i],
@@ -304,6 +317,9 @@ function drawRow(pptx, slide, zone, data, ctx) {
       matchCardHeight: bands ? bands[i].match : matchCardHeight,
       textFitGroup: rowTextFitGroup
     };
+    if (methodFrameFontMax !== null && item && item.type === 'method-frame') {
+      subZone.methodFrameFontMax = methodFrameFontMax;
+    }
     if (clockBandH !== null && item && item.type === 'clock') {
       subZone.clockLabelBandH = clockBandH;
     }

@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 90 helpers, what each is for, and a working example of each.
+The 92 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -48,6 +48,8 @@ emailed. Never write `imageHref` yourself.
 - `questions` - One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap.
 - `written-answers` - A question answered in the child's own words, with ruled lines under it.
 - `source-text` - A passage, account or extract the child reads and works from.
+- `poem` - A poem the child reads line by line, its stanzas kept apart, with a box after each line to write in (a syllable count) when it needs one.
+- `annotated-text` - A passage in the middle with words underlined, circled, boxed or highlighted in colour, arrows between words and margin notes, or wide margins left for the child to annotate.
 
 **Tables**
 
@@ -117,7 +119,7 @@ emailed. Never write `imageHref` yourself.
 - `place-value-mini` - The small place-value picture from a vocabulary card: a digit mapping to its value, one column picked out, ten tens becoming a hundred, or the zeros in a numeral.
 - `counter-group` - The same counters without the chart: one compact group per denomination, under the claim they are evidence for.
 - `base-ten-blocks` - Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.
-- `digit-cards` - A row of cards, one digit each, handed to the child to make numbers from.
+- `digit-cards` - A number as large digit cards with a digit check's working marked on its digits, or loose `digits` cards to make numbers from; copy the slide's object.
 - `number-network` - Circles joined by lines where each joined pair adds to `target`; a circle with no value is a blank the child fills.
 
 **Fractions and money**
@@ -242,6 +244,67 @@ Smallest usable: **70mm wide x 20mm tall**. Spare height: never takes spare heig
     "Attendance is poor this week. Many of the older boys are away at the harvest."
   ],
   "attribution": "Log book, October 1885"
+}
+```
+
+#### `poem`
+
+A poem the child reads line by line, its stanzas kept apart, with a box after each line to write in (a syllable count) when it needs one.
+
+Smallest usable: **70mm wide x 62mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "poem",
+  "heading": "Leo and Ravi's spring renga",
+  "lines": [
+    "Spring sun warms the ground.",
+    "A small green shoot pushes up.",
+    "Look, a daffodil!",
+    "",
+    "Its yellow trumpet opens,",
+    "and a bee crawls in to feed."
+  ],
+  "boxes": true,
+  "filled": [
+    "5",
+    "7",
+    "5"
+  ]
+}
+```
+
+#### `annotated-text`
+
+A passage in the middle with words underlined, circled, boxed or highlighted in colour, arrows between words and margin notes, or wide margins left for the child to annotate.
+
+Smallest usable: **110mm wide x 25mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "annotated-text",
+  "text": "Find the fronted adverbials. Label the third one.",
+  "passage": "As the sun set, the old keeper climbed the spiral stairs. Slowly, carefully, he lit the great lamp. Out at sea, a small boat was heading for the rocks.",
+  "marks": [
+    {
+      "find": "As the sun set,",
+      "style": "highlight",
+      "colour": "orange",
+      "note": "fronted adverbial"
+    },
+    {
+      "find": "Slowly, carefully,",
+      "style": "highlight",
+      "colour": "orange",
+      "note": "fronted adverbial"
+    },
+    {
+      "find": "Out at sea,",
+      "style": "underline",
+      "colour": "orange",
+      "note": ""
+    }
+  ]
 }
 ```
 
@@ -1823,18 +1886,36 @@ Smallest usable: **123mm wide x 48mm tall**. Spare height: never takes spare hei
 
 #### `digit-cards`
 
-A row of cards, one digit each, handed to the child to make numbers from.
+A number as large digit cards with a digit check's working marked on its digits, or loose `digits` cards to make numbers from; copy the slide's object.
 
-Smallest usable: **62mm wide x 13mm tall**. Spare height: never takes spare height.
+Smallest usable: **47mm wide x 47mm tall**. Spare height: never takes spare height.
 
 ```json
 {
   "helper": "digit-cards",
-  "digits": [
-    0,
-    3,
-    4,
-    7
+  "text": "Is 316 divisible by 4?",
+  "value": "316",
+  "marks": [
+    {
+      "digits": 1,
+      "style": "dim"
+    },
+    {
+      "digits": "last 2",
+      "style": "box",
+      "colour": "blue",
+      "label": "last two digits: 16"
+    }
+  ],
+  "working": [
+    {
+      "text": "half of 16 is 8",
+      "arrow": true
+    },
+    {
+      "text": "8 is even, so yes ✓",
+      "colour": "green"
+    }
   ]
 }
 ```

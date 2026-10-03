@@ -35,6 +35,7 @@ const timelineShared = require("../../shared/visuals/timeline-svg");
 const processChainShared = require("../../shared/visuals/process-chain-svg");
 const classificationKeyShared = require("../../shared/visuals/classification-key-svg");
 const conceptMapShared = require("../../shared/visuals/concept-map-svg");
+const annotatedTextShared = require("../../shared/visuals/annotated-text-svg");
 const fishboneShared = require("../../shared/visuals/fishbone-svg");
 const continuumLineShared = require("../../shared/visuals/continuum-line-svg");
 const sourcePathwayShared = require("../../shared/visuals/source-pathway-svg");
@@ -53,6 +54,7 @@ const counterGroup = require("../../shared/visuals/counter-group-svg");
 const partWholeModel = require("../../shared/visuals/part-whole-model-svg");
 const pyramid = require("../../shared/visuals/pyramid-svg");
 const multGrid = require("../../shared/visuals/mult-grid-svg");
+const digitCards = require("../../shared/visuals/digit-cards-svg");
 const { profileFor, inkGrey } = require("../../shared/visuals/surface-profiles");
 
 // The one way the pack places a shared drawing laid out at its printed size,
@@ -179,6 +181,8 @@ const VISUALS = {
   "process-chain": sharedPiece(processChainShared, 160),
   "classification-key": sharedPiece(classificationKeyShared, 160),
   "concept-map": sharedPiece(conceptMapShared, 180),
+  // A passage the child annotates needs its margins, so it is a wide piece.
+  "annotated-text": sharedPiece(annotatedTextShared, 180),
   fishbone: sharedPiece(fishboneShared, 200),
   "continuum-line": sharedPiece(continuumLineShared, 160),
   "source-pathway": sharedPiece(sourcePathwayShared, 180),
@@ -400,6 +404,9 @@ const VISUALS = {
   "pyramid": sharedPiece(pyramid, 100),
   // 90mm: cells a child writes a product into.
   "mult-grid": sharedPiece(multGrid, 90),
+  // 110mm: a number as digit cards with its working, the cards big enough to
+  // circle a digit on and a blank line long enough to write the working on.
+  "digit-cards": sharedPiece(digitCards, 110),
 };
 
 // Row visuals: one child's piece is a strip of N figures, each with its own

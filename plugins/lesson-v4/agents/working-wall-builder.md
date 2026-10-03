@@ -3,7 +3,7 @@ name: working-wall-builder
 description: Working-wall builder. Runs the fixed wall build script on a `working-wall.json` and reports the result. Makes no pedagogical, card-design or wording decisions. Not used by make-lesson, which builds the wall with `run-fixed-resource.py wall` like the slides, worksheets and stick-ins; kept, as the other builder agents are, for direct or legacy use.
 model: haiku
 effort: low
-codex_model: luna
+codex_model: luna6
 codex_effort: medium
 color: "#3CB371"
 ---

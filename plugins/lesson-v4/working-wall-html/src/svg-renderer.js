@@ -47,6 +47,7 @@ const timelineShared = require('../../shared/visuals/timeline-svg');
 const processChainShared = require('../../shared/visuals/process-chain-svg');
 const classificationKeyShared = require('../../shared/visuals/classification-key-svg');
 const conceptMapShared = require('../../shared/visuals/concept-map-svg');
+const annotatedTextShared = require('../../shared/visuals/annotated-text-svg');
 const fishboneShared = require('../../shared/visuals/fishbone-svg');
 const continuumLineShared = require('../../shared/visuals/continuum-line-svg');
 const sourcePathwayShared = require('../../shared/visuals/source-pathway-svg');
@@ -75,6 +76,7 @@ const counterGroupShared = require('../../shared/visuals/counter-group-svg');
 const partWholeModelShared = require('../../shared/visuals/part-whole-model-svg');
 const pyramidShared = require('../../shared/visuals/pyramid-svg');
 const multGridShared = require('../../shared/visuals/mult-grid-svg');
+const digitCardsShared = require('../../shared/visuals/digit-cards-svg');
 // The same strict circuit the slides and the sheets draw, so a wall card and
 // the board show one circuit rather than two drawings of it.
 const circuitShared = require('../../shared/visuals/circuit-diagram-svg');
@@ -141,12 +143,16 @@ function hashColour(c) {
 // those parts. Without them every named callout on an anatomy poster would be
 // dropped.
 const WALL_VISUAL_WIDTH_MM = 180;
+// `widthMm` may instead be a whole box ({ widthMm, heightMm, overrides }) for a
+// drawing that fills a known height as well as a width, or a function of the
+// spec returning one, for a drawing whose box depends on its card.
 function sharedAtWidth(module, widthMm = WALL_VISUAL_WIDTH_MM) {
-  const profile = () => profileFor('wall', { widthMm });
+  const boxFor = typeof widthMm === 'function' ? widthMm : () => (typeof widthMm === 'object' ? widthMm : { widthMm });
+  const profile = (spec) => profileFor('wall', boxFor(spec));
   return {
-    keyFn: (spec) => module.cacheKey(spec, profile()),
+    keyFn: (spec) => module.cacheKey(spec, profile(spec)),
     tightFn: (spec) => {
-      const { svg, aspect, anchors } = module.tightSvg(spec, profile());
+      const { svg, aspect, anchors } = module.tightSvg(spec, profile(spec));
       return anchors ? { svg, aspect, anchors } : { svg, aspect };
     },
   };
@@ -191,6 +197,24 @@ const timelineWall = sharedAtWidth(timelineShared, 260);
 const processChainWall = sharedAtWidth(processChainShared, 360);
 const classificationKeyWall = sharedAtWidth(classificationKeyShared, 260);
 const conceptMapWall = sharedAtWidth(conceptMapShared, 260);
+// A model text is read from across the room, so it is laid out in the box its
+// card actually gives it, and its words grow until the passage fills that box.
+// Laid out by width alone, a short wide passage printed small with most of its
+// space empty (2 October 2026). The box depends on the card (portrait or
+// landscape, the picture `full` or `dominant`), so the pre-render stamps it on
+// the spec as `_wallBox` before the drawing is keyed or drawn.
+const ANNOTATED_TEXT_BOXES = {
+  'full:landscape': { widthMm: 360, heightMm: 170 },
+  'full:portrait': { widthMm: 255, heightMm: 300 },
+  'dominant:landscape': { widthMm: 247, heightMm: 190 },
+  'dominant:portrait': { widthMm: 185, heightMm: 320 },
+};
+function annotatedTextBoxFor(card) {
+  const orientation = (card && card.page && card.page.orientation) === 'portrait' ? 'portrait' : 'landscape';
+  const box = ANNOTATED_TEXT_BOXES[`${(card && card.visualScale) || 'panel'}:${orientation}`];
+  return box ? { ...box, overrides: { grow: 2 } } : { widthMm: WALL_VISUAL_WIDTH_MM };
+}
+const annotatedTextWall = sharedAtWidth(annotatedTextShared, (spec) => spec._wallBox || annotatedTextBoxFor(null));
 const fishboneWall = sharedAtWidth(fishboneShared, 260);
 const continuumLineWall = sharedAtWidth(continuumLineShared, 260);
 const sourcePathwayWall = sharedAtWidth(sourcePathwayShared, 260);
@@ -204,6 +228,10 @@ const counterGroupWall = sharedAtWidth(counterGroupShared);
 const partWholeModelWall = sharedAtWidth(partWholeModelShared);
 const pyramidWall = sharedAtWidth(pyramidShared);
 const multGridWall = sharedAtWidth(multGridShared);
+// A number as digit cards with its working beneath, laid out at the width a
+// dominant card figure gets, so four cards with + between them and two checks
+// side by side keep the wall's text size; the card places it by its shape.
+const digitCardsWall = sharedAtWidth(digitCardsShared, 240);
 // The bar chart and the line graph, laid out at their printed size as the
 // board, the sheet and the stick-in pack place them. The wall's words print
 // far larger than paper's, so at the default width a chart came out nearly
@@ -453,6 +481,7 @@ async function preRenderSvgs(spec, specDir) {
     'process-chain': { ...processChainWall, collected: {} },
     'classification-key': { ...classificationKeyWall, collected: {} },
     'concept-map': { ...conceptMapWall, collected: {} },
+    'annotated-text': { ...annotatedTextWall, collected: {} },
     'fishbone': { ...fishboneWall, collected: {} },
     'continuum-line': { ...continuumLineWall, collected: {} },
     'source-pathway': { ...sourcePathwayWall, collected: {} },
@@ -491,6 +520,7 @@ async function preRenderSvgs(spec, specDir) {
     'part-whole-model': { ...partWholeModelWall, collected: {} },
     'pyramid': { ...pyramidWall, collected: {} },
     'mult-grid': { ...multGridWall, collected: {} },
+    'digit-cards': { ...digitCardsWall, collected: {} },
     'circuit-diagram': { keyFn: circuitShared.cacheKey, tightFn: circuitShared.tightSvg, collected: {} },
     'parachute-forces': { keyFn: parachuteForcesShared.cacheKey, tightFn: parachuteForcesShared.tightSvg, collected: {} },
     'blank-surface': { keyFn: blankSurfaceShared.cacheKey, tightFn: blankSurfaceShared.tightSvg, collected: {} },
@@ -522,6 +552,11 @@ async function preRenderSvgs(spec, specDir) {
   };
 
   for (const card of cards) {
+    // A marked passage is laid out for the box its own card gives it; the card
+    // later looks the picture up by the same stamped spec.
+    if (card && card.visual && card.visual.type === 'annotated-text' && !card.visual._wallBox) {
+      Object.defineProperty(card.visual, '_wallBox', { value: annotatedTextBoxFor(card), enumerable: true, writable: true, configurable: true });
+    }
     if (card && card.visual) collectVisual(card.visual);
     if (card && card.type === 'diagramSection' && Array.isArray(card.parts)) {
       // Every part draws its own figure; a section exists to put two or
@@ -544,6 +579,14 @@ async function preRenderSvgs(spec, specDir) {
         for (const cell of row) {
           if (cell && typeof cell === 'object' && cell.visual) collectVisual(cell.visual);
         }
+      }
+    }
+    if (card && card.type === 'diagramSection' && Array.isArray(card.parts)) {
+      // A part's steps print the same green circle as the pins on its
+      // figure, so step 2 in the list and step 2 on the drawing are one mark.
+      for (const part of card.parts) {
+        const count = Array.isArray(part && part.steps) ? part.steps.length : 0;
+        for (let n = 1; n <= count; n += 1) badges.add(n);
       }
     }
     if (card && card.type === 'workedExample' && Array.isArray(card.items)) {
@@ -687,6 +730,7 @@ module.exports = {
   processChainKey: processChainWall.keyFn,
   classificationKeyKey: classificationKeyWall.keyFn,
   conceptMapKey: conceptMapWall.keyFn,
+  annotatedTextKey: annotatedTextWall.keyFn,
   fishboneKey: fishboneWall.keyFn,
   continuumLineKey: continuumLineWall.keyFn,
   sourcePathwayKey: sourcePathwayWall.keyFn,
@@ -723,6 +767,7 @@ module.exports = {
   partWholeModelKey: partWholeModelWall.keyFn,
   pyramidKey: pyramidWall.keyFn,
   multGridKey: multGridWall.keyFn,
+  digitCardsKey: digitCardsWall.keyFn,
   circuitDiagramKey: circuitShared.cacheKey,
   parachuteForcesKey: parachuteForcesShared.cacheKey,
   blankSurfaceKey: blankSurfaceShared.cacheKey,

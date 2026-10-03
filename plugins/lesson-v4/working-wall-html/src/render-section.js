@@ -24,11 +24,13 @@ const {
   titleBarHeightInches,
   fitLinearBodySize,
   lineBoxPx,
+  boldWidthPx,
   wrappedLines,
 } = require("./layout");
 const { esc, markedHtml, mm, hash, imgTag, titleBarHtml } = require("./shared");
 const { plainCriteria } = require("../../shared/text/criteria-marks");
 const { pickVisual } = require("./visuals");
+const { badgeKey } = require("./svg-renderer");
 
 // Arrows come from "Wall Arrows" (shared.js says why).
 const FONT_STACK_FALLBACK = "'Wall Arrows', 'Segoe Print', cursive";
@@ -204,14 +206,29 @@ function figureHtml(visual, size) {
   );
 }
 
-function textBlockHtml(items, pt, theme) {
+// A step's number in the list is the same green circle its pin prints on the
+// figure (the pictureFirst sheet's badge), so a child matches step 2 below to
+// step 2 on the drawing by its look as well as its number. A part numbered in
+// its own theme colour beside green pins read as two different sets of steps
+// (the divisibility wall, 3 October 2026). Plain text only when no badge was
+// rendered.
+function stepMarkHtml(label, pt, theme, ctx, font) {
+  const badge = ctx && ctx.svgImages ? ctx.svgImages[badgeKey(Number(label))] : null;
+  if (badge) {
+    const sizeMm = mm(lineBoxPx(pt) / 96);
+    return imgTag(badge, sizeMm, sizeMm, "flex:none;align-self:flex-start;");
+  }
+  return `<div style="${font}font-weight:bold;color:${hash(theme.accent)};">${esc(label)}.</div>`;
+}
+
+function textBlockHtml(items, pt, theme, ctx) {
   if (!items.length) return "";
   const font = `font-family:'Comic Sans MS', ${FONT_STACK_FALLBACK};font-size:${pt}pt;line-height:1.3;`;
   const rows = items.map((item) => {
     if (item.kind === "step") {
       return (
         `<div data-part="step" style="display:flex;align-items:baseline;gap:${mm(0.06)}mm;padding:${mm(0.02)}mm 0;">` +
-        `<div style="${font}font-weight:bold;color:${hash(theme.accent)};">${esc(item.label)}.</div>` +
+        stepMarkHtml(item.label, pt, theme, ctx, font) +
         `<div style="flex:1;${font}color:#000000;">${markedHtml(item.text)}</div></div>`
       );
     }
@@ -300,15 +317,27 @@ function renderDiagramSection(card, style, specDir, ctx) {
     const resultExtra = items.filter((item) => item.kind === "result").length * RESULT_EXTRA_IN;
     const textCeiling =
       (figure && figure.buf ? available * TEXT_SHARE_WITH_FIGURE : available) - resultExtra;
+    // A part that is a worked example's method (steps beside its own drawing)
+    // reads like a pictureFirst sheet: the drawing is read from across the
+    // room and the steps are the close-up reminder, so they take that sheet's
+    // step floor. At 36pt the four checks of a divisibility wall needed four
+    // times their parts' height; the two-sheet version the teacher approved
+    // set them at 28pt (2 October 2026). A part of notes alone keeps 36pt.
+    const closeUp = figure && figure.buf && items.some((item) => item.kind === "step");
+    const floorPt = closeUp ? (style.sizes.a3StepSupportMinPt || NOTE_MIN_PT) : NOTE_MIN_PT;
     const notePt = items.length
-      ? fitLinearBodySize(items.map((item) => ({ ...item, text: plainCriteria(item.text) })), NOTE_PT, NOTE_MIN_PT, card.page.size, orientation, style, {
+      ? fitLinearBodySize(items.map((item) => ({ ...item, text: plainCriteria(item.text) })), NOTE_PT, floorPt, card.page.size, orientation, style, {
           label: partLabel(card, index),
           widthOverride: innerWidth,
           titleAreaInches: dims.height - textCeiling,
           safety: 0,
           interItem: 0.04,
-          maxLinesPerItem: 2,
-          floorLinesPerItem: 2,
+          // A close-up step is a success-criteria step copied word for word,
+          // so it may wrap to a third line rather than be refused: "Is the
+          // digit sum in the 3 times table? Then the number is divisible by
+          // 3." takes three at 28pt in a half-sheet part.
+          maxLinesPerItem: closeUp ? 3 : 2,
+          floorLinesPerItem: closeUp ? 3 : 2,
         })
       : 0;
     return { part, figure, items, heading, available, textCeiling, notePt, resultExtra };
@@ -321,8 +350,21 @@ function renderDiagramSection(card, style, specDir, ctx) {
 
   const partHtmls = measured.map(({ part, figure, items, heading, available, textCeiling, resultExtra }, index) => {
     const theme = PART_THEMES[index % PART_THEMES.length];
+    // Each item's own lines at the shared size. Planned at one line an item,
+    // a note that wraps (the fitter allows two) got one line's room, the
+    // figure took the rest, and the second line printed under the part's
+    // panel: "and takes it somewhere new" on the Year 6 renga wall, 2 October
+    // 2026. Counted as Chrome wraps, a wrapped note costs its second line.
+    const lineIn = sharedNotePt * 1.3 / 72;
+    const widthPx = innerWidth * 96;
+    const lines = items.reduce((sum, item) => {
+      const room = item.kind === "result" ? widthPx - 2 * mm(0.08) * 96 / 25.4 : widthPx;
+      const prefixPx = item.kind === "step" ? Math.max(boldWidthPx(`${item.label}.`, sharedNotePt), lineBoxPx(sharedNotePt)) + mm(0.06) * 96 / 25.4 : 0;
+      const counted = wrappedLines(plainCriteria(item.text), sharedNotePt, room, { prefixPx });
+      return sum + (Number.isFinite(counted) ? counted : 1);
+    }, 0);
     const textHeight = items.length
-      ? Math.min(textCeiling, items.length * (sharedNotePt * 1.3 / 72 + 0.04) + 0.06) + resultExtra
+      ? Math.min(textCeiling, lines * lineIn + items.length * 0.04 + 0.06) + resultExtra
       : 0;
     const size = figureSize(figure, innerWidth, available - textHeight);
 
@@ -333,7 +375,7 @@ function renderDiagramSection(card, style, specDir, ctx) {
       headingHtml(part, theme, heading) +
       `<div style="flex:1;display:flex;flex-direction:column;justify-content:center;">` +
       figureHtml(figure, size) +
-      textBlockHtml(items, sharedNotePt, theme) +
+      textBlockHtml(items, sharedNotePt, theme, ctx) +
       `</div>`;
 
     return (

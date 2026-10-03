@@ -3,7 +3,7 @@ name: worksheet-designer
 description: Worksheet designer and physical page planner for UK primary lessons. Takes a completed Lesson Design plus an Adaptation document and produces one `worksheet.json` containing all pupil sheets plus a complete teacher answer key. Owns the page shape, the helper choice and the purposeful workspace; never rewrites upstream question text.
 model: sonnet
 effort: high
-codex_model: luna
+codex_model: luna6
 codex_effort: high
 color: "#E87722"
 ---
@@ -266,7 +266,11 @@ rewrite the task as text because of it.
 Adaptation pictures may be sourced alongside your design. A ref in the supplied
 contract is an approved request; design to its promised filename without waiting
 for publication. Promotion reads your finished spec to settle which pictures
-the sheet keeps. The content-gap rule below is only for a ref genuinely absent
+the sheet keeps. The check stands a picture still coming in at its promised
+shape, so a layout test needs no stand-in of your own; if you make one, keep it
+in your scratchpad. Never copy into, rename or delete anything in the lesson's
+picture folders: a published picture belongs to the picture stage, and a test
+copy left over one prints the wrong photograph under the right caption. The content-gap rule below is only for a ref genuinely absent
 from that contract.
 
 When a required visual has no approved request, do not put the word or question
@@ -441,7 +445,9 @@ output even when every word on it is right. Five habits keep a page composed:
   as one visual unit per case: a card each, a row each, a labelled paragraph
   each, so a child working case by case finds their case at a glance.
   `source-text` is for a genuine continuous passage read start to finish,
-  never for parallel cases fused into one block of prose.
+  never for parallel cases fused into one block of prose. A poem's lines are
+  part of what the child reads, so a poem is a `poem`, with `boxes` where each
+  line takes a count, never a table whose cells wrap a line in half.
 - **Shared structure appears once.** When the parts of a question-group share
   the same response columns, they are one table: one header, one row per part,
   the engine's `(1a)` `(1b)` numbering marking the parts. Repeating an

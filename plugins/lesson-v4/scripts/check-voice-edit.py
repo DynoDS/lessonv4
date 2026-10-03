@@ -8,7 +8,10 @@ where that boundary lives, because a sentence in the editor's instructions can
 be crowded out of a long run and a diff cannot:
 
 - nothing is added, removed or restructured, and no value that is not a string
-  changes, so the board keeps the pieces the lesson designer chose;
+  changes, so the board keeps the pieces the lesson designer chose; the one
+  exception is a success-criteria list, whose steps may be split or joined
+  (a step holding two actions becomes two), because the steps are the method's
+  wording rather than a piece, so a resized list is checked as one text;
 - a string may change only if the class meets it: its old words are one of the
   strings the review packet's class view prints (`design-review-packet.py`,
   `class_view_blocks`), matched whole, so planning notes, ids, settings and
@@ -25,7 +28,9 @@ be crowded out of a long run and a diff cannot:
   54, and `two hours` cannot become `three hours`, though a number word may
   come or go as a plain count);
 - on each slide, a taught word the class read on the board is still on the
-  board, and one the teacher said is still said;
+  board, and one the teacher said is still said, except in a success-criteria
+  step or a drawing's printed words, which may say the action instead when the
+  taught word only names its result (`Add the digits:` for `Digit sum:`);
 - no person or place is named that the approved lesson never mentioned;
 - the photograph contract is byte-identical.
 
@@ -306,6 +311,34 @@ def is_drawing_feature(path: tuple) -> bool:
     )
 
 
+def is_criteria_step(path: tuple) -> bool:
+    """One step of a success-criteria list."""
+    return (
+        len(path) == 5 and path[0] == "successCriteria"
+        and path[2:4] == ("content", "steps") and isinstance(path[4], int)
+    )
+
+
+def criteria_steps(design: dict) -> dict[tuple, list]:
+    out: dict[tuple, list] = {}
+    for index, item in enumerate(design.get("successCriteria") or []):
+        content = item.get("content") if isinstance(item, dict) else None
+        steps = content.get("steps") if isinstance(content, dict) else None
+        if isinstance(steps, list):
+            out[("successCriteria", index, "content", "steps")] = steps
+    return out
+
+
+def resized_steps(baseline: dict, current: dict) -> list[tuple]:
+    """Success-criteria lists whose number of steps changed. The editor may
+    split a step that holds two actions, or join two that are one."""
+    before, after = criteria_steps(baseline), criteria_steps(current)
+    return sorted(
+        (path for path in before if path in after and len(before[path]) != len(after[path])),
+        key=show,
+    )
+
+
 def drawing_print(packet, feature: str) -> list[str]:
     return packet._load_design_validator().diagram_print(feature)
 
@@ -338,6 +371,10 @@ def find_faults(baseline: dict, current: dict, packet) -> list[Fault]:
     curr = _flat(current)
     faults: list[Fault] = []
     forms = class_forms(baseline, packet)
+    resized = resized_steps(baseline, current)
+    for steps_path in resized:
+        base = {p: v for p, v in base.items() if p[:len(steps_path)] != steps_path}
+        curr = {p: v for p, v in curr.items() if p[:len(steps_path)] != steps_path}
     view_text = "\n".join("\n".join(strings) for _l, strings in packet.class_view_blocks(baseline))
 
     for path in sorted(set(curr) - set(base), key=show):
@@ -385,6 +422,41 @@ def find_faults(baseline: dict, current: dict, packet) -> list[Fault]:
 
     if any(f.scope == WHOLE for f in faults):
         return faults
+
+    # A resized criteria list is judged as one text: every step must be
+    # wording the class met, and no number or name may come, go or swap.
+    before_steps, after_steps = criteria_steps(baseline), criteria_steps(current)
+    lesson_words = set(re.findall(r"\b[A-Z][A-Za-z’'-]*", " ".join(v for v in base.values() if isinstance(v, str))))
+    for steps_path in resized:
+        old_steps, new_steps = before_steps[steps_path], after_steps[steps_path]
+        where = show(steps_path)
+        if not all(isinstance(step, str) and step.strip() for step in new_steps):
+            faults.append(Fault(STRING, steps_path, f"{where} holds a step that is not wording"))
+            continue
+        if not all(isinstance(step, str) and plain(step) in forms for step in old_steps):
+            faults.append(Fault(STRING, steps_path, f"{where} is not words the class sees - outside the editor's lane"))
+            continue
+        old_text, new_text = "\n".join(old_steps), "\n".join(new_steps)
+        brought = sorted(set(digits_in(new_text)) - set(numbers_in(old_text, lone_one=True)))
+        gone = sorted(set(digits_in(old_text)) - set(numbers_in(new_text, lone_one=True)))
+        was, now = numbers_in(old_text), numbers_in(new_text)
+        fewer = sorted(n for n in was if now[n] < was[n])
+        more = sorted(n for n in now if now[n] > was[n])
+        invented = sorted(
+            run for run in name_runs(new_text, packet) - name_runs(old_text, packet)
+            if not all(word in lesson_words for word in run.split() if word[:1].isupper())
+        )
+        if brought or gone or (fewer and more):
+            faults.append(Fault(
+                STRING, steps_path,
+                f"{where} changed its numbers ({sorted(set(brought) | set(gone) | set(fewer) | set(more))}) "
+                "while splitting or joining steps - numbers carry the lesson's decisions; keep each one",
+            ))
+        elif invented:
+            faults.append(Fault(
+                STRING, steps_path,
+                f"{where} names {invented}, whom the approved lesson never named - keep each one as it is",
+            ))
 
     def slide_text(flat: dict, slide: tuple, spoken: bool | None = None) -> str:
         return "\n".join(
@@ -461,6 +533,11 @@ def find_faults(baseline: dict, current: dict, packet) -> list[Fault]:
                 if not pattern.search(slide_text(base, slide, spoken)) or pattern.search(now):
                     continue
                 for path in paths:
+                    # A step or a drawing's label may say the action where the
+                    # taught word only named its result; the boards and scripts
+                    # that teach the word keep it.
+                    if is_criteria_step(path) or is_drawing_feature(path):
+                        continue
                     if ((leaf_key(path) == "script") == spoken and pattern.search(reading(packet, path, base[path]))
                             and not pattern.search(reading(packet, path, curr[path]))):
                         faults.append(Fault(
@@ -585,9 +662,10 @@ def settle(working_dir: Path) -> int:
     for fault in faults:
         if fault.scope == STRING:
             put_back.append(fault.where)
-    put_back = with_twins(put_back, base, curr)
+    lists_back = [path for path in put_back if path in criteria_steps(baseline)]
+    put_back = with_twins([path for path in put_back if path not in lists_back], base, curr) + lists_back
     for path in sorted(set(put_back), key=show):
-        set_at(current, path, base[path])
+        set_at(current, path, list(criteria_steps(baseline)[path]) if path in lists_back else base[path])
     (working_dir / DESIGN).write_text(json.dumps(current, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     # The walk-through may tell what was put back (a person the lesson never
     # named, a board line out of lane), so when anything goes back it returns to

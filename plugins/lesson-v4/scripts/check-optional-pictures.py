@@ -93,6 +93,7 @@ REASONS = {
     "drawings-unreachable": "the library listed drawings for this slide and none of them could be opened",
     "library-unavailable": "the drawing library is not on this machine",
     "slide-flagged": "this slide could not be laid out, so it ships blank and flagged for the teacher",
+    "vocabulary-slide": "this is a vocabulary slide, where a decoration is not allowed",
 }
 # The reasons that must be paid for with search evidence rather than asserted.
 # `would-mislead` joined them on 21 September 2026: see the note below and the
@@ -183,6 +184,37 @@ def deck_optional_pictures(lesson: object) -> dict[int, list[str]]:
         walk(slide)
         found[index] = kinds
     return found
+
+
+def vocabulary_surfaces(lesson: object) -> set[int]:
+    """The 1-based slides that are vocabulary surfaces, where P3 is forbidden.
+
+    The same test the builder applies when it drops a decoration
+    (`isVocabularySurface` in builder/src/decorations.js): a `key-vocabulary`
+    template, or any slide holding a `type: "vocab"` object with words. Before
+    `vocabulary-slide` existed these slides had no true reason to give: the
+    measured room refused `full` and `competes`, so eight of twelve runs from
+    29 September to 2 October 2026 recorded `nothing-fits`, which is not why
+    the slide has no drawing.
+    """
+    slides = lesson.get("slides") if isinstance(lesson, dict) else None
+    surfaces: set[int] = set()
+    if not isinstance(slides, list):
+        return surfaces
+
+    def holds_vocab(node: object) -> bool:
+        if isinstance(node, list):
+            return any(holds_vocab(item) for item in node)
+        if not isinstance(node, dict):
+            return False
+        if node.get("type") == "vocab" and isinstance(node.get("words"), list):
+            return True
+        return any(holds_vocab(value) for value in node.values())
+
+    for index, slide in enumerate(slides, 1):
+        if isinstance(slide, dict) and (slide.get("template") == "key-vocabulary" or holds_vocab(slide)):
+            surfaces.add(index)
+    return surfaces
 
 
 SEARCH_SCRIPT = Path(__file__).resolve().parent / "search-educational-svg.js"
@@ -965,6 +997,7 @@ def check(
         raise PassError("optional-picture-pass.json.slides must be an array")
 
     actual = deck_optional_pictures(lesson)
+    vocab_surfaces = vocabulary_surfaces(lesson)
     failures: list[str] = []
     if library_root is not None:
         prefetch_searches(library_root, [
@@ -1067,6 +1100,15 @@ def check(
                     if refusal:
                         failures.append(refusal)
                         continue
+            if reason == "vocabulary-slide":
+                if number not in vocab_surfaces:
+                    failures.append(
+                        f"slide {number} is recorded as vocabulary-slide, but it is not "
+                        "a vocabulary slide (no key-vocabulary template and no vocab "
+                        "words on it), so a decoration is allowed here and the slide "
+                        "answers with a reason about its own space or subject"
+                    )
+                continue
             if reason == "drawings-unreachable":
                 check_unreachable(entry, label, library_root, failures)
                 continue

@@ -349,7 +349,7 @@ place on a wall-of-text slide usually has an answer.
 `decision` is `used` or `none`. On `used`, `pictures` lists the kinds you placed
 there, and the check reads the deck to confirm they are really on that slide.
 
-On `none`, `reason` is one of exactly six, and every one of them is a claim
+On `none`, `reason` is one of exactly seven, and every one of them is a claim
 about **this slide**:
 
 | Reason | What you are saying |
@@ -360,6 +360,7 @@ about **this slide**:
 | `nothing-fits` | You searched the library for this slide and nothing suitable came back. |
 | `drawings-unreachable` | Your searches listed drawings for this slide and not one of them would open. `searched` names the searches; the drawings they returned are ones you were shown the names of and never saw. This is a fetch that failed, not a judgement you made. |
 | `library-unavailable` | The library was not available to this run at all, as the resolver reported. |
+| `vocabulary-slide` | This is a vocabulary slide (`key-vocabulary`, or a slide holding `type: "vocab"` words), where a decoration is not allowed and the build would drop one. It takes no search: the check confirms the slide is a vocabulary slide and refuses it anywhere else. A vocabulary word still missing its own semantic picture is a different question, answered by that word's visual. |
 
 **There is no code for a deck-level answer, and that is deliberate.** "The deck
 is already visual enough", "I used one on slide 4 already", and "this slide has a

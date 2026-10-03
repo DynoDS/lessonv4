@@ -74,8 +74,8 @@ class SpecTests(unittest.TestCase):
         self.assertIn("WORKER_LAUNCH_OK", result.stdout)
         for line in (
             "task_name: lesson_designer",
-            "model: gpt-6-astra",
-            "reasoning_effort: low",
+            "model: gpt-6.1-sol",
+            "reasoning_effort: high",
             "fork_turns: none",
         ):
             with self.subTest(line=line):
@@ -102,29 +102,29 @@ class SpecTests(unittest.TestCase):
     def test_working_wall_builder_gets_its_explicit_visual_review_settings(self) -> None:
         result = run("spec", "--role", "working-wall-builder")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("model: gpt-5.6-luna", result.stdout)
+        self.assertIn("model: gpt-6-luna", result.stdout)
         self.assertIn("reasoning_effort: medium", result.stdout)
 
     def test_selected_normal_and_repair_roles_resolve_to_the_requested_matrix(self) -> None:
         expected = {
-            "lesson-designer": ("gpt-6-astra", "low"),
-            "design-reviewer": ("gpt-6-astra", "low"),
-            "design-reviewer-focused-repair": ("gpt-6-astra", "medium"),
-            "lesson-voice-editor": ("gpt-6-sol", "medium"),
-            "adaptation-designer": ("gpt-6-astra", "low"),
-            "slide-designer": ("gpt-5.6-sol", "medium"),
-            "worksheet-designer": ("gpt-5.6-luna", "high"),
-            "helper-builder": ("gpt-6-astra", "medium"),
-            "image-scout": ("gpt-5.6-luna", "medium"),
-            "diagram-anchor": ("gpt-5.6-sol", "medium"),
-            "slide-decorator": ("gpt-5.6-luna", "medium"),
-            "stick-in-sheets-designer": ("gpt-5.6-luna", "xhigh"),
-            "stick-in-sheets-designer-focused-repair": ("gpt-5.6-luna", "xhigh"),
-            "slide-designer-focused-repair": ("gpt-5.6-sol", "medium"),
-            "worksheet-designer-focused-repair": ("gpt-5.6-sol", "medium"),
-            "working-wall-builder": ("gpt-5.6-luna", "medium"),
-            "working-wall-designer": ("gpt-5.6-sol", "medium"),
-            "working-wall-designer-focused-repair": ("gpt-5.6-sol", "medium"),
+            "lesson-designer": ("gpt-6.1-sol", "high"),
+            "design-reviewer": ("gpt-6.1-sol", "high"),
+            "design-reviewer-focused-repair": ("gpt-6.1-sol", "medium"),
+            "lesson-voice-editor": ("gpt-6.1-sol", "medium"),
+            "adaptation-designer": ("gpt-6.1-sol", "high"),
+            "slide-designer": ("gpt-6.1-sol", "medium"),
+            "worksheet-designer": ("gpt-6-luna", "high"),
+            "helper-builder": ("gpt-6.1-sol", "low"),
+            "image-scout": ("gpt-6-luna", "medium"),
+            "diagram-anchor": ("gpt-6.1-sol", "medium"),
+            "slide-decorator": ("gpt-6-luna", "medium"),
+            "stick-in-sheets-designer": ("gpt-6-luna", "xhigh"),
+            "stick-in-sheets-designer-focused-repair": ("gpt-6-luna", "xhigh"),
+            "slide-designer-focused-repair": ("gpt-6.1-sol", "medium"),
+            "worksheet-designer-focused-repair": ("gpt-6-luna", "medium"),
+            "working-wall-builder": ("gpt-6-luna", "medium"),
+            "working-wall-designer": ("gpt-6.1-sol", "medium"),
+            "working-wall-designer-focused-repair": ("gpt-6.1-sol", "medium"),
         }
         for role, (model, effort) in expected.items():
             with self.subTest(role=role):
@@ -341,13 +341,13 @@ class AuditTests(unittest.TestCase):
             [
                 {
                     "task_name": "lesson_designer",
-                    "model": "gpt-6-astra",
-                    "reasoning_effort": "low",
+                    "model": "gpt-6.1-sol",
+                    "reasoning_effort": "high",
                     "fork_turns": "none",
                 },
                 {
                     "task_name": "image_scout_p1",
-                    "model": "gpt-5.6-luna",
+                    "model": "gpt-6-luna",
                     "reasoning_effort": "medium",
                     "fork_turns": "none",
                 },
@@ -372,7 +372,7 @@ class AuditTests(unittest.TestCase):
         )
         result = self.audit()
         self.assertEqual(result.returncode, 1, result.stdout)
-        self.assertIn("wanted gpt-5.6-luna/high", result.stdout)
+        self.assertIn("wanted gpt-6-luna/high", result.stdout)
         self.assertIn("launched gpt-5.6-terra/high", result.stdout)
 
     def test_a_repair_role_is_matched_by_its_longest_role_prefix(self) -> None:
@@ -382,7 +382,7 @@ class AuditTests(unittest.TestCase):
             [
                 {
                     "task_name": "slide_designer_focused_repair",
-                    "model": "gpt-5.6-sol",
+                    "model": "gpt-6.1-sol",
                     "reasoning_effort": "medium",
                     "fork_turns": "none",
                 }
@@ -398,8 +398,8 @@ class AuditTests(unittest.TestCase):
             [
                 {
                     "task_name": "lesson_designer_redesign_2",
-                    "model": "gpt-6-astra",
-                    "reasoning_effort": "low",
+                    "model": "gpt-6.1-sol",
+                    "reasoning_effort": "high",
                     "fork_turns": "none",
                 }
             ],
@@ -491,8 +491,8 @@ class SessionChoiceTests(unittest.TestCase):
             [
                 {
                     "task_name": "lesson_designer",
-                    "model": "gpt-6-astra",
-                    "reasoning_effort": "low",
+                    "model": "gpt-6.1-sol",
+                    "reasoning_effort": "high",
                     "fork_turns": "none",
                 }
             ],
@@ -514,7 +514,7 @@ class SessionChoiceTests(unittest.TestCase):
         import os
         from datetime import datetime
 
-        launch = [{"task_name": "lesson_designer", "model": "gpt-6-astra", "reasoning_effort": "low", "fork_turns": "none"}]
+        launch = [{"task_name": "lesson_designer", "model": "gpt-6.1-sol", "reasoning_effort": "high", "fork_turns": "none"}]
         history = write_session(self.sessions / "rollout-2026-09-22T11-59-31-history.jsonl", launch)
         with history.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps({"cmd": "python validate.py C:\\Users\\T\\lessons\\working\\year-4-history-lesson-5\\lesson-design.json"}) + "\n")

@@ -177,7 +177,7 @@ class HisDecisionsAreBuilt(unittest.TestCase):
                                                   "## Flags for the teacher\n", "## Judgements\n")]
         self.assertEqual(at, sorted(at))
         # And the launch settings.
-        for line in ("model: opus", "effort: xhigh", "codex_model: astra", "codex_effort: low"):
+        for line in ("model: opus", "effort: xhigh", "codex_model: sol61", "codex_effort: high"):
             self.assertIn(line + "\n", raw.replace("\r\n", "\n"))
 
 

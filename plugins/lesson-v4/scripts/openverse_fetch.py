@@ -50,6 +50,32 @@ class SourceFailure(Exception):
         self.failure_kind = failure_kind
 
 
+def http_failure_kind(exc):
+    """Which kind of failure an HTTP error is: auth, rate_limit or transport.
+
+    A spent quota is not a wrong key. Unsplash answers an exhausted hourly
+    quota with 403 "Rate Limit Exceeded" and X-Ratelimit-Remaining: 0, not
+    429, and reading every 403 as `auth` recorded a spent quota as a bad key:
+    on 30 September and 1 October 2026 that cost three Year 4 lessons their
+    pictures (the Nativity cross, journey and stable, the Shaftesbury
+    fountain, the Leisure replacements) while the key was fine and faithful
+    winners sat on later rungs.
+    """
+    if exc.code == 429:
+        return "rate_limit"
+    if exc.code in (401, 403):
+        headers = getattr(exc, "headers", None)
+        remaining = headers.get("X-Ratelimit-Remaining") if headers is not None else None
+        try:
+            body = exc.read(2048).decode("utf-8", "replace").lower()
+        except Exception:
+            body = ""
+        if (remaining is not None and remaining.strip() == "0") or "rate limit" in body:
+            return "rate_limit"
+        return "auth"
+    return "transport"
+
+
 # Openverse names a licence in its own short codes rather than in prose: `by`,
 # `by-sa`, `cc0`, `pdm`, and the restricted `by-nc`, `by-nd`, `by-nc-sa`,
 # `by-nc-nd`. The set allowed here is the same set Wikimedia's route allows -
@@ -165,7 +191,7 @@ def search_openverse_once(query, reserve):
         with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS) as response:
             data = json.loads(response.read().decode())
     except urllib.error.HTTPError as exc:
-        kind = "auth" if exc.code in (401, 403) else "rate_limit" if exc.code == 429 else "transport"
+        kind = http_failure_kind(exc)
         raise SourceFailure(f"Openverse API returned {exc.code}: {exc.reason}", kind) from exc
     except urllib.error.URLError as exc:
         raise SourceFailure(f"could not reach Openverse: {exc.reason}", "transport") from exc

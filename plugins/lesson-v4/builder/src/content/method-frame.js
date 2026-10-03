@@ -47,6 +47,8 @@ const LABEL_GAP       = 0.08;   // inches between label column and content
 const LABEL_COLOUR    = '0070C0';// house blue — method language reads as the discipline's own words
 
 const ROW_GAP_FRAC    = 0.16;   // vertical breathing room per row, as a fraction of row height
+const LABEL_LINE_FACTOR = 1.2;  // a wrapped label's line height as a multiple of font size
+const WRAP_MIN_GAIN   = 3;      // pt a two-line label must gain over one line to be used
 
 const TEXT_FONT_MAX   = 32;     // pt ceiling for content + labels
 const TEXT_FONT_MIN   = 12;     // pt floor
@@ -77,6 +79,56 @@ function lineWidth(segs, font, boxW, segGap) {
   return w;
 }
 
+// The working a line shows before its answer (`3 + 1 + 2 =` ahead of a box)
+// and the answer itself (the box, or `6` once filled in). On an answer slide
+// the answer carries the deck's reveal marker (`1 + 1 + 4 = ||6`, `||yes`),
+// so it prints in answer green like every other answer on the board; the
+// marker also says where the working ends. Without a box or a marker, a
+// line's text up to its last `=` is working and the rest is the answer, so a
+// filled frame keeps its answers in the same column as a blank one's boxes.
+function splitLead(segs) {
+  const only = segs.length === 1 && !segs[0].box ? String(segs[0].text) : null;
+  const marker = only ? only.indexOf('||') : -1;
+  if (marker !== -1) {
+    const work = only.slice(0, marker).trim();
+    return {
+      lead: work ? [{ text: work }] : [],
+      tail: [{ text: only.slice(marker + 2).trim(), answer: true }]
+    };
+  }
+  let cut = segs.findIndex((seg) => seg.box);
+  if (cut === -1) {
+    const text = only;
+    const eq = text ? text.lastIndexOf('=') : -1;
+    if (eq > 0 && text.slice(eq + 1).trim()) {
+      return {
+        lead: [{ text: text.slice(0, eq + 1).trim() }],
+        tail: [{ text: text.slice(eq + 1).trim() }]
+      };
+    }
+    cut = 0;
+  }
+  return { lead: segs.slice(0, cut), tail: segs.slice(cut) };
+}
+
+// A label that fits within `cap` stays whole. One that does not is split at
+// the space that makes its two lines most even, so a question never ends with
+// one word left alone on the second line (`Is 51 divisible by` / `6?`). A label
+// no two-line split brings within the cap comes back as three lines, which
+// fails the size. Infinity leaves every label whole.
+function wrapLabel(label, font, cap, textBoxWidthIn) {
+  const width = (text) => textBoxWidthIn(text, font, true);
+  if (!Number.isFinite(cap) || width(label) <= cap) return [label];
+  const words = label.split(/\s+/);
+  let best = null;
+  for (let i = 1; i < words.length; i += 1) {
+    const lines = [words.slice(0, i).join(' '), words.slice(i).join(' ')];
+    const widest = Math.max(width(lines[0]), width(lines[1]));
+    if (widest <= cap && (!best || widest < best.widest)) best = { lines, widest };
+  }
+  return best ? best.lines : [label, '', ''];
+}
+
 // Each step is one line: an optional small step number, the label, then the
 // content with its write-in boxes, and the purple panel hugs the lines.
 //
@@ -84,9 +136,9 @@ function lineWidth(segs, font, boxW, segGap) {
 // said, so "Two numbers that make 10:" wrapped over four lines and the panel
 // ran the full height of its zone with big empty purple areas around two rows
 // of boxes (a Year 4 maths My Turn, six slides running, 29 September 2026). The
-// label column is now as wide as the longest label at the chosen size, every
-// label stays on one line, the size is the largest at which every line fits the
-// width, and the panel is only as big as its lines, centred in the zone. A
+// label column is now as wide as the longest label at the chosen size, a label
+// takes a second line only when that prints the frame clearly bigger, and the
+// panel is only as big as its lines, centred in the zone. A
 // step number (`step` on a line, or `numbered: true` for 1, 2, 3...) prints in
 // a small green circle like the success criteria's, so step 1 of the frame is
 // criterion 1 of the panel beside it.
@@ -108,37 +160,87 @@ function drawMethodFrame(pptx, slide, zone, data) {
 
   const hasLabels = lines.some((l) => l && String(l.label || '').trim().length > 0);
   const numbered = data.numbered === true || lines.some((l) => l && Number.isFinite(l.step));
-  const tokenized = lines.map((l, i) => ({
-    label: String((l && l.label) || ''),
-    step: l && Number.isFinite(l.step) ? l.step : i + 1,
-    segs: tokenizeWriteInContent(l && l.content)
-  }));
+  const tokenized = lines.map((l, i) => {
+    const segs = tokenizeWriteInContent(l && l.content);
+    return {
+      label: String((l && l.label) || ''),
+      step: l && Number.isFinite(l.step) ? l.step : i + 1,
+      segs,
+      ...splitLead(segs)
+    };
+  });
 
-  const measure = (font) => {
+  // `cap` is the widest a label may run before it wraps onto a second line;
+  // Infinity keeps every label on one line. A label that would need a third
+  // line makes the size fail rather than grow a tall narrow column.
+  const measure = (font, cap) => {
     const boxW = (BOX_W_FACTOR * font) / 72;
     const boxH = (BOX_H_FACTOR * font) / 72;
     const segGap = (SEG_GAP_FACTOR * font) / 72;
     const stepD = numbered ? (STEP_D_FACTOR * font) / 72 : 0;
     const stepW = numbered ? stepD + STEP_GAP : 0;
-    const labelW = hasLabels
-      ? tokenized.reduce((m, t) => Math.max(m, t.label.trim() ? textBoxWidthIn(t.label, font, true) : 0), 0)
-      : 0;
     const labelGap = hasLabels ? LABEL_GAP + segGap : 0;
-    const contentW = tokenized.reduce((m, t) => Math.max(m, lineWidth(t.segs, font, boxW, segGap)), 0);
-    const rowH = boxH * (1 + 2 * ROW_GAP_FRAC);
+    const lineH = (LABEL_LINE_FACTOR * font) / 72;
+    const padH = boxH * 2 * ROW_GAP_FRAC;
+    // Each line's working runs straight on from its own label, and only the
+    // answer column lines up: the boxes start where the widest label-plus-
+    // working ends. A short label's working fills the room beside it instead
+    // of taking a column of its own past the longest label.
+    let fits = true;
+    const rows = tokenized.map((t) => {
+      const labelLines = hasLabels && t.label.trim() ? wrapLabel(t.label.trim(), font, cap, textBoxWidthIn) : [];
+      const labelW = labelLines.reduce((m, l) => Math.max(m, textBoxWidthIn(l, font, true)), 0);
+      const leadW = t.lead.length ? lineWidth(t.lead, font, boxW, segGap) + segGap : 0;
+      // When a line's working, not its label, makes it the long one
+      // (`Add the digits: 5 + 4 + 6 + 3 =`), the working drops onto a second
+      // line under its label, so a long sum no longer holds the frame small.
+      const stacked = Number.isFinite(cap) && labelLines.length === 1 && leadW > 0 &&
+        labelW + labelGap + leadW > cap && leadW <= cap;
+      const lineCount = labelLines.length + (stacked ? 1 : 0);
+      if (lineCount > 2) fits = false;
+      const extent = stacked
+        ? Math.max(labelW + labelGap, leadW)
+        : labelW + (labelW ? labelGap : 0) + leadW;
+      const rowH = Math.max(boxH, lineCount * lineH) + padH;
+      return { labelLines, labelW, leadW, rowH, stacked, extent };
+    });
+    const answerX = rows.reduce((m, r) => Math.max(m, r.extent), 0);
+    const tailW = tokenized.reduce((m, t) => Math.max(m, lineWidth(t.tail, font, boxW, segGap)), 0);
     return {
-      font, boxW, boxH, segGap, stepD, stepW, labelW, labelGap, contentW, rowH,
-      w: stepW + labelW + labelGap + contentW,
-      h: rowH * tokenized.length
+      font, boxW, boxH, segGap, stepD, stepW, labelGap, rows, answerX, tailW, fits,
+      w: stepW + answerX + tailW,
+      h: rows.reduce((s, r) => s + r.rowH, 0)
     };
   };
+  const fitsZone = (trial) => trial.fits && trial.w <= maxInnerW && trial.h <= maxInnerH;
 
   // The largest size at which every line fits the width and the rows fit the
-  // height, never below the floor.
-  let m = measure(TEXT_FONT_MIN);
-  for (let font = TEXT_FONT_MAX; font >= TEXT_FONT_MIN; font -= 1) {
-    const trial = measure(font);
-    if (trial.w <= maxInnerW && trial.h <= maxInnerH) { m = trial; break; }
+  // height, never below the floor, first with every label on one line.
+  // Frames side by side in a row share one size, the smallest any of them
+  // needs (row.js sets the ceiling), so two answers never sit at two sizes.
+  const fontMax = Math.max(TEXT_FONT_MIN, Math.min(TEXT_FONT_MAX, zone.methodFrameFontMax || TEXT_FONT_MAX));
+  let m = measure(TEXT_FONT_MIN, Infinity);
+  for (let font = fontMax; font >= TEXT_FONT_MIN; font -= 1) {
+    const trial = measure(font, Infinity);
+    if (fitsZone(trial)) { m = trial; break; }
+  }
+  // Then the long labels may wrap onto a second line, kept only when that
+  // reads at least 3pt bigger (the teacher's choice, 2 October 2026, after
+  // seeing both: "B is way better"). One line for every label was the rule
+  // because a label column a third of the frame wide once wrapped `Two numbers
+  // that make 10:` over four lines and left the panel mostly empty purple (29
+  // September 2026); two lines at most, split evenly, and the panel still
+  // hugging its lines keeps that from coming back.
+  if (hasLabels) {
+    for (let font = fontMax; font >= m.font + WRAP_MIN_GAIN; font -= 1) {
+      const widest = measure(font, Infinity).answerX;
+      let found = null;
+      for (let f = 0.95; f >= 0.45 && !found; f -= 0.05) {
+        const trial = measure(font, widest * f);
+        if (fitsZone(trial)) found = trial;
+      }
+      if (found) { m = found; break; }
+    }
   }
 
   const innerW = Math.min(maxInnerW, m.w);
@@ -171,11 +273,12 @@ function drawMethodFrame(pptx, slide, zone, data) {
 
   const font = m.font;
   const labelX = innerX + m.stepW;
-  const contentX = labelX + m.labelW + m.labelGap;
 
+  let rowY = innerY;
   tokenized.forEach((t, i) => {
-    const rowY = innerY + i * m.rowH;
-    const midY = rowY + m.rowH / 2;
+    const row = m.rows[i];
+    const rowH = row.rowH;
+    const midY = rowY + rowH / 2;
 
     if (numbered) {
       slide.addShape(pptx.shapes.OVAL, {
@@ -189,19 +292,31 @@ function drawMethodFrame(pptx, slide, zone, data) {
       });
     }
 
-    if (hasLabels && t.label.trim()) {
-      slide.addText(t.label, {
-        x: labelX, y: rowY, w: m.labelW, h: m.rowH,
+    // A stacked line is its label over its working, the pair centred in the
+    // row; otherwise the label fills the row's height.
+    const lineH = (LABEL_LINE_FACTOR * font) / 72;
+    const labelY = row.stacked ? midY - lineH : rowY;
+    const labelH = row.stacked ? lineH : rowH;
+    if (row.labelLines.length) {
+      // The break is chosen here and written in, so PowerPoint never wraps it
+      // somewhere else.
+      slide.addText(row.labelLines.join('\n'), {
+        x: labelX, y: labelY, w: row.labelW, h: labelH,
         fontFace: FONT, fontSize: font, bold: true,
         color: LABEL_COLOUR, align: 'left', valign: 'middle', margin: 0, fit: FIT, wrap: false
       });
     }
 
-    let cx = contentX;
-    t.segs.forEach((seg) => {
+    let cx = row.stacked ? labelX : labelX + row.labelW + (row.labelW ? m.labelGap : 0);
+    [...t.lead, ...t.tail].forEach((seg, j) => {
+      if (j === t.lead.length) cx = labelX + m.answerX;
+      // On a stacked line the answer sits on the working's line, beside it.
+      const segY = row.stacked ? midY : rowY;
+      const segH = row.stacked ? lineH : rowH;
+      const boxMid = row.stacked ? midY + lineH / 2 : midY;
       if (seg.box) {
         slide.addShape(pptx.shapes.RECTANGLE, {
-          x: cx, y: midY - m.boxH / 2, w: m.boxW, h: m.boxH,
+          x: cx, y: boxMid - m.boxH / 2, w: m.boxW, h: m.boxH,
           fill: { color: BOX_FILL },
           line: { color: BOX_LINE, width: BOX_LINE_W }
         });
@@ -209,14 +324,23 @@ function drawMethodFrame(pptx, slide, zone, data) {
       } else {
         const w = segTextW(seg.text, font);
         slide.addText(seg.text, {
-          x: cx, y: rowY, w, h: m.rowH,
+          x: cx, y: segY, w, h: segH,
           fontFace: FONT, fontSize: font, bold: true,
-          color: COLOURS.body, align: 'left', valign: 'middle', margin: 0, fit: FIT
+          color: seg.answer ? COLOURS.green : COLOURS.body, align: 'left', valign: 'middle', margin: 0, fit: FIT
         });
         cx += w + m.segGap;
       }
     });
+    rowY += rowH;
   });
+  return m.font;
 }
 
-module.exports = { drawMethodFrame };
+// The size a frame would print at in this zone, found without drawing it, so
+// a row of frames can share the smallest.
+function methodFrameFont(zone, data) {
+  const noop = () => {};
+  return drawMethodFrame({ shapes: {} }, { addShape: noop, addText: noop, addImage: noop }, zone, data);
+}
+
+module.exports = { drawMethodFrame, methodFrameFont };

@@ -636,3 +636,18 @@ def test_without_a_plan_the_view_says_the_later_lessons_are_unknown(tmp_path: Pa
     view = prepared_view(tmp_path)
     assert "## Where this lesson sits" in view
     assert "lessons either side are unknown" in view
+
+
+def test_a_method_frame_on_the_board_offers_the_digit_cards() -> None:
+    # A method the board recorded only as a method frame may go on the wall
+    # drawn onto its example's digits (visual language, Choose visuals, idea
+    # 1). The 2 October 2026 divisibility wall was told that route existed and
+    # given no fields for it, because its slides drew no digit cards.
+    primitives = packet.visual_primitives(ROOT)
+    assert "digit-cards" in primitives
+    frame = {"type": "method-frame", "title": "316", "lines": [{"label": "Last two digits:", "content": "16"}]}
+    with_frame = {"slides": [{"body": {"items": [frame]}}]}
+    without = {"slides": [{"body": {"items": [{"type": "table", "headers": ["a"], "rows": [["b"]]}]}}]}
+    design = {"representations": [], "lesson": {}}
+    assert "digit-cards" in packet.triggers_for(design, with_frame, [], primitives)["primitives"]
+    assert "digit-cards" not in packet.triggers_for(design, without, [], primitives)["primitives"]

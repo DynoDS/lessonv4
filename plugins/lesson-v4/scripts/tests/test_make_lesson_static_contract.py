@@ -213,8 +213,8 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             ROOT / "agents" / "design-reviewer.md"
         ).read_text(encoding="utf-8")
 
-        self.assertIn("model: astra", reviewer)
-        self.assertIn("codex_effort: low", reviewer)
+        self.assertIn("model: sol61", reviewer)
+        self.assertIn("codex_effort: high", reviewer)
         self.assertIn(
             "## Material-defect boundary",
             reviewer,
