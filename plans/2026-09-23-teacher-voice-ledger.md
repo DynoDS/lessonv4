@@ -994,3 +994,12 @@ The standing rule: the reason stays, the incident goes to the build log, a case 
 ## After the subject-files release (4.2.291, 25 September 2026)
 
 - **VG-M42, VG-M43 and VG-M44**: their words were in the writing guide (`references/authoring-subject-files.md`) and the make-subject-file skill (`skills/make-subject-file/SKILL.md`), removed by his decisions 1 and 3 on the subject-files list (24 September): "forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future." and "just remove it completely".
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release changed two lines these rows quote: VG-L16 (the designer's
+form check now keeps the route on the board in whole sentences, said more fully in the
+script, routes 7i) and VG-M49 (a skill `prepare` unit's `activity` in `explanation` mode
+and a task lesson's `modelledOn` are child-facing, routes 7e). It also adds one pointer
+sentence under §5: an explanation usually goes the way the teacher explains, and it is not
+a template. Release 5 reads them as they now stand.

@@ -81,7 +81,9 @@ class ACalmClassroom(unittest.TestCase):
     def test_movement_beats_give_way_to_seated_forms(self) -> None:
         text = flat(REF / "do-beats.md")
         self.assertIn("**The user keeps a calm classroom.**", text)
-        self.assertIn("Choose a whole-class movement beat only when the teacher asks for it.", text)
+        # Routes decision 1 (24 September 2026, "y"): movement without his asking
+        # only when the movement is itself what is being learned.
+        self.assertIn("Choose a whole-class movement beat only when the teacher asks for it, or when the movement is itself what is being learned (standing and making a quarter turn to learn what a quarter turn is).", text)
 
     def test_thumbs_up_is_not_a_do_beat(self) -> None:
         self.assertIn("it is not a Do beat at all, only a quick read the teacher may add beside one", flat(REF / "do-beats.md"))

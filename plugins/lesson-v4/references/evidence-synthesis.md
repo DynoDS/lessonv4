@@ -1,6 +1,6 @@
 # Evidence Synthesis for UK Primary Lesson Design
 
-Purpose: a decision-support document for an AI agent designing lesson PowerPoints. Organised by lesson component. Each section gives the principle, the cognitive mechanism, classroom implications, common failure modes, and key sources.
+Purpose: a decision-support document for an AI agent designing lessons. Organised by lesson component. Each section gives the principle, the cognitive mechanism, classroom implications, common failure modes, and key sources.
 
 This file supplies conditional evidence and possible mechanisms. It does not automatically govern a lesson or override `preferences.md`. The lesson designer actively uses the evidence where it is relevant and its conditions fit, and follows the teacher's settled classroom decisions where the two differ.
 
@@ -26,7 +26,7 @@ The purpose note and governing idea above, and the Cross-Cutting Principles at t
 
 **Principle.** Start every lesson by forcing pupils to pull prior knowledge out of long-term memory. Rosenshine #1 (daily review) and #10 (weekly/monthly review).
 
-**Why it works.** Retrieval is a storage event, not just a test. Each act of retrieval strengthens the memory trace and the cues that lead to it (testing effect, Roediger & Karpyne). Spacing retrieval across days produces more durable learning than massed practice. Interleaving topics forces discrimination — pupils have to decide *which* method applies, not just execute the one just shown. Retrieval also activates schemas that upcoming teaching will extend, reducing intrinsic load for the new content.
+**Why it works.** Retrieval is a storage event, not just a test. Each act of retrieval strengthens the memory trace and the cues that lead to it (testing effect, Roediger & Karpicke). Spacing retrieval across days produces more durable learning than massed practice. Interleaving topics forces discrimination — pupils have to decide *which* method applies, not just execute the one just shown. Retrieval also activates schemas that upcoming teaching will extend, reducing intrinsic load for the new content.
 
 **Classroom implications.**
 - Normally retrieve the previous lesson when it is known; otherwise retrieve the prerequisite for today's objective.
@@ -238,11 +238,13 @@ This is the most important decision the agent makes. The evidence is clear but n
 
 **Why.** Dialogic teaching has a credible evidence base. Robin Alexander's work on dialogic teaching shows that classrooms where children's talk is purposeful, cumulative and reciprocal produce better reasoning and writing than transmission-only classrooms. Neil Mercer's *exploratory talk* research shows the same — children think more deeply when they articulate, listen, push back and revise positions. The EEF's *Dialogic Teaching* evaluation (2017) found measurable gains in English, science and maths reasoning for upper-primary children when teachers used structured talk routines. Ofsted's PSHE / Citizenship guidance emphasises that values-based learning needs structured discussion, not lecture.
 
-**Why the caveats matter.** Dialogic teaching needs enough knowledge, a concrete stimulus, a worthwhile central question, safe distance where needed and a structure that lets each child form and evidence a view. Lesson-specific follow-up questions may help a teacher deepen the actual discussion, but sentence stems, push-back questions and synthesis are conditional teaching tools, not compulsory scripts or classroom-management routines. Correct factual errors, safeguarding issues and harmful claims rather than treating them as equally defensible opinions.
+**Why the caveats matter.** Dialogic teaching needs enough knowledge, a concrete stimulus, a worthwhile central question, safe distance where needed and a structure that lets each child form and evidence a view. Lesson-specific follow-up questions may help a teacher deepen the actual discussion, but sentence stems and push-back questions are conditional teaching tools, not compulsory scripts or classroom-management routines, and the one Synthesise after the last discussion is the route's own beat. Correct factual errors, safeguarding issues and harmful claims rather than treating them as equally defensible opinions.
 
 **Red flags.** Pure transmission of values dressed up as a discussion ("here are the seven kinds of influence — copy them down"). Discussion with no Synthesise (the consolidation is the load-bearing step). Sentence-stem talk used as a substitute for thinking — children parrot stems without committing to a position. Dialogic used for content that genuinely has a right answer (e.g. how the digestive system works, how to multiply two-digit numbers) — that's Content-based or Skill-based. Reflect tasks worded so vaguely that children can fill them with anything and pass — the Reflect should require a *position* and a *reason*, not just a feeling.
 
 **Default.** Most foundation-subject lessons in primary school are still Content-based — a body of knowledge children need to understand and recall. Dialogic is the right structure when the LO is genuinely about position-taking and reasoning, and the lesson's evidence of learning is what children write or argue afterwards, not what they can recite.
+
+**Sources.** Robin Alexander, *A Dialogic Teaching Companion* (2020); Neil Mercer, *Words and Minds* (2000) and the *exploratory talk* tradition; EEF, *Dialogic Teaching* evaluation report (2017); Ofsted PSHE / Citizenship subject reviews.
 
 ### Task-Centred
 
@@ -251,8 +253,6 @@ This is the most important decision the agent makes. The evidence is clear but n
 **Why.** Authentic application can integrate knowledge, decision-making and performance when the task receives enough protected time. A short enabling input may prepare children without turning the lesson into a sequence of disconnected exercises.
 
 **Boundary.** Use Skill-based when repeated performances are needed to acquire a method. Use Content-based when substantial new knowledge must be taught. Use Discovery when the phenomenon must be investigated before its explanation is secured.
-
-**Sources.** Robin Alexander, *A Dialogic Teaching Companion* (2020); Neil Mercer, *Words and Minds* (2000) and the *exploratory talk* tradition; EEF, *Dialogic Teaching* evaluation report (2017); Ofsted PSHE / Citizenship subject reviews.
 
 ---
 

@@ -78,7 +78,7 @@ The most useful feedback move during and after the task is to find the **first p
 
 "Add more detail" tells the child nothing. **"What happens between the acid being made and the tooth hurting?"** makes them supply the missing mechanism.
 
-Put those questions in `speakerNotes.lookFor` on the task beat, naming the links most likely to be skipped and the question to ask at each: `Look for: the acid named as something the germs make - if a child jumps from sugar to the hole, ask what the germs did with the sugar.` That is diagnostic in a way that asking for length is not.
+Put the one link most children skip, and the question to ask at it, in `speakerNotes.lookFor` on the task beat, inside its 25 words: `Look for: the acid named as something the germs make: if a child jumps from sugar to the hole, ask what the germs did with the sugar.` The other likely gaps and their questions go in the same beat's `speakerNotes.teacherInfo`, beside the likely mistakes. That is diagnostic in a way that asking for length is not.
 
 ## When the launch shows the model
 

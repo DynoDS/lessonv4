@@ -1028,3 +1028,11 @@ words. G10 and H03 are kept word for word; H05's first two sentences and G12 mov
 The same lines are rows of the later topics' lists, which their releases read against
 the mapping: routes RT-C27, E12, E13, E40, E41, E42, E44, J06, P12, P13, P19; reviewer
 RV-H12, H14, J48, K02, S05, S25, T11; playbook PB-S14; voice VG-M33.
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release moved three pins of this list's file in place: SA-E20 (a
+skill `prepare` unit's `activity` in `explanation` mode and a task lesson's `modelledOn`
+are words the class reads, routes 7e), SA-M08 (the reviewer's launch line gains his
+preferences decision 13b) and PF-Q14's paragraph (the teeth slide's story left the content
+route for the build log). SA-E20's words are the ledger's own row, extended.

@@ -1650,21 +1650,54 @@ def validate_teach_says_it_once(sequence: list[dict[str, Any]], sticky_by_id: di
 
 _EXPLAINS = re.compile(r"explain|explanation|compar|paragraph|justif", re.IGNORECASE)
 
+# The beats that ask each child for the lesson's substantial written work, in
+# every route: a content or skill lesson's Practise, a task lesson's Do the task.
+_SUBSTANTIAL_TASKS = {"practise": "Practise", "do-task": "Do the task"}
+
+
+def _asks_for_an_explanation(unit: dict[str, Any]) -> bool:
+    """An explanation task carries the fields `explanation-tasks.md` owns
+    (`reasoningWords`, `rehearsal`), and a Practise also names its form in
+    `format`. A Do the task's `activity` is not searched for the word: an
+    enquiry that compares two materials is not a written comparison."""
+    content = unit.get("content") or {}
+    if content.get("reasoningWords") or content.get("rehearsal"):
+        return True
+    return unit.get("kind") == "practise" and bool(_EXPLAINS.search(content.get("format") or ""))
+
 
 def _shows_the_class_a_model(unit: dict[str, Any]) -> bool:
     """Whether this beat puts a good finished instance in front of the class:
-    a modelled turn, a model answer revealed to them, or a launch's pair."""
-    if unit.get("kind") in {"my-turn", "our-turn"}:
-        return True
+    a model answer revealed to them, or a launch's pair.
+
+    A My Turn or an Our Turn counts only when it shows the kind of thing
+    children then write: its own question asks for an explanation, and its good
+    one is on the board (its model answer revealed, or a My Turn's modelled
+    exemplar written live). A maths turn that models the rounding has shown the
+    rounding, not what a good explanation of it looks like, and the teacher's
+    answer of 24 September 2026 was that such a turn does not count.
+    """
+    kind = unit.get("kind")
+    content = unit.get("content") or {}
     answer = unit.get("answer") or {}
-    if answer.get("kind") in {"model", "standard"} and answer.get("delivery") in {"answer-slide", "visible-in-unit"}:
+    revealed = (
+        answer.get("kind") in {"model", "standard"}
+        and answer.get("delivery") in {"answer-slide", "visible-in-unit"}
+    )
+    if kind in {"my-turn", "our-turn"}:
+        if not _EXPLAINS.search(content.get("example") or ""):
+            return False
+        written_live = kind == "my-turn" and bool((content.get("modelledExemplar") or "").strip())
+        return revealed or written_live
+    if revealed:
         return True
-    launch = (unit.get("content") or {}).get("launch")
+    launch = content.get("launch")
     return isinstance(launch, dict) and launch.get("goodLooksLike") is not None
 
 
 def validate_explanation_task_is_modelled(structure: str, sequence: list[dict[str, Any]]) -> None:
-    """A written explanation or comparison is shown before it is asked for.
+    """A written explanation or comparison is shown before it is asked for, in
+    every route.
 
     On 22 September 2026 a Year 4 history lesson ended on `Explain how these
     examples show change and continuity` with `launch: null`: the only earlier
@@ -1672,18 +1705,27 @@ def validate_explanation_task_is_modelled(structure: str, sequence: list[dict[st
     child had seen what a good explanation of it looked like, and the teacher
     who taught it said so ("You haven't given the tools to explain"). The
     exemption the launch rule allowed, `a form they have made before`, was the
-    door, because nothing could check it. A skill lesson is left alone: its My
-    Turn and Our Turn model the move every time.
+    door, because nothing could check it. The teacher's answer of 24 September
+    2026 was one rule everywhere: a skill lesson's Practise and a task lesson's
+    Do the task are checked too, and a My Turn or Our Turn counts only when it
+    shows the kind of thing children then write.
+
+    His preferences decision 13b lets criteria that already show a good one
+    stand in for the good instance ("a writing task whose criteria already show
+    a good paragraph skips a second model"), but only an actual good one, never
+    a list of what a good one includes. No criteria shape (steps, a reference
+    table, labelled references) holds a written model, so nothing here can see
+    one, and a written explanation still needs its good instance: a launch pair,
+    or an earlier beat that showed one. The words keep 13b for the designer and
+    the reviewer. The first build of this check passed any launch whose beat
+    carried criteria, and three maths lessons whose rounding steps were attached
+    as criteria went through with a one-line launch and no explanation shown.
     """
-    if structure == "Skill-based":
-        return
     for index, unit in enumerate(sequence):
-        if unit.get("kind") != "practise":
+        beat = _SUBSTANTIAL_TASKS.get(unit.get("kind"))
+        if beat is None or not _asks_for_an_explanation(unit):
             continue
         content = unit.get("content") or {}
-        explains = bool(content.get("reasoningWords")) or bool(_EXPLAINS.search(content.get("format") or ""))
-        if not explains:
-            continue
         # Its own answer slide comes after the writing, so only its launch counts.
         launch = content.get("launch")
         if isinstance(launch, dict) and launch.get("goodLooksLike") is not None:
@@ -1692,15 +1734,17 @@ def validate_explanation_task_is_modelled(structure: str, sequence: list[dict[st
             continue
         expect(
             False,
-            f"teachingSequence[{index}].content.launch: this Practise asks each child to write an "
+            f"teachingSequence[{index}].content.launch: this {beat} asks each child to write an "
             "explanation or comparison, and nothing earlier in the lesson has shown the class a good "
             "one: the launch has no good instance beside a weak one, and no earlier beat reveals its "
-            "model answer. A child meeting the form for the first time in the task has to invent how "
-            "the explanation goes and use the new learning at once, and the teacher has nothing on the "
-            "board to point at. Give `launch.goodLooksLike` a strong instance beside a weak one on a "
-            "parallel case (the lesson's own taught case works), or reveal the model answer of an "
-            "earlier explanation Do to the class (`answer.delivery: answer-slide`) so they have seen a "
-            "good one before they write their own",
+            "model answer (a My Turn or Our Turn counts only when its own question asks for an "
+            "explanation and its good one is on the board; success criteria that list what a good one "
+            "includes are not a good one shown). A child meeting the form for the first "
+            "time in the task has to invent how the explanation goes and use the new learning at "
+            "once, and the teacher has nothing on the board to point at. Give `launch.goodLooksLike` "
+            "a strong instance beside a weak one on a parallel case (the lesson's own taught case "
+            "works), or reveal the model answer of an earlier explanation beat to the class "
+            "(`answer.delivery: answer-slide`) so they have seen a good one before they write their own",
         )
 
 
@@ -2089,8 +2133,8 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
         keys = {"headline", "explanation", "takeaway", "teachingText", "keyQuestions"}
         expect_exact_keys(content, keys, keys, path)
         strings(("headline",))
-        # The teaching of the idea as the child reads it: the route from what
-        # the class already has to the sentence the slide lands. Required. It
+        # The teaching of the idea as the child reads it: the route that
+        # follows the sentence the slide lands. Required. It
         # was nullable, "when the board already says it", and a Year 4 history
         # deck reached the teacher on 14 September 2026 as a picture, the label
         # `A Tudor farm household` and nothing to teach from; the route was in
@@ -2098,7 +2142,7 @@ def validate_content(kind: str, raw: Any, path: str, sticky_ids: set[str]) -> No
         # (preferences.md, Slide Philosophy, "The fact is the destination").
         expect(
             isinstance(content["explanation"], str) and content["explanation"].strip(),
-            f"{path}.explanation must carry the teaching as the child reads it: the route from what the class already has, through the thing on the board, to the sentence the slide lands, in whole sentences the teacher could say. A headline, a picture and a star fact is a label, and a teacher who does not know the topic cannot teach from it with the notes closed",
+            f"{path}.explanation must carry the teaching as the child reads it: the route this teacher usually walks after the sentence the slide lands, the because or so that explains it, then an example on the board or what it does not mean, in whole sentences the teacher could say. A headline, a picture and a star fact is a label, and a teacher who does not know the topic cannot teach from it with the notes closed",
         )
         validate_takeaway(content["takeaway"], f"{path}.takeaway", sticky_ids)
         expect_nullable_string(content["teachingText"], f"{path}.teachingText")
@@ -3009,9 +3053,10 @@ def validate_route_sequence(
                 continue
             expect(
                 label.lower().startswith(word.lower()),
-                f"teachingSequence[{index}].label must begin with '{word}' and then "
-                f"name the move ('{word} - Which thousand is nearer?'): children read a "
-                "skill lesson by these three words, and the slide title is this label",
+                f"teachingSequence[{index}].label must begin with '{word}': children read a "
+                "skill lesson by these three words, and the slide title is this label. In maths "
+                f"the plain words are what the teacher wants ('{word}'); in other subjects name "
+                f"the move after them ('{word} - Where does the comma go?')",
             )
 
         # A cycle is the unit of skill teaching: My Turn, an optional Our Turn,

@@ -22,13 +22,13 @@ So pick each beat on both axes, and think about the shape across the lesson rath
 
 Do not ban mini-whiteboards or devices and do not make books or cold calling the default. Normally state the learning action. Name a device, medium or substantive response structure only when it genuinely forms part of the selected activity.
 
-Each entry follows the same shape — what it is, register, best for, why it works, SEND access notes, source — so the agent can compare on like-for-like fields.
+Each entry says what it is and what it is best for, and gives its access notes (`SEND access`, or `Demands and supports`); some also carry `The limit`, a `Register` and `Mechanism`, or the `Teacher-owned response routine` they need, and two are marked `Not used`, so the agent can compare on like-for-like fields.
 
 ## Setting the task
 
 A Do beat is set, not only asked. The heavy ones are a main activity in miniature: children move, something is handed out, they work with a partner, and they write something they keep. A beat like that goes wrong before the thinking starts, in the thirty seconds where nobody is sure what they have or what they are doing with it.
 
-A Year 4 history beat on 17 September 2026 gave every child a printed record to complete, a source to quote from and a partner to share it with, and wrote no words to the children at all. The card sort beside it was fully prepared: what the cards were, one set between two, at tables, once both accounts had been read. The difference was not the teaching. A sort has a field for its handling and a written task does not, so preparation was being decided by which beat happened to have a schema slot.
+A sort has a field for its handling and a written task does not, so preparation can end up decided by which beat happens to have a schema slot.
 
 **So when a Do beat sets children a task, `pupilInstruction` carries the words a teacher would actually say to start it.** Four things, in this order: what kind of work this is, what they are reading or handling and who with, what they are trying to find out, and what finishing it actually means. `Historians find out what life was like from records like this one. Read what Patience told the inspectors with your partner, and see what you can find out: how long she worked, how hard or dangerous it was, and how she was treated. Fill in the table together. Every row takes two things: your answer, and the actual words from her account that show it.` A tired teacher, or a cover teacher who has never seen the lesson, can start the task from that alone, which is the test to write to.
 
@@ -59,9 +59,9 @@ There is no compulsory non-writing activity, fixed content-to-format route or SE
 
 Use the contents to open only the activity families relevant to the intended thinking and response demands. There is no required number of catalogue sections to read.
 
-- **§1 Recall** — eight retrieval formats (brain dump, choral response, retrieval roulette). Read when a chunk is facts, names, dates, definitions or rules that need locking in before you build on them.
-- **§2 Talk** — eight oral-rehearsal formats (turn and talk, think-pair-share, convince your partner). Read when children need to say it before they can write it: explanations, comparisons, opinions, why-questions.
-- **§3 Write** — eight committed-record formats, including the hinge and diagnostic questions. Read when a chunk needs committing in writing, or when you need a move-on-or-reteach decision mid-lesson.
+- **§1 Recall** — seven retrieval formats (free recall, choral response, retrieval roulette). Read when a chunk is facts, names, dates, definitions or rules that need locking in before you build on them.
+- **§2 Talk** — seven oral-rehearsal formats (partner discussion, think-pair-share, convince your partner). Read when children need to say it before they can write it: explanations, comparisons, opinions, why-questions.
+- **§3 Write** — seven committed-record formats, including the hinge and diagnostic questions. Read when a chunk needs committing in writing, or when you need a move-on-or-reteach decision mid-lesson.
 - **§4 Visual / Draw** — eight dual-coding formats (quick sketch, labelled diagram, fishbone, concept map). Read when the chunk has spatial, sequential or diagrammatic structure, or the lesson's writing load is stacking up.
 - **§5 Sort / Classify** — ten keyed decision formats (card sort, odd one out, always/sometimes/never, put it in order, causal chain, same and different). Read when the chunk is category-forming or misconception-prone; every keyed format here passes through the answer-scatter principle above.
 - **§6 Rank / Position** — five commit-and-defend formats (diamond nine, continuum line, vote with reason). Read when the chunk is significance, values or judgement: PSHE, RE, historical significance and interpretation.
@@ -86,7 +86,7 @@ Use free recall deliberately when children have enough secure knowledge and open
 
 ### 1.2 Two Things
 *"Write two things you now know about X."* The cap forces selection — children must decide what is worth remembering, which is itself a metacognitive move (Agarwal, retrievalpractice.org strategies library).
-**Best for:** choosing what mattered across several chunks, once the teaching is off the board. Lower stakes than Brain Dump.
+**Best for:** choosing what mattered across several chunks, once the teaching is off the board. Lower stakes than Free Recall (1.1).
 **The limit:** not straight after the Teach it gives back, and only where children have been taught to summarise (`evidence-synthesis.md` §4); it earns its place when children choose across several things with the teaching off the board.
 **SEND access:** the cap of two protects pupils who freeze at "everything you know."
 
@@ -145,7 +145,7 @@ Children answer using a displayed stem: *"I think… because…"* / *"I agree wi
 
 ### 2.5 Habits of Discussion
 Teach and rehearse a small set of moves: agreeing/disagreeing politely, building on, asking a peer to say more (Lemov, *TLAC 3.0*, Technique 45). Over weeks, these become the discussion's grammar. Use for the Do beat when the chunk is opinion or interpretation.
-**Best for:** ongoing — embedded into Turn-and-Talk over a term.
+**Best for:** ongoing — embedded into partner discussion (2.1) over a term.
 **SEND access:** explicit moves > implicit conversational norms; level-up for pupils who don't catch unspoken rules.
 
 ### 2.6 Rally Robin (paired listing)
@@ -179,7 +179,7 @@ One child gets 30 seconds to teach the partner what they just learnt; then swap.
 
 ### 3.2 Stop and Jot
 60 seconds, a single prompt: *"What is the difference between X and Y?"* (Lemov, *TLAC 3.0*, Technique 38 sub-variant.) Lower stakes than One-Sentence Summary; not graded for form.
-**Best for:** a quick written committal mid-lesson; bridge from Turn-and-Talk to extended writing.
+**Best for:** a quick written committal mid-lesson; bridge from partner discussion (2.1) to extended writing.
 **SEND access:** allow bullet points or dashes; the recording matters, not the prose.
 
 ### 3.3 Tweet-Length / Six-Word Summary
@@ -361,7 +361,7 @@ On the board: *Should the museum return the marbles? A: Yes. B: No.* Pupils choo
 **Register:** movement-embodied.
 **Mechanism:** Use movement, gesture, mime or physical sequencing when the action meaningfully represents the content (Sullivan, 2018; Macedonia & Knosche, 2011; *Frontiers in Psychology* embodied-learning syntheses). Do not claim automatic retention or SEND benefits. Consider mobility, sensory, anxiety and behaviour barriers and provide an equivalent seated or non-performing role where needed.
 
-**The user keeps a calm classroom.** He does not use stand-up routines, and a beat that gets the class out of seats, moving round the room or performing at the front works against the room he runs. So a seated form comes first: order cards at the table (5.8) rather than Human Sequencing, a partner discussion rather than Conscience Alley. Gesture-as-Memory and Mime It can be done sitting down and stay available. Choose a whole-class movement beat only when the teacher asks for it.
+**The user keeps a calm classroom.** He does not use stand-up routines, and a beat that gets the class out of seats, moving round the room or performing at the front works against the room he runs. So a seated form comes first: order cards at the table (5.8) rather than Human Sequencing, a partner discussion rather than Conscience Alley. Gesture-as-Memory and Mime It can be done sitting down and stay available. Choose a whole-class movement beat only when the teacher asks for it, or when the movement is itself what is being learned (standing and making a quarter turn to learn what a quarter turn is).
 
 ### 7.1 Freeze Frame
 Pupils (in pairs or fours) create a still image with their bodies showing a moment — *the king signs the Magna Carta, the rainforest before the loggers came, Pip meeting Estella*. 60 seconds to plan, 15 to hold (Drama Primary National Strategy; dramaresource.com).
@@ -419,7 +419,7 @@ Reverse a recall task: *"I'll tell you the answer is 1066. Write me three questi
 ### 8.3 Apply to a New Case
 *"We've just seen how the Romans built roads. Where else would you build a road like that? Why?"* Forces transfer (Willingham — transfer requires deep structure; Boxer on responsive teaching).
 **Best for:** generalisation chunks in geography, science, history.
-**SEND access:** scaffold with a partner first (Turn and Talk) if pupils freeze on application.
+**SEND access:** scaffold with a partner first (partner discussion, 2.1) if pupils freeze on application.
 
 ### 8.4 Worked Example with a Missing Step
 Show pupils a near-complete reasoning chain with one step missing; pupils write what fills the gap (Sweller's worked-example effect; Rosenshine Principle 5).
@@ -587,13 +587,12 @@ Open this when the operation of a beat the lesson relies on is unclear, when you
 - EEF (2020). *Special Educational Needs in Mainstream Schools Guidance Report* — including the **Five-a-day**: Explicit Instruction, Cognitive and Metacognitive Strategies, Scaffolding, Flexible Grouping, Use of Technology.
 - CAST. *Universal Design for Learning Guidelines*. udlguidelines.cast.org.
 - Voice 21. *Oracy Framework* and *Ground Rules for Talk*. voice21.org.
-- Kagan, S. *Cooperative Learning Structures*. kaganonline.com — Rally Robin, Round Robin, Think-Pair-Share, Quiz-Quiz-Trade.
+- Kagan, S. *Cooperative Learning Structures*. kaganonline.com — Rally Robin, Think-Pair-Share, Quiz-Quiz-Trade.
 - Wiliam, D. *Embedded Formative Assessment*; Hodgen, J. on diagnostic questions; hinge-question literature (structural-learning.com; Christodoulou).
-- Drama Primary National Strategy & dramaresource.com — freeze frame, thought tracking, conscience alley, role on the wall.
+- Drama Primary National Strategy & dramaresource.com — freeze frame, thought tracking, conscience alley.
 - Frayer, D. A., Frederick, W. C., & Klausmeier, H. J. (1969). *A Schema for Testing the Level of Concept Mastery* — the Frayer Model.
 - Macedonia, M. & Knosche, T. R. (2011). *Body in Mind: How Gestures Empower Foreign Language Learning*; Sullivan, J. V. (2018). *Learning and Embodied Cognition: A Review and Proposal*. Sage.
 - Edutopia (2024). *15 Quick (and Mighty) Retrieval Practices*; Mosteller (1989) on the muddiest point.
-- McGill, R. M. (2011). *Pose Pause Pounce Bounce* — teachertoolkit.co.uk, attributed to Pam Fearnley.
 - Pashler, H. et al. (2007). *Organizing Instruction and Study to Improve Student Learning* (IES Practice Guide): deep explanatory questioning; connecting abstract and concrete representations.
 - Chi, M. T. H. et al. (1994). *Eliciting Self-Explanations Improves Understanding*; Rittle-Johnson, Loehr & Durkin (2017) on prompted self-explanation in primary.
 - Fiorella, L. & Mayer, R. E. (2016). *Eight Ways to Promote Generative Learning*: explaining, predicting, drawing and their developmental conditions.

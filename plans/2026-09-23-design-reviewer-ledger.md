@@ -973,3 +973,15 @@ The finished topics' pin files hold 117 of these rows, marked "pinned" in their 
 - **RV-T05**: geography's page section now says "The design reviewer reads the finished design against this file and asks whether it reads as the subject.", where it said "The design-reviewer reads the book at the end of the lesson": the reviewer reads the finished design against the whole file and never sees a book (the subject-files list's SJ-G45, its settled item 7, out-of-date text).
 - **RV-T06**: its words were in the writing guide (`references/authoring-subject-files.md`), removed by his decisions 1 and 3 on the subject-files list (24 September): "forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future." and "just remove it completely" (SJ-B15).
 - **RV-T07, RV-T08**: their words were in the make-subject-file skill (`skills/make-subject-file/SKILL.md`), removed by his decisions 1 and 3 on the subject-files list (24 September): "forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future." and "just remove it completely" (SJ-C07, SJ-C33).
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release, built beside the reviewer release, changed three of this
+list's rows' words: RV-C11 (the four-parts line names `How this teacher explains`, routes
+decisions 3 and 4), RV-J36 (the launch line takes routes decision 2's words, a launch when
+the class has not yet seen a good one of this product earlier in this lesson, and his
+preferences decision 13b, criteria that show an actual good one standing in for the good
+instance, which the program cannot see, so the reviewer judges it) and RV-E10 (the
+turn-label message carries his maths ruling, routes 7f). The reviewer release's pins for
+them, and for the paragraphs they sit in, move when the two releases are merged
+(`streamline-tools/rt-change/rt_follow_at_merge.py`).

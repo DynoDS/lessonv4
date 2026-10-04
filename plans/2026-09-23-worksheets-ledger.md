@@ -1369,3 +1369,10 @@ they govern.
   the date "(16 September 2026)" off the maths file's Classroom Secrets paragraph,
   every other word kept. At the merge, `sj-change/sj_09_follow_at_merge.py` moved
   the pin and the home to the undated words; the rule is unchanged.
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release changed one paragraph of the designer's Worksheet home
+(HOME-WS-LD-08): a skill `prepare` unit's `activity` in `explanation` mode and a task
+lesson's `modelledOn` are words the class reads (routes settled item 7e). The home record
+and its pin moved in place.

@@ -123,8 +123,10 @@ def home_paragraphs(rel: str, heading: str) -> list[str]:
     lines = (ROOT / rel).read_text(encoding="utf-8").splitlines()
     start = lines.index(heading)
     level = len(heading.split(" ")[0])
-    end = next(i for i in range(start + 1, len(lines))
-               if HEADING.match(lines[i]) and len(HEADING.match(lines[i]).group(1)) <= level)
+    # A home may be the last section of its file (the routes release's `The
+    # launch` is), and then it runs to the end, as the pin test reads it.
+    end = next((i for i in range(start + 1, len(lines))
+                if HEADING.match(lines[i]) and len(HEADING.match(lines[i]).group(1)) <= level), len(lines))
     return [norm(x) for x in "\n".join(lines[start + 1:end]).split("\n\n") if norm(x) and norm(x) != "---"]
 
 

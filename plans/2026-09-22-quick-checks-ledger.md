@@ -956,3 +956,10 @@ was verified and taken, except:
   unquoted; it is how maths practice is ordered, not a check.
 - **Words to Diagram (its item 9, marked unsure)**: taken into decision 6 as
   the least certain of three, so Daniel can leave it out.
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release moved these pins in place, each with its decision: QC-C08,
+E11 and P01 (the reviewer's launch line gains his preferences decision 13b); QC-D11 to D16
+(the activity list's 1.2 names Free Recall, which replaced Brain Dump, routes settled item
+7c). No row was added or dropped.

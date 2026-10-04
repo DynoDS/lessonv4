@@ -1155,3 +1155,13 @@ proposed.
 - **TD-A14** is retired in `teach_then_do_ledger_pins.json`: its words lived in the skill, removed by his decisions 1 and 3 on the subject-files list (24 September): the make-subject-file skill and its writing guide are removed completely ("just remove it completely"). The pin now holds the file staying gone.
 - **TD-K09** moved with the history file's words: the sketch's introducing sentence lost only "(4 September 2026)" (that list's settled item 10); the sketch is unchanged.
 - **TD-A13** moved with the lesson designer's reading list: its subject-file line gained what history's and geography's word-for-word start notes carried (that list's settled item 12), and the paragraph is pinned again whole.
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release moved these pins in place, each with its decision
+(`streamline-tools/rt-change/rt_07_repin_other_topics.py`): TD-J56 and TD-C19 (four
+corners leaves the discussion route, routes decision 1); TD-A04, B07, C03, D03, F13, I02,
+J03, Z19 and the home paragraph HOME-TD-LD-01 (the designer's rhythm paragraph gains his
+preferences decision 13b); TD-L07 and L09 (the reviewer's launch line gains 13b); TD-L10
+(the reviewer's four-parts line names `How this teacher explains`); TD-J20 (the skill
+route's Practise names `The launch`). No row was added or dropped.

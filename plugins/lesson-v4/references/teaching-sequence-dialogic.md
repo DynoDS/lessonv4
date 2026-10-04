@@ -16,12 +16,12 @@ The Stimulus slide carries the prompt children respond to plus the question bein
 
 Choose stimuli that are concrete, understandable and open to several defensible positions. Do not assume children share the same family circumstances, personal experience or emotional safety. Use fictional, school-based or otherwise safely distanced scenarios when personal disclosure would be inappropriate.
 
-A Stimulus can also be an *activity* — a ranking, a sort, a four-corners vote — when the activity itself surfaces children's positions. In that case the Stimulus and the Talk merge into a single working beat: the activity slide carries the items being ranked or sorted, and the Talk happens around the activity rather than after it. Treat this as one combined Stimulus + Talk in the teaching sequence rather than splitting it into two.
+A Stimulus can also be an *activity* — a ranking, a sort, a vote with a written reason — when the activity itself surfaces children's positions. In that case the Stimulus and the Talk merge into a single working beat: the activity slide carries the items being ranked or sorted, and the Talk happens around the activity rather than after it. Treat this as one combined Stimulus + Talk in the teaching sequence rather than splitting it into two.
 
 **Talk** — children discuss the Stimulus. The active beat. Its `thinking` line names the position and the taught knowledge the position has to rest on (`is it ever fair to break this promise, given what we now know a promise is?`); a position children held walking in, reached without the grounding input, is an opinion the lesson has collected rather than thinking it has produced (`preferences.md` → What a Lesson Is For, `Would a child have needed this lesson to say it?`). When the lesson names an idea in `concepts`, a second Stimulus is a new case of it, not the first case reworded, and the Talk beats that meet the idea carry its `conceptRef`. Pick the format that matches the question's shape:
 - Partner talk with sentence stems ("I think… because…", "I disagree because…")
 - Snowball (pairs → fours → whole class)
-- Four corners (children physically position themselves on agree / strongly agree / disagree / strongly disagree and defend)
+- A line on paper from agree to disagree, or a vote with a written reason (`do-beats.md` 6.2 and 6.4)
 - Ranking or sorting that forces a position (rank these influences from most to least; sort statements into "always / sometimes / never")
 - Role-play or hot-seating ("you're [character] — what would you say?"), only when every child first writes what their character would say, or picks a side, before anyone performs
 - Short structured debate, only when every child first picks a side and writes one reason
@@ -67,6 +67,8 @@ When children need a small factual or vocabulary grounding input before the firs
 ```
 
 Do not use this for substantial factual teaching; that still needs Content-based teaching.
+
+When the input explains something rather than naming it, it explains the way this teacher explains (`teaching-sequence-content-based.md` → `How this teacher explains`).
 
 Stimulus:
 
@@ -124,6 +126,8 @@ Otherwise use a separate Talk source unit:
 ```
 
 Use `sentenceStems: []` when the format does not need stems.
+
+A Talk's `discussionQuestion` is its Stimulus's `question`, word for word.
 
 Synthesise:
 

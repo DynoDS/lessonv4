@@ -1338,3 +1338,14 @@ govern.
 
 - **SC-C15** (the writing guide) and **SC-C16** (the skill) are retired in `success_criteria_ledger_pins.json`: his decisions 1 and 3 on the subject-files list (24 September): the make-subject-file skill and its writing guide are removed completely ("just remove it completely"). Each pin now holds its file staying gone.
 - **SC-G02** is retired: his decision 6 on that list ("those balanced diet things sound like things I wouldnt want in the pshe subject files", then "maybe the subject file could say to look for guidance from eatwell guide thing") took the per-meal quota rule out of the PSHE file, whose food section is now one line pointing to the NHS Eatwell Guide. The general rule, a count in a criterion is never invented (SC-G01), stays where every lesson reads it.
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release moved these pins in place, each with its decision:
+SC-H03 ("the existing route" goes, routes 7g); SC-H22 and SC-Q01 (his preferences decision
+13b, in the designer's walk-through line and the reviewer's launch line, which also takes
+routes decision 2's words); SC-R04 and R05 (the two `goodLooksLike` lines say the criteria
+must show an actual good one, never a list of what a good one includes); SC-H29 (the Our
+Turn ruling keeps his words without its date); SC-H47 (the task route's launch trigger
+asks whether the class has seen a good one in this lesson, routes decision 2). No row was
+added or dropped.

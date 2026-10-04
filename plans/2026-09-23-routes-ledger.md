@@ -1054,3 +1054,41 @@ From a search of every string in the test files. A fold that touches these moves
 ## After the subject-files release (4.2.291, 25 September 2026)
 
 - **RT-L20**: the reasoning prompts' "Until a subject-English file exists, keep the detailed reading, writing and grammar guidance below active." is removed by his decisions 1 and 3 on the subject-files list (24 September): "forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future." and "just remove it completely"; the bullet keeps "English may compare effects, justify structural choices or reason from textual evidence." and the English guidance below it is simply live. The adaptation guidance's "Detailed English progression belongs in a future subject-English file.", the same hedge in no ledger, went too (SJ-A59).
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+Every decision and settled item on this list that release 3 carries is built on the
+side branch `streamline/8-routes`, uncommitted, unnumbered until the lead merges it
+(`streamline-tools/rt-release-report.md`). All 592 rows are pinned in
+`plugins/lesson-v4/scripts/tests/routes_ledger_pins.json`; the 69 that changed are mapped,
+each with the decision that changed it, and 17 whose words stand but moved under the two
+new headings are mapped as moved, in `2026-09-26-routes-mapping.md`. Twelve of the 66 were
+changed first by earlier releases and are mapped with their words: C27, E12, E13, E40,
+E41, E42, E44, J06, P12, P13, P19 by 7A, L20 by the subject files.
+
+- **Where his words and the plan differed, his won:** F18's trigger for a launch asked
+  whether children had made the form in this lesson, the question decision 2 replaced; it
+  now asks whether they have seen a good one (the plan had kept F18's words).
+- **Found by grepping for the concept:** the wrong pointer 7g corrects (P07) was written a
+  second time in `subject-maths.md` (SJ-D81); both now name `Cycles, and the beats around
+  them`.
+- **His 13b, after the first check:** criteria stand in for the good instance only when
+  they show an actual good one ("a writing task whose criteria already show a good
+  paragraph"), never a list of what a good one includes, and the launch keeps its case and
+  steps; the words say so in the launch home, its three pointers and E70 and F34. The
+  program keeps asking a written explanation for its good instance, since no criteria
+  shape holds a written model.
+- **The reviewer's launch line** takes decision 2's words in this release (the lead's call
+  after the first check): a launch when the class has not yet seen a good one of this
+  product earlier in this lesson, and a null launch also when it has.
+- **Left for 7B:** the designer's two launch pointers in decision 2's words and the
+  case-first line (7B's B10, from PF settled item 2), and "You can pass" in E59, E63 and F06
+  (7B's B6).
+- **Left for release 4:** the folds (the launch fields written twice, the output blocks'
+  closing lines, the structure-reading rule, and the rest of section 5), including the task
+  route's copy of the launch fields, so a task lesson reads them twice until then. E48's dated story
+  (three science boards) stays with its paragraph under the new heading, because no
+  decision named it.
+- **Found in passing, not changed:** a discovery Use the learning's `activity` and a
+  bounded attempt's `activity` are also words children are given, and the review view
+  still leaves them out.

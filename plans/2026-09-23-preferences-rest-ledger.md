@@ -3067,3 +3067,18 @@ its new words, and is pinned in the starters pin file; 7B's pin file takes these
 from there, as it takes the colour rows from `COLOURS_ROWS`. How Much Fits in One
 Lesson is already a home in the starters pin file (`HOME-SA-PREF-FIT`), so 7B need not
 pin it again. V13 and V14 name no slot title and were not changed.
+
+## After the routes release (topic 8, release 3; 26 September 2026)
+
+The routes release changed the lines these rows quote, for 7B to read before it
+builds: 13b is written in the launch home and its three pointers (PF-T12, T13, T14; the
+home's own row keeps its quote), criteria standing in only when they show an actual good
+one, and the reviewer's pointer (PF-T14) already takes decision 2's words, so 7B's B10
+adds decision 2's words and the case-first line to the designer's two and leaves 13b and
+the reviewer's line as they are. The route and reference lines these rows copy
+changed with their routes rows: PF-T18, T27, T28 (decision 2); PF-O03, Y01, Y03, Y08, Y09,
+Y12, Y15, Y16, Y17, Y19, Y20 (decisions 3 and 4, the explaining heading, and the stories
+leaving E51 and E58); PF-F36 (decision 1); PF-U37 (decision 8); PF-M60 (7a); PF-N20 (7d);
+PF-B11 (7e); PF-O49 (7i); and the stories PF-C10, D22, M76, O45, O79, Q17, T42. Each
+routes row says what now carries it (`2026-09-26-routes-mapping.md`). "You can pass" in
+the route files is untouched: B6 is 7B's.
