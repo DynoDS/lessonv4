@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after\\photoMapOverview-a3\\Working Wall - Our Local Area.pdf",
+  "sourceSha256": "b6d98afa67ebeba33ceab1102b89bd72205ab1a5c4c0e5e541c38ec5c1775773",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\photoMapOverview-a3\\Working Wall - Our Local Area-source.pdf",
+    "sha256": "b6d98afa67ebeba33ceab1102b89bd72205ab1a5c4c0e5e541c38ec5c1775773"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\photoMapOverview-a3\\Working Wall - Our Local Area-contact-sheet.png",
+    "sha256": "d3a7f0ebb425666b234a1305d9c326c9448977316c0064d78784acbb001aad62"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\photoMapOverview-a3\\Working Wall - Our Local Area-page-01.png",
+      "sha256": "ff2e011d87b6762ad6097041d9f0f618ab8489044df655ed053ec5beac251a6b"
+    }
+  ]
+}

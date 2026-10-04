@@ -345,10 +345,25 @@ function inlineBold(text) {
   return esc(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 }
 
+// A frame shows worked numbers when one of its lines is worked right through:
+// its values written out (a number in it) and no box left for the child. A
+// line of words alone ("Look at the ones digit.") decides nothing (the
+// fourth check). Only a worked line makes the frame a worked
+// example, in the worked-example purple (his answer of 25 September 2026); a
+// frame whose every line still holds a box is the child's, whatever numbers
+// it hands them to start from, and keeps the ink edge and blue heading.
+function showsWorkedNumbers(lines) {
+  return lines.some((line) => {
+    const segs = tokenize(line && line.content);
+    return !segs.some((s) => s.box) && segs.some((s) => /\d/.test(s.text));
+  });
+}
+
 function renderMethodFrame(spec) {
   const lines = frameLines(spec);
   const labelMm = labelColumnMm(lines);
   const framed = spec.frame !== false;
+  const worked = showsWorkedNumbers(lines);
 
   const stem = spec.text
     ? `<p class="h-mframe-stem">${hasId(spec) ? `<span class="h-mframe-id">(${esc(String(spec.id))}) </span>` : ""}${inlineBold(spec.text)}</p>`
@@ -371,7 +386,7 @@ function renderMethodFrame(spec) {
 
   const title = spec.title ? `<p class="h-mframe-title">${esc(spec.title)}</p>` : "";
 
-  return `<div class="h-mframe" style="--h-mframe-label:${mm(labelMm)}">${stem}<div class="h-mframe-panel${framed ? " h-mframe-framed" : ""}">${title}${body}</div></div>`;
+  return `<div class="h-mframe" style="--h-mframe-label:${mm(labelMm)}">${stem}<div class="h-mframe-panel${framed ? " h-mframe-framed" : ""}${worked ? " h-mframe-worked" : ""}">${title}${body}</div></div>`;
 }
 
 function measureMethodFrame(spec, widthMm) {
@@ -495,16 +510,21 @@ const css = `
     color: var(--colour-question);
     line-height: 1.35;
   }
+  /* A frame that shows worked numbers is a worked example: its edge and title
+     take the worked-example purple, as the board's frame does. */
+  .h-mframe-framed.h-mframe-worked { border-color: var(--colour-worked); }
+  .h-mframe-worked .h-mframe-title { color: var(--colour-worked); }
   .h-mframe-line { display: flex; align-items: flex-start; }
   /* A method label is SCAFFOLD, and scaffold carries no colour of its own: it
      is set apart by weight and by having its own column, exactly as a writing
      frame's sentence-starters are. Daniel settled this. On a worksheet blue
-     means the question, orange means material handed to the child, and green
-     means vocabulary, so a fourth meaning for "the words that walk you through
-     the method" would be a fifth colour the system does not have.
-     The slide deck's version of this frame IS green, and that is not an
-     inconsistency to fix: green on the board means a revealed answer, which is
-     a thing that cannot happen on paper. */
+     means the question, orange means material handed to the child, green
+     means vocabulary and purple frames a worked example, so another meaning
+     for "the words that walk you through the method" would be one colour more
+     than the system has. The frame's own edge and title are the worked-example
+     purple when the frame shows worked numbers, as the board's is (the
+     teacher's rule of 24 September 2026); an empty frame, the child's to fill,
+     keeps its ink edge and question-blue heading (his answer of 25 September). */
   .h-mframe-label {
     flex: 0 0 auto; width: var(--h-mframe-label);
     padding-top: ${LABEL_PAD_MM}mm;

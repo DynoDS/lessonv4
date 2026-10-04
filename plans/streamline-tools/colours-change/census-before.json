@@ -1,0 +1,592 @@
+{
+ "lesson-resources-output/working/compare-4-digit-numbers/lesson.json": {
+  "reason": "SCRATCH_BUILD_FAILED",
+  "signals": []
+ },
+ "lesson-resources-output/working/cover-demo-round-to-10/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "BLUE_WITHOUT_A_QUESTION slide 20",
+   "ONE_MODEL_PER_ANNOTATED_FIGURE slide 10",
+   "ONE_MODEL_PER_ANNOTATED_FIGURE slide 4"
+  ]
+ },
+ "lesson-resources-output/working/describe-teeth-and-their-uses/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "FIGURE_ZONE_UNDERFILLED slide 11",
+   "FIGURE_ZONE_UNDERFILLED slide 11",
+   "FIGURE_ZONE_UNDERFILLED slide 12",
+   "FIGURE_ZONE_UNDERFILLED slide 14",
+   "FIGURE_ZONE_UNDERFILLED slide 5",
+   "FIGURE_ZONE_UNDERFILLED slide 5",
+   "FIGURE_ZONE_UNDERFILLED slide 7",
+   "FIGURE_ZONE_UNDERFILLED slide 7",
+   "FIGURE_ZONE_UNDERFILLED slide 8",
+   "FIGURE_ZONE_UNDERFILLED slide 8",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 5",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 8",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 9",
+   "TEXT_OVERLOAD slide 11",
+   "TEXT_OVERLOAD slide 12",
+   "TEXT_OVERLOAD slide 5",
+   "TEXT_OVERLOAD slide 5",
+   "TEXT_OVERLOAD slide 8",
+   "TEXT_OVERLOAD slide 8"
+  ]
+ },
+ "lesson-resources-output/working/find-the-scale-on-a-number-line/lesson.json": {
+  "reason": "OK",
+  "signals": [
+   "SUCCESS_CRITERIA_CAPACITY slide 9"
+  ]
+ },
+ "lesson-resources-output/working/friday-round-to-10-reteach/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "BLUE_WITHOUT_A_QUESTION slide 11",
+   "BLUE_WITHOUT_A_QUESTION slide 17",
+   "BLUE_WITHOUT_A_QUESTION slide 23",
+   "BLUE_WITHOUT_A_QUESTION slide 5",
+   "ONE_MODEL_PER_ANNOTATED_FIGURE slide 13",
+   "ONE_MODEL_PER_ANNOTATED_FIGURE slide 7",
+   "TURN_SLIDE_WITHOUT_ITS_TURN slide 3"
+  ]
+ },
+ "lesson-resources-output/working/how-can-being-active-help-my-mind-and-body/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "FIGURE_ZONE_UNDERFILLED slide 12",
+   "FIGURE_ZONE_UNDERFILLED slide 12",
+   "FIGURE_ZONE_UNDERFILLED slide 3",
+   "FIGURE_ZONE_UNDERFILLED slide 3",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 10",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 13",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 4",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 7",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 8"
+  ]
+ },
+ "lesson-resources-output/working/partition-4-digit-numbers (1)/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "lesson-resources-output/working/partition-4-digit-numbers/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "ONE_MODEL_PER_ANNOTATED_FIGURE slide 10",
+   "TEXT_OVERLOAD slide 10",
+   "TEXT_OVERLOAD slide 6",
+   "TEXT_OVERLOAD slide 6"
+  ]
+ },
+ "lesson-resources-output/working/read-and-complete-number-lines/lesson.json": {
+  "reason": "SCRATCH_BUILD_FAILED",
+  "signals": []
+ },
+ "lesson-resources-output/working/represent-4-digit-numbers/lesson.json": {
+  "reason": "SCRATCH_BUILD_FAILED",
+  "signals": []
+ },
+ "lesson-resources-output/working/represent-and-estimate-on-a-number-line/lesson.json": {
+  "reason": "SCRATCH_BUILD_FAILED",
+  "signals": []
+ },
+ "lesson-resources-output/working/round-to-the-nearest-100/lesson.json": {
+  "reason": "SCRATCH_BUILD_FAILED",
+  "signals": []
+ },
+ "lesson-resources-output/working/tens-either-side-demo/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "BLUE_WITHOUT_A_QUESTION slide 3",
+   "TURN_SLIDE_WITHOUT_ITS_TURN slide 1"
+  ]
+ },
+ "lesson-resources-output/working/to-explain-what-the-christmas-celebrations-or-holidays-mean-to-me/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "FIGURE_ZONE_UNDERFILLED slide 2",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 3",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 6",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 7"
+  ]
+ },
+ "lesson-resources-output/working/to-identify-the-continuities-and-changes-to-children-s-lives-using-a-range-of-sources (2)/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "FIGURE_ZONE_UNDERFILLED slide 6",
+   "FIGURE_ZONE_UNDERFILLED slide 6",
+   "TABLE_ZONE_TOO_SHORT slide 17",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 12",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 13",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 7",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 8",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 9",
+   "TEACH_SLIDE_WITHOUT_ITS_SCRIPT slide 8",
+   "TEXT_OVERLOAD slide 10",
+   "TEXT_OVERLOAD slide 16",
+   "TEXT_OVERLOAD slide 16",
+   "TEXT_OVERLOAD slide 18",
+   "TEXT_OVERLOAD slide 5",
+   "TEXT_OVERLOAD slide 7",
+   "TEXT_OVERLOAD slide 7",
+   "TEXT_OVERLOAD slide 9",
+   "TIMELINE_NOTE_NOT_DRAWN slide 12",
+   "TIMELINE_NOTE_NOT_DRAWN slide 13",
+   "TIMELINE_NOTE_NOT_DRAWN slide 15",
+   "TIMELINE_NOTE_NOT_DRAWN slide 4",
+   "TIMELINE_NOTE_NOT_DRAWN slide 8"
+  ]
+ },
+ "lesson-resources-output/working/to-identify-the-continuities-and-changes-to-children-s-lives-using-a-range-of-sources (6)/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "CONTENT_ZONE_INCOMPATIBLE slide 10",
+   "CONTENT_ZONE_INCOMPATIBLE slide 13",
+   "CONTENT_ZONE_INCOMPATIBLE slide 5",
+   "CONTENT_ZONE_INCOMPATIBLE slide 6",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 10",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 4",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 5",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 8",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 9",
+   "TEACH_SLIDE_WITHOUT_ITS_SCRIPT slide 4",
+   "TEACH_SLIDE_WITHOUT_ITS_SCRIPT slide 9",
+   "TEXT_OVERLOAD slide 11",
+   "TEXT_OVERLOAD slide 14",
+   "TEXT_OVERLOAD slide 14",
+   "TEXT_OVERLOAD slide 15",
+   "TEXT_OVERLOAD slide 4",
+   "TEXT_OVERLOAD slide 8",
+   "TEXT_OVERLOAD slide 8"
+  ]
+ },
+ "lesson-resources-output/working/to-identify-the-continuities-and-changes-to-children-s-lives-using-a-range-of-sources/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "FIGURE_ZONE_UNDERFILLED slide 5",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 10",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 3",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 4",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 9"
+  ]
+ },
+ "lesson-resources-output/working/tuesday-round-to-1000/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "lesson-resources-output/working/week3-monday-round-to-100/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "lesson-resources-output/working/year-4-history-lesson-2/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "FIGURE_ZONE_UNDERFILLED slide 6",
+   "FIGURE_ZONE_UNDERFILLED slide 6",
+   "TEACH_SLIDE_WITHOUT_ITS_SCRIPT slide 4",
+   "TEACH_SPLIT_LEAVES_A_LABEL slide 3",
+   "TEACH_SPLIT_LEAVES_A_LABEL slide 7"
+  ]
+ },
+ "lesson-resources-output/working/year-4-maths-lesson-14/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/_slide2-rework/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/childrens-lives-continuity-and-change/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "BLUE_WITHOUT_A_QUESTION slide 1",
+   "BLUE_WITHOUT_A_QUESTION slide 10",
+   "BLUE_WITHOUT_A_QUESTION slide 12",
+   "BLUE_WITHOUT_A_QUESTION slide 13",
+   "BLUE_WITHOUT_A_QUESTION slide 13",
+   "BLUE_WITHOUT_A_QUESTION slide 13",
+   "BLUE_WITHOUT_A_QUESTION slide 14",
+   "BLUE_WITHOUT_A_QUESTION slide 16",
+   "BLUE_WITHOUT_A_QUESTION slide 6",
+   "STARTER_QUESTIONS_ALL_BLUE slide 1",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 11",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 4",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 5",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 7",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 8",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 9"
+  ]
+ },
+ "output/working/name-the-layers-of-teeth/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 3",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 6",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 9"
+  ]
+ },
+ "output/working/order-4-digit-numbers/lesson.json": {
+  "reason": "SCRATCH_BUILD_FAILED",
+  "signals": []
+ },
+ "output/working/partition-4-digit-numbers/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/round-to-the-nearest-10-and-100/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "ONE_MODEL_PER_ANNOTATED_FIGURE slide 4",
+   "ONE_MODEL_PER_ANNOTATED_FIGURE slide 6",
+   "ONE_MODEL_PER_ANNOTATED_FIGURE slide 8",
+   "SUCCESS_CRITERIA_CAPACITY slide 10",
+   "SUCCESS_CRITERIA_CAPACITY slide 11",
+   "SUCCESS_CRITERIA_CAPACITY slide 13",
+   "SUCCESS_CRITERIA_CAPACITY slide 15",
+   "SUCCESS_CRITERIA_CAPACITY slide 4",
+   "SUCCESS_CRITERIA_CAPACITY slide 5",
+   "SUCCESS_CRITERIA_CAPACITY slide 6",
+   "SUCCESS_CRITERIA_CAPACITY slide 7",
+   "SUCCESS_CRITERIA_CAPACITY slide 8",
+   "SUCCESS_CRITERIA_CAPACITY slide 9"
+  ]
+ },
+ "output/working/teach-slides-rebuilt/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/to-describe-victorian-children-s-working-conditions/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/to-explain-what-the-christmas-celebrations-or-holidays-mean-to-me (2)/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 10",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 3",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 5",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 6",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 9",
+   "TEXT_OVERLOAD slide 13"
+  ]
+ },
+ "output/working/to-identify-the-continuities-and-changes-to-children-s-lives-using-a-range-of-sources (1)/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "PICTURE_BELOW_READABLE_FLOOR slide 11",
+   "PICTURE_BELOW_READABLE_FLOOR slide 6",
+   "PICTURE_BELOW_READABLE_FLOOR slide 6",
+   "PICTURE_BELOW_READABLE_FLOOR slide 8",
+   "PICTURE_BELOW_READABLE_FLOOR slide 9",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 10",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 11",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 4",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 5",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 7",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 8",
+   "TEXT_OVERLOAD slide 11",
+   "TEXT_OVERLOAD slide 11",
+   "TEXT_OVERLOAD slide 11",
+   "TEXT_OVERLOAD slide 11",
+   "TEXT_OVERLOAD slide 12",
+   "TEXT_OVERLOAD slide 14",
+   "TEXT_OVERLOAD slide 14",
+   "TEXT_OVERLOAD slide 14",
+   "TEXT_OVERLOAD slide 15",
+   "TEXT_OVERLOAD slide 15",
+   "TEXT_OVERLOAD slide 15",
+   "TEXT_OVERLOAD slide 16",
+   "TEXT_OVERLOAD slide 17",
+   "TEXT_OVERLOAD slide 3",
+   "TEXT_OVERLOAD slide 4",
+   "TEXT_OVERLOAD slide 4",
+   "TEXT_OVERLOAD slide 4",
+   "TEXT_OVERLOAD slide 5",
+   "TEXT_OVERLOAD slide 5",
+   "TEXT_OVERLOAD slide 5",
+   "TEXT_OVERLOAD slide 5",
+   "TEXT_OVERLOAD slide 6",
+   "TEXT_OVERLOAD slide 6",
+   "TEXT_OVERLOAD slide 6",
+   "TEXT_OVERLOAD slide 8",
+   "TEXT_OVERLOAD slide 8",
+   "TEXT_OVERLOAD slide 8",
+   "TEXT_OVERLOAD slide 8",
+   "TEXT_OVERLOAD slide 9",
+   "TEXT_OVERLOAD slide 9",
+   "TEXT_OVERLOAD slide 9",
+   "TEXT_OVERLOAD slide 9",
+   "TEXT_OVERLOAD slide 9",
+   "TEXT_OVERLOAD slide 9",
+   "TEXT_OVERLOAD slide 9"
+  ]
+ },
+ "output/working/what-is-a-balanced-diet-and-why-does-having-one-matter/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "BLUE_WITHOUT_A_QUESTION slide 9",
+   "EVIDENCE_CARDS_CAPACITY slide 10",
+   "EVIDENCE_CARDS_CAPACITY slide 11",
+   "MIXED_BLOCK_WHOLE_BLUE slide 12",
+   "MIXED_BLOCK_WHOLE_BLUE slide 8",
+   "PICTURE_BELOW_READABLE_FLOOR slide 7",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 3",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 5",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 7",
+   "TEXT_OVERLOAD slide 2",
+   "TEXT_OVERLOAD slide 2",
+   "TEXT_OVERLOAD slide 2",
+   "TEXT_OVERLOAD slide 2",
+   "TEXT_OVERLOAD slide 7",
+   "TEXT_OVERLOAD slide 7",
+   "TEXT_OVERLOAD slide 7",
+   "TEXT_OVERLOAD slide 7"
+  ]
+ },
+ "output/working/why-victorian-children-worked-teach-slide/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/year-4-geography-lesson-1/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "BLUE_WITHOUT_A_QUESTION slide 1",
+   "BLUE_WITHOUT_A_QUESTION slide 13",
+   "BLUE_WITHOUT_A_QUESTION slide 14",
+   "BLUE_WITHOUT_A_QUESTION slide 17",
+   "FIGURE_ZONE_UNDERFILLED slide 1",
+   "FIGURE_ZONE_UNDERFILLED slide 4",
+   "MAP_LABELS_DO_NOT_FIT slide 10",
+   "MAP_LABELS_DO_NOT_FIT slide 13",
+   "MAP_LABELS_DO_NOT_FIT slide 15",
+   "MAP_LABELS_DO_NOT_FIT slide 9",
+   "MAP_ZONE_TOO_SHALLOW slide 5",
+   "MIXED_BLOCK_WHOLE_BLUE slide 10",
+   "MIXED_BLOCK_WHOLE_BLUE slide 13",
+   "MIXED_BLOCK_WHOLE_BLUE slide 5",
+   "MIXED_BLOCK_WHOLE_BLUE slide 6",
+   "MIXED_BLOCK_WHOLE_BLUE slide 8",
+   "PICTURE_BELOW_READABLE_FLOOR slide 18",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 11",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 4",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 7",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 9",
+   "TEXT_OVERLOAD slide 16",
+   "TEXT_OVERLOAD slide 8"
+  ]
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/containers/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/content/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/eq-fractions/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "FRACTION_WALL_ZONE_TOO_SHALLOW slide 10",
+   "FRACTION_WALL_ZONE_TOO_SHALLOW slide 11",
+   "FRACTION_WALL_ZONE_TOO_SHALLOW slide 12",
+   "FRACTION_WALL_ZONE_TOO_SHALLOW slide 5",
+   "FRACTION_WALL_ZONE_TOO_SHALLOW slide 9",
+   "INTERNAL_STAGE_TITLE slide 6",
+   "STEP_TEXT_OVERLOAD slide 7",
+   "STEP_TEXT_OVERLOAD slide 8",
+   "TEXT_OVERLOAD slide 13"
+  ]
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/flipchart-pencil/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS slide 2"
+  ]
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/foundation-helpers/lesson.json": {
+  "reason": "SCRATCH_BUILD_FAILED",
+  "signals": [
+   "TEXT_OVERLOAD slide 2"
+  ]
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/maths-templates/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/maths-visuals/lesson.json": {
+  "reason": "SCRATCH_BUILD_FAILED",
+  "signals": [
+   "TEXT_OVERLOAD slide 5"
+  ]
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/remaining-templates/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/smoke/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/splits/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/teach-family/lesson.json": {
+  "reason": "SCRATCH_BUILD_FAILED",
+  "signals": [
+   "TEXT_OVERLOAD slide 3",
+   "TEXT_OVERLOAD slide 3",
+   "TEXT_OVERLOAD slide 5"
+  ]
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/three-zone/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/_helper-test-root/builder/test-lessons/vocab-and-sc/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "output/working/year-4-geography-where-in-the-world-are-tropical-rainforests/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "BLUE_WITHOUT_A_QUESTION slide 10",
+   "BLUE_WITHOUT_A_QUESTION slide 10",
+   "BLUE_WITHOUT_A_QUESTION slide 10",
+   "BLUE_WITHOUT_A_QUESTION slide 12",
+   "BLUE_WITHOUT_A_QUESTION slide 12",
+   "BLUE_WITHOUT_A_QUESTION slide 13",
+   "BLUE_WITHOUT_A_QUESTION slide 13",
+   "BLUE_WITHOUT_A_QUESTION slide 13",
+   "BLUE_WITHOUT_A_QUESTION slide 14",
+   "BLUE_WITHOUT_A_QUESTION slide 14",
+   "BLUE_WITHOUT_A_QUESTION slide 17",
+   "BLUE_WITHOUT_A_QUESTION slide 18",
+   "PICTURE_BELOW_READABLE_FLOOR slide 13",
+   "PICTURE_BELOW_READABLE_FLOOR slide 5",
+   "PICTURE_BELOW_READABLE_FLOOR slide 5",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 11",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 4",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 7",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 8",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 9",
+   "TEXT_OVERLOAD slide 1",
+   "TEXT_OVERLOAD slide 11",
+   "TEXT_OVERLOAD slide 11",
+   "TEXT_OVERLOAD slide 13",
+   "TEXT_OVERLOAD slide 14",
+   "TEXT_OVERLOAD slide 14",
+   "TEXT_OVERLOAD slide 9"
+  ]
+ },
+ "output/working/year-4-maths-lesson-2/lesson.json": {
+  "reason": "SCRATCH_BUILD_FAILED",
+  "signals": [
+   "STEP_TEXT_OVERLOAD slide 4",
+   "STEP_TEXT_OVERLOAD slide 5",
+   "STEP_TEXT_OVERLOAD slide 6",
+   "STEP_TEXT_OVERLOAD slide 7"
+  ]
+ },
+ "output/working/year-4-maths-represent-4-digit-numbers/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "BLUE_WITHOUT_A_QUESTION slide 10",
+   "BLUE_WITHOUT_A_QUESTION slide 12",
+   "BLUE_WITHOUT_A_QUESTION slide 13",
+   "BLUE_WITHOUT_A_QUESTION slide 14",
+   "BLUE_WITHOUT_A_QUESTION slide 15",
+   "BLUE_WITHOUT_A_QUESTION slide 16",
+   "BLUE_WITHOUT_A_QUESTION slide 18",
+   "BLUE_WITHOUT_A_QUESTION slide 6",
+   "BLUE_WITHOUT_A_QUESTION slide 8",
+   "BLUE_WITHOUT_A_QUESTION slide 9",
+   "MODELLING_RUNS_WITHOUT_A_TURN_FOR_THE_CLASS slide 5"
+  ]
+ },
+ "output/working/year-4-pshe-how-can-i-keep-my-energy-up-throughout-the-day/lesson.json": {
+  "reason": "SLIDE_DESIGN_CAPACITY",
+  "signals": [
+   "PICTURE_BELOW_READABLE_FLOOR slide 11",
+   "PICTURE_BELOW_READABLE_FLOOR slide 7"
+  ]
+ },
+ "output/working/year-4-pshe-our-pshe-lessons/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "BLUE_WITHOUT_A_QUESTION slide 10",
+   "BLUE_WITHOUT_A_QUESTION slide 10",
+   "BLUE_WITHOUT_A_QUESTION slide 11",
+   "BLUE_WITHOUT_A_QUESTION slide 11",
+   "BLUE_WITHOUT_A_QUESTION slide 12",
+   "BLUE_WITHOUT_A_QUESTION slide 12",
+   "BLUE_WITHOUT_A_QUESTION slide 5",
+   "BLUE_WITHOUT_A_QUESTION slide 6",
+   "BLUE_WITHOUT_A_QUESTION slide 9",
+   "STARTER_QUESTIONS_ALL_BLUE slide 1",
+   "STICKY_LINE_RECOLOURED slide 7",
+   "STICKY_LINE_RECOLOURED slide 8",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 4",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 5",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 6",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 7",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 8"
+  ]
+ },
+ "output/working/year-4-pshe-our-pshe-rules/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "BLUE_WITHOUT_A_QUESTION slide 10",
+   "BLUE_WITHOUT_A_QUESTION slide 10",
+   "BLUE_WITHOUT_A_QUESTION slide 11",
+   "BLUE_WITHOUT_A_QUESTION slide 5",
+   "BLUE_WITHOUT_A_QUESTION slide 5",
+   "BLUE_WITHOUT_A_QUESTION slide 6",
+   "BLUE_WITHOUT_A_QUESTION slide 6",
+   "BLUE_WITHOUT_A_QUESTION slide 7",
+   "BLUE_WITHOUT_A_QUESTION slide 8",
+   "BLUE_WITHOUT_A_QUESTION slide 9",
+   "BLUE_WITHOUT_A_QUESTION slide 9",
+   "SC_PANEL_TOO_LARGE slide 3",
+   "SC_PANEL_TOO_LARGE slide 7",
+   "SC_PANEL_TOO_LARGE slide 8",
+   "SC_PANEL_TOO_LARGE slide 9",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 4",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 5",
+   "TEACH_SLIDE_NEEDS_TEACH_LAYOUT slide 6"
+  ]
+ },
+ "output/working/year-4-science-explain-how-a-tooth-decays/lesson.json": {
+  "reason": "SLIDE_DESIGN_PRESENTATION",
+  "signals": [
+   "BLUE_WITHOUT_A_QUESTION slide 13",
+   "BLUE_WITHOUT_A_QUESTION slide 16",
+   "FIGURE_ZONE_UNDERFILLED slide 3"
+  ]
+ },
+ "working/year-4-history-lesson-4/lesson.json": {
+  "reason": "OK",
+  "signals": [
+   "FIGURE_ZONE_UNDERFILLED slide 3",
+   "FIGURE_ZONE_UNDERFILLED slide 3"
+  ]
+ },
+ "working/year-4-maths-lesson-15-compare-and-order-negative-numbers/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "working/year-4-maths-lesson-16-roman-numerals-to-l/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "working/year-4-maths-lesson-17-roman-numerals-to-c/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ },
+ "working/year-4-science-name-parts-of-digestive-system/lesson.json": {
+  "reason": "OK",
+  "signals": []
+ }
+}

@@ -1,0 +1,74 @@
+{
+  "topic": "Rounding to the nearest 10 and 100",
+  "yearGroup": "Year 4",
+  "lessonSlug": "rounding-colours-demo-a",
+  "rationaleNote": "A demonstration of the wall's colours, for the teacher to see.",
+  "cards": [
+    {
+      "type": "diagramSection",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Rounding 347",
+      "parts": [
+        {
+          "heading": "Nearer ten",
+          "visual": {
+            "type": "numberLine",
+            "start": 340,
+            "end": 350,
+            "interval": 5,
+            "labels": "all",
+            "answer": {
+              "at": 347,
+              "text": "347"
+            }
+          },
+          "notes": [
+            "Find the {{halfway}} point."
+          ],
+          "result": "347 rounds to 350"
+        },
+        {
+          "heading": "Sam's mistake",
+          "visual": {
+            "type": "numberLine",
+            "start": 340,
+            "end": 350,
+            "interval": 5,
+            "labels": "all",
+            "answer": {
+              "at": 347,
+              "text": "347"
+            }
+          },
+          "result": "Sam wrote 340",
+          "worked": true
+        }
+      ]
+    },
+    {
+      "type": "referenceTable",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Which way to round",
+      "columns": [
+        "The digit after",
+        "We round"
+      ],
+      "rows": [
+        [
+          "0, 1, 2, 3 or 4",
+          "down"
+        ],
+        [
+          "5, 6, 7, 8 or 9",
+          "up"
+        ]
+      ]
+    }
+  ]
+}

@@ -142,9 +142,10 @@ const QUESTION_TYPES = new Set(['numbered-questions', 'question-cards']);
 const ANSWER_GREEN = /\|\||\{\{/;
 
 // A task list is the turn on a slide that instructs rather than asks. It used
-// to be recognised through its house blue, but instructions are black now (see
-// teacher-slide-visual-profile.md -> Semantic colour), so the list itself has to
-// count or every instructed turn would read as a reference-only slide.
+// to be recognised through its house blue, but an instruction is black unless
+// it is the child's own short task (see teacher-slide-visual-profile.md ->
+// Semantic colour), so the list itself has to count or every instructed turn
+// would read as a reference-only slide.
 // Success criteria are steps too, and they are the reference a child checks
 // their work against rather than the work itself, so the panel never counts.
 function hasTaskSteps(node, insidePanel) {
@@ -169,9 +170,10 @@ function hasTaskSteps(node, insidePanel) {
 
 // The turn's own task, written as prose rather than carried by a question
 // helper. A roomier free layout has no `questions` field to put it in, so the
-// task arrives as a text node - and because Semantic colour makes a task BLACK
-// ("a task is black either way, because it is a task and not a question",
-// flagged by Daniel 3 September 2026), nothing about that node said "turn".
+// task arrives as a text node - and because Semantic colour keeps an
+// instruction BLACK unless it is the child's own short task, marked `task-blue`
+// (the teacher's rule of 24 September 2026, narrowing his of 3 September),
+// nothing about a black node's colour says "turn".
 //
 // That left one class of slide with no legal way to exist. The Find 1,000
 // more/less deck met it on four slides: black, and TURN_SLIDE_WITHOUT_ITS_TURN
@@ -186,15 +188,16 @@ function hasTaskSteps(node, insidePanel) {
 // interlude the rule refuses.
 const TASK_OPENERS = new RegExp(
   '^(?:' + [
-    'add', 'answer', 'build', 'calculate', 'change', 'check', 'choose',
+    'add', 'answer', 'ask', 'build', 'calculate', 'change', 'check', 'choose',
     'circle', 'colour', 'compare', 'complete', 'continue', 'convert', 'copy',
     'count', 'cross', 'decide', 'describe', 'design', 'discuss', 'divide',
     'draw', 'estimate', 'explain', 'fill', 'find', 'finish', 'give', 'identify',
-    'join', 'label', 'list', 'look', 'make', 'mark', 'match', 'measure',
-    'multiply', 'name', 'order', 'partition', 'pick', 'plot', 'point', 'prove',
-    'read', 'record', 'round', 'shade', 'share', 'show', 'solve', 'sort',
-    'spot', 'subtract', 'tell', 'test', 'tick', 'try', 'underline', 'use',
-    'work out', 'write',
+    'imagine', 'improve', 'join', 'justify', 'label', 'list', 'look', 'make',
+    'mark', 'match', 'measure', 'multiply', 'name', 'order', 'partition',
+    'pick', 'place(?! value)', 'plan', 'plot', 'point', 'prove', 'put', 'read',
+    'record', 'round', 'say', 'shade', 'share', 'show', 'solve', 'sort',
+    'spot', 'subtract', 'suggest', 'take', 'tell', 'test', 'tick', 'try',
+    'underline', 'use', 'work out', 'write',
   ].join('|') + ')\\b',
   'i'
 );
@@ -227,6 +230,11 @@ function carriesFocusSpan(node) {
   });
 }
 
+function taskBlueAsks(node) {
+  const whole = typeof node.value === 'string' ? node.value : node.text;
+  return typeof whole === 'string' && taskSentences(whole).some((sentence) => sentence.endsWith('?'));
+}
+
 function carriesItsTurn(slideData) {
   let found = hasTaskSteps(slideData, false);
   walkContent(slideData, (node) => {
@@ -241,6 +249,10 @@ function carriesItsTurn(slideData) {
     // looked like a slide with no question on it at all.
     else if (carriesFocusSpan(node)) found = true;
     else if (node.colorRole === 'focus-blue') found = true;
+    // A `task-blue` line counts by what it says, never by its role: a
+    // statement so marked is not the turn. A question on it is (the role
+    // draws that question blue); a task verb has counted above already.
+    else if (node.colorRole === 'task-blue' && taskBlueAsks(node)) found = true;
     else if (typeof node.color === 'string' && HOUSE_BLUE.test(node.color.trim())) {
       found = true;
     } else if (typeof node.value === 'string' && ANSWER_GREEN.test(node.value)) {
@@ -270,9 +282,10 @@ function turnWarnings(lesson) {
         "question or task on it, or fold this content into the slide that does " +
         'have the question (a reference usually fits beside a task as a side panel ' +
         'in a row) rather than leaving a reference-only slide wearing a turn ' +
-        'label. The task stays BLACK: do not reach for house blue to satisfy this ' +
-        'line, because blue is the colour of a question and an imperative painted ' +
-        'blue is refused by BLUE_WITHOUT_A_QUESTION.'
+        'label. Colour does not make a line a task: a statement or an instruction ' +
+        'painted blue is refused by BLUE_WITHOUT_A_QUESTION, and `task-blue` is ' +
+        'only for the child\'s own short task, the job itself (`Explain your ' +
+        'answer.`), never advice on how to go about it.'
     });
   });
   return warnings;
@@ -650,21 +663,22 @@ function mixedBlockWarnings(lesson) {
         message:
           `"${node.value.slice(0, 60)}" tells and then asks in one blue block; ` +
           'keep the telling black and put the question on its own line in blue ' +
-          '(a `[[ ]]` span or a separate text object).'
+          '(a `[[ ]]` span or a separate text object). A short task that is the ' +
+          'child\'s job may share its question\'s line as `task-blue`.'
       });
     });
   });
   return warnings;
 }
 
-// House blue means one thing on the body of a slide: this is a question for
-// you. An instruction the class acts on is black, because it already reads as
-// part of the job the blue question set, and painting it blue too spends the
-// contrast that was lifting the question. A Year 4 history deck put "Explain
-// your answer using the photograph.", "Point to the details that support your
-// comparison." and seven more task lines in house blue, and the board arrived
-// almost entirely blue (flagged by Daniel, 3 September 2026: "can we make only
-// questions to children blue").
+// House blue means one thing on the body of a slide: this is your job - a
+// question to answer, or a short task the designer has marked `task-blue`
+// (the teacher's rule of 24 September 2026, narrowing his of 3 September, when
+// a history deck's nine task lines arrived blue; the build log keeps it).
+// Anything else painted blue - a statement, an answer, an instruction about
+// how to go about the task - spends the contrast that was lifting the job, so
+// it is refused here. Whether a line is the job or advice is the designer's
+// judgement, which the role records; no count of words can make it.
 //
 // A blue run is only judged when it is a finished sentence - it ends in a full
 // stop or an exclamation mark and runs to more than one word. Short blue
@@ -685,6 +699,7 @@ function blueStatement(run) {
 function nodeIsBlue(node) {
   return (
     node.colorRole === 'focus-blue' ||
+    node.colorRole === 'task-blue' ||
     (typeof node.color === 'string' && HOUSE_BLUE.test(node.color.trim()))
   );
 }
@@ -699,7 +714,10 @@ const UNPRINTED_KEYS = new Set(['speakerNotes', 'decorations']);
 function blueStatementRuns(node) {
   const runs = [];
   const whole = typeof node.value === 'string' ? node.value : node.text;
-  if (nodeIsBlue(node) && typeof whole === 'string') runs.push(whole);
+  // A `task-blue` line has said what it is; TASK_BLUE_NOT_A_SHORT_TASK judges it.
+  if (nodeIsBlue(node) && node.colorRole !== 'task-blue' && typeof whole === 'string') {
+    runs.push(whole);
+  }
   Object.keys(node).forEach((key) => {
     if (UNPRINTED_KEYS.has(key)) return;
     const value = node[key];
@@ -732,11 +750,139 @@ function blueStatementWarnings(lesson) {
           field: 'text',
           message:
             `"${text.slice(0, 60)}" is in house blue but asks the class ` +
-            'nothing. Blue is the colour of a question children answer; an ' +
-            'instruction they act on is black, so drop the blue here (remove ' +
-            'the `focus-blue` role, the house-blue `color` or the `[[ ]]` ' +
-            'span) and leave the blue for the question this task belongs to.'
+            'nothing. Blue is for a question children answer, and for the ' +
+            'child\'s own short task, the job itself (`Explain your answer.`, ' +
+            '`Write one reason.`), marked `colorRole: "task-blue"`; a statement, ' +
+            'an answer or an instruction about how to go about the task is ' +
+            'black, so drop the blue here (remove the `focus-blue` role, the ' +
+            'house-blue `color` or the `[[ ]]` span) and leave it for the ' +
+            'question or short task this belongs to.'
         });
+      });
+    });
+  });
+  return warnings;
+}
+
+// A short task is the child's job said in a few words - `Explain your answer.`,
+// `Write one reason.`, `Round 346 to the nearest 10.` - and it is blue, as a
+// question is. Whether a line is the job or advice on how to go about it (`Use
+// the shaded map.`) is the designer's call, recorded by the role. What the
+// spec shows about the line, the check refuses: the reveal mark `||` (an
+// answer is green on an answer slide); a line the lesson design holds as a
+// sticky fact or as this lesson's answer; a sticky line's sparkle; and any
+// shape but one short task, alone or after its question - a statement or a
+// task before a question is a tell-then-ask block, and two instructions are
+// the all-blue board of 3 September arriving one short line at a time. A lone
+// statement marked `task-blue` that the design does not name passes this
+// rule, which cannot read meaning; it never counts as the slide's turn,
+// because carriesItsTurn reads a marked line's words, not its role.
+const TASK_BLUE_REVEAL = /\|\|/;
+const TASK_BLUE_MARKS = /\|\||\*\*|\[\[|\]\]|\{\{|\}\}|<<|>>|✨/g;
+
+// The words, without marks, spacing, case or a closing full stop, so a line
+// is matched to the design's own words however it was typed onto the slide.
+function plainLine(text) {
+  return String(text).replace(TASK_BLUE_MARKS, '').replace(/\s+/g, ' ').trim()
+    .replace(/[.!]+$/, '').toLowerCase();
+}
+
+// What the lesson design beside the deck says is a sticky fact or an answer,
+// in plain words, so a marked line is refused by what it is, not by its shape.
+function designFacts(jsonPath) {
+  const facts = { sticky: new Set(), answers: new Set() };
+  if (!jsonPath) return facts;
+  const designPath = path.join(path.dirname(jsonPath), 'lesson-design.json');
+  if (!fs.existsSync(designPath)) return facts;
+  let design;
+  try {
+    design = JSON.parse(fs.readFileSync(designPath, 'utf8'));
+  } catch {
+    return facts;
+  }
+  (Array.isArray(design.stickyKnowledge) ? design.stickyKnowledge : []).forEach((fact) => {
+    if (fact && typeof fact.text === 'string' && fact.text.trim()) facts.sticky.add(plainLine(fact.text));
+  });
+  const visit = (node) => {
+    if (Array.isArray(node)) return node.forEach(visit);
+    if (!node || typeof node !== 'object') return;
+    // A unit, block, part or prompt holds its answer as `answer.content`.
+    const answer = node.answer;
+    if (answer && typeof answer.content === 'string' && answer.content.trim()) {
+      facts.answers.add(plainLine(answer.content));
+    }
+    Object.keys(node).forEach((key) => visit(node[key]));
+  };
+  visit(design);
+  return facts;
+}
+
+// Sentences, as a reader meets them: `e.g.` and `i.e.` do not end one.
+function taskSentences(whole) {
+  return splitSentences(String(whole).replace(/\b(e\.g|i\.e)\.(?=\s)/gi, (m) => m.replace(/\./g, '․')));
+}
+
+function taskBlueFault(whole, facts) {
+  if (TASK_BLUE_REVEAL.test(whole)) {
+    return 'it carries the reveal mark `||`, and an answer is green on an answer slide, never blue';
+  }
+  if (whole.trim().startsWith('✨') || facts.sticky.has(plainLine(whole))) {
+    return 'it is a sticky fact, which is purple';
+  }
+  if (facts.answers.has(plainLine(whole))) {
+    return 'it is the lesson\'s answer, which is green on an answer slide, never blue';
+  }
+  const sentences = taskSentences(whole);
+  const tasks = sentences.filter((sentence) => !sentence.endsWith('?'));
+  if (tasks.length > 1) {
+    return `it holds ${tasks.length} sentences that are not questions, and a short task is one`;
+  }
+  if (tasks.length === 1 && sentences[sentences.length - 1].endsWith('?')) {
+    return 'it tells before it asks, and a line that tells or instructs and then asks is two things, not one short task';
+  }
+  return null;
+}
+
+function taskBlueWarnings(lesson, jsonPath) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const facts = designFacts(jsonPath);
+  const warnings = [];
+  slides.forEach((slideData, index) => {
+    walkContent(slideData, (node) => {
+      if (node.colorRole !== 'task-blue') return;
+      const whole = typeof node.value === 'string' ? node.value : node.text;
+      if (typeof whole !== 'string' || !whole.trim()) return;
+      // The role is the short task's only blue. A colour beside it would let a
+      // hex decide what the role is for: the turn check reads a house-blue hex,
+      // so a statement given both counted as the turn (the third check).
+      const ownColour = [node.color, node.colour].find((c) => typeof c === 'string' && c.trim());
+      if (ownColour) {
+        warnings.push({
+          signal: 'TASK_BLUE_NOT_A_SHORT_TASK',
+          slide: index + 1,
+          field: 'text',
+          message:
+            `"${whole.trim().slice(0, 60)}" is marked task-blue and also carries its own colour ` +
+            `("${ownColour.trim()}"). A short task takes its blue from the role alone, never a ` +
+            'hex: take the `color` off and keep `colorRole: "task-blue"`. If the line is not the ' +
+            'child\'s own short task, take both off.'
+        });
+        return;
+      }
+      const fault = taskBlueFault(whole, facts);
+      if (!fault) return;
+      warnings.push({
+        signal: 'TASK_BLUE_NOT_A_SHORT_TASK',
+        slide: index + 1,
+        field: 'text',
+        message:
+          `"${whole.trim().slice(0, 60)}" is marked task-blue, but ${fault}. ` +
+          '`task-blue` is for the child\'s own short task, the job in a few ' +
+          'words (`Explain your answer.`), alone or after its question on the ' +
+          'same line. A statement, an answer, a sticky fact or an instruction ' +
+          'about how to go about the task is not blue: take the role off, or ' +
+          'give each short task its own line and each question its own line ' +
+          'before it.'
       });
     });
   });
@@ -1209,6 +1355,7 @@ Fix that slide's layout slots, then run the check again.
     .concat(sharedModelWarnings(lesson))
     .concat(mixedBlockWarnings(lesson))
     .concat(blueStatementWarnings(lesson))
+    .concat(taskBlueWarnings(lesson, jsonPath))
     .concat(starterColourWarnings(lesson))
     .concat(stickyEmphasisWarnings(lesson))
     .concat(pictureWarnings(lesson))

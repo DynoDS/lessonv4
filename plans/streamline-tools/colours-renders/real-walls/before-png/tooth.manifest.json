@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before\\tooth\\Working Wall - Explain how a tooth decays.pdf",
+  "sourceSha256": "ef6427b305d3718b2ce18d0b6b85a7ddbc99f93931cd333db31d1a3f0a9edd3a",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before-png\\tooth\\Working Wall - Explain how a tooth decays-source.pdf",
+    "sha256": "ef6427b305d3718b2ce18d0b6b85a7ddbc99f93931cd333db31d1a3f0a9edd3a"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before-png\\tooth\\Working Wall - Explain how a tooth decays-contact-sheet.png",
+    "sha256": "6c22f124a8f554d7a8705718f5da4a10c4b2ab7001f899dd26bdcd136394f20e"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before-png\\tooth\\Working Wall - Explain how a tooth decays-page-01.png",
+      "sha256": "e08b37e9e2befa3b9ab9413700076ca3884efd1d307b49b0d0e71e4cf2e37d41"
+    }
+  ]
+}

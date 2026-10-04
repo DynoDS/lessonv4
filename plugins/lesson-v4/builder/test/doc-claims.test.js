@@ -339,7 +339,9 @@ test('semantic colour stays with the teacher profile and exact field contracts',
     TEMPLATES_MD,
     /Every `emphasis\[\]\.text` must occur exactly once in the visible source string/
   );
-  assert.match(PLAYBOOK_MD, /Prepared examples and visible-in-unit models stay black/);
+  // Decision 11 (24 September 2026): a prepared, finished example is a worked
+  // example, and a worked example is purple, the same colour as a sticky fact.
+  assert.match(PLAYBOOK_MD, /Prepared examples and visible-in-unit models are worked examples, in purple/);
   assert.match(SLIDE_DESIGNER_MD, /Use `teacher-slide-visual-profile.md` for visual judgement/);
 });
 
@@ -351,27 +353,54 @@ test('the asking-versus-telling colour grammar holds across every colour owner',
   assert.match(TEACHER_PROFILE_MD, /asking versus telling/);
   assert.match(TEACHER_PROFILE_MD, /The boundary is the sentence, not the block/);
   assert.match(PLAYBOOK_MD, /asking versus telling/);
-  assert.match(PREFERENCES_MD, /Blue asks; everything else tells/);
+  // Decision 11 (24 September 2026) folded preferences' three blue paragraphs
+  // into the profile: preferences keeps his words and points at the owner.
+  assert.match(PREFERENCES_MD, /Blue asks or sets a short task, and a worked example is purple/);
+  assert.match(PREFERENCES_MD, /Semantic colour owns the whole grammar/);
   assert.ok(
     !TEACHER_PROFILE_MD.includes('do not make routine starter questions or every task question blue'),
     'the retired one-focal-question restriction must not resurface in the profile'
   );
 });
 
-test('blue is the colour of a question, and instructions are black', () => {
+test('blue is a question or a short task, and a longer instruction is black', () => {
   // A Year 4 history deck put "Explain your answer using the photograph.",
   // "Point to the details that support your comparison." and six more task
   // lines in house blue, so almost the whole board arrived blue and the colour
   // stopped marking anything (flagged by Daniel, 3 September 2026: "can we make
-  // only questions to children blue"). Every owner of the grammar has to say
-  // instructions are black, or a run picks up whichever file it opens first.
-  assert.match(TEACHER_PROFILE_MD, /House blue is the colour of a question to children/);
-  assert.match(TEACHER_PROFILE_MD, /the instructions children act on/);
-  assert.match(PREFERENCES_MD, /the instructions children act on/);
+  // only questions to children blue"). On 24 September 2026 he narrowed it
+  // (decision 11 and the topic 7 plan's question 1): blue is a question or a
+  // short task, and a longer instruction about how to go about it stays black;
+  // on 25 September he said a job that names what to use is still the job, so
+  // the first of those lines is blue once marked. Every owner of the grammar has
+  // to say so, or a run picks up whichever file it opens first.
+  assert.match(
+    TEACHER_PROFILE_MD,
+    /House blue is the colour of the child's job: a question they answer, or a short task/
+  );
+  assert.ok(TEACHER_PROFILE_MD.includes('`Explain your answer.`, `Write one reason.`, `Explain why.`'));
+  assert.match(TEACHER_PROFILE_MD, /a longer instruction about how to go about the task/);
+  assert.ok(TEACHER_PROFILE_MD.includes('A job that also names what to use is still the job, and blue: `Explain your answer using the photograph.`'));
+  // The job or advice on how to do it is the designer's judgement, recorded by
+  // a role the check reads, never a count of words (the first check of the
+  // colours release).
+  assert.ok(TEACHER_PROFILE_MD.includes('marked `colorRole: "task-blue"`'));
+  assert.match(TEACHER_PROFILE_MD, /no count of words decides it/);
+  assert.match(TEACHER_PROFILE_MD, /The cue is drawn black/);
+  assert.ok(PREFERENCES_MD.includes('I want blue means question or like a short task'));
+  assert.match(PREFERENCES_MD, /a longer instruction about how to go about it stays black/);
   assert.match(
     PLAYBOOK_MD,
-    /Every child-facing question outside the starter carries the blue/
+    /Every child-facing question and short task outside the starter carries the blue/
   );
+  for (const [name, text] of [
+    ['profile', TEACHER_PROFILE_MD],
+    ['preferences', PREFERENCES_MD],
+    ['playbook', PLAYBOOK_MD]
+  ]) {
+    assert.ok(!text.includes('a task is black either way'), `${name} still says every task is black`);
+    assert.ok(!text.includes('the instructions children act on'), `${name} still blackens every instruction`);
+  }
   assert.ok(
     !PLAYBOOK_MD.includes('Every child-facing question and pupil instruction carries the blue'),
     'the playbook must not keep sending instructions to house blue'
@@ -379,7 +408,8 @@ test('blue is the colour of a question, and instructions are black', () => {
   // The starter is questions all the way down, so blue marks nothing there.
   assert.match(TEACHER_PROFILE_MD, /The starter is the one place a question is normally black/);
   assert.match(TEACHER_PROFILE_MD, /alternate them black, blue, black, blue/);
-  assert.match(PREFERENCES_MD, /Starter questions are the exception and stay black/);
+  // Preferences' pointer names the exception, because a pointer is read first.
+  assert.match(PREFERENCES_MD, /the starter's questions, which stay black or alternate/);
 });
 
 test('the composition regressions from the electrical-appliances deck stay fixed', () => {
@@ -780,11 +810,13 @@ test("the teacher slide visual profile pins its calibration rules", () => {
     false,
     "the profile re-learns the lone-(1) calibration as a positive numbering rule"
   );
+  // The sentence this held presumed a lone main-independent question is
+  // numbered, which Question Labelling no longer says; it went as out of date
+  // (the rest-of-preferences ledger's decision 14, row J13). What it protected
+  // stays: the profile adds no numbering rule of its own.
   assert.ok(
-    TEACHER_PROFILE_MD.includes(
-      "does not establish that a single main-independent question should lose its normal numbering"
-    ),
-    "the profile no longer records that the lone-(1) calibration establishes no rule"
+    TEACHER_PROFILE_MD.includes("this profile adds no numbering rule of its own"),
+    "the profile no longer says it adds no numbering rule of its own"
   );
   assert.ok(
     TEACHER_PROFILE_MD.includes("one compact white card per criterion"),

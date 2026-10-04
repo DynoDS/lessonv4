@@ -52,12 +52,12 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `shaded-fraction` | A shape (bar / grid / circle, or a stack of bars) split into equal parts with some shaded green. Use for "shade one quarter" and "what fraction is shaded?"; set `shaded: 0` for a blank shape children shade in |
 | `dial-scale` | An analogue round scale (kitchen/weighing dial): 0 at the top, a full turn = `max`, numbered ticks and a needle on `value`. Use for reading a measuring dial |
 | `line-graph` | A line graph with numbered, titled axes and plotted points joined in order. Use for reading a value off a graph or an interval between two values |
-| `tally-chart` | A tally chart: a group-label column, a tally column whose counts are drawn as bundles of five (four verticals struck through by a fifth diagonal) and remainder strokes, and an optional Total column. Pass `tally` as a NUMBER per row — the marks are drawn for you. Set `blank: true` for empty tally boxes (sized to the expected marks) children fill in as they collect data. A `total` with the green `||` marker (`"||12"`) reveals that frequency as a worked answer — for the modelled rows on a My Turn and the whole column on an answer slide. Use for reading or making a tally chart in statistics — the marks, not raw numbers, are the point |
+| `tally-chart` | A tally chart: a group-label column, a tally column whose counts are drawn as bundles of five (four verticals struck through by a fifth diagonal) and remainder strokes, and an optional Total column. Pass `tally` as a NUMBER per row — the marks are drawn for you. Set `blank: true` for empty tally boxes (sized to the expected marks) children fill in as they collect data. A `total` with the green `||` marker (`"||12"`) reveals that frequency as an answer, on an answer slide; a My Turn models its frequencies in plain black (see `tally-chart`). Use for reading or making a tally chart in statistics — the marks, not raw numbers, are the point |
 | `pictogram` | A pictogram: each row is a category label followed by a series of house-blue symbols, with a key below stating how many units one symbol stands for. A left half-circle stands for HALF the key value (`per` 10, value 45 → four-and-a-half circles). Pass `categories`, `values` and `key: { per, label }`. Use for reading or making a pictogram in statistics — the half-symbol = half-the-key is the Year 4 teaching point |
 | `bar-chart` | A bar chart with labelled axes and a numbered y-axis scale: the canonical statistics visual. Pass `categories` and `values`; set `y_interval` explicitly so the scale steps in non-unit jumps (it never defaults to 1, because reading a non-unit scale is the Year 4 teaching point). Optional `title`, `y_max`, `y_label`, `x_label`. Use for reading or making a bar chart in data-handling, where the scale you read against (not the bar) is the question |
 | `label-diagram` | A photo or drawing with a labelled-part overlay: each callout is a dot on the part joined by a leader line to its name. Pass `imagePath` and `callouts` (each `{ anchor:[x%,y%], label, given?, label_at? }`); `given:true` prints the label (the completed/answer diagram), omitting it draws a blank write-on line (the question form). Use for labelling the specific parts of a real diagram (parts of a plant, features of a river, angles on a shape): the leader line is what lets a child map each name to its part, which a corner-callout slide cannot do |
 | `bar-model` | A general bar model. `shape: "part-whole"` is one long rectangle (the whole) divided into 2+ labelled parts; `shape: "comparison"` is two stacked bars of different lengths with the shorter bar's shortfall shown as a labelled difference gap. Segment lengths go proportional to part/bar `value`s when given, even otherwise. Any region whose label is empty or ends in `?` becomes a white answer box. Use for money (change, totals), comparison ("how much more?") and multi-step reasoning — the White Rose bar children meet from Year 4. Distinct from `part-whole-model` (circles) and `triangle-square` (SATs puzzle) |
-| `method-frame` | A taught mental strategy printed as a fill-in method: an ordered list of labelled lines (the strategy's own words - "First, add:", "Then, adjust:") inside a green "method" panel, each line a stem in which `___` or `□` becomes a write-in box available for live completion during modelling. Caller sets how many blanks each line carries, so the same frame is shown fully worked, with one blank, or all blank - fade it across a set. The board twin of the worksheet's `method-frame`; for a SINGLE-LINE equation frame use a worksheet `inequality-with-boxes` instead |
+| `method-frame` | A taught mental strategy printed as a fill-in method: an ordered list of labelled lines (the strategy's own words - "First, add:", "Then, adjust:") inside a purple "method" panel (a worked example's colour), each line a stem in which `___` or `□` becomes a write-in box available for live completion during modelling. Caller sets how many blanks each line carries, so the same frame is shown fully worked, with one blank, or all blank - fade it across a set. The board twin of the worksheet's `method-frame`; for a SINGLE-LINE equation frame use a worksheet `inequality-with-boxes` instead |
 | `blank-surface` | A DRAW-YOUR-OWN working surface the child constructs on, not a pre-drawn fill-in. `surface: "number-line"` is a single faint baseline with a tall empty band above for the child's own jumps (no ticks, no numbers; optional `start`/`end` labels at the ends); `surface: "bar"` is one empty rectangle outline to partition (`bars: 2` for a comparison pair). Use when deciding WHERE the jump goes or HOW to partition is the skill. The slide's blank surface shows the class the surface they will draw their own version of. Distinct from `numberline`/`bar-model` (which draw the finished picture with blanks) |
 | `comparison-slot` | The empty ring a child writes `<`, `>` or `=` into, for the gap between two things being compared. Sized from the room it is given, so it stays in proportion to the charts, bars or numerals either side instead of being pinned to a point size that stops matching them the moment anything beside it changes. Optional `answer` prints the symbol inside the same ring for a reveal. Use this rather than typing a `○` into a text item: a typed circle is text, so it takes a text card and a fixed size, and lines up with nothing |
 | `numbered-questions` | Stacked question cards with auto blue `(1) (2) (3)` labels, for Apply / independent work |
@@ -259,7 +259,7 @@ For a content Teach unit the design's fields map straight across: `headline` is 
 - `sides`: for the compare layouts, two entries of `heading`, `text`, and on `compare-pictures` a `picture`. Add `headingRole: "vocabulary"` when the two headings are taught words.
 - `speakers`, `steps`, `columns` (`heading` and `text`), `answers` and `extract` (a passage read closely, kept left-aligned because prose is read line by line) are as they read.
 
-A text slot is a string, or an object with `value` plus `emphasis` for inline taught words and `"orange": true` for the one explanation line you would say louder (`teacher-slide-visual-profile.md` → Semantic colour owns its limits; the build refuses a second orange line, orange on a question or the line to remember, and orange on a line carrying a taught word). `align`, `fontSize`, `color` and the other sizing fields are refused on these slots, because the layout owns them. A slot the chosen layout does not arrange is refused with the names of the layouts that do, so nothing you write is ever silently left off the board. Slide-level fields (`title`, `headerStyle`, `instruction`, `designUnitId`, `speakerNotes`, `decorations` and the reference arrays) sit beside the slots as on any slide.
+A text slot is a string, or an object with `value` plus `emphasis` for inline taught words and `"orange": true` for the one explanation line you would say louder (`teacher-slide-visual-profile.md` → Semantic colour owns its limits; the build refuses a second orange line, orange on a question or the line to remember, and orange on a line carrying a taught word). The lines of a worked example, a prepared model the class sees finished, take `"colorRole": "worked-purple"` and print purple; no other role is taken, and never on the question, the line to remember, an orange line or a source's extract. A step of a worked example on `steps` or `picture-steps` is `{ "text": "...", "colorRole": "worked-purple" }`. `align`, `fontSize`, `color` and the other sizing fields are refused on these slots, because the layout owns them. A slot the chosen layout does not arrange is refused with the names of the layouts that do, so nothing you write is ever silently left off the board. Slide-level fields (`title`, `headerStyle`, `instruction`, `designUnitId`, `speakerNotes`, `decorations` and the reference arrays) sit beside the slots as on any slide.
 
 | Layout | Slots | What it is for |
 |---|---|---|
@@ -614,9 +614,11 @@ own text column and add a line when the full set still fits at that same font.
 `colorRole` is one of:
 
 - `default` - existing base colour;
-- `focus-blue` - a question children answer, in house blue; an instruction they act on stays black (the asking-versus-telling grammar in `teacher-slide-visual-profile.md` → Semantic colour);
+- `focus-blue` - a question children answer, in house blue; an instruction stays black unless it is the child's short task, which takes `task-blue` (the asking-versus-telling grammar in `teacher-slide-visual-profile.md` → Semantic colour);
+- `task-blue` - a short task, the child's job itself (`Explain your answer.`, `Write one reason.`, `Round 346 to the nearest 10.`), in house blue, alone or after its question on the same line, and a job that also names what to use (`Explain your answer using the photograph.`), taking its blue from the role alone (a `color` beside it is refused); advice that only says how to go about the task (`Use the shaded map.`, `Use the two photographs.`) never takes it, nor does a statement, an answer or a sticky fact, and one line holds one task;
 - `peer-blue` - house blue for one item in a compact equal-status peer set;
-- `peer-purple` - house purple for one item in a compact equal-status peer set.
+- `peer-purple` - house purple for one item in a compact equal-status peer set;
+- `worked-purple` - a worked example the class sees finished (a prepared example, a `visible-in-unit` model), in the sticky fact's purple, never answer green; a place-value chart row takes `worked: true` instead, and any other drawn figure keeps its own colours.
 
 Use `peer-blue` / `peer-purple` only to separate a compact set of equal-status peer prompts.
 
@@ -636,7 +638,7 @@ Use `peer-blue` / `peer-purple` only to separate a compact set of equal-status p
 
 Supported roles are:
 
-- `core-action` - bold, in the line's own colour, for the survival phrase (house blue stays the colour of a question and of nothing else);
+- `core-action` - bold, in the line's own colour, for the survival phrase (a verb is never blue on its own: the whole line is blue only when it is a question or a short task);
 - `task-action` - bold, in the line's own colour, for an existing action verb or short action phrase inside a multi-phase task;
 - `required-material` - bold single underline;
 - `response-demand` - bold single underline;
@@ -694,9 +696,9 @@ of text. It is not a way to place free decoration on an empty part of a slide.
 
 When two items are genuinely separate pieces of content (especially different types, e.g. a text label above a table), prefer a `stack` of content objects instead. `stack` items always render with visible vertical spacing between them; `\n\n` is for within-one-text-block paragraph breaks.
 
-**Optional `color`:** pass a hex colour (no `#`) to tint the text when the text has a deck role such as the blue question/instruction or orange supplied material. Category identity belongs on the container through `categoryColor`, not on the words. Defaults to body black when omitted. The blue is asking-versus-telling (the playbook's Colour section): every child-facing question and instruction carries it, explanation and statements stay black, and a block that does both splits at the boundary - colour only the asking sentence (via a separate block or a `[[ ]]` span), never the whole mixed block.
+**Optional `color`:** pass a hex colour (no `#`) to tint the text when the text has a deck role such as the blue question or orange supplied material. Category identity belongs on the container through `categoryColor`, not on the words. Defaults to body black when omitted. The blue is asking-versus-telling (the playbook's Colour section): every child-facing question carries it, and a short task carries it through `colorRole: "task-blue"`, never a hex, so the check can see it is one; an instruction about how to go about the task, explanation and statements stay black, and a block that does both splits at the boundary - colour only the asking sentence (via a separate block or a `[[ ]]` span), never the whole mixed block.
 
-Green answer text is not an ordinary emphasis option. Do not set text `color` to `00B050` and do not use `||`, `{{green}}` or `{{answer-green}}` on a teaching slide. Prepared examples and `visible-in-unit` models remain body black. Use answer green only on an answer/reveal slide. Vocabulary and success criteria keep their established green treatments.
+Green answer text is not an ordinary emphasis option. Do not set text `color` to `00B050` and do not use `||`, `{{green}}` or `{{answer-green}}` on a teaching slide. Prepared examples and `visible-in-unit` models are worked examples: give their lines `colorRole: "worked-purple"`. Use answer green only on an answer/reveal slide. Vocabulary and success criteria keep their established green treatments.
 
 ```json
 { "type": "text", "value": "What we see.", "color": "0070C0" }
@@ -738,6 +740,8 @@ Green answer text is not an ordinary emphasis option. Do not set text `color` to
 ```
 
 A step is normally a string. A success-criteria step that names a visible notation mark may use `{ "text": "...", "helper": "<catalogue-key>" }` so the engine draws a **Success Criteria Helper** beside the unchanged wording. Existing JSON using `figure` remains valid, but new lessons use `helper`. The shared catalogue, size support (`full-size`, `SC-inline`, or `both`), and strict boundary live in `slide-success-criteria.md`; do not invent keys or use this object form for decorative pictures.
+
+A step of a worked example set out as steps is `{ "text": "...", "colorRole": "worked-purple" }`: its words and its number print purple, the worked example's colour, and the build refuses any other role on a step.
 
 **Optional `heading`** — a short label rendered directly above the first step, hugging the list rather than floating above it. Use it to title a step list inside a free-template zone — e.g. `"heading": "✓ Success Criteria"` over a criteria panel — so the label reads as part of the list. `headingColor` (hex, e.g. `"0070C0"`) and `headingFontSize` are optional. Prefer this over a `stack` of `[ text-label, steps ]`: a two-item stack splits the zone into equal halves and centres each, which strands a one-line label in the middle of its half, far from the steps it names.
 
@@ -803,7 +807,7 @@ size. A header must not grow independently of the cells it describes.
 
 **Shared maximum fit:** headers share one maximum safe size. Each body column has its own shared maximum safe size because cells in one column have one visual role. The builder tests every whole-point size up to the column ceiling, selects the largest size that fits every cell in that column, and applies it to all of them. It does not enlarge cells, split one word across lines or use a different size for each row.
 
-**Inline emphasis in cells.** Body cells accept the inline markers (`**bold**`, `[[focus-blue]]`, `{{answer-green}}`, `<<supplied-orange>>`) and `\n` line breaks — see the slide-designer's answer-format guidance for each. The common use is `[[ ]]` on the deciding word of a branch/lookup table (the word that changes row to row), so a child's eye lands on it rather than reading every word at equal weight. `<<x>>` tints a supplied/given value orange — a figure the question hands the child to work from, as distinct from the answer (`||`/`{{ }}`, green). Green answer markers are allowed only on answer/reveal slides. A completed prepared example or `visible-in-unit` model uses ordinary black text.
+**Inline emphasis in cells.** Body cells accept the inline markers (`**bold**`, `[[focus-blue]]`, `{{answer-green}}`, `<<supplied-orange>>`) and `\n` line breaks — see the slide-designer's answer-format guidance for each. The common use is `**bold**` on the deciding word of a branch/lookup table (the word that changes row to row), so a child's eye lands on it rather than reading every word at equal weight. The first column is bold throughout, so a deciding word there takes no mark: bold shows nothing in it. `[[ ]]` is question blue, and a deciding word is not a question. `<<x>>` tints a supplied/given value orange — a figure the question hands the child to work from, as distinct from the answer (`||`/`{{ }}`, green). Green answer markers are allowed only on answer/reveal slides. A completed prepared example or `visible-in-unit` model is a worked example, but a cell takes no colour role, so in a table it stays the table's black.
 
 ### `mult-grid`
 
@@ -924,7 +928,8 @@ Leaving `rows` out altogether is a different thing and is unchanged: it draws th
 
 - `label` — a short caption in a column at the left of the row, naming what the row is. Three rows of digits with nothing saying how they relate is a picture a child cannot read; "3,462", "10 more", "100 more" makes it one.
 - `highlight` — which cell(s) of that row to pick out, named by their column (`["T"]`, or several: `["H", "T"]`). A position works too (`[2]`), but the column name is what a designer means. The cell keeps its column colour and gains a thick green ring with the digit in green, so "which column changed" reads from the back of the room while the column coding still holds.
-- `answer`: `true` marks the row as a RESULT, and prints its digits in answer green with no ring. Use it on a reveal: the completed rows of a rounding chart on an Answers slide, where the original number stays black above them because it is the one row that is not an answer. Leave it off while the row is blank for live completion; a blank cell is not a revealed answer and nothing is coloured. It is not the same as `highlight`, and the two mean different things: a ring says "this is the digit that CHANGED" and belongs on one cell, while `answer` says "this whole row is what we worked out". Correctness is not the test. A worked chain the lesson is about to show is wrong still prints green, because green marks what the number IS, not whether it is right.
+- `answer`: `true` marks the row as a RESULT, and prints its digits in answer green with no ring. Use it on a reveal: the completed rows of a rounding chart on an Answers slide, where the original number stays black above them because it is the one row that is not an answer. Leave it off while the row is blank for live completion; a blank cell is not a revealed answer and nothing is coloured. It is not the same as `highlight`, and the two mean different things: a ring says "this is the digit that CHANGED" and belongs on one cell, while `answer` says "this whole row is what we worked out". A worked chain is a worked example, not an answer, and a worked example is purple, a mistaken one included: mark its rows `worked: true` (below) and never `answer`, because green tells a child the number is right.
+- `worked`: `true` marks the row as part of a worked example the class watches, finished or about to be shown wrong, and prints its digits in the worked-example purple, the sticky fact's colour. A row is `answer` or `worked`, never both. Every digit on a worked row is purple, the ringed one included, and so is its ring: nothing on a worked row is green, so a wrong digit is never printed as right.
 - `counters` — optional populations keyed by column, for example `{ "Th": 3, "H": 4, "T": 6, "O": 2 }`. The helper draws that many equal place-value counters inside each named column and keeps the written `cells` as a separate digit row underneath. A zero counter population is empty but a `"0"` in `cells` remains visibly written, so the placeholder stays aligned. Omit `counters` to fade to the original compact digit-only chart.
 
 **A question slide and its answer slide are the same chart twice.** Write the chart once with the result rows blank (`["", "", "", ""]`), then again with the rows filled and `"answer": true` on each of them. The board then shows empty rows filling with green, the original number sitting unchanged in black above, and the class can see at a glance which line is the question and which is the working. A completed chart whose result digits print in the same black as the number they came from is the fault this exists to stop (the teacher, 19 September 2026: "I wish the answers on slide 5 and 7, in the table were green").
@@ -1188,7 +1193,7 @@ Fields:
   answer box. Use `||answer` on the answer slide to fill it green without moving
   it.
 
-Answer reveals work exactly as they do in a list: `"6 × 7 = ||42"` prints the answer in green, so a question slide and its answer slide can use the same helper. The inline colour markers (`**bold**`, `[[blue]]`, `{{green}}`, `<<orange>>`) all work inside a card too, but `{{green}}` is reserved for an answer/reveal slide. Prepared teaching models stay black.
+Answer reveals work exactly as they do in a list: `"6 × 7 = ||42"` prints the answer in green, so a question slide and its answer slide can use the same helper. The inline colour markers (`**bold**`, `[[blue]]`, `{{green}}`, `<<orange>>`) all work inside a card too, but `{{green}}` is reserved for an answer/reveal slide. Prepared teaching models are worked examples: give the card `colorRole: "worked-purple"`.
 
 **Which of the two a set belongs in.** Both helpers are restricted to a starter or the lesson's main independent work. Within those permitted stages, use `numbered-questions` as the default. Use `question-cards` only when the set has about five or fewer short questions and the placed-card treatment makes those short prompts use the available space more clearly. A sentence-length or multi-sentence question belongs in `numbered-questions`. A Do beat, quick check, discussion question, My Turn or other smaller task uses an unnumbered composition instead of either numbered helper.
 
@@ -1523,10 +1528,10 @@ A plain bank (no title, the default blue variant):
 { "type": "chip-bank", "chips": ["4 sides", "polygon", "4 equal sides", "4 right angles", "2 pairs parallel"] }
 ```
 
-A titled word bank in the warm variant (the White Rose word-bank look):
+A titled word bank of the lesson's taught words in the warm variant (the White Rose word-bank look), each marked so it prints green:
 ```json
 { "type": "chip-bank", "title": "Word bank", "variant": "yellow",
-  "chips": ["square", "rectangle", "rhombus", "parallelogram", "trapezium"] }
+  "chips": ["{{square}}", "{{rectangle}}", "{{rhombus}}", "{{parallelogram}}", "{{trapezium}}"] }
 ```
 
 A longer bank that wraps to several rows, in the green (support) variant:
@@ -1547,6 +1552,8 @@ A longer bank that wraps to several rows, in the green (support) variant:
 **`variant` field (optional, default `blue`):** the colour identity, picked from the house palette so a bank reads as part of the set.
 - `blue` — neutral default (sticky-blue fill, blue outline + text). Use for a property-label set or a general option set.
 - `yellow` — the warm word-bank look (pale yellow fill, orange outline, black text), matching the White Rose word banks. Use for a vocabulary / word bank.
+
+**A taught word in a bank is green, in any variant.** Write a chip that is one of this lesson's taught words as `{{square}}`: it prints in vocabulary green, as a taught word does everywhere a child reads it, and the braces never print. Other chips keep the variant's own text colour.
 - `green` — the scaffold/support identity (the same green children meet on every scaffold), for a bank offered as help.
 
 The bank fills the zone: chips grow with the space available and the rows centre as a block, with a uniform pill height and even spacing. Every chip in one bank shares the largest safe whole-point size up to 54 points. One longer chip reduces the whole bank together. The pill text respects the autofit floor, so even a long wrapping bank stays readable.
@@ -1765,7 +1772,7 @@ One short line of text in a small coloured box, with an arrow that leaves the bo
 
 ```json
 { "type": "callout",
-  "text": "The [[tens]] column changes.",
+  "text": "The tens column changes.",
   "points": "up",
   "at": 0.55 }
 ```
@@ -1776,7 +1783,7 @@ Fields:
 - `at` — how far along the pointed-at edge the arrow tip lands, `0` to `1` (default `0.5`, the middle). This is what lets the arrow reach the tens column rather than the middle of the chart. For `left`/`right` it runs top-to-bottom instead.
 - `reach` — inches the tip is carried *past* the edge of the callout's own zone, `0` to `1.6` (default `0`). See "how to place one" below; a callout that needs a big reach usually wants a different split instead.
 - `placement` - used only when `points` is `"none"`. Choose `"left"`, `"center"` or `"right"` to anchor the plain box inside its zone. The unchanged default is `"right"`.
-- `variant` — the box's colour, and what it says about the line: `"green"` (default) an observation about what happened or what is true, `"blue"` the thing being decided on, `"orange"` information the question supplies, `"purple"` the objective.
+- `variant` — the box's colour, and what it says about the line, in the board's own colour meanings: `"black"` (default) an observation about what happened or what is true, black like every statement on the board; `"blue"` a question the class answers, whose words go in `[[ ]]` so they print blue like every other question; `"orange"` information the question supplies; `"purple"` the objective. Green is not a callout colour: a green edge round black words is a frame, not an answer, so an answer inside a callout carries its own green marker on its words.
 
 **Working out `at`.** It is a fraction of the callout's *own zone*, not of the figure — so read it off the figure's position within the shared width. Two things move it, and both catch people out:
 
@@ -1785,7 +1792,7 @@ Fields:
 
 So do not copy a number out of this catalogue. Build the slide, look at it, and adjust — `at` is a one-decimal nudge, and the arrow landing between two columns is the only way to find out it was wrong.
 
-**Key words carry colour with the ordinary inline markers** — there is no separate colouring field. `[[tens]]` is focus blue, `{{sum}}` answer green, `<<358>>` supplied orange, `**not**` plain bold stress. So "The [[tens]] column changes." colours *tens* in exactly the blue the rest of the deck uses for the word being decided on.
+**Key words carry colour with the ordinary inline markers** — there is no separate colouring field. `[[ ]]` is question blue, `{{sum}}` answer green, `<<358>>` supplied orange, `**not**` plain bold stress. So "The tens column changes." stays black, because a statement is black on every slide and `[[ ]]` is kept for a question; and a callout's line is bold throughout, so no word in it is picked out by `**bold**`.
 
 **How to place one.** The callout's arrow tip lands on the edge of its own zone, so put the callout in the zone next to what it annotates and point it that way: a diagram on the left of a `split-h-70-30` and the callout on the right with `points: "left"`; a chart above and the callout below with `points: "up"`. A callout in a zone that does not touch the thing it points at draws an arrow into empty slide.
 
@@ -2638,7 +2645,7 @@ A **draw-your-own working surface** - the child constructs the representation ra
 
 ### `method-frame`
 
-A **taught mental strategy printed as a fill-in method** available for live completion during modelling. An ordered list of labelled lines inside a green "method" panel: each line is a short method label - the strategy's own words, blue - and a line of content in which a run of 2+ underscores (`___`) or a `□` becomes a bordered write-in box. The number and position of blanks is yours to set, so the same frame is given fully worked, with one blank, or all blank - fade it across a My Turn / Your Turn pair, or across a teach sequence (worked example → partially given → all blank). The board twin of the worksheet's `method-frame`, so the child meets one picture on the board and on paper.
+A **taught mental strategy printed as a fill-in method** available for live completion during modelling. An ordered list of labelled lines inside a purple "method" panel, the worked-example colour (the same purple as a sticky fact): each line is a short method label - the strategy's own words, blue - and a line of content in which a run of 2+ underscores (`___`) or a `□` becomes a bordered write-in box. The number and position of blanks is yours to set, so the same frame is given fully worked, with one blank, or all blank - fade it across a My Turn / Your Turn pair, or across a teach sequence (worked example → partially given → all blank). The board twin of the worksheet's `method-frame`, so the child meets one picture on the board and on paper.
 
 ```json
 { "type": "method-frame", "title": "Adjusting strategy", "lines": [
@@ -2656,8 +2663,8 @@ Fully worked (an answer slide, or a worked example to copy):
 ] }
 ```
 
-- `title` — optional green heading above the lines ("Adjusting strategy", "Round and compensate").
-- `frame` — draw the green panel behind the lines. Default `true`; set `false` for the bare lines (e.g. a small reference zone where the panel would crowd).
+- `title` — optional purple heading above the lines ("Adjusting strategy", "Round and compensate").
+- `frame` — draw the purple panel behind the lines. Default `true`; set `false` for the bare lines (e.g. a small reference zone where the panel would crowd).
 - `lines` — `[{ label, content }]`. `label` is optional (the method language); `content` is a string where `___` or `□` becomes a write-in box and everything else is bold text. Content need not be an equation — `"Take ___ from ___ to make ___"` works too.
 
 **Sizing:** the font fills the zone (rows large for reading from across the room) and shrinks only if the widest line would overflow, so it reads at full-body and half-column widths alike. For a SINGLE-LINE equation frame, the worksheet's `inequality-with-boxes` already covers that pattern; `method-frame` is for the multi-line, labelled case. A FILLED method (no blanks) on the working wall is the `workedExample` card, not this — a wall card is a reference, never a fill-in.

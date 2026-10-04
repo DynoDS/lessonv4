@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after\\demo-vocab\\Working Wall - Rounding vocabulary.pdf",
+  "sourceSha256": "f7a896f76e583b8a960c2549fe4387cefb3cd5cda4da6914ce371bb979234a64",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\demo-vocab\\Working Wall - Rounding vocabulary-source.pdf",
+    "sha256": "f7a896f76e583b8a960c2549fe4387cefb3cd5cda4da6914ce371bb979234a64"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\demo-vocab\\Working Wall - Rounding vocabulary-contact-sheet.png",
+    "sha256": "1b9681f11a9738024d07eeac774c23677512e31630c286d0a35f3cd6dbaae90d"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\demo-vocab\\Working Wall - Rounding vocabulary-page-01.png",
+      "sha256": "8847316957a6034294c01424782c96e09c25b0cc4c3879c6cb3bce04df79bcd6"
+    },
+    {
+      "number": 2,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\demo-vocab\\Working Wall - Rounding vocabulary-page-02.png",
+      "sha256": "02c1abc1d11e5b81aa8361a1c054d4c3ba9beccb2e2e15bf50a4fd6b3284c148"
+    }
+  ]
+}

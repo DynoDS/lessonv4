@@ -122,19 +122,20 @@ function renderPhotoMapOverview(card, style, specDir) {
 
   const mapInner =
     overviewImageHtml(mapPhoto, mapWidth / 1440 - 0.4, 2.25) +
-    overviewTextHtml(card.map.caption || "", 25, style, { color: style.colours.referenceTableHeaderFill });
+    overviewTextHtml(card.map.caption || "", 25, style);
   const mapCellHtml = overviewCellHtml(mapInner, {
     widthMm: mm(mapWidth / 1440),
-    fillColour: "DEEAF1",
+    fillColour: "F4F6FA",
     marginsDxa: { top: 130, bottom: 130, left: 180, right: 180 },
   });
 
+  // The big idea is the one to keep, so it takes the sticky fact's purple.
   const keyInner =
-    overviewTextHtml(card.keyHeading || "The big idea", 27, style, { color: "0D9488" }) +
+    overviewTextHtml(card.keyHeading || "The big idea", 27, style, { color: style.colours.stickyPanelLine }) +
     overviewTextHtml(card.keySentence || "", 34, style);
   const keyCellHtml = overviewCellHtml(keyInner, {
     widthMm: mm(textWidth / 1440),
-    fillColour: "F0FDFA",
+    fillColour: style.colours.stickyPanelFill,
     marginsDxa: { top: 220, bottom: 220, left: 260, right: 260 },
   });
 
@@ -162,7 +163,7 @@ function renderHeroCallouts(card, style, specDir) {
 
   const heroInner =
     overviewImageHtml(hero, heroWidth / 1440 - 0.4, 5.0) +
-    overviewTextHtml(card.heroCaption || "", 26, style, { color: style.colours.referenceTableHeaderFill });
+    overviewTextHtml(card.heroCaption || "", 26, style);
   const heroCellHtml = overviewCellHtml(heroInner, {
     widthMm: mm(heroWidth / 1440),
     fillColour: "FFFFFF",
@@ -171,13 +172,14 @@ function renderHeroCallouts(card, style, specDir) {
 
   // Each group is its own full-width tinted block stacked inside the
   // callout column; a 90-before/90-after spacer sits between the two groups.
+  // Two parallel groups take the board's default pairing, blue then orange.
   const groupBlocksHtml = groups.map((group, idx) => {
     const groupInner =
-      overviewTextHtml(group.title, 34, style, { color: idx === 0 ? "1F4E79" : "0D9488" }) +
+      overviewTextHtml(group.title, 34, style, { color: idx === 0 ? "0070C0" : "E46C0A" }) +
       (group.items || []).map((item) => overviewTextHtml(item, 28, style, { align: "left" })).join("");
     return overviewCellHtml(groupInner, {
       widthMm: mm(calloutWidth / 1440),
-      fillColour: idx === 0 ? "DEEAF1" : "F0FDFA",
+      fillColour: idx === 0 ? "DEEAF1" : "FFF2CC",
       marginsDxa: { top: 180, bottom: 180, left: 240, right: 240 },
     });
   });
@@ -194,7 +196,9 @@ function renderHeroCallouts(card, style, specDir) {
   return titleHtml + bodyHtml;
 }
 
-// ─── causeCards: exactly three cards, actor -> action -> teal reason ───
+// ─── causeCards: exactly three cards, actor -> action -> purple reason ─
+// The reason is the idea each card teaches, so it takes the purple of a
+// fact to keep (teal meant nothing on the board).
 
 function renderCauseCards(card, style, specDir) {
   const people = Array.isArray(card.people) ? card.people : [];
@@ -216,8 +220,8 @@ function renderCauseCards(card, style, specDir) {
       overviewTextHtml(person.title, 38, style, { color: style.colours.referenceTableHeaderFill }) +
       overviewImageHtml(photos[idx], cardWidth / 1440 - 0.55, 2.7) +
       overviewTextHtml(person.action, 29, style) +
-      overviewTextHtml("↓", 30, style, { color: "0D9488" }) +
-      overviewTextHtml(person.reason, 30, style, { color: "0D9488" });
+      overviewTextHtml("↓", 30, style, { color: style.colours.stickyPanelLine }) +
+      overviewTextHtml(person.reason, 30, style, { color: style.colours.stickyPanelLine });
     cellsHtml.push(
       overviewCellHtml(inner, {
         widthMm: mm(cardWidth / 1440),

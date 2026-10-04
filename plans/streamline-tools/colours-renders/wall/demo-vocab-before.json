@@ -1,0 +1,37 @@
+{
+  "topic": "Rounding vocabulary",
+  "yearGroup": "Year 4",
+  "lessonSlug": "rounding-colours-demo-b",
+  "rationaleNote": "A demonstration of the wall's colours, for the teacher to see.",
+  "cards": [
+    {
+      "type": "vocabDefinition",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Halfway",
+      "visual": {
+        "type": "numberLine",
+        "start": 300,
+        "end": 400,
+        "interval": 50,
+        "labels": "all"
+      },
+      "definition": "The number exactly in the middle of two tens or two hundreds."
+    },
+    {
+      "type": "stickyKnowledge",
+      "page": {
+        "size": "A3",
+        "orientation": "landscape"
+      },
+      "title": "Remember",
+      "items": [
+        {
+          "text": "A number at halfway rounds up."
+        }
+      ]
+    }
+  ]
+}

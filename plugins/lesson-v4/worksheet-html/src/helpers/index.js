@@ -24,6 +24,8 @@
 // Each file exports { helpers, css }: the helpers it provides and the styling
 // they need. Adding a helper touches one file and nothing else.
 const { legibleWidthMm } = require("./shared");
+const { withoutTaughtMarks } = require("../../../shared/text/criteria-marks");
+const { PRIMITIVES } = require("../../../shared/visual-parity");
 const { makeCompose, css: composeCss } = require("./compose");
 
 const FILES = [
@@ -99,6 +101,20 @@ function reachableHeightMm(helper, spec, stated, minWidthMm) {
   }
 }
 
+// A figure's words are drawn into its picture by a shared drawing, which
+// prints a taught word's braces as written, so every figure the parity
+// manifest lists for the sheet is handed its spec without them: inside a
+// picture the word prints plain (the colours release's third check).
+const FIGURE_HELPERS = new Set(PRIMITIVES.flatMap((p) => [].concat(p.worksheets || [])).filter(Boolean));
+
+function withPlainFigureWords(helper) {
+  const out = { ...helper };
+  for (const [key, fn] of Object.entries(helper)) {
+    if (typeof fn === "function") out[key] = (spec, ...rest) => fn(withoutTaughtMarks(spec), ...rest);
+  }
+  return out;
+}
+
 const REGISTRY = {};
 for (const file of FILES) {
   for (const [name, helper] of Object.entries(file.helpers)) {
@@ -107,7 +123,7 @@ for (const file of FILES) {
         `DUPLICATE_HELPER: "${name}" is defined in two helper files.`
       );
     }
-    REGISTRY[name] = withLegibilityFloor(helper);
+    REGISTRY[name] = withLegibilityFloor(FIGURE_HELPERS.has(name) ? withPlainFigureWords(helper) : helper);
   }
 }
 

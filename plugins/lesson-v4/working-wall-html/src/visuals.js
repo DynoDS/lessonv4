@@ -65,6 +65,7 @@ const {
   badgeKey,
   calloutKeySuffix,
 } = require("./svg-renderer");
+const { withoutTaughtMarks } = require("../../shared/text/criteria-marks");
 
 const VISUAL_KEY_FNS = {
   clock: clockKey,
@@ -242,15 +243,17 @@ function wideVisualReserveInches(card, ctx, style, bodyFitsAtFloor) {
   return guaranteed;
 }
 
-function pickVisual(visual, ctx) {
-  if (!visual) return null;
-  if (visual._educationalSvgBuffer) {
+function pickVisual(marked, ctx) {
+  if (!marked) return null;
+  if (marked._educationalSvgBuffer) {
     return {
-      buf: visual._educationalSvgBuffer,
-      aspect: visual._educationalSvgAspect || 1,
-      alt: visual.alt || "",
+      buf: marked._educationalSvgBuffer,
+      aspect: marked._educationalSvgAspect || 1,
+      alt: marked.alt || "",
     };
   }
+  // Keyed on the figure's plain words, as the pre-render filed it.
+  const visual = withoutTaughtMarks(marked);
   if (!ctx || !ctx.svgImages) return null;
   const keyFn = VISUAL_KEY_FNS[visual.type];
   if (!keyFn) return null;

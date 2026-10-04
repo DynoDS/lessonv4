@@ -18,11 +18,17 @@ const COLOUR = {
   // writes it, the board reveals it), so only the vocabulary meaning can arise
   // here and green is unambiguous on paper.
   given: "#E46C0A", // material handed to the child: word banks, supplied values.
+  worked: "#7030A0", // a worked example's frame: the edge and title of a method
+  // frame that shows worked numbers, the title being words a child reads. The
+  // deck's sticky and worked-example purple (the teacher's rule of 24 September
+  // 2026). A frame the child fills in every line keeps its ink edge and blue
+  // title (his answer of 25 September). What a child writes, and the frame's
+  // labels, stay ink.
   ink: "#000000", // what the child writes, ordinary body text, AND scaffold
   paper: "#FFFFFF", // explicit printable surface; never a raw CSS colour.
   // sentence-starters, which are set apart by size, weight and their own line
   // rather than by a colour of their own. The deck does the same with a writing
-  // frame, and it keeps the system to four meanings instead of five.
+  // frame, and it keeps scaffold from becoming a colour meaning of its own.
   quiet: "#666666", // notes and secondary labels.
   rule: "#999999", // writing lines and hairline borders.
   tint: "#F1F4F5", // the one neutral fill, for a panel that needs separating.

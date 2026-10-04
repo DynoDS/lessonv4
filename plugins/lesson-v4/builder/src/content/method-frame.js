@@ -9,8 +9,8 @@
 // blank, and a lesson can fade it across a set.
 //
 // Spec:
-//   title   optional heading ("Adjusting strategy") — green, sits above the lines
-//   frame   draw the green "method" panel behind the lines (default true)
+//   title   optional heading ("Adjusting strategy") — purple, sits above the lines
+//   frame   draw the purple "method" panel behind the lines (default true)
 //   lines   [{ label, content }]
 //             label    short method language (blue). Optional.
 //             content  a string; a run of 2+ underscores ("___") or a "□"
@@ -29,8 +29,10 @@ const { tokenizeWriteInContent } = require('../answer-box');
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PANEL_PAD       = 0.14;   // inches, inside the frame panel
 const BARE_PAD        = 0.06;   // inches, when no frame panel is drawn
-const PANEL_FILL      = 'E8F6EE';// pale green — lighter than the SC panel so white boxes pop
-const PANEL_LINE      = '00B050';// house green — the "method" identity
+// A worked example is purple, the same colour as a sticky fact (the teacher's
+// rule of 24 September 2026: green is kept for a taught word or an answer).
+const PANEL_FILL      = COLOURS.workedBg;// pale purple, light enough that white boxes pop
+const PANEL_LINE      = COLOURS.worked;  // the worked-example purple, the "method" identity
 const PANEL_LINE_W    = 1.5;    // pt
 const PANEL_RADIUS    = 0.08;   // rounded-rect corner radius (inches)
 
@@ -38,7 +40,7 @@ const TITLE_H_FRAC    = 0.22;   // title band as fraction of inner height
 const TITLE_H_MAX     = 0.6;    // inches, cap on the title band
 const TITLE_GAP       = 0.06;   // inches below the title
 const TITLE_FONT      = 24;     // pt ceiling for the title
-const TITLE_COLOUR    = '00B050';// green, matches the panel border
+const TITLE_COLOUR    = COLOURS.worked;  // purple, matches the panel border
 
 const LABEL_FRACTION  = 0.34;   // label column as fraction of inner width
 const LABEL_GAP       = 0.08;   // inches between label column and content

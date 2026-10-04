@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before\\digestive\\Working Wall - Name parts of digestive system.pdf",
+  "sourceSha256": "0373aae4f18b6704b9930335981997a3a19f89f9110f87aafe73b310e9cf5269",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before-png\\digestive\\Working Wall - Name parts of digestive system-source.pdf",
+    "sha256": "0373aae4f18b6704b9930335981997a3a19f89f9110f87aafe73b310e9cf5269"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before-png\\digestive\\Working Wall - Name parts of digestive system-contact-sheet.png",
+    "sha256": "fec4af6e2a683473e29ccdba881541fcfda9b43526d06c292d2f442eb8d3456d"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before-png\\digestive\\Working Wall - Name parts of digestive system-page-01.png",
+      "sha256": "e24aee2f58d9924a046ac864be99189970de5f2b3b0c3eed08a9cb9fedd13da4"
+    }
+  ]
+}

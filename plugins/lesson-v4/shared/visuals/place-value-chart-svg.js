@@ -36,6 +36,9 @@
 //     highlight  which cell(s) changed, by column name or index
 //     answer     true prints this row's digits in answer green with no ring:
 //                the row is a result, not the number the question started from
+//     worked     true prints this row's digits in the worked-example purple:
+//                the row is part of a worked example the class watches, a
+//                mistaken one included; never with `answer`
 //     counters   { Th: 3, H: 4, ... } place-value counters above the digits
 //     counterLabels  true prints each counter's value on it
 //   title      a heading above a stacked chart (the wall's)
@@ -171,6 +174,7 @@ const COLOURS = {
   grid: '#666666',
   text: '#000000',
   ring: '#00B050',     // house answer-green
+  worked: '#7030A0',   // the worked-example purple, the sticky fact's colour
   title: '#0070C0',    // house focus blue, the board's title bar
   titleInk: '#FFFFFF',
   counterLine: '#4A4A4A',
@@ -184,6 +188,7 @@ const INK = {
   grid: '#1A1A1A',
   text: '#1A1A1A',
   ring: '#1A1A1A',
+  worked: '#1A1A1A',
   title: '#1A1A1A',
   titleInk: '#FFFFFF',
   counterLine: '#1A1A1A',
@@ -353,6 +358,7 @@ function normaliseRow(row, columns) {
     counterLabels: row.counterLabels === true,
     digits: row.digits !== false,
     answer: row.answer === true,
+    worked: row.worked === true,
   };
 }
 
@@ -800,12 +806,19 @@ function describeStacked(chart, profile) {
           // answer (the teacher, 19 September 2026: "I wish the answers on slide
           // 5 and 7, in the table were green"). `answer: true` on a row colours
           // its digits and adds no ring, so a reveal reads as a reveal and the
-          // ring keeps its own meaning. Correctness is not the test: in the same
-          // edit he greened a worked chain that was wrong, because green marks
-          // what the number IS, not whether it is right.
+          // ring keeps its own meaning. In the same edit he greened a worked chain
+          // that was wrong; his later answer changed that: green is a taught word
+          // or an answer, and a worked example is purple, a mistaken one included
+          // ("purple is fine", 24 September 2026). So a worked row is `worked: true`,
+          // never `answer`, and every digit in it is the worked-example purple, the
+          // ringed one included, and so is the ring (his answer of 25 September
+          // 2026, shown it still green: "yes" to purple): green anywhere on a
+          // worked row would call a wrong digit right.
+          const worked = !isDot && row.worked && !row.answer && text !== '';
           const revealed = !isDot && row.answer && text !== '';
-          if (text !== '') texts.push({ role: 'digit', text, x: cx + colWs[i] / 2, y: dy, h: digitH, pt: D, fill: (picked || revealed) ? pal.ring : pal.text, picked });
-          if (picked) rings.push({ x: cx + ringInset, y: dy + ringInset, w: colWs[i] - 2 * ringInset, h: digitH - 2 * ringInset, sw: ringW, column: c });
+          if (text !== '') texts.push({ role: 'digit', text, x: cx + colWs[i] / 2, y: dy, h: digitH, pt: D, fill: worked ? pal.worked : (picked || revealed) ? pal.ring : pal.text, picked });
+          const ringStroke = row.worked && !row.answer ? pal.worked : pal.ring;
+          if (picked) rings.push({ x: cx + ringInset, y: dy + ringInset, w: colWs[i] - 2 * ringInset, h: digitH - 2 * ringInset, sw: ringW, column: c, stroke: ringStroke });
           cx += colWs[i];
         });
       }
@@ -1062,7 +1075,7 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   L.polys.forEach((p) => parts.push(`<polygon points="${p.points.map((q) => `${f2(q[0])},${f2(q[1])}`).join(' ')}" fill="${p.fill}"/>`));
   L.texts.forEach((t) => parts.push(text(t)));
   // Rings last, so a neighbouring cell drawn afterwards never paints over half.
-  L.rings.forEach((r) => parts.push(`<rect x="${f2(r.x)}" y="${f2(r.y)}" width="${f2(r.w)}" height="${f2(r.h)}" fill="none" stroke="${L.pal.ring}" stroke-width="${f2(r.sw)}"/>`));
+  L.rings.forEach((r) => parts.push(`<rect x="${f2(r.x)}" y="${f2(r.y)}" width="${f2(r.w)}" height="${f2(r.h)}" fill="none" stroke="${r.stroke || L.pal.ring}" stroke-width="${f2(r.sw)}"/>`));
   const w = L.w + 2 * bleed;
   const h = L.h + 2 * bleed;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${f2(w)}" height="${f2(h)}" viewBox="${f2(-bleed)} ${f2(-bleed)} ${f2(w)} ${f2(h)}">${parts.join('')}</svg>`;

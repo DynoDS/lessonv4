@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before\\victorian\\Working Wall - To describe Victorian children's working conditions.pdf",
+  "sourceSha256": "47937567baf2e4a043dfe09bcc9b52217414ff79bb6023d91d42d52251459578",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before-png\\victorian\\Working Wall - To describe Victorian children's working conditions-source.pdf",
+    "sha256": "47937567baf2e4a043dfe09bcc9b52217414ff79bb6023d91d42d52251459578"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before-png\\victorian\\Working Wall - To describe Victorian children's working conditions-contact-sheet.png",
+    "sha256": "dc3353490eda887f6f1fdb51629d27cbc6be243d15cff359592901030f3a9dfa"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\before-png\\victorian\\Working Wall - To describe Victorian children's working conditions-page-01.png",
+      "sha256": "c9299fa10c44fa9771b86b4e0c8e00e07d3347e7cae5407f5415c9db83898d46"
+    }
+  ]
+}

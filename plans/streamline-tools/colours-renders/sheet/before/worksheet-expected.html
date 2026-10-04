@@ -1,0 +1,1618 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Add near multiples of ten</title>
+<style>
+:root {
+  --font: "Comic Sans MS", cursive;
+  --colour-navy: #17365D;
+  --colour-question: #0070C0;
+  --colour-vocab: #00B050;
+  --colour-given: #E46C0A;
+  --colour-ink: #000000;
+  --colour-paper: #FFFFFF;
+  --colour-quiet: #666666;
+  --colour-rule: #999999;
+  --colour-tint: #F1F4F5;
+  --colour-surface: #EAF3F8;
+  --colour-criteria: #D5F5E3;
+  --type-note: 9pt;
+  --type-body: 12pt;
+  --type-question: 13pt;
+  --type-questionNumber: 10pt;
+  --type-sectionLabel: 14pt;
+  --type-pageTitle: 16pt;
+  --space-hair: 1mm;
+  --space-tight: 2mm;
+  --space-item: 4mm;
+  --space-section: 8mm;
+  --rule-hair: 0.35mm;
+  --rule-line: 0.4mm;
+  --rule-heavy: 0.8mm;
+  --inset-cell-v: 1mm;
+  --inset-cell-h: 2mm;
+  --inset-cell: 1mm 2mm;
+  --inset-card-v: 2mm;
+  --inset-card-h: 3mm;
+  --inset-card: 2mm 3mm;
+  --inset-panel-v: 3mm;
+  --inset-panel-h: 4mm;
+  --inset-panel: 3mm 4mm;
+}
+
+  @page { size: 297mm 210mm; margin: 0; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    color: var(--colour-ink);
+    width: 297mm;
+    height: 210mm;
+    /* The heading's band is padding, so the work below it starts under the
+       heading rather than behind it, and the area below is exactly the height
+       every measurement in this file was taken against. */
+    padding: 15mm 15mm 15mm;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .decoration-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .decoration-layer--low { z-index: 0; }
+  .decoration-layer--high { z-index: 2; }
+  .decoration {
+    position: absolute;
+    display: block;
+    object-fit: contain;
+    transform-origin: center center;
+  }
+
+  .area { position: relative; width: 100%; height: 100%; z-index: 1; }
+  .zone { position: absolute; box-sizing: border-box; overflow: hidden; }
+
+  /* A full-page data table owns the remaining page after any heading above
+     it. Let its rows share that real height instead of stopping at the
+     arithmetic estimate and leaving a large false blank below the table.
+     Other layouts keep data tables at their natural reading height. */
+  .area--full .h-stack-item:has(> .h-data) { flex: 1 1 auto; }
+  .area--full .h-stack-item > .h-data { height: 100%; }
+
+  /* The sheet's code, when a worksheet holds more than one level. It is an
+     ABBREVIATION of the level and not the level written out: three sheets
+     printed as one file have to be sortable into piles by the teacher, and
+     "Below" printed at the top of a page is read by the child holding it.
+     Quiet grey note text, and nothing else - no badge, no border, no tint.
+     It exists for the two seconds a teacher spends cutting the pile into
+     three, and a bordered blue chip in the corner of every page is a piece of
+     the sheet's furniture competing with its work for that. */
+  .sheet-code {
+    position: absolute;
+    right: 15mm; top: 10.71348mm;
+    font-size: var(--type-note);
+    line-height: 1.35;
+    color: var(--colour-quiet);
+    font-weight: bold;
+    z-index: 3;
+  }
+  /* Books or sheet (src/slips.js): a small line drawing in the code's own
+     grey, sitting on the code's line. A suggestion to the teacher, so it is
+     no louder than the code beside it. */
+  .sheet-recording {
+    width: 1.35em;
+    height: 1.35em;
+    margin-left: 0.35em;
+    vertical-align: -0.3em;
+  }
+
+
+  /* The same quiet instruction line every other helper's stem uses, so a
+     sheet carrying two of them does not print them two different ways. */
+  .h-q-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
+  .h-instruction {
+    margin: 0;
+    font-size: var(--type-body);
+    line-height: 1.35;
+  }
+  /* A write-in blank inside prompt text, swapped in for a designer's run of
+     underscores. One uniform width everywhere: wide enough for a real written
+     word, and never hinting by its length at which word it wants. */
+  .h-blank {
+    display: inline-block;
+    width: 25mm;
+    height: 0.9em;
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+    vertical-align: baseline;
+  }
+  /* The block's heading. Question blue, because it is part of what is being
+     asked rather than something the child writes, and the same size and colour
+     a fact file's title and a method frame's title already use.
+     Two things about its BOX, and both are about what a heading costs. Its
+     tinted ground stops at the end of the word, because a band ruled to the
+     right-hand margin behind "Fluency" is a stripe across the sheet announcing
+     one word, and three of them on a page read as the page's main structure
+     when they are only signposts over the work. And it is inset by the cell
+     step rather than the card step: a heading is a line of text with a tint
+     behind it, not a card a child works inside, and the card step was adding
+     4mm of height per heading to say nothing. */
+  .h-section-label {
+    display: inline-block;
+    box-sizing: border-box;
+    max-width: 100%;
+    margin: 0 0 var(--space-tight);
+    padding: var(--inset-cell);
+    font-size: var(--type-sectionLabel);
+    font-weight: bold;
+    color: var(--colour-navy);
+    background: var(--colour-surface);
+    border-left: var(--rule-heavy) solid var(--colour-question);
+    border-radius: 0 1.5mm 1.5mm 0;
+    line-height: 1.35;
+  }
+  .h-questions { list-style: none; margin: 0; padding: 0; }
+  .h-q {
+    display: flex; align-items: baseline;
+    /* Wrapping is what lets a blank drop beneath its prompt when keeping it
+       inline would cost the question a line. Without a modifier class nothing
+       wraps, so an ordinary question is unaffected. */
+    flex-wrap: wrap;
+    gap: var(--space-tight);
+    margin-bottom: var(--space-item);
+    font-size: var(--type-body);
+    /* Pinned, and it must stay in step with LINE_MM in shared.js. Left
+       unset, the browser uses Comic Sans's own default of about 1.5, every
+       line comes out taller than the estimate, and the bottom of the zone is
+       quietly clipped. */
+    line-height: 1.35;
+  }
+  /* Bold, blue and bracketed, and the same wherever a number appears. Two
+     number styles on one sheet read as two sheets stapled together, which is
+     what a real lesson looked like: three helpers could print their own number
+     and sixty-two had it typed in by hand. Blue is the question colour, and a
+     question label is the one part of the question that is pure signposting -
+     so it steps back from the black the child reads and writes in, rather than
+     competing with it. The .h-numbered-n mark in compose.js matches it. */
+  .h-num {
+    color: var(--colour-question);
+    font-weight: bold;
+    font-size: var(--type-questionNumber);
+    min-width: 8mm;
+    /* A number never wraps onto a line of its own, and never shrinks below the
+       column every other number on the sheet starts in. */
+    flex: 0 0 auto;
+  }
+  /* "flex: 1 1 0" and not "1 1 auto", and the difference decides whether a
+     worksheet prints. With "auto" the words' own content width is the size the
+     flex line tries to honour, so a long question in a narrow zone pushed
+     itself onto a second flex line and the answer blank onto a third - three
+     lines where the arithmetic had measured one, and 15mm of the zone quietly
+     cut off. With a zero basis the words take the room that is left and wrap
+     inside it, which is the shape the measurement describes.
+
+     "min-width: 0" is what lets them: a flex item will not shrink below its
+     longest unbreakable word without it, and one long word would put the wrap
+     back. */
+  .h-text { flex: 1 1 0; min-width: 0; overflow-wrap: break-word; }
+
+  /* A SHORT prompt lets its blank sit straight after the words.
+     .h-text normally takes the whole row (flex 1 1 0) so a long prompt wraps
+     inside the room it is given rather than pushing the number, the words and
+     the blank onto three lines. The cost is that a three-word prompt ALSO
+     filled the row, so "The job:" printed at the left margin with its answer
+     line at the far right edge of the page and a child could not tell the line
+     belonged to it. Only a prompt that comfortably fits one line gets sized to
+     its own words, so the long-prompt behaviour that the measurement depends
+     on is untouched. A short prompt is one line either way, so the height
+     arithmetic does not move. */
+  .h-q--short .h-text { flex: 0 1 auto; }
+  .h-context-picture {
+    flex: 0 0 7mm;
+    width: 7mm;
+    height: 5.5mm;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+  }
+  .h-context-picture img {
+    display: block;
+    max-width: 7mm;
+    max-height: 5.5mm;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+  /* A drawn/photographed picture at a size a child can actually recognise.
+     Emoji stay at text size above; see IMAGE_CONTEXT_PICTURE_MM. */
+  .h-context-picture--image {
+    flex: 0 0 14mm;
+    width: 14mm;
+    height: 11mm;
+  }
+  .h-context-picture--image img {
+    max-width: 14mm;
+    max-height: 11mm;
+  }
+  .h-context-picture--emoji {
+    font-family: "Segoe UI Emoji", "Apple Color Emoji", sans-serif;
+    font-size: 14pt;
+    line-height: 1.35;
+  }
+  .h-written-prompt {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-tight);
+  }
+  /* A fixed length, pushed to the right-hand edge. Written as "flex: 1 0 18mm"
+     the blank took whatever was left over after its own question, so every
+     answer line on a sheet was a different length and started in a different
+     place: three questions in a narrow column read as three ragged edges
+     rather than a column to write down. */
+  .h-blank {
+    flex: 0 0 20mm;
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+    margin-left: var(--space-tight);
+    align-self: flex-end;
+    height: 5mm;
+  }
+  /* The prompt was going to wrap anyway, so the blank takes its own row and
+     the words above it get the full width back. It keeps the left-hand gutter
+     so the writing line still starts where every other one does. */
+  .h-q--blank-below .h-blank {
+    flex-basis: calc(100% - 8mm);
+    margin-left: 8mm;
+  }
+
+  .h-written { align-items: flex-start; }
+  .h-body { flex: 1; }
+  .h-lines { margin-top: var(--space-hair); }
+  .h-line {
+    display: block;
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+  }
+
+  /* Written answers claim spare height (greed 3). This is what makes that
+     true. Without it the engine hands the zone extra height, the lines stay
+     where they were, and the difference becomes a hole underneath: leftover
+     pooling between two blocks instead of collecting at the foot of the page.
+     The extra goes into the writing LINES, not the gaps between questions,
+     because a taller line is more room to write and a wider gap is nothing.
+     Growth is capped elsewhere at half again the natural height, so a line can
+     get roomier but never turns into an invitation to write an essay. */
+  .h-answers-block { height: 100%; display: flex; flex-direction: column; }
+  .h-answers { flex: 1; display: flex; flex-direction: column; }
+  /* Grow from the height each item already measured at, not from zero, and by
+     the share the markup states rather than one share each. */
+  .h-answers .h-written { flex: 1 1 auto; }
+  .h-answers .h-written:last-child { margin-bottom: 0; }
+  .h-answers .h-body { display: flex; flex-direction: column; }
+  .h-answers .h-lines { flex: 1; display: flex; flex-direction: column; }
+  /* Grow, but start from the line height already set on the element. A plain
+     "flex: 1" sets the starting height to zero, and inside a stack that had
+     nothing spare to hand out the lines collapsed to their own border: two
+     ruled lines came out as 0.3mm each, which is to say a child had nowhere
+     to write and the sheet still looked finished. */
+  /* A composed stack can be a few millimetres tighter in the browser than the
+     arithmetic estimate because a question wraps one line earlier. Allow all
+     ruled lines to yield that tiny discrepancy together; keeping shrink at
+     zero clipped the final requested line completely. */
+  .h-answers .h-line { flex: 1 1 auto; }
+  /* The link that made none of the rule above true.
+     .h-q aligns on the BASELINE so a question number sits on the first line of
+     its text rather than floating at the top of a tall block, and that is right.
+     But baseline alignment stops the body stretching, so the height the engine
+     handed a written-answers block stopped at the body and never reached the
+     ruled lines. Every claim above was accurate about intent and inert in fact:
+     a Year 4 Greater Depth sheet printed three tight lines under each prompt
+     with 45mm of blank paper below them, and the room report stayed silent
+     because a greedy block is assumed to have used what it was given.
+     Stretch the body and put the number back on the first line by hand: the
+     number and the body's first line share a font size and a line height, so a
+     number sitting at the top of a stretched box lands on the same baseline it
+     did before. Scoped to written answers, so an ordinary question row - where
+     baseline alignment is doing real work against inline blanks - is untouched.
+     The cap is what keeps this from overcorrecting. Room a line cannot use is
+     better left as paper than turned into a two-centimetre gap between rules
+     that reads as a mistake; how many lines a question deserves is the
+     designer's decision, made with the sentences field, not something to reach by
+     stretching three of them. */
+  .h-answers .h-written { align-items: stretch; }
+  .h-answers .h-written > .h-num { align-self: flex-start; }
+
+  .h-source {
+    border-left: 1mm solid var(--colour-given);
+    /* The gap between the quote bar and the words is spacing, not the inset of
+       a box: there is no box here, only a stripe. Same 4mm it always was. */
+    padding: 0 0 0 var(--space-item);
+    font-size: var(--type-body);
+  }
+  /* Every line height here is pinned, and they must stay in step with LINE_MM
+     and NOTE_LINE_MM in shared.js. Any one left unset falls back to Comic
+     Sans's own default of about 1.5, runs taller than the estimate, and clips
+     the bottom of the zone without anything looking wrong. */
+  .h-source h3 {
+    margin: 0 0 2mm; font-size: var(--type-body);
+    color: var(--colour-question); line-height: 1.35;
+  }
+  .h-source p { margin: 0 0 2mm; line-height: 1.35; }
+  .h-source .h-attr {
+    font-size: var(--type-note); color: var(--colour-quiet);
+    font-style: italic; line-height: 1.35; margin-bottom: 0;
+  }
+
+
+  .h-table {
+    width: 100%; border-collapse: collapse;
+    font-size: var(--type-body);
+  }
+  .h-table caption {
+    text-align: left; font-weight: bold;
+    color: var(--colour-question);
+    padding-bottom: var(--space-tight);
+  }
+  /* Cells are centred, horizontally and vertically. A table on a worksheet is
+     a grid a child reads across and writes into, and centring keeps a short
+     given value, a heading and an empty writing cell sitting on the same line
+     as each other instead of each hugging its own top-left corner. The caption
+     above stays left, because it is a line of prose rather than a cell. */
+  .h-table th, .h-table td {
+    border: var(--rule-line) solid var(--colour-ink);
+    padding: var(--inset-cell); text-align: center; vertical-align: middle;
+  }
+  .h-table thead th { background: var(--colour-tint); }
+
+  /* Values handed to the child: given material, so orange, and single line. */
+  .h-data td { color: var(--colour-given); }
+
+  /* Explicitly asked for by the designer, never chosen by the fitting engine.
+     The padding tightens; the type size does not, because a table a child
+     cannot read has not been fitted, it has been spoiled. */
+  .h-data--compact th, .h-data--compact td {
+    padding: var(--space-hair) var(--space-tight);
+  }
+  /* The caption drops to note size and the quiet colour: still a caption,
+     no longer competing with the table it names. */
+  .h-data--compact-caption caption {
+    font-size: var(--type-note);
+    color: var(--colour-quiet);
+    padding-bottom: var(--space-hair);
+  }
+  /* Small print under the table: a source, a unit, a "figures are rounded".
+     Under a recording table it is usually what to WRITE in a column, so it
+     must not stretch with the table above it - hence flex: none. */
+  .h-data-note,
+  .h-record-note {
+    margin: var(--space-hair) 0 0;
+    font-size: var(--type-note);
+    color: var(--colour-quiet);
+    line-height: 1.35;
+  }
+  .h-record-note { flex: none; }
+
+  /* Cells the child fills: tall enough to write in, and left empty. */
+  /* Height comes from the markup, because it depends on what the child
+     writes rather than on the table. */
+  .h-record .h-given {
+    background: var(--colour-tint);
+    color: var(--colour-given);
+    font-weight: normal;
+  }
+
+  /* A recording table says it can use spare height (greed 3), and this is what
+     makes that true rather than a claim. Without it the engine hands the zone
+     extra height, the table stays its natural size, and the difference becomes
+     a hole underneath it: the leftover pools between two blocks instead of
+     collecting at the foot of the page where a teacher trims it.
+     A data table is NOT given this, because taller rows do nothing for values
+     a child only reads. */
+  .h-record-block { height: 100%; display: flex; flex-direction: column; }
+  .h-record-block .h-record { flex: 1; }
+  .h-record-caption {
+    margin: 0 0 1.5mm; text-align: left; font-weight: bold;
+    color: var(--colour-question); font-size: var(--type-body);
+  }
+
+
+  /* Top, not centre. A zone grows to use spare page height, and the drawing
+     inside it was being centred in the taller box while the questions beside
+     it stayed at the top, so the two started at different heights and a row
+     of "drawing on the left, its question on the right" did not line up. */
+  /* The same quiet instruction line every other helper's stem uses. */
+  .h-figure-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
+  .h-figure-block { height: 100%; display: flex; flex-direction: column; }
+  .h-figure-block .h-figure { flex: 1; height: auto; min-height: 0; }
+  .h-figure { width: 100%; height: 100%; display: flex; align-items: flex-start; justify-content: center; }
+
+  /* Fill the WIDTH and take the height that follows from it. The shared
+     modules put a width and height on the SVG tag as well as a viewBox, and
+     those are the drawing's own units, not millimetres: a triangle says 107,
+     which a browser reads as 107 pixels, or 28mm. A max-width can only ever
+     make something smaller, so a small drawing printed at 28mm however much
+     room it had.
+     Height AUTO rather than 100%, so the drawing is exactly as tall as its own
+     proportions make it. At 100% it filled a grown box and letterboxed itself
+     inside, which is the same misalignment again, from the other direction.
+     max-height keeps it inside a box that is shorter than it wants. */
+  .h-figure svg { width: 100%; height: auto; max-height: 100%; }
+
+  /* A figure sized by its HEIGHT rather than by the width of its zone, because
+     the designer asked for a height in millimetres. The drawing keeps its own
+     aspect inside that height instead of stretching to the column. */
+  .h-figure--fixed { height: auto; align-items: center; }
+  .h-figure--fixed svg { width: auto; height: 100%; max-width: 100%; }
+
+
+
+  /* multiple-choice */
+  .h-mc { font-size: var(--type-body); }
+  /* An instruction, so ink. See the note on colour meanings in tokens.js. */
+  .h-mc-stem { margin: 0 0 var(--space-tight); color: var(--colour-ink); }
+  /* "Tick all that apply" is an instruction, so ink like every other. */
+  .h-mc-instr { margin: 0 0 var(--space-item); font-style: italic; color: var(--colour-ink); font-size: var(--type-note); }
+  .h-mc-opts { list-style: none; margin: 0; padding: 0; }
+  .h-mc-opt { display: flex; align-items: center; gap: var(--space-tight); margin-bottom: var(--space-tight); }
+  .h-mc-box {
+    display: inline-block; width: 5mm; height: 5mm;
+    border: var(--rule-line) solid var(--colour-ink); flex: none;
+  }
+
+  /* drawing-space.
+     A surface, not a table. The old route here was a one-row sorting grid, and
+     it looked like one: a tinted heading band, ink-weight cell borders and a
+     word bank on top of a big empty rectangle. What a child needs is paper with
+     an edge, so the outline is the hairline rule rather than the ink, the
+     corner is softened, and a named area carries its name quietly in the corner
+     instead of under a heading bar. */
+  .h-draw { display: flex; flex-direction: column; height: 100%; }
+  .h-draw-stem {
+    margin: 0 0 var(--space-tight);
+    font-size: var(--type-body); line-height: 1.35;
+    flex: none;
+  }
+  /* The hairline, and the hairline's own meaning: a line the child works on.
+     A box edge at ink weight would say "this is a cell in a table", which is
+     exactly the reading the sorting grid gave this task and exactly the one to
+     lose. */
+  .h-draw-surface {
+    flex: 1; display: flex; min-height: 0;
+    border: var(--rule-hair) solid var(--colour-rule);
+    border-radius: 1.5mm;
+  }
+  .h-draw-area { flex: 1; min-width: 0; position: relative; }
+  .h-draw-area + .h-draw-area {
+    border-left: var(--rule-hair) solid var(--colour-rule);
+  }
+  .h-draw-name {
+    position: absolute;
+    top: var(--inset-card-v); left: var(--inset-card-h);
+    font-size: var(--type-note); color: var(--colour-quiet);
+  }
+
+  /* sort-grid */
+  .h-sortgrid-stem { margin: 0 0 var(--space-tight); font-size: var(--type-body); }
+  .h-sortgrid-bank {
+    margin: 0 0 var(--space-item); font-size: var(--type-body);
+    background: var(--colour-tint); padding: var(--space-tight);
+  }
+  /* The bank says what it is on its own line. Written as "Word bank:" inline
+     ahead of the words, the label read as the first thing in a list, and a
+     child scanning for support found a sentence rather than a block. */
+  .h-sortgrid-bank-title {
+    margin: 0 0 var(--space-hair);
+    font-size: var(--type-note);
+    font-weight: bold;
+    color: var(--colour-ink);
+  }
+  .h-sortgrid-bank-choices { display: block; }
+  /* A bank entry is one thing to the child, so it never breaks across lines.
+     An entry carrying a picture ("torch 🔦") wraps at its own space otherwise,
+     stranding the picture alone on the next line where it reads as a further
+     object to sort rather than as part of the word above it. */
+  .h-sortgrid-word { white-space: nowrap; display: inline-block; }
+  .h-sortgrid-thumb {
+    height: 10mm; width: auto; vertical-align: middle;
+    margin-right: 1.5mm;
+  }
+  .h-sortgrid-table .h-write { height: 14mm; }
+  .h-sortgrid-table thead th { background: var(--colour-tint); }
+  /* Columns a child sorts INTO are equal, because the groups are equal. Left
+     to the browser they are sized by how long each HEADING happens to be, so a
+     box headed "Your drawing" and "What electricity helps it do" came out a
+     35mm sliver beside a 65mm column - the child given least room for the part
+     that needed most. The heading names the group; it does not measure it. */
+  .h-sortgrid-table { table-layout: fixed; }
+
+  /* Same as the recording table: this helper claims spare height (greed 3), so
+     it has to actually take it, or the extra becomes a hole under the grid.
+     The stem and the word bank keep their own size and the TABLE absorbs the
+     rest, because room to sort words into is the part that gains. */
+  .h-sortgrid { height: 100%; display: flex; flex-direction: column; }
+  .h-sortgrid-table { flex: 1; }
+
+  /* column-method-grid */
+  .h-colgrid { display: flex; flex-direction: column; width: 100%; }
+  .h-colgrid-row {
+    display: grid;
+    grid-template-columns: repeat(var(--h-colgrid-cols), 1fr);
+  }
+  .h-colgrid-cell {
+    aspect-ratio: 1 / 1;
+    /* The border must sit INSIDE the square, or every row is 0.6mm taller
+       than the measurement said and the bottom row gets sliced off by the
+       zone. The clipping was barely half a millimetre a row and still cut a
+       visible strip off the carry row. */
+    box-sizing: border-box;
+    border: var(--rule-line) solid var(--colour-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: var(--type-question); font-weight: bold; color: var(--colour-ink);
+  }
+  .h-colgrid-answer .h-colgrid-cell { border-top: var(--rule-heavy) solid var(--colour-ink); }
+  .h-colgrid-carry .h-colgrid-cell { aspect-ratio: 2 / 1; border-color: var(--colour-tint); }
+  /* The headings row is a reference over the grid, not part of it: no border,
+     half a cell tall, letters in the support colour so they read as labels
+     rather than as digits already written in. */
+  .h-colgrid-headings .h-colgrid-cell {
+    aspect-ratio: 2 / 1;
+    border: none;
+    font-size: var(--type-note);
+    color: var(--colour-quiet);
+  }
+
+
+  /* ─── match-up ─── */
+  .h-match { font-size: var(--type-body); display: flex; flex-direction: column; height: 100%; }
+  .h-match-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
+  /* The corridor, and it must stay in step with matchCorridorMm above: a share
+     of the width, floored so a narrow zone still leaves a usable run and capped
+     so a landscape page does not become two thin columns either side of a void. */
+  .h-match-cols {
+    display: flex;
+    gap: clamp(20mm, 24%, 40mm);
+    flex: 1; align-items: stretch;
+  }
+  /* Spare height goes BETWEEN the cards, never inside them. A card that grows
+     to fill the column turns a one-word label into a large empty box, and a
+     large empty box on a worksheet means "write in here" - which is the wrong
+     instruction, because the task is to draw a line FROM this card, not to
+     write in it. Spreading the cards instead also does the activity a favour:
+     it pushes the dots apart, so eight lines crossing the corridor stay far
+     enough from one another to be told apart.
+     This is also what matchColumnHeightMm above already predicts. The stretch
+     was the CSS disagreeing with the helper's own measurement. */
+  .h-match-col {
+    list-style: none; margin: 0; padding: 0;
+    flex: 1 1 0;
+    display: flex; flex-direction: column; gap: 3mm;
+    /* Both columns span the same distance, which is what keeps the first card
+       level with the first category and the last with the last. It is also
+       what measureMatchUp above already describes: "the shorter one spreads
+       its own cards down the same distance". The gap is a floor, not a fixed
+       value - the spare the engine hands this block is distributed here. */
+    justify-content: space-between;
+  }
+  .h-match-card {
+    flex: 0 0 auto;
+    min-height: 16mm;
+    box-sizing: border-box;
+    border: var(--rule-line) solid var(--colour-ink);
+    padding: 2mm 3mm;
+    display: flex; align-items: center; gap: var(--space-tight);
+    position: relative;
+    line-height: 1.35;
+  }
+  /* A literal symbol the DESIGNER wrote, in a reserved slot ahead of the
+     label so every card in a column lines up whether or not it has one. The
+     engine prints it and never interprets it: what a triangle means on this
+     sheet is the lesson's business, not the renderer's. */
+  .h-match-symbol {
+    flex: 0 0 6mm;
+    width: 6mm;
+    text-align: center;
+    color: var(--colour-ink);
+  }
+  .h-match-label { flex: 1; }
+  /* The dot is what the child aims the line at, so it sits ON the card's
+     facing edge rather than tucked inside the border. Half of it hangs over
+     the edge, which is what makes the join look deliberate once the line is
+     drawn. */
+  .h-match-dot {
+    width: 3mm; height: 3mm;
+    border-radius: 50%;
+    background: var(--colour-question);
+    position: absolute; top: 50%;
+    flex: none;
+  }
+  .h-match-left .h-match-dot { right: -1.5mm; transform: translateY(-50%); }
+  .h-match-right .h-match-dot { left: -1.5mm; transform: translateY(-50%); }
+  .h-match-right .h-match-card { flex-direction: row-reverse; }
+
+  /* ─── card-row ─── */
+  .h-cardrow { font-size: var(--type-body); }
+  .h-cardrow-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
+  .h-cardrow-list {
+    list-style: none; margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--h-card-cols), 1fr);
+    gap: 3mm;
+  }
+  /* Cards carrying nothing but a picture are as wide as the picture, and the
+     row starts at the left margin like everything else on the sheet. See
+     cardsArePictureOnly above for why the plain grid is kept for the rest. */
+  .h-cardrow-list--hug {
+    grid-template-columns: repeat(var(--h-card-cols), max-content);
+    justify-content: start;
+  }
+  .h-card {
+    box-sizing: border-box;
+    border: var(--rule-line) solid var(--colour-ink);
+    padding: 2mm 3mm;
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    position: relative;
+  }
+  /* The same dot a match-up uses, so a child meets one mark meaning "join this
+     to something" across every sheet rather than two. */
+  .h-card-dot {
+    position: absolute;
+    width: 3mm; height: 3mm;
+    border-radius: 50%;
+    background: var(--colour-question);
+  }
+  .h-card-dot-top { top: -1.5mm; left: 50%; transform: translateX(-50%); }
+  .h-card-dot-bottom { bottom: -1.5mm; left: 50%; transform: translateX(-50%); }
+  .h-card-dot-left { left: -1.5mm; top: 50%; transform: translateY(-50%); }
+  .h-card-dot-right { right: -1.5mm; top: 50%; transform: translateY(-50%); }
+  .h-card-title {
+    margin: 0 0 var(--space-hair);
+    font-weight: bold; color: var(--colour-ink);
+    line-height: 1.35;
+  }
+  /* The viewport is the room this page gives the object; the image inside it is
+     the file, positioned so the part that is evidence is the part on show. Both
+     are drawn at sizes the engine worked out, because the engine had to know
+     them to measure the card. */
+  .h-card-view {
+    display: block; position: relative; overflow: hidden;
+    margin: 0 auto;
+  }
+  .h-card-img { position: absolute; display: block; }
+  .h-card-caption {
+    margin: var(--space-hair) 0 0;
+    font-size: var(--type-note); color: var(--colour-ink);
+    line-height: 1.35;
+  }
+  /* One response, repeated on every card, because the designer asked the whole
+     row for it. Never added because a card looked like it had room. */
+  .h-card-write { margin-top: var(--space-hair); }
+  .h-card-write-label {
+    display: block;
+    font-size: var(--type-note); color: var(--colour-quiet);
+  }
+  /* Height is set in the markup, because it depends on the year group's
+     writing line rather than on the card. */
+  .h-card-write-line {
+    display: block;
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+  }
+  .h-card-mark {
+    margin-top: var(--space-hair);
+    display: flex; align-items: center; gap: var(--space-tight);
+    font-size: var(--type-note); color: var(--colour-ink);
+  }
+  .h-card-mark-box {
+    flex: none;
+    width: 4mm; height: 4mm;
+    border: var(--rule-line) solid var(--colour-ink);
+  }
+
+
+  /* ─── speech-scene ─── */
+  /* This helper claims spare height, so it has to take it, or the extra shows
+     as a hole under the last bubble. The room goes into the BLANK bubbles,
+     which is the only part of a scene that gains from being bigger: a printed
+     line of speech and a drawn figure are the size they are. */
+  .h-speech { font-size: var(--type-body); display: flex; flex-direction: column; height: 100%; }
+  .h-speech-stem { margin: 0 0 var(--space-item); line-height: 1.35; }
+  .h-speech-turns { list-style: none; margin: 0; padding: 0; flex: 1; display: flex; flex-direction: column; }
+  /* Spare height is only worth spreading when something can use it, and in a
+     scene that is a blank bubble. With every bubble printed, the turns hug
+     their own content so that anything under them - the answer box below - sits
+     where the reading does, directly beneath the speech, and the spare collects
+     at the foot of the zone where a teacher trims it. */
+  .h-speech-turns:not(:has(.h-speech-blank)) { flex: 0 0 auto; }
+  .h-speech-turn {
+    display: flex; align-items: stretch; gap: var(--space-tight);
+    margin-bottom: 5mm;
+  }
+  .h-speech-turn:has(.h-speech-blank) { flex: 1 1 auto; }
+  .h-speech-blank { display: flex; flex-direction: column; }
+  .h-speech-blank .h-speech-line { flex: 1 0 auto; }
+  .h-speech-turn:last-child { margin-bottom: 0; }
+  .h-speech-right { flex-direction: row-reverse; }
+  .h-speech-figure {
+    flex: none; width: 20mm;
+    display: flex; flex-direction: column; align-items: center;
+    color: var(--colour-ink);
+  }
+  .h-speech-fig-svg { width: 14.399999999999999mm; height: 20mm; display: block; }
+  .h-speech-name {
+    font-size: var(--type-note); line-height: 1.35;
+    text-align: center; color: var(--colour-ink);
+  }
+  .h-speech-bubble {
+    flex: 1;
+    box-sizing: border-box;
+    padding: 2mm 3mm;
+    border-radius: 3mm;
+    position: relative;
+    margin-bottom: 5mm;
+  }
+  /* A printed line of speech is material handed to the child, so it takes the
+     given colour, the same as a word bank. An empty bubble is where the child
+     writes, so it is plain ink like every other writing space. */
+  /* And a printed bubble HUGS its sentence, up to the measure set above. It is
+     the size of what was said; the room left over belongs to the page, not to
+     the bubble. The blank one keeps flex: 1 from the rule above, because that
+     one is a writing space and every millimetre of it gets used. */
+  .h-speech-given {
+    border: var(--rule-line) solid var(--colour-given);
+    flex: 0 1 auto; max-width: 105mm;
+  }
+  .h-speech-blank { border: var(--rule-line) solid var(--colour-ink); }
+  .h-speech-says { margin: 0; line-height: 1.35; }
+  .h-speech-line {
+    display: block;
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+  }
+  /* The tail, drawn as two stacked triangles so the outline shows: the back
+     one is the border colour, the front one white and a shade smaller, sat on
+     top of it. */
+  .h-speech-bubble::before, .h-speech-bubble::after {
+    content: ""; position: absolute; top: 100%;
+    width: 0; height: 0;
+    border-left: 5mm solid transparent;
+    border-right: 2mm solid transparent;
+  }
+  .h-speech-bubble::before { left: 8mm; border-top: 5mm solid currentColor; }
+  .h-speech-bubble::after { left: 8.4mm; border-top: 4.2mm solid white; }
+  /* The tail points at whoever is speaking. With the figure moved to the right
+     and the tail left where it was, every reply bubble pointed away from the
+     person saying it and at the person who had just finished - which reads, to
+     a child, as the wrong person talking. */
+  .h-speech-right .h-speech-bubble::before,
+  .h-speech-right .h-speech-bubble::after {
+    left: auto;
+    border-left: 2mm solid transparent;
+    border-right: 5mm solid transparent;
+  }
+  .h-speech-right .h-speech-bubble::before { right: 8mm; }
+  .h-speech-right .h-speech-bubble::after { right: 8.4mm; }
+  .h-speech-given { color: var(--colour-given); }
+  .h-speech-given .h-speech-says { color: var(--colour-ink); }
+  .h-speech-blank { color: var(--colour-ink); }
+
+  /* The tick-or-cross answer box, under the bubble and indented to start where
+     the bubble starts, so it reads as the answer to what was said rather than
+     as a new thing. Left-anchored: spare width goes to the right margin. */
+  .h-speech-judge {
+    flex: none;
+    display: flex; align-items: center; gap: var(--space-item);
+    margin: var(--space-item) 0 0 24mm;
+  }
+  .h-speech-judge-box {
+    flex: none; box-sizing: border-box;
+    width: 12mm; height: 12mm;
+    border: var(--rule-line) solid var(--colour-ink);
+  }
+  /* The key is an instruction about what to draw, so ink, and small enough not
+     to be mistaken for the answer itself. */
+  .h-speech-judge-key {
+    display: flex; align-items: center; gap: var(--space-tight);
+    color: var(--colour-ink); font-size: var(--type-note); line-height: 1.35;
+  }
+  .h-speech-mark { display: block; flex: none; }
+
+  /* ─── named-claim ─── */
+  /* The voice is set apart by a panel and a name, not by a drawn person. The
+     name carries the question colour, so a child scanning the page finds who
+     said it; the words carry ink, because they are the thing being judged. The
+     panel stops at a sentence's measure for the same reason a printed bubble
+     does: a short claim ruled across a full-width box reads as somewhere to
+     write. */
+  .h-claim { font-size: var(--type-body); }
+  .h-claim-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
+  .h-claim-panel {
+    border: var(--rule-line) solid var(--colour-question);
+    border-radius: 1.5mm;
+    background: var(--colour-tint);
+    padding: var(--inset-card);
+  }
+  .h-claim-who {
+    margin: 0;
+    font-size: var(--type-note);
+    color: var(--colour-question);
+  }
+  .h-claim-says { margin: 0; line-height: 1.35; }
+  .h-claim-lines { margin-top: var(--space-tight); }
+  .h-claim-line {
+    display: block;
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+  }
+
+  /* ─── fact-file ─── */
+  .h-ff { font-size: var(--type-body); display: flex; flex-direction: column; height: 100%; }
+  .h-ff-title {
+    margin: 0 0 var(--space-tight);
+    font-size: var(--type-sectionLabel); color: var(--colour-question);
+    line-height: 1.35;
+  }
+  .h-ff-fields {
+    list-style: none; margin: 0; padding: 0;
+    border: var(--rule-line) solid var(--colour-ink);
+    flex: 1; display: flex; flex-direction: column;
+  }
+  .h-ff-field {
+    flex: 1 1 auto;
+    box-sizing: border-box;
+    border-bottom: 0.4mm solid var(--colour-ink);
+    padding: 1mm 2mm;
+    display: flex; flex-direction: column;
+    min-height: 18.11536mm;
+  }
+  .h-ff-field:last-child { border-bottom: 0; }
+  .h-ff-label { line-height: 1.35; color: var(--colour-ink); }
+  /* Set apart by weight and its own line rather than by a colour of its own,
+     which is the same way a writing frame's starters are set apart and the
+     reason the sheet still has four colour meanings rather than five. */
+  .h-ff-hint {
+    display: block; line-height: 1.35;
+    font-weight: bold; color: var(--colour-ink);
+  }
+  /* Words handed to the child, which is exactly what the given colour means
+     everywhere else on the page. Note size: it is support, not the task. */
+  .h-ff-bank {
+    display: block; line-height: 1.35;
+    font-size: var(--type-note); color: var(--colour-given);
+  }
+  /* A recognisable labelled block rather than a run of middot-separated words.
+     Unlabelled, the words read as an example answer sitting in the field. */
+  .h-ff-bank-title {
+    display: block;
+    font-weight: bold;
+    color: var(--colour-ink);
+  }
+  .h-ff-bank-choices { display: block; }
+  .h-ff-space { flex: 1; min-height: 10mm; }
+
+  /* ─── writing-frame ─── */
+  .h-wf { position: relative; font-size: var(--type-body); color: var(--colour-ink); }
+  .h-wf-outline {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    display: block;
+  }
+  /* Writing space is the right home for spare room, so the frame takes the
+     height it claimed and puts it into the LINES rather than the gaps between
+     starters. A taller line is more room to write; a wider gap is nothing.
+     Growth is capped elsewhere at half again the natural height, so a line
+     gets roomier without turning into an invitation to write an essay. */
+  .h-wf { height: 100%; }
+  .h-wf-inner {
+    position: relative; padding: 3mm 4mm;
+    height: 100%; box-sizing: border-box;
+    display: flex; flex-direction: column;
+  }
+  /* A percentage padding is measured against the container's WIDTH, which is
+     exactly what is wanted here: the point is a share of the frame, so the
+     room kept clear of it has to be the same share. */
+  .h-wf-tag .h-wf-inner { padding-right: 17%; }
+  .h-wf-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
+  .h-wf-starters { list-style: none; margin: 0; padding: 0; flex: 1; display: flex; flex-direction: column; }
+  .h-wf-starter { margin-bottom: 2mm; flex: 1 1 auto; display: flex; flex-direction: column; }
+  /* Grow from the height already on the element, not from zero. A bare
+     "flex: 1" inside a stack with nothing spare collapsed every line to its
+     own border, which is to say the child had nowhere to write and the frame
+     still looked finished. */
+  .h-wf-line { flex: 1 0 auto; }
+  /* A sentence starter is set apart by WEIGHT and by having its own line, and
+     carries no colour. Colour on a worksheet means question, given material or
+     vocabulary, and a scaffold is none of the three. */
+  .h-wf-text { display: block; font-weight: bold; line-height: 1.35; }
+  .h-wf-line {
+    display: block;
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+  }
+
+  /* ─── steps ─── */
+  /* The deck's success-criteria panel, drawn for paper. Green here is a
+     SURFACE, which it is nowhere else on a worksheet; see the criteria colour note
+     in tokens.js for why that does not give green a second meaning. */
+  .h-steps {
+    box-sizing: border-box;
+    padding: 3mm 4mm;
+    background: var(--colour-criteria);
+    border: var(--rule-line) solid var(--colour-vocab);
+    border-radius: 2mm;
+    font-size: var(--type-body);
+  }
+  .h-steps-title {
+    margin: 0 0 var(--space-tight);
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-vocab);
+    line-height: 1.35;
+  }
+  .h-steps-list {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 1mm;
+  }
+  /* Each criterion on its own white card, which is what makes a panel of seven
+     scannable rather than a green paragraph. */
+  .h-steps-item {
+    display: flex; align-items: flex-start;
+    gap: 2mm;
+    box-sizing: border-box;
+    padding: 0 2mm;
+    background: var(--colour-paper);
+    border-radius: 1mm;
+  }
+  /* Centred by flex rather than by a line-height equal to the badge's own
+     height: every line-height in this engine is pinned to 1.35 and has to be,
+     because the estimates assume it. */
+  .h-steps-badge {
+    flex: 0 0 5mm;
+    width: 5mm; height: 5mm;
+    border-radius: 50%;
+    background: var(--colour-vocab);
+    color: var(--colour-paper);
+    font-size: var(--type-note); font-weight: bold;
+    line-height: 1.35;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  /* "flex: 1 1 0" and not "auto", for the same reason a question row uses it:
+     with "auto" a long criterion's own content width is what the flex line
+     tries to honour, and the badge is pushed onto a line of its own. */
+  .h-steps-text { flex: 1 1 0; min-width: 0; line-height: 1.35; color: var(--colour-ink); }
+
+  /* ─── storyboard ─── */
+  .h-sb { font-size: var(--type-body); }
+  .h-sb-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
+  .h-sb-grid {
+    list-style: none; margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--h-sb-cols), 1fr);
+    gap: 4mm;
+  }
+  .h-sb-cell { display: flex; flex-direction: column; }
+  /* The box's height follows its own WIDTH, which is what the estimate
+     assumes. Written as "flex: 1" with a min-height instead, it had no height
+     to grow into (the cell it sits in is sized by its content, not the other
+     way round), so every box came out at the 22mm minimum while the engine had
+     reserved 44mm for it. Nothing clipped; the sheet simply carried 60mm of
+     hole it had been told was full. */
+  .h-sb-box {
+    box-sizing: border-box;
+    border: var(--rule-line) solid var(--colour-ink);
+    aspect-ratio: 1.923076923076923 / 1;
+    min-height: 22mm;
+    max-height: 44mm;
+    padding: 1mm 2mm;
+  }
+  /* The cell's place in the sequence. Blue and bold like every other number on
+     the sheet: a child counting through six boxes should not meet a different
+     kind of number from the one beside the questions. */
+  .h-sb-num {
+    font-size: var(--type-questionNumber); font-weight: bold;
+    color: var(--colour-question);
+    line-height: 1.35;
+  }
+  .h-sb-lines { display: block; margin-top: 1mm; }
+  .h-sb-line {
+    display: block;
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+  }
+
+
+  /* the written-method grids */
+  .h-mgrid-id {
+    margin: 0 0 2mm;
+    font-size: var(--type-questionNumber); font-weight: bold;
+    color: var(--colour-question);
+    line-height: 1.35;
+  }
+  .h-mgrid { display: flex; flex-direction: column; width: 100%; }
+  .h-mgrid-row {
+    display: grid;
+    grid-template-columns: repeat(var(--h-mgrid-cols), 1fr);
+  }
+  .h-mgrid-cell {
+    aspect-ratio: 1 / 1;
+    /* The border must sit INSIDE the square, or every row is fractionally
+       taller than the measurement said and the bottom row is quietly sliced
+       off by the zone. Half a millimetre a row was enough to cut a visible
+       strip off a carry row with nothing reporting a problem. */
+    box-sizing: border-box;
+    border: var(--rule-line) solid var(--colour-ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: var(--type-question); font-weight: bold; color: var(--colour-ink);
+  }
+  /* The thick rule a child rules under a calculation before writing the
+     answer. */
+  .h-mgrid-answer .h-mgrid-cell { border-top: var(--rule-heavy) solid var(--colour-ink); }
+  .h-mgrid-carry .h-mgrid-cell { aspect-ratio: 2 / 1; border-color: var(--colour-tint); }
+
+  /* The bus stop is drawn with lines rather than boxes: only the roof and the
+     wall are ruled. Transparent rather than removed, so the cells stay exactly
+     the size the measurement assumes. */
+  .h-mgrid-cell.h-mgrid-bare { border-color: transparent; }
+  .h-mgrid-cell.h-mgrid-roof { border-bottom: var(--rule-heavy) solid var(--colour-ink); }
+  .h-mgrid-cell.h-mgrid-wall { border-right: var(--rule-heavy) solid var(--colour-ink); }
+
+  /* long-division: the working box takes any spare height (greed 2), so it has
+     to actually take it, or the extra becomes a hole underneath. The bus stop
+     keeps its own size - its cells are square and stretching them would put
+     the place value out of line. */
+  .h-longdiv { display: flex; flex-direction: column; height: 100%; }
+  .h-longdiv .h-mgrid { flex: none; }
+  .h-longdiv-working {
+    flex: 1;
+    min-height: 32mm;
+    margin-top: 2mm;
+    box-sizing: border-box;
+    border: var(--rule-line) solid var(--colour-ink);
+  }
+
+  /* method-frame */
+  .h-mframe { font-size: var(--type-body); }
+  .h-mframe-stem { margin: 0 0 2mm; color: var(--colour-ink); line-height: 1.35; }
+  /* The frame's question label, in the question blue every other label on the
+     sheet uses. */
+  .h-mframe-id {
+    color: var(--colour-question); font-weight: bold;
+    font-size: var(--type-questionNumber);
+  }
+  .h-mframe-panel { padding: 3mm 4mm; }
+  .h-mframe-framed {
+    background: var(--colour-tint);
+    border: var(--rule-line) solid var(--colour-ink);
+    box-sizing: border-box;
+  }
+  .h-mframe-title {
+    margin: 0 0 2mm;
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-question);
+    line-height: 1.35;
+  }
+  .h-mframe-line { display: flex; align-items: flex-start; }
+  /* A method label is SCAFFOLD, and scaffold carries no colour of its own: it
+     is set apart by weight and by having its own column, exactly as a writing
+     frame's sentence-starters are. Daniel settled this. On a worksheet blue
+     means the question, orange means material handed to the child, and green
+     means vocabulary, so a fourth meaning for "the words that walk you through
+     the method" would be a fifth colour the system does not have.
+     The slide deck's version of this frame IS green, and that is not an
+     inconsistency to fix: green on the board means a revealed answer, which is
+     a thing that cannot happen on paper. */
+  .h-mframe-label {
+    flex: 0 0 auto; width: var(--h-mframe-label);
+    padding-top: 2.89232mm;
+    font-weight: bold; color: var(--colour-ink);
+    line-height: 1.35;
+  }
+  .h-mframe-segs {
+    flex: 1 1 auto;
+    display: flex; flex-wrap: wrap; align-items: center;
+    column-gap: 2mm;
+  }
+  .h-mframe-seg, .h-mframe-box {
+    height: 9mm; margin: 1.25mm 0;
+    display: flex; align-items: center; justify-content: center;
+    box-sizing: border-box;
+  }
+  .h-mframe-seg { padding: 0 2mm; font-weight: bold; color: var(--colour-ink); }
+  .h-mframe-box { width: 11mm; border: var(--rule-line) solid var(--colour-ink); }
+
+
+  /* ─── shared parts ─── */
+  /* Bold, blue and bracketed, the same as every other number on the sheet.
+     It was once blue and UNBRACKETED, which printed two numbers two different
+     ways on one page; the bracket is what fixed that, and the colour now
+     follows .h-num and .h-numbered-n back to the question blue every question
+     label on the sheet is set in. */
+  .h-cq-num {
+    display: inline-block; min-width: 5mm;
+    margin-right: var(--space-tight);
+    color: var(--colour-question); font-weight: bold;
+    font-size: var(--type-questionNumber);
+    line-height: 1.35;
+  }
+  .h-cq-stem {
+    margin: 0 0 var(--space-tight);
+    font-size: var(--type-body); color: var(--colour-ink);
+    line-height: 1.35;
+  }
+  .h-cq-followup { margin-top: var(--space-item); }
+  .h-cq-followup-text {
+    margin: 0 0 var(--space-hair);
+    font-size: var(--type-body); color: var(--colour-ink);
+    line-height: 1.35;
+  }
+  .h-cq-line { display: block; border-bottom: var(--rule-hair) dotted var(--colour-rule); }
+
+  /* Values handed to the child, in both tables: the same orange a data table
+     already uses, because that is what they are. The row labels take the one
+     neutral fill rather than a colour, so nothing competes with the values. */
+  /* Written as .h-cq-given alone this lost to .h-table td in tables.js, which
+     is one class plus one element and therefore the more specific of the two:
+     every value came out left-aligned under a centred heading. */
+  .h-cq-grid .h-cq-given { color: var(--colour-given); font-weight: bold; text-align: center; }
+  .h-cq-grid th[scope="row"] {
+    background: var(--colour-tint); font-weight: normal;
+    color: var(--colour-ink); text-align: left; line-height: 1.35;
+  }
+  .h-cq-grid td { line-height: 1.35; }
+
+  /* ─── compare-row ─── */
+  .h-cmp {
+    display: flex; align-items: center;
+    margin-bottom: var(--space-tight);
+    font-size: var(--type-body); line-height: 1.35;
+  }
+  .h-cmp-value {
+    flex: 1 1 auto; text-align: center;
+    font-weight: bold; color: var(--colour-given);
+  }
+  /* The box the child writes < > or = in. Border INSIDE the square, or the row
+     runs taller than the estimate says. */
+  .h-cmp-box {
+    flex: none; box-sizing: border-box;
+    width: 12mm; height: 12mm;
+    margin: 0 4mm;
+    border: var(--rule-line) solid var(--colour-ink);
+  }
+
+  /* ─── inequality-with-boxes ─── */
+  /* Left-anchored, under the instruction that asks for it.
+     Centred, this row sat in the middle of whatever width the zone offered
+     while its instruction stayed at the left margin, so "Count on in tens:"
+     was printed at the left of a full-width zone and "26, 36, □ □ □" landed
+     eighty millimetres away with empty page between the two. A child then has
+     to cross that gap to find what they are counting. Spare width belongs at
+     the right-hand edge of the zone, where it reads as margin, and never
+     between a question and the thing it is asking about. */
+  .h-ineq-row {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start;
+    gap: 1mm;
+    padding: 2mm 0;
+  }
+  .h-ineq-token {
+    min-width: 6mm; text-align: center;
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-ink); line-height: 1.35;
+  }
+  .h-ineq-box {
+    flex: none; box-sizing: border-box;
+    width: 11mm; height: 11mm;
+    border: var(--rule-line) solid var(--colour-ink);
+  }
+
+  /* ─── number-sentence ─── */
+  /* One row, and it does not wrap: the stated minimum has already claimed the
+     width of the whole sentence, so wrapping here would mean the estimate and
+     the page disagreed about how tall the block is. */
+  .h-ns-row {
+    display: flex; flex-wrap: nowrap; align-items: flex-start;
+    gap: 2mm;
+    padding: 2mm 0;
+  }
+  .h-ns-term { display: flex; flex-direction: column; align-items: center; }
+  .h-ns-op {
+    align-self: center;
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-ink); line-height: 1.35;
+  }
+  /* A supplied value, on its own tile. The given orange and a light boundary,
+     the same treatment a word bank gives a word handed over. */
+  .h-ns-tile {
+    box-sizing: border-box;
+    min-width: 10mm; text-align: center;
+    padding: var(--inset-card);
+    border: var(--rule-line) solid var(--colour-given);
+    border-radius: 1.5mm;
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-given); line-height: 1.35;
+  }
+  .h-ns-text {
+    align-self: center; padding: var(--inset-card);
+    font-size: var(--type-sectionLabel); color: var(--colour-ink); line-height: 1.35;
+  }
+  /* Somewhere to write, and empty. No fill and no colour of its own: on this
+     sheet an empty box is the one thing that always means "yours". */
+  .h-ns-box {
+    box-sizing: border-box; flex: none;
+    height: 8mm;
+    border: var(--rule-line) solid var(--colour-ink);
+    border-radius: 1mm;
+  }
+  /* A digit frame: one cell per digit, sharing their internal rules so the
+     frame reads as one answer rather than as four separate boxes. */
+  .h-ns-cells { display: flex; }
+  .h-ns-cell {
+    box-sizing: border-box; flex: none;
+    width: 8mm; height: 8mm;
+    border: var(--rule-line) solid var(--colour-ink);
+    margin-left: -0.4mm;
+  }
+  .h-ns-cell:first-child { margin-left: 0; }
+  /* Headings line up with the terms by taking the same widths, so the word
+     over a column starts exactly where the column does. */
+  .h-ns-heads { display: flex; flex-wrap: nowrap; gap: 2mm; }
+  .h-ns-head {
+    flex: none; overflow: hidden; text-overflow: clip;
+    font-size: var(--type-note); color: var(--colour-quiet); line-height: 1.35;
+  }
+  .h-ns-caption {
+    margin-top: var(--space-hair);
+    font-size: var(--type-note); color: var(--colour-quiet);
+    line-height: 1.35; text-align: center;
+  }
+
+  /* ─── order-numbers ─── */
+  .h-order-line { display: flex; align-items: center; font-size: var(--type-body); line-height: 1.35; }
+  .h-order-card {
+    flex: 1 1 auto;
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 5mm;
+    box-sizing: border-box;
+    padding: 2mm 3mm;
+    border: 0.4mm solid var(--colour-ink);
+    background: var(--colour-tint);
+  }
+  .h-order-given {
+    font-weight: bold; color: var(--colour-given);
+    font-size: var(--type-body); line-height: 1.35;
+  }
+  .h-order-blanks {
+    display: flex; flex-wrap: wrap; align-items: flex-end;
+    gap: 2mm;
+    margin-top: var(--space-tight);
+    font-size: var(--type-body); line-height: 1.35;
+  }
+  /* One blank per number, and each one wide enough to write "0.34" on. */
+  .h-order-blank {
+    flex: 1 1 16mm;
+    min-width: 16mm;
+    box-sizing: border-box;
+    height: 9mm;
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+  }
+  .h-order-sep { flex: none; color: var(--colour-ink); line-height: 1.35; }
+
+  /* ─── order-table ─── */
+  /* This helper claims spare height (greed 3), so it has to take it, or the
+     extra shows as a hole under the table. The room goes into the TABLE, and
+     inside it into the empty bottom row, because that is the only part of an
+     ordering table that gains from being taller: the values on top are read,
+     not written. */
+  .h-ordertable { height: 100%; display: flex; flex-direction: column; }
+  .h-ordertable-grid { flex: 1; }
+  .h-ordertable-answer td { height: 14mm; }
+
+  /* ─── data-table-with-ordering ─── */
+  .h-dto-label { flex: none; color: var(--colour-ink); line-height: 1.35; }
+
+  /* ─── circle-the-answer ─── */
+  /* Left-anchored for the reason the inequality row above is: the options are
+     what the instruction is about, so they start where the instruction starts.
+     This one had not been reported yet and would have drifted the same way the
+     moment it was given a wide zone. */
+  .h-circle-row {
+    display: flex; flex-wrap: wrap; justify-content: flex-start;
+    column-gap: 10mm; row-gap: 0;
+    margin: 0;
+  }
+  .h-circle-list { list-style: none; margin: 0; padding: 0; }
+  .h-circle-list .h-circle-option { margin-left: 6mm; }
+  /* The padding is not decoration: it is the room a child's drawn circle needs
+     so that circling one option does not run through the one above it. */
+  .h-circle-option {
+    padding: 3mm 0;
+    font-size: var(--type-question); font-weight: bold;
+    color: var(--colour-given); line-height: 1.35;
+  }
+
+
+  /* digit-cards */
+  .h-digitcards { display: flex; gap: 2mm; flex-wrap: nowrap; }
+  .h-digitcard {
+    box-sizing: border-box;
+    width: 14mm; height: 12mm; flex: none;
+    border: var(--rule-line) solid var(--colour-ink);
+    background: var(--colour-tint);
+    display: flex; align-items: center; justify-content: center;
+    font-size: var(--type-sectionLabel); font-weight: bold; line-height: 1.35;
+    /* Handed to the child, like the values in a data table. */
+    color: var(--colour-given);
+  }
+
+
+  /* shared shell: a prompt, the thing itself, sometimes a line for the answer */
+  .h-money-stem {
+    margin: 0 0 var(--space-tight);
+    font-size: var(--type-body); color: var(--colour-ink);
+    line-height: 1.35;
+  }
+  /* The shared coin row between the prompt and the answer line. .h-figure
+     claims the full height of what it sits in, which here would push the answer
+     line to the foot of the zone, so inside a strip it takes only its own. No
+     max-height either: the drawing prints at its own width, so its height is
+     known exactly by the measurement, and a max-height would silently squash a
+     row whose measured height the zone happened to disagree with. */
+  .h-money .h-figure { height: auto; }
+  .h-money .h-figure svg { max-height: none; }
+  .h-money-answer {
+    display: block;
+    height: 8mm;
+    margin-top: var(--space-tight);
+    border-bottom: var(--rule-hair) dotted var(--colour-rule);
+  }
+
+  /* stacked-fraction and fraction-sequence */
+  .h-frac-row {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+    gap: 3mm;
+  }
+  .h-frac {
+    display: inline-flex; flex-direction: column; text-align: center;
+    font-size: var(--type-question); font-weight: bold;
+    color: var(--colour-ink);
+    /* Pinned, and it must stay in step with FRAC_LINE_MM above. Left unset,
+       Comic Sans's own default of about 1.5 makes every fraction taller than
+       the measurement said, and the bottom of the zone is quietly clipped. */
+    line-height: 1.35;
+  }
+  /* The fraction bar. It is a border rather than a drawn line so that it always
+     spans exactly the width of the wider of the two numbers. */
+  .h-frac-num {
+    border-bottom: 0.4mm solid var(--colour-ink);
+    padding: 0 2mm;
+  }
+  .h-frac-den { padding: 0 2mm; }
+  .h-frac-blank {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 9mm;
+    height: 12.78mm;
+    border: 0.4mm solid var(--colour-ink);
+  }
+  .h-frac-sep {
+    font-size: var(--type-question); font-weight: bold;
+    color: var(--colour-ink); line-height: 1.35;
+    min-width: 4mm; text-align: center;
+  }
+
+  /* chip-bank */
+  /* A label on given material, in ink. It was question blue, and on a real
+     sheet it was carrying the instruction "Write the word that names each side"
+     - which a child reads and so is black. Blue names a BLOCK (a section, a
+     fact file, a table's caption); everything a child reads is ink; material
+     handed to them is the given orange, which the chips beneath already are. */
+  /* Not bold. It is a label or an instruction the child reads, and bold on a
+     whole sentence is emphasis on nothing in particular. On a real sheet this
+     printed an entire instruction in bold while the question number beside it
+     was not, which is the emphasis exactly the wrong way round. */
+  .h-chipbank-title {
+    margin: 0 0 var(--space-tight);
+    font-size: var(--type-body); line-height: 1.35;
+  }
+  .h-chipbank-grid {
+    /* Wrapped flex rather than a uniform grid: every chip hugs its own word,
+       so "beans" is beans-sized beside a wide "vitamins and minerals" instead
+       of matching it and carrying dead space a child reads as writing room.
+       measure() simulates this exact greedy wrap. */
+    display: flex; flex-wrap: wrap;
+    gap: 2mm;
+  }
+  .h-chip {
+    box-sizing: border-box;
+    flex: 0 1 auto;
+    min-width: 20mm;
+    max-width: 100%;
+    border: 0.4mm solid var(--colour-question);
+    background: var(--colour-tint);
+    color: var(--colour-question);
+    padding: 2mm 3mm;
+    border-radius: 1mm;
+    text-align: center; font-weight: bold;
+    font-size: var(--type-body); line-height: 1.35;
+  }
+  .h-chip-word { display: block; }
+  /* What the word means, inside the chip that carries the word. Note size and
+     not bold, so the word stays the thing being chosen and the gloss is what
+     lets a child choose it. In ink rather than the chip's colour: the meaning
+     is prose the child reads, and the chip's colour is what says where the
+     word came from. */
+  .h-chip-meaning {
+    display: block;
+    font-size: var(--type-note); font-weight: normal;
+    color: var(--colour-ink); line-height: 1.35;
+  }
+  .h-chipbank--vocab .h-chip {
+    border-color: var(--colour-vocab); color: var(--colour-vocab);
+  }
+  .h-chipbank--given .h-chip {
+    border-color: var(--colour-given); color: var(--colour-given);
+  }
+
+
+  .h-figure-caption { margin: var(--space-tight) 0 0; text-align: center; font-weight: bold; }
+
+
+  .h-ruler { display: block; }
+
+  /* No width rule. The SVG carries its true size in millimetres and must keep
+     it: scaled to fit a zone, its centimetres would no longer be centimetres
+     and every measurement a child read off it would be wrong. */
+  .h-ruler svg { display: block; }
+
+
+  /* The instruction takes its own height and the drawing takes what is left.
+     Without this the drawing's own "height: 100%" meant the FULL zone, and the
+     stem above it pushed the pair off the bottom by exactly its own height. */
+  .h-sci { height: 100%; display: flex; flex-direction: column; }
+  .h-sci .h-figure { flex: 1 1 auto; height: auto; min-height: 0; }
+  .h-sci-stem {
+    margin: 0 0 var(--space-tight);
+    font-size: var(--type-body); line-height: 1.35;
+    flex: none;
+  }
+  /* All three inherit the ink colour and draw with currentColor, so a single
+     rule keeps them inside the token system rather than each carrying its own
+     palette. The Word originals hard-coded four hex values between them. */
+  .h-circuit, .h-key, .h-chain { color: var(--colour-ink); }
+
+
+  /* ─── cause-path-grid ─── */
+  .h-cpg { font-size: var(--type-body); color: var(--colour-ink); }
+  .h-cpg-instruction { margin: 0 0 var(--space-tight); line-height: 1.35; }
+  .h-cpg-table { width: 100%; }
+  .h-cpg-prompt { line-height: 1.35; }
+  .h-cpg-symbol { margin-right: 1.5mm; }
+  .h-cpg-choices { line-height: 1.35; }
+  .h-cpg-choice {
+    display: inline-flex; align-items: center;
+    gap: var(--space-hair);
+    margin-right: var(--space-item);
+    white-space: nowrap;
+  }
+  .h-cpg-box {
+    width: 4mm; height: 4mm;
+    border: var(--rule-line) solid var(--colour-ink);
+    flex: none;
+  }
+
+  /* ─── evidence-chain-frame ─── */
+  .h-ecf { font-size: var(--type-body); color: var(--colour-ink); }
+  .h-ecf-instruction { margin: 0 0 var(--space-tight); line-height: 1.35; }
+  .h-ecf-actions {
+    list-style: none; margin: 0 0 var(--space-tight); padding: var(--space-tight);
+    background: var(--colour-tint);
+    font-size: var(--type-note);
+  }
+  .h-ecf-action { line-height: 1.35; }
+  .h-ecf-rows { list-style: none; margin: 0; padding: 0; }
+  .h-ecf-row { margin-bottom: var(--space-item); }
+  .h-ecf-evidence { margin: 0 0 var(--space-hair); line-height: 1.35; }
+  .h-ecf-stop { list-style: none; margin: 0; padding: 0 0 0 4mm; }
+  .h-ecf-stop-item {
+    display: flex; align-items: center; gap: var(--space-tight);
+    line-height: 1.35;
+  }
+  .h-ecf-box {
+    width: 4mm; height: 4mm;
+    border: var(--rule-line) solid var(--colour-ink);
+    flex: none;
+  }
+
+
+  /* A question's number, in the gutter beside it.
+     Bold, black and bracketed, and the same wherever a number appears on the
+     sheet. It sits in a fixed gutter rather than flowing with the text so that
+     question 10 starts where question 1 started: numbering that shifts left
+     part way down a page reads as two sheets stapled together. */
+  /* The BODY stretches to the zone; only the NUMBER is pinned to the top.
+     Both were pinned, and it meant numbering a question changed its layout: a
+     sorting grid or a recording table given a whole side of the page filled it
+     while the content was unnumbered, then collapsed to the height of its own
+     heading the moment the same content became question 3, leaving the rest of
+     the side blank. Every other link in the chain already passes the zone's
+     real height down - the zone is drawn at a stated height, the stack and the
+     greedy helpers are told to fill it - and this was the one that handed down
+     "as tall as your text" instead. A helper that claims spare height should
+     get it wherever it sits, and a numbered question is still a question. */
+  .h-numbered { display: flex; align-items: stretch; height: 100%; gap: 2mm; }
+  /* The label is a MARKER, not furniture. It used to be set in a tinted chip
+     with a heavy navy rule down its left edge, which made the loudest mark in
+     the question the part that only says where you are. Blue because that is
+     already what "this is the question" means on this sheet, and nothing else:
+     no fill, no rule, no chip. The question itself stays black, so the two are
+     told apart by colour rather than by a box. */
+  .h-numbered-n {
+    flex: 0 0 8mm;
+    font-size: var(--type-questionNumber); font-weight: bold;
+    color: var(--colour-question); line-height: 1.35;
+    text-align: left;
+    box-sizing: border-box;
+    /* Beside the question's FIRST line, never centred down its side. */
+    align-self: flex-start;
+  }
+  .h-numbered-body { flex: 1; min-width: 0; min-height: 0; }
+
+  /* Side by side. Each item takes its share of the width and the row is as
+     tall as its tallest, which is exactly what the measurement assumes. */
+  .h-row { display: flex; align-items: stretch; gap: 4mm; width: 100%; height: 100%; }
+  .h-row-item { display: flex; flex-direction: column; min-width: 0; }
+  .h-row-body { flex: 1; min-height: 0; }
+  .h-comparison-pair {
+    box-sizing: border-box;
+    border: var(--rule-line) solid var(--colour-ink);
+    border-top: var(--rule-heavy) solid var(--colour-question);
+    border-radius: 2mm;
+    background: var(--colour-surface);
+  }
+  .h-comparison-pair > .h-row-item {
+    justify-content: center;
+    background: var(--colour-paper);
+    border: var(--rule-hair) solid var(--colour-rule);
+    border-radius: 1.5mm;
+    box-sizing: border-box;
+  }
+  .h-row-letter {
+    text-align: center; font-size: var(--type-note);
+    color: var(--colour-quiet); margin-bottom: 1mm; flex: none;
+  }
+
+  /* One above another. An item that can use spare height takes it; the rest
+     keep their natural size, so the leftover does not spread itself evenly
+     over things that gain nothing from it. */
+  /* No gap here: each item carries its own top margin, because the join under
+     a heading is tighter than the join between two questions. */
+  .h-stack { display: flex; flex-direction: column; width: 100%; height: 100%; }
+  .h-stack-item { flex: none; min-height: 0; }
+  /* Share spare height without throwing away the natural height that the fit
+     pass already proved each child can use. flex: 1 means 1 1 0%: two
+     growing helpers start equal even when one asked for five writing lines and
+     the other asked for two, so the longer one is clipped while the fit report
+     still says the stack is sound. Keep each measured basis, then distribute
+     only what is genuinely spare. */
+  .h-stack-item--grows { flex: 1 1 auto; }
+  .h-stack-item--new-question { position: relative; }
+  .h-stack-item--new-question::before {
+    content: ""; position: absolute; left: 0; right: 0;
+    top: -3mm;
+    border-top: var(--rule-hair) solid var(--colour-rule);
+  }
+
+</style></head>
+<body data-worksheet-page>
+  <div class="decoration-layer decoration-layer--low" data-decoration-layer="low" aria-hidden="true"></div>
+  
+  <div class="area area--full">
+      <div class="zone zone--a" data-worksheet-zone="a" style="
+        left:0mm;
+        top:0mm;
+        width:261mm;
+        height:162.042504mm;"><div class="h-stack"><div class="h-stack-item"><p class="h-instruction">Use the adjusting strategy. Write the missing numbers.</p></div><div class="h-stack-item" style="margin-top:2mm"><div class="h-mframe" style="--h-mframe-label:37.3mm"><p class="h-mframe-stem">How we worked out <strong>63 + 29</strong> together.</p><div class="h-mframe-panel h-mframe-framed"><p class="h-mframe-title">Adjusting strategy</p><div class="h-mframe-line"><span class="h-mframe-label">First, add:</span><span class="h-mframe-segs"><span class="h-mframe-seg">63 + 30 = 93</span></span></div><div class="h-mframe-line"><span class="h-mframe-label">Then, adjust:</span><span class="h-mframe-segs"><span class="h-mframe-seg">93 - 1 = 92</span></span></div></div></div></div><div class="h-stack-item h-stack-item--new-question" style="margin-top:6mm">
+        <div class="h-numbered">
+          <span class="h-numbered-n">(1)</span>
+          <div class="h-numbered-body"><div class="h-mframe" style="--h-mframe-label:37.3mm"><p class="h-mframe-stem">Work out <strong>148 + 99</strong>.</p><div class="h-mframe-panel h-mframe-framed"><p class="h-mframe-title">Adjusting strategy</p><div class="h-mframe-line"><span class="h-mframe-label">First, add:</span><span class="h-mframe-segs"><span class="h-mframe-seg">148 + 100 =</span><span class="h-mframe-box"></span></span></div><div class="h-mframe-line"><span class="h-mframe-label">Then, adjust:</span><span class="h-mframe-segs"><span class="h-mframe-box"></span><span class="h-mframe-seg">- 1 =</span><span class="h-mframe-box"></span></span></div></div></div></div>
+        </div></div><div class="h-stack-item h-stack-item--new-question" style="margin-top:6mm">
+        <div class="h-numbered">
+          <span class="h-numbered-n">(2)</span>
+          <div class="h-numbered-body"><div class="h-mframe" style="--h-mframe-label:37.3mm"><p class="h-mframe-stem">Work out <strong>263 + 49</strong>.</p><div class="h-mframe-panel h-mframe-framed"><p class="h-mframe-title">Adjusting strategy</p><div class="h-mframe-line"><span class="h-mframe-label">First, add:</span><span class="h-mframe-segs"><span class="h-mframe-seg">263 + 50 =</span><span class="h-mframe-box"></span></span></div><div class="h-mframe-line"><span class="h-mframe-label">Then, adjust:</span><span class="h-mframe-segs"><span class="h-mframe-box"></span><span class="h-mframe-seg">- 1 =</span><span class="h-mframe-box"></span></span></div></div></div></div>
+        </div></div></div></div></div>
+  <div class="decoration-layer decoration-layer--high" data-decoration-layer="high" aria-hidden="true"></div>
+</body></html>

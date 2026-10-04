@@ -189,6 +189,22 @@ function validatePresentationFields(slide, slideNumber, errors) {
 
   forEachValue(slide, 'colorRole', (_value, owner) => check(owner));
   forEachValue(slide, 'emphasis', (_value, owner) => check(owner));
+
+  // A step list draws one role, a worked example's purple (steps.js); any other
+  // role on a step would print black without a word, so it is refused.
+  forEachValue(slide, 'steps', (steps) => {
+    if (!Array.isArray(steps)) return;
+    steps.forEach((step, i) => {
+      if (!step || typeof step !== 'object' || step.colorRole === undefined) return;
+      if (step.colorRole === 'worked-purple') return;
+      errors.push(
+        `slide ${slideNumber}: step ${i + 1} carries colorRole ` +
+        `${JSON.stringify(step.colorRole)}, which a step list does not draw. A step ` +
+        `takes only "worked-purple", for a worked example set out as steps; take ` +
+        `the role off, or put the line in a text block that draws it.`
+      );
+    });
+  });
 }
 
 // Read the exact frozen contract when the caller supplies

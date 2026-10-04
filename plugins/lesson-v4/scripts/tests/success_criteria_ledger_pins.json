@@ -5124,13 +5124,13 @@
   },
   {
    "id": "SC-J11",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the colours release; then the rest-of-preferences ledger's decision 11 and the topic 7 plan's question 1 (the colours release, 24 September 2026), his words \"I want blue means question or like a short task\" and \"yes\": a question or a short task is blue, a longer instruction about how to go about it stays black; preferences' three blue paragraphs folded into the visual profile, which owns the grammar (the change plan's homes table), so this row is held by the profile's sentence",
    "present": [
     {
-     "file": "references/preferences.md",
-     "text": "Everything else on the slide is black - ordinary teacher explanation, statements, takeaways, success-criteria body text, reminder body text, and the instructions children act on.",
+     "file": "references/teacher-slide-visual-profile.md",
+     "text": "- Black carries everything else the board says: teacher explanation, supporting prose, statements, takeaways, success-criteria body text, reminder body text, and a longer instruction about how to go about the task.",
      "section": {
-      "heading": "### Slide Designer presentation rules",
+      "heading": "## Semantic colour",
       "occurrence": 0,
       "intro": false
      }
@@ -5140,11 +5140,11 @@
   },
   {
    "id": "SC-J12",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the colours release; then the rest-of-preferences ledger's decision 11 and the topic 7 plan's question 1 (the colours release, 24 September 2026), his words \"I want blue means question or like a short task\" and \"yes\": a question or a short task is blue, a longer instruction about how to go about it stays black",
    "present": [
     {
      "file": "references/teacher-slide-visual-profile.md",
-     "text": "- Black carries everything else the board says: teacher explanation, supporting prose, statements, takeaways, success-criteria body text, reminder body text, and the instructions children act on.",
+     "text": "- Black carries everything else the board says: teacher explanation, supporting prose, statements, takeaways, success-criteria body text, reminder body text, and a longer instruction about how to go about the task.",
      "section": {
       "heading": "## Semantic colour",
       "occurrence": 0,
@@ -7548,7 +7548,7 @@
   },
   {
    "id": "SC-O15",
-   "outcome": "decision 11, as O14",
+   "outcome": "decision 11, as O14; then the rest-of-preferences ledger's decisions 11 and 22 (the colours release, 24 September 2026), \"worked example purple too\" and the wall \"uses the board's colour meanings\": a worked-example card is purple, sharing the sticky fact's colour, so the card's shape (numbered steps, or one sentence) says method or fact; the anti-pattern table's sticky-panel row now names the card's shape, not a blue panel, as what says \"fact\"",
    "present": [
     {
      "file": "references/working-wall-visual-language.md",
@@ -7561,7 +7561,7 @@
     },
     {
      "file": "references/working-wall-visual-language.md",
-     "text": "| Anti-pattern | Why it hurts | |---|---| | Long titles that wrap | The title bar is a glance-target. A wrapped title turns the bar into a paragraph and the card stops looking like a poster. | | Three or four items on one card | One concept per page is the whole game. Three items on a card means three half-cards, none of them readable from a desk. | | All-text cards (any subject) | A card a child can only read word-by-word can't be read from across the room, so it isn't wall furniture - it's slide content. Carry a visual (diagram, photo, or emoji cue), or leave the content on the slides, unless it passes the wall-worthy test as a text-led reference (`working-wall-card-contracts.md`), as the lesson's step-by-step success criteria often do. | | A procedure on a sticky-knowledge panel | The blue panel says \"fact\". A procedure on it reads as a fact, not a method. Children stop trusting the colour grammar across the unit. | | Filler cards to hit a count | An empty wall is fine. A wall full of weak cards is worse than a wall with one strong card and two empty hooks. The rationaleNote is where you explain skipping. | | Reference tables as bullet lists | When the lesson used a grid, the wall uses a grid. Reformatting to a list throws away the shape recognition children navigate by. |",
+     "text": "| Anti-pattern | Why it hurts | |---|---| | Long titles that wrap | The title bar is a glance-target. A wrapped title turns the bar into a paragraph and the card stops looking like a poster. | | Three or four items on one card | One concept per page is the whole game. Three items on a card means three half-cards, none of them readable from a desk. | | All-text cards (any subject) | A card a child can only read word-by-word can't be read from across the room, so it isn't wall furniture - it's slide content. Carry a visual (diagram, photo, or emoji cue), or leave the content on the slides, unless it passes the wall-worthy test as a text-led reference (`working-wall-card-contracts.md`), as the lesson's step-by-step success criteria often do. | | A procedure on a sticky-knowledge panel | The sticky card says \"fact\": one sentence to keep, where a method has numbered steps. A procedure on it reads as a fact, not a method, and children stop trusting what the card types mean across the unit. | | Filler cards to hit a count | An empty wall is fine. A wall full of weak cards is worse than a wall with one strong card and two empty hooks. The rationaleNote is where you explain skipping. | | Reference tables as bullet lists | When the lesson used a grid, the wall uses a grid. Reformatting to a list throws away the shape recognition children navigate by. |",
      "section": {
       "heading": "## Anti-patterns — what breaks the visual language",
       "occurrence": 0,
@@ -7753,7 +7753,7 @@
   },
   {
    "id": "SC-O23",
-   "outcome": "decisions 7 and 5: the example is his rounding steps, and steps that are the lesson's criteria are copied word for word",
+   "outcome": "decisions 7 and 5: the example is his rounding steps, and steps that are the lesson's criteria are copied word for word; then the rest-of-preferences ledger's decisions 11 and 22 (the colours release, 24 September 2026), \"worked example purple too\" and the wall \"uses the board's colour meanings\": a worked-example card is purple, sharing the sticky fact's colour, so the card's shape (numbered steps, or one sentence) says method or fact; the section's field table gains the part's `worked` field, which prints a worked part's result purple rather than answer green",
    "present": [
     {
      "file": "references/working-wall-card-contracts.md",
@@ -7766,7 +7766,7 @@
     },
     {
      "file": "references/working-wall-card-contracts.md",
-     "text": "| Field | Notes | |---|---| | `cards[].title` | The section name, as it would be read across the room: `Number lines`, `Rounding`, `Place value`. Same 5-word, 30-character cap as every card title. | | `cards[].parts` | 2–4 part objects. Four parts lay out two-by-two; two or three sit in a row on landscape. | | `cards[].parts[].heading` | Required. What this part shows, in the lesson's own words: `Rounding to the nearest 10`, `Estimating and finding the midpoint`. It shrinks to fit its own column, so keep it to one line where you can. | | `cards[].parts[].visual` | The drawn figure, exactly as the board drew it: any primitive under \"Visual primitives\". At least one part must carry one, and a part that names a figure the builder cannot draw fails the build rather than printing its words alone. A part with no figure is for something like the three-step strategy beside the marked line. | | `cards[].parts[].notes` | Short lines under the figure: the worked numbers (`start 1,200 end 1,600`), or the finding (`The midpoint between 2,000 and 3,000 is 2,500.`). Not instructions. | | `cards[].parts[].steps` | Optional numbered method, when this part *is* the strategy: `[\"Change the ones digit to 0.\", \"Add 10.\", \"Mark halfway and your number.\", \"Round to the nearer ten. If it is halfway, round up.\"]`. When the steps are the lesson's success criteria they are copied word for word, the same number of steps and the same colour marks, as on a worked-example card. Each step numbers itself in the part's colour. | | `cards[].parts[].result` | Optional single answer line, printed on its own coloured strip so a child finds the result before the workings: `347 rounds to 350.` |",
+     "text": "| Field | Notes | |---|---| | `cards[].title` | The section name, as it would be read across the room: `Number lines`, `Rounding`, `Place value`. Same 5-word, 30-character cap as every card title. | | `cards[].parts` | 2–4 part objects. Four parts lay out two-by-two; two or three sit in a row on landscape. | | `cards[].parts[].heading` | Required. What this part shows, in the lesson's own words: `Rounding to the nearest 10`, `Estimating and finding the midpoint`. It shrinks to fit its own column, so keep it to one line where you can. | | `cards[].parts[].visual` | The drawn figure, exactly as the board drew it: any primitive under \"Visual primitives\". At least one part must carry one, and a part that names a figure the builder cannot draw fails the build rather than printing its words alone. A part with no figure is for something like the three-step strategy beside the marked line. | | `cards[].parts[].notes` | Short lines under the figure: the worked numbers (`start 1,200 end 1,600`), or the finding (`The midpoint between 2,000 and 3,000 is 2,500.`). Not instructions. | | `cards[].parts[].steps` | Optional numbered method, when this part *is* the strategy: `[\"Change the ones digit to 0.\", \"Add 10.\", \"Mark halfway and your number.\", \"Round to the nearer ten. If it is halfway, round up.\"]`. When the steps are the lesson's success criteria they are copied word for word, the same number of steps and the same colour marks, as on a worked-example card. Each step numbers itself in the part's colour. | | `cards[].parts[].result` | Optional single answer line, printed on its own coloured strip so a child finds the result before the workings: `347 rounds to 350.` | | `cards[].parts[].worked` | `true` when the part shows a worked example rather than the answer, a mistaken one always (`Sam wrote 340.`): its result strip is the worked-example purple, as on the board. Without it the strip is answer green, which tells a child the result is right. |",
      "section": {
       "heading": "### diagramSection",
       "occurrence": 0,
@@ -7861,11 +7861,11 @@
   },
   {
    "id": "SC-O28",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the colours release; then the rest-of-preferences ledger's decisions 11 and 22 (the colours release, 24 September 2026), \"worked example purple too\" and the wall \"uses the board's colour meanings\": a worked-example card is purple, sharing the sticky fact's colour, so the card's shape (numbered steps, or one sentence) says method or fact",
    "present": [
     {
      "file": "references/working-wall-visual-language.md",
-     "text": "This is how children learn \"the green cards are how-to-do-it cards\" without anyone telling them.",
+     "text": "This is how children learn what each card is for without anyone telling them.",
      "section": {
       "heading": "### 4. Saturated panels and rounded shapes (renderer's job)",
       "occurrence": 0,
@@ -7874,7 +7874,7 @@
     },
     {
      "file": "references/working-wall-visual-language.md",
-     "text": "If the lesson teaches a procedure, that is a `workedExample` card; it goes on a green panel, with the green identity.",
+     "text": "If the lesson teaches a procedure, that is a `workedExample` card; it goes on a purple panel with its steps numbered down the left.",
      "section": {
       "heading": "### 4. Saturated panels and rounded shapes (renderer's job)",
       "occurrence": 0,

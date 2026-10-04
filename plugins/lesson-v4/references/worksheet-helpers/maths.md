@@ -58,7 +58,7 @@ there is no fixed fully-partly-blank pattern. Render the progression that was
 approved upstream. A set of frames that all stay fully blank, or all stay
 partly worked, is a real design and not a fade somebody forgot.
 
-The board draws the same frame, so the child meets one picture in both places.
+The board draws the same frame, so the child meets one picture in both places. A frame that shows worked numbers, one line or more worked right through, is a worked example and takes the worked-example purple on its edge and heading, as on the board; a frame the child fills in every line keeps its ink edge and blue heading.
 
 ## Place value
 
@@ -78,7 +78,7 @@ Left alone it is one empty row, and setting instances to 3 gives three empty
 copies for "write each of these numbers into a chart". Give it a rows list
 instead and each row can be filled (a number handed to the child), empty (a
 number they write), labelled (what the row IS - "3,462", "10 more"), and
-highlighted (the one digit that changed, ringed in the question blue).
+highlighted (the one digit that changed, ringed in green, the same ring the board draws).
 
 Reach for the label and the highlight together whenever the lesson is about
 **which column changes**: 10 and 100 more or less, exchanging, rounding,

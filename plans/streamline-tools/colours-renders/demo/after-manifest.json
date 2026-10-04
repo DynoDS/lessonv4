@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\demo\\after\\Colours on the board.pptx",
+  "sourceSha256": "58e2c67f683d9fb6bf45520cafbc27566e1bef1c0b16a011f493bc85b18a31f9",
+  "officeRoute": "powerpoint",
+  "pdfRoute": "pdftoppm",
+  "dpi": 110,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\demo\\after-png\\Colours on the board-source.pdf",
+    "sha256": "557faa3ff124ecad4ea903ab9f0c94a4455b7590137c61668b11043b29c6daeb"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\demo\\after-png\\Colours on the board-contact-sheet.png",
+    "sha256": "ed42fed56e4b4fda77e76ffadf964685149d66d1c486a3051497edebde5ee310"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\demo\\after-png\\Colours on the board-page-01.png",
+      "sha256": "a75c8d3a1070e8a9d608181c3384754a0766294020c421570a65acf9afb9fb38"
+    },
+    {
+      "number": 2,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\demo\\after-png\\Colours on the board-page-02.png",
+      "sha256": "4888d1ba030c81c86ebcdeea6b4af4c774c3140318dbf442cdce9132f4572790"
+    },
+    {
+      "number": 3,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\demo\\after-png\\Colours on the board-page-03.png",
+      "sha256": "456299f7c3753d4a9e17f226e6ed3c42655393ef95630c481da5b89f26393456"
+    },
+    {
+      "number": 4,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\demo\\after-png\\Colours on the board-page-04.png",
+      "sha256": "afd53f63288ded277423086679a84b1e5e6cb4e36fd8f38a64c61d05a2d3e89b"
+    },
+    {
+      "number": 5,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\demo\\after-png\\Colours on the board-page-05.png",
+      "sha256": "0ac2a6b283384ce2f2c47b172c3b4ddf090617954cce86dbd7a97951afe7e188"
+    },
+    {
+      "number": 6,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\demo\\after-png\\Colours on the board-page-06.png",
+      "sha256": "d4991f26f4eaaabe2c062d5f326d0accff7726536c33fa119e80cebf88f3093b"
+    },
+    {
+      "number": 7,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\demo\\after-png\\Colours on the board-page-07.png",
+      "sha256": "847e5ecc1c893d7fd0cc886eb1d80d5c508a56bd42a8024d782e6dccf39daac2"
+    }
+  ]
+}

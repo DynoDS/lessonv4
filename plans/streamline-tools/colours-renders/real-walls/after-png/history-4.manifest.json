@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\after\\history-4\\Working Wall - How did Lord Shaftesbury help to change the lives of children.pdf",
+  "sourceSha256": "322cd3f7abd598ec812f92815e0c060ecef88f4e20d1033fec9c1963e32595e3",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\after-png\\history-4\\Working Wall - How did Lord Shaftesbury help to change the lives of children-source.pdf",
+    "sha256": "322cd3f7abd598ec812f92815e0c060ecef88f4e20d1033fec9c1963e32595e3"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\after-png\\history-4\\Working Wall - How did Lord Shaftesbury help to change the lives of children-contact-sheet.png",
+    "sha256": "6480c13575f3ced10752b28f5a7839a9896cbc36b5be164202ee3eefa6e5163e"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\real-walls\\after-png\\history-4\\Working Wall - How did Lord Shaftesbury help to change the lives of children-page-01.png",
+      "sha256": "f5dd90f6bf3eb1febc4cf85a945fb585daa20d5e5831c9cd1451c07cbbab993d"
+    }
+  ]
+}

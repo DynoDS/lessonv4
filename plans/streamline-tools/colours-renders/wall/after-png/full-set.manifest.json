@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after\\full-set\\Working Wall - Adding Fractions.pdf",
+  "sourceSha256": "67d1f4a6ea4a631b2a33dc059bc39c71e35d3902d35370bb173543718e3e1b24",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\full-set\\Working Wall - Adding Fractions-source.pdf",
+    "sha256": "67d1f4a6ea4a631b2a33dc059bc39c71e35d3902d35370bb173543718e3e1b24"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\full-set\\Working Wall - Adding Fractions-contact-sheet.png",
+    "sha256": "6a981c64685479733daa775a3cd689087da1717132e6ef10a83036296d160cee"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\full-set\\Working Wall - Adding Fractions-page-01.png",
+      "sha256": "783bdec441f5342ba04b82383c2339c08d4a96ac8516a6462d99e411ccbd1abc"
+    },
+    {
+      "number": 2,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\full-set\\Working Wall - Adding Fractions-page-02.png",
+      "sha256": "ef4a0f4e2890246961e0ca185360bf888eb08af83da5711093077b4b84fd79b9"
+    },
+    {
+      "number": 3,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\full-set\\Working Wall - Adding Fractions-page-03.png",
+      "sha256": "ffdfa5586172949b183a57e338d28d651018030da7714d0ca6f9ed933f829059"
+    },
+    {
+      "number": 4,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\full-set\\Working Wall - Adding Fractions-page-04.png",
+      "sha256": "7db1d6989d3f1e6188eca025796c43a04dcaced1c6a3ab8a5c57155c5bce9f16"
+    }
+  ]
+}

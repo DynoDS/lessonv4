@@ -23,10 +23,11 @@ const { arrow } = require('./_geom');
 // lets it get to the neighbouring content, and the box sits back behind it.
 //
 // Key words inside the line carry colour with the deck's ordinary inline markers,
-// which is why there is no separate colouring mechanism here: `[[tens]]` is the
-// focus blue, `{{green}}` the answer green, `<<orange>>` supplied information,
-// `**bold**` plain stress. So "The [[tens]] column changes." colours "tens" in
-// exactly the blue every other slide uses for the word being decided on.
+// which is why there is no separate colouring mechanism here: `[[ ]]` is question
+// blue, `{{green}}` the answer green, `<<orange>>` supplied information,
+// `**bold**` plain stress (the line is bold throughout, so bold picks out no
+// word here). So "The tens column changes." stays black: a statement is black
+// on every slide, and blue is a question.
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD           = 0.06;   // inset from the zone edge, inches
@@ -58,19 +59,24 @@ const REACH_MAX     = 1.60;   // the furthest `reach` may push the tip PAST the
                               // this much it is as likely to land on a heading or
                               // inside the figure as on the edge of it
 
-// The house colours, each saying something different about the line inside:
-//   green  an observation about what happened or what is true — the default,
-//          because that is what a callout beside a diagram nearly always is
-//   blue   the focus: the thing the class is deciding on
+// The house colours, each saying what the same colour says everywhere else on
+// the board (the teacher's rule of 24 September 2026: green is a taught word or
+// an answer, blue a question or a short task):
+//   black  an observation about what happened or what is true: the default,
+//          because that is what a callout beside a diagram nearly always is,
+//          and a statement is black on every slide
+//   blue   a question the class answers (its words carry `[[ ]]`)
 //   orange information the question supplies
 //   purple the objective / what we are learning to do
+// Green was the default until then, and a green edge round black words is a
+// frame, not an answer; a spec that still names it gets the default.
 const VARIANTS = {
-  green:  { fill: 'D5F5E3', line: COLOURS.green  },
+  black:  { fill: 'F2F2F2', line: COLOURS.body   },
   blue:   { fill: 'DEEAF1', line: COLOURS.title  },
   orange: { fill: 'FFF2CC', line: COLOURS.orange },
   purple: { fill: 'EDE3F5', line: COLOURS.lo     }
 };
-const DEFAULT_VARIANT = 'green';
+const DEFAULT_VARIANT = 'black';
 
 // `points` in the designer's words, and the two names a designer might reach for
 // instead (the side the arrow leaves from rather than the way it travels).

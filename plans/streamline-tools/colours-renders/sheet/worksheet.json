@@ -1,0 +1,84 @@
+{
+  "meta": {
+    "lesson": "Add near multiples of ten",
+    "lo": "To add a near multiple of ten by adjusting",
+    "yearGroup": "Year 4",
+    "subject": "Mathematics",
+    "note": "A demonstration sheet for the colours release: the method frame the teacher modelled on the board, on paper."
+  },
+  "sheets": {
+    "expected": {
+      "title": "Add near multiples of ten",
+      "layout": "auto",
+      "zones": [
+        {
+          "stack": [
+            {
+              "helper": "instruction",
+              "text": "Use the adjusting strategy. Write the missing numbers."
+            },
+            {
+              "helper": "method-frame",
+              "text": "How we worked out **63 + 29** together.",
+              "title": "Adjusting strategy",
+              "lines": [
+                {
+                  "label": "First, add:",
+                  "content": "63 + 30 = 93"
+                },
+                {
+                  "label": "Then, adjust:",
+                  "content": "93 - 1 = 92"
+                }
+              ]
+            },
+            {
+              "question": true,
+              "helper": "method-frame",
+              "text": "Work out **148 + 99**.",
+              "title": "Adjusting strategy",
+              "lines": [
+                {
+                  "label": "First, add:",
+                  "content": "148 + 100 = ___"
+                },
+                {
+                  "label": "Then, adjust:",
+                  "content": "___ - 1 = ___"
+                }
+              ]
+            },
+            {
+              "question": true,
+              "helper": "method-frame",
+              "text": "Work out **263 + 49**.",
+              "title": "Adjusting strategy",
+              "lines": [
+                {
+                  "label": "First, add:",
+                  "content": "263 + 50 = ___"
+                },
+                {
+                  "label": "Then, adjust:",
+                  "content": "___ - 1 = ___"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "answerKey": {
+    "expected": [
+      {
+        "question": "1",
+        "answer": "148 + 100 = 248; 248 - 1 = 247"
+      },
+      {
+        "question": "2",
+        "answer": "263 + 50 = 313; 313 - 1 = 312"
+      }
+    ]
+  }
+}

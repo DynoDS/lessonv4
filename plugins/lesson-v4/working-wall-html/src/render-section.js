@@ -24,20 +24,30 @@ const {
   titleBarHeightInches,
   fitLinearBodySize,
 } = require("./layout");
-const { esc, mm, hash, imgTag, titleBarHtml } = require("./shared");
+const { esc, markedHtml, mm, hash, imgTag, titleBarHtml } = require("./shared");
+const { plainCriteria } = require("../../shared/text/criteria-marks");
 const { pickVisual } = require("./visuals");
 
 const FONT_STACK_FALLBACK = "'Segoe Print', cursive";
 
 // One theme per part, so a section reads as two or three distinct things at a
-// glance rather than one grey wall of boxes. Same hues the other families
-// already use, so a section does not look like a different product.
+// glance rather than one grey wall of boxes. The hues are the board's own
+// category colours (`categoryColor`: blue, orange, purple), because the wall
+// uses the board's colour meanings (the teacher's rule of 24 September 2026):
+// green is a taught word or an answer, so it never tells parts apart. A fourth
+// part takes blue again, diagonally across the grid from the first.
 const PART_THEMES = [
-  { strip: "1F4E79", fill: "F2F7FB", accent: "1F4E79" },
-  { strip: "0D9488", fill: "F0FDFA", accent: "0D9488" },
-  { strip: "D97706", fill: "FEF6E7", accent: "B45309" },
-  { strip: "00B050", fill: "F1FBF4", accent: "00873E" },
+  { strip: "0070C0", fill: "EEF5FB", accent: "0070C0" },
+  { strip: "E46C0A", fill: "FEF4EB", accent: "E46C0A" },
+  { strip: "7030A0", fill: "F4EEF9", accent: "7030A0" },
 ];
+
+// The answer a part works out is green, what an answer is on the board,
+// whatever the part's own colour. A part that shows a worked example, a
+// mistaken one included, is marked `worked: true` and its result is the
+// worked-example purple: a wrong result on green tells a child it is right.
+const RESULT_GREEN = "00B050";
+const RESULT_WORKED = "7030A0";
 
 // A part heading starts here and shrinks to the same 36pt floor the notes
 // use, never past it: a heading nobody can read from a desk names nothing.
@@ -120,7 +130,7 @@ function textItemsFor(part) {
     if (text) items.push({ kind: "step", label: String(index + 1), text });
   });
   const result = typeof part.result === "string" ? part.result.trim() : "";
-  if (result) items.push({ kind: "result", text: result });
+  if (result) items.push({ kind: "result", text: result, worked: part.worked === true });
   return items;
 }
 
@@ -179,19 +189,20 @@ function textBlockHtml(items, pt, theme) {
       return (
         `<div data-part="step" style="display:flex;align-items:baseline;gap:${mm(0.06)}mm;padding:${mm(0.02)}mm 0;">` +
         `<div style="${font}font-weight:bold;color:${hash(theme.accent)};">${esc(item.label)}.</div>` +
-        `<div style="flex:1;${font}color:#000000;">${esc(item.text)}</div></div>`
+        `<div style="flex:1;${font}color:#000000;">${markedHtml(item.text)}</div></div>`
       );
     }
     if (item.kind === "result") {
       // The answer the part works out, marked the way the teacher's own wall
       // marks it: its own coloured strip, so a child finds the result without
-      // reading the workings first.
+      // reading the workings first. The strip is answer green, or purple on a
+      // worked part.
       return (
-        `<div data-part="result" style="margin-top:${mm(0.07)}mm;background:${hash(theme.strip)};padding:${mm(0.05)}mm ${mm(0.08)}mm;">` +
+        `<div data-part="result" style="margin-top:${mm(0.07)}mm;background:${hash(item.worked ? RESULT_WORKED : RESULT_GREEN)};padding:${mm(0.05)}mm ${mm(0.08)}mm;">` +
         `<div style="text-align:center;${font}font-weight:bold;color:#FFFFFF;">${esc(item.text)}</div></div>`
       );
     }
-    return `<div data-part="note" style="text-align:center;${font}color:#000000;padding:${mm(0.02)}mm 0;">${esc(item.text)}</div>`;
+    return `<div data-part="note" style="text-align:center;${font}color:#000000;padding:${mm(0.02)}mm 0;">${markedHtml(item.text)}</div>`;
   });
   return rows.join("");
 }
@@ -264,7 +275,7 @@ function renderDiagramSection(card, style, specDir, ctx) {
     const textCeiling =
       (figure && figure.buf ? available * TEXT_SHARE_WITH_FIGURE : available) - resultExtra;
     const notePt = items.length
-      ? fitLinearBodySize(items, NOTE_PT, NOTE_MIN_PT, card.page.size, orientation, style, {
+      ? fitLinearBodySize(items.map((item) => ({ ...item, text: plainCriteria(item.text) })), NOTE_PT, NOTE_MIN_PT, card.page.size, orientation, style, {
           label: partLabel(card, index),
           widthOverride: innerWidth,
           titleAreaInches: dims.height - textCeiling,

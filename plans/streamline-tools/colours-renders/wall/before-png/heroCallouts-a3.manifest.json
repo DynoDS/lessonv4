@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before\\heroCallouts-a3\\Working Wall - Life in the Rainforest.pdf",
+  "sourceSha256": "e027e8106753d9f9c2a1fb0c5a211b11778029cf8652bd640901ac96b384cb45",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\heroCallouts-a3\\Working Wall - Life in the Rainforest-source.pdf",
+    "sha256": "e027e8106753d9f9c2a1fb0c5a211b11778029cf8652bd640901ac96b384cb45"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\heroCallouts-a3\\Working Wall - Life in the Rainforest-contact-sheet.png",
+    "sha256": "46d142f9183defe2d90ff5d4d0dda654d2b99355964a6e0f5fea7cca2df001d9"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\heroCallouts-a3\\Working Wall - Life in the Rainforest-page-01.png",
+      "sha256": "220f8d55bdd72f9f59c1beabfbe1853d7450d2188bc00da5bf905c9c0d85759d"
+    }
+  ]
+}

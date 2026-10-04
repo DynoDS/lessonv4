@@ -3,7 +3,8 @@
 # Usage: run-all-suites.sh <label>   (writes <label>-*.log beside this script)
 LABEL="${1:-run}"
 OUT="$(cd "$(dirname "$0")" && pwd)"
-ROOT=/c/Users/Daniel/Projects/lessonv4/plugins/lesson-v4
+# The plugin in the copy this script sits in (main checkout or a worktree).
+ROOT="$(cd "$OUT/../.." && pwd)/plugins/lesson-v4"
 cd "$ROOT" || exit 1
 summary() { grep -aE '^(ℹ|#) (pass|fail) ' "$1" | tr '\n' ' '; }
 

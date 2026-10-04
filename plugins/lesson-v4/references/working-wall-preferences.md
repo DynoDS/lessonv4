@@ -114,7 +114,7 @@ The clearest case is a worked example. The lesson-designer's modelled sentence m
 - A blank in a stem is shown as three underscores: `___`, which print as a continuous underline.
 - Stems are complete sentences with the blank in place: `"I added the numerators because ___"` — not bare phrases like `"added because…"`.
 
-**Paired stems — gappy + modelled.** When the lesson-design models the stem with a worked completion (the My Turn slide shows the teacher saying the whole sentence, the worked example fills the blank in front of children, the success criteria carry the modelled version), populate the optional `filled` field on the same stem item. The card then prints the gappy version on top and the fully-modelled version directly beneath in the panel accent colour, so the contrast is doing the teaching. A child who is still building confidence can use the model as a reference; the blank remains available alongside it for independent use. The pair lives on one card so the model and blank are available together; the teacher decides how children use that reference.
+**Paired stems — gappy + modelled.** When the lesson-design models the stem with a worked completion (the My Turn slide shows the teacher saying the whole sentence, the worked example fills the blank in front of children, the success criteria carry the modelled version), populate the optional `filled` field on the same stem item. The card then prints the gappy version on top and the fully-modelled version directly beneath in purple, the worked-example colour, so the contrast is doing the teaching. A child who is still building confidence can use the model as a reference; the blank remains available alongside it for independent use. The pair lives on one card so the model and blank are available together; the teacher decides how children use that reference.
 
 When the lesson-design doesn't model the stem — children are inventing their own completions, or the stem is a discussion prompt with no canonical answer — leave `filled` out. A modelled completion children are meant to invent is a worked example pretending to be a stem.
 
@@ -153,7 +153,7 @@ Skip a card that cannot offer useful, readable support. Lack of an optional visu
 
 ## Vocab chip cards — wording and selection
 
-Chips are the lightweight half of the vocabulary identity. A `vocabChips` card carries 4–12 short word chips in a grid on a single A3 landscape page - the Twinkl "Vocabulary Cards" pattern. Each chip is the word in bold teal in a teal-outlined box, optionally paired with a small image cue (a coin alongside "ten pence", a note alongside "pound"). The card sits under the same `Vocabulary` zoner as `vocabDefinition` and reads as part of the same family - but where definition cards carry teaching weight, chip cards carry breadth.
+Chips are the lightweight half of the vocabulary identity. A `vocabChips` card carries 4–12 short word chips in a grid on a single A3 landscape page - the Twinkl "Vocabulary Cards" pattern. Each chip is the word in bold green in a green-outlined box, the green every taught word is on the board, optionally paired with a small image cue (a coin alongside "ten pence", a note alongside "pound"). The card sits under the same `Vocabulary` zoner as `vocabDefinition` and reads as part of the same family - but where definition cards carry teaching weight, chip cards carry breadth.
 
 **When chips, when definition cards.** The two card types are designed to coexist; the question is which work the lesson is doing.
 

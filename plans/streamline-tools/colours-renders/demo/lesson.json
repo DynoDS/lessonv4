@@ -1,0 +1,233 @@
+{
+  "lessonName": "Colours on the board",
+  "yearGroup": "Year 4",
+  "subject": "Maths",
+  "lo": "To round a number to the nearest 100",
+  "slides": [
+    {
+      "template": "body-full",
+      "title": "Is Isla correct?",
+      "instruction": "Use the word bank",
+      "body": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "text",
+            "value": "Isla says 347 rounds to 300 to the nearest hundred.",
+            "weight": 0.7
+          },
+          {
+            "type": "text",
+            "colorRole": "task-blue",
+            "value": "Is Isla correct? Explain your answer using the number line.",
+            "weight": 0.7
+          },
+          {
+            "type": "text",
+            "value": "Use the word bank to help you.",
+            "weight": 0.7
+          },
+          {
+            "type": "chip-bank",
+            "title": "Word bank",
+            "variant": "yellow",
+            "chips": [
+              "{{round}}",
+              "{{nearest}}",
+              "{{halfway}}",
+              "because"
+            ],
+            "maxRows": 1,
+            "weight": 1
+          }
+        ]
+      }
+    },
+    {
+      "template": "split-h-50-50",
+      "primarySide": "left",
+      "title": "My Turn: add 29 by adjusting",
+      "primary": {
+        "type": "method-frame",
+        "title": "Adjusting strategy",
+        "lines": [
+          {
+            "label": "First, add:",
+            "content": "63 + 30 = 93"
+          },
+          {
+            "label": "Then, adjust:",
+            "content": "93 - 1 = 92"
+          }
+        ]
+      },
+      "secondary": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "text",
+            "value": "Adding 30 is easy. Then take away the 1 we added too many.",
+            "weight": 1
+          },
+          {
+            "type": "text",
+            "colorRole": "task-blue",
+            "value": "Write one reason.",
+            "weight": 0.6
+          }
+        ]
+      }
+    },
+    {
+      "template": "split-v-60-40",
+      "primarySide": "top",
+      "title": "Sam's 10 more: which digit changed?",
+      "primary": {
+        "type": "place-value-chart",
+        "columns": [
+          "Th",
+          "H",
+          "T",
+          "O"
+        ],
+        "rows": [
+          {
+            "label": "3,462",
+            "cells": [
+              "3",
+              "4",
+              "6",
+              "2"
+            ]
+          },
+          {
+            "label": "Sam's 10 more",
+            "cells": [
+              "3",
+              "5",
+              "6",
+              "2"
+            ],
+            "highlight": [
+              "H"
+            ],
+            "worked": true
+          }
+        ]
+      },
+      "secondary": {
+        "type": "callout",
+        "text": "Sam changed the hundreds digit, not the tens.",
+        "points": "up",
+        "at": 0.62
+      }
+    },
+    {
+      "template": "body-full",
+      "title": "Which way do we round?",
+      "body": {
+        "type": "table",
+        "headers": [
+          "If the tens digit is",
+          "We round"
+        ],
+        "rows": [
+          [
+            "0, 1, 2, 3 or 4",
+            "**down**"
+          ],
+          [
+            "5, 6, 7, 8 or 9",
+            "**up**"
+          ]
+        ]
+      }
+    },
+    {
+      "template": "teach-layout",
+      "layout": "four-cards",
+      "title": "Why does 347 round to 300?",
+      "lines": [
+        {
+          "value": "347 is between 300 and 400.",
+          "colorRole": "worked-purple"
+        },
+        {
+          "value": "Halfway is 350.",
+          "colorRole": "worked-purple"
+        },
+        {
+          "value": "347 is before halfway.",
+          "colorRole": "worked-purple"
+        }
+      ],
+      "sticky": "A number before halfway rounds down."
+    },
+    {
+      "template": "body-full",
+      "title": "My Turn: round 346 to the nearest 10",
+      "body": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "text",
+            "colorRole": "task-blue",
+            "value": "Round 346 to the nearest 10.",
+            "weight": 0.6
+          },
+          {
+            "type": "text",
+            "colorRole": "worked-purple",
+            "value": "346 is between 340 and 350.",
+            "weight": 0.6
+          },
+          {
+            "type": "text",
+            "colorRole": "worked-purple",
+            "value": "Halfway is 345.",
+            "weight": 0.6
+          },
+          {
+            "type": "text",
+            "colorRole": "worked-purple",
+            "value": "346 is after halfway, so it rounds up to 350.",
+            "weight": 0.6
+          }
+        ]
+      }
+    },
+    {
+      "template": "body-full",
+      "title": "How Sam rounded 346",
+      "body": {
+        "type": "stack",
+        "items": [
+          {
+            "type": "steps",
+            "steps": [
+              {
+                "text": "Look at the ones digit: 6.",
+                "colorRole": "worked-purple"
+              },
+              {
+                "text": "6 is 5 or more, so round up.",
+                "colorRole": "worked-purple"
+              },
+              {
+                "text": "346 rounds to 350.",
+                "colorRole": "worked-purple"
+              }
+            ],
+            "weight": 2
+          },
+          {
+            "type": "text",
+            "colorRole": "task-blue",
+            "value": "Is Sam right? Explain how you know.",
+            "weight": 0.6
+          }
+        ]
+      }
+    }
+  ]
+}

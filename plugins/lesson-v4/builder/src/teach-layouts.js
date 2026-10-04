@@ -48,7 +48,9 @@ const PASS_THROUGH = [
 ];
 
 // Uniformity is the builder's job on these slides, so the knobs that would undo
-// it are refused rather than quietly overridden.
+// it are refused rather than quietly overridden. One colour is the line's own
+// to say: a worked example is purple (the teacher's rule of 24 September
+// 2026), so `colorRole: "worked-purple"` passes and no other role does.
 const OWNED_TEXT_KEYS = ['align', 'fontSize', 'heightMode', 'widthMode', 'placement',
   'weight', 'color', 'colour', 'colorRole', 'sizeGroup'];
 
@@ -65,17 +67,20 @@ function textSlot(value, where, role) {
   if (typeof value === 'string') {
     item = { value };
   } else if (value && typeof value === 'object' && !Array.isArray(value)) {
-    const owned = OWNED_TEXT_KEYS.filter((k) => Object.prototype.hasOwnProperty.call(value, k));
+    const owned = OWNED_TEXT_KEYS.filter((k) => Object.prototype.hasOwnProperty.call(value, k))
+      .filter((k) => !(k === 'colorRole' && value.colorRole === 'worked-purple'));
     if (owned.length) {
       fail(where, `${owned.join(', ')} cannot be set on a teach-layout line; the layout ` +
         'sets size, alignment and colour so every slide stays centred and even. Use ' +
-        '"orange": true to lift the one line that carries the weight.');
+        '"orange": true to lift the one line that carries the weight, and ' +
+        '"colorRole": "worked-purple" on the lines of a worked example.');
     }
     const words = value.value != null ? value.value : value.text;
     item = { value: words };
     if (value.emphasis !== undefined) item.emphasis = value.emphasis;
     if (value.picture !== undefined) item.picture = value.picture;
     if (value.orange === true) item.orange = true;
+    if (value.colorRole === 'worked-purple') item.worked = true;
   } else {
     fail(where, 'expected the words as a string, or an object with a "value".');
   }
@@ -85,6 +90,19 @@ function textSlot(value, where, role) {
   if (item.orange && (role === 'question' || role === 'sticky')) {
     fail(where, `a ${role === 'question' ? 'question stays blue' : 'line to remember stays purple'}; ` +
       'orange belongs on one explanation line.');
+  }
+  if (item.worked && role === 'extract') {
+    fail(where, 'an extract is the source\'s own words, drawn as they are written, so it ' +
+      'takes no colour. A worked example is not an extract: put its lines in "lines" with ' +
+      '"colorRole": "worked-purple".');
+  }
+  if (item.worked && (role === 'question' || role === 'sticky')) {
+    fail(where, `a ${role === 'question' ? 'question stays blue' : 'line to remember is purple already'}; ` +
+      '"worked-purple" belongs on the lines of a worked example.');
+  }
+  if (item.worked && item.orange) {
+    fail(where, 'a worked example is purple, so this line cannot be orange as well. ' +
+      'Lift another line with orange, or none.');
   }
   if (item.orange && Array.isArray(item.emphasis) &&
       item.emphasis.some((e) => e && e.role === 'vocabulary')) {
@@ -101,6 +119,7 @@ function toText(slot, role, extra) {
   if (slot.picture !== undefined) out.picture = slot.picture;
   if (role === 'question') out.color = QUESTION_BLUE;
   else if (slot.orange) out.color = TEACH_ORANGE;
+  else if (slot.worked) out.colorRole = 'worked-purple';
   return Object.assign(out, extra || {});
 }
 
@@ -541,8 +560,23 @@ function expandSlide(slide, slideNumber) {
     captions: (v, w) => textSlot(v, w, 'line'),
     answers: (v, w) => textSlot(v, w, 'line'),
     pictures: (v, w) => pictureSlot(v, w),
+    // A step is its words, or a step of a worked example: { "text": ...,
+    // "colorRole": "worked-purple" }, drawn purple by the step list as on any
+    // slide (the teacher's rule of 24 September 2026). No other object is a step.
     steps: (v, w) => {
-      if (typeof v !== 'string' || !v.trim()) fail(w, 'each step is its words as a string.');
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        const words = typeof v.text === 'string' ? v.text : v.value;
+        const extra = Object.keys(v).filter((k) => !['text', 'value', 'colorRole'].includes(k));
+        if (typeof words !== 'string' || !words.trim() || extra.length || v.colorRole !== 'worked-purple') {
+          fail(w, 'each step is its words as a string, or a step of a worked example written ' +
+            '{ "text": "...", "colorRole": "worked-purple" }; no other field or role is taken.');
+        }
+        return { text: words, colorRole: 'worked-purple' };
+      }
+      if (typeof v !== 'string' || !v.trim()) {
+        fail(w, 'each step is its words as a string, or a step of a worked example written ' +
+          '{ "text": "...", "colorRole": "worked-purple" }.');
+      }
       return v;
     },
     speakers: (v, w) => {

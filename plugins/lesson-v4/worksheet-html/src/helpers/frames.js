@@ -326,7 +326,7 @@ function enoughNamedClaim(spec, widthMm) {
 // Note what the scaffolding is NOT: a colour. The design system deliberately
 // has no scaffold colour, and states why - a starter is set apart by weight and
 // by having its own line, exactly as a writing frame's starters are, which
-// keeps the page to four colour meanings instead of five. A word bank IS
+// keeps scaffold from becoming a colour meaning of its own. A word bank IS
 // coloured, because it is material handed to the child, which is what the
 // `given` orange already means everywhere else on the sheet.
 
@@ -943,8 +943,8 @@ const css = `
   .h-ff-field:last-child { border-bottom: 0; }
   .h-ff-label { line-height: 1.35; color: var(--colour-ink); }
   /* Set apart by weight and its own line rather than by a colour of its own,
-     which is the same way a writing frame's starters are set apart and the
-     reason the sheet still has four colour meanings rather than five. */
+     which is the same way a writing frame's starters are set apart, so
+     scaffold never becomes a colour meaning of its own. */
   .h-ff-hint {
     display: block; line-height: 1.35;
     font-weight: bold; color: var(--colour-ink);

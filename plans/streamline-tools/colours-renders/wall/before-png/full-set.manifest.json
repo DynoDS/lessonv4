@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before\\full-set\\Working Wall - Adding Fractions.pdf",
+  "sourceSha256": "a383c77db583cfa0b67d6be4f00697981ff65197bb5b6c9c002a94c3d36ae3d4",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\full-set\\Working Wall - Adding Fractions-source.pdf",
+    "sha256": "a383c77db583cfa0b67d6be4f00697981ff65197bb5b6c9c002a94c3d36ae3d4"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\full-set\\Working Wall - Adding Fractions-contact-sheet.png",
+    "sha256": "bcae028b6c5c9ce7c9e729123bf3bf0cf2b31ec8aa587fa8a255b06c8c4a4130"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\full-set\\Working Wall - Adding Fractions-page-01.png",
+      "sha256": "ad37a1d0b332d3de03e22910f8d44f008a0fdb38c8aa678c393fe0c4cd390a99"
+    },
+    {
+      "number": 2,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\full-set\\Working Wall - Adding Fractions-page-02.png",
+      "sha256": "449c21a6f05c8d02e10a1f3759e3a06e5d655d9b20abb346e678d6bba0d5f0bd"
+    },
+    {
+      "number": 3,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\full-set\\Working Wall - Adding Fractions-page-03.png",
+      "sha256": "cf0db62df49f60c883485101062fa415ce33b7b849127c0147a87310197aface"
+    },
+    {
+      "number": 4,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\full-set\\Working Wall - Adding Fractions-page-04.png",
+      "sha256": "34150cbd0ce751be4433398219d490f0ed75cdfc4d0e8d840a248b2dde094f0c"
+    }
+  ]
+}

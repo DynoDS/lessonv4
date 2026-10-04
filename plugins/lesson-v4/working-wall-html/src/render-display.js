@@ -51,7 +51,9 @@ function renderSectionHeading(card, style) {
 function renderLabelledDiagram(card, style, specDir, ctx = {}) {
   const titleText = card.title || "How to read it";
   const titlePt = titlePtFor({ ...card, title: titleText }, style);
-  const titleBarEl = titleBarHtml(titleText, style.colours.workedExampleTitleBarFill, style, titlePt, card.page.size, card.page.orientation);
+  // A title is blue, as the board's titles are: the anatomy poster is not a
+  // worked example, so it no longer borrows that card's colour.
+  const titleBarEl = titleBarHtml(titleText, style.colours.labelledDiagramTitleBarFill, style, titlePt, card.page.size, card.page.orientation);
 
   const _v = pickVisual(card.visual, ctx);
   const dims = printableInches(card.page.size, card.page.orientation, style);

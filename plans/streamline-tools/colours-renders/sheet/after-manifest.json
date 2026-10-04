@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\sheet\\after\\worksheet.pdf",
+  "sourceSha256": "8302571858de14a46d88e16912c144985971bf778e9d7ab402e1ef1be6061e5f",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 70,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\sheet\\after-png\\worksheet-source.pdf",
+    "sha256": "8302571858de14a46d88e16912c144985971bf778e9d7ab402e1ef1be6061e5f"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\sheet\\after-png\\worksheet-contact-sheet.png",
+    "sha256": "f0a7f777b9cc81039263d985bbd5a8212d6d5b47788672104146d6b447093f82"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\sheet\\after-png\\worksheet-page-01.png",
+      "sha256": "1934fede8cd409fdbe84ecc48f10e0121ad88a6ae9ddab21b99ce5cba4cb942a"
+    }
+  ]
+}

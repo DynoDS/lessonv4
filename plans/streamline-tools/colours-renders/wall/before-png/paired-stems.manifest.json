@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before\\paired-stems\\Working Wall - Money - Coin Values.pdf",
+  "sourceSha256": "a677197d6238e2c91e7dd743953ff3a05448c649b482e9678081d8edebca77f1",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\paired-stems\\Working Wall - Money - Coin Values-source.pdf",
+    "sha256": "a677197d6238e2c91e7dd743953ff3a05448c649b482e9678081d8edebca77f1"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\paired-stems\\Working Wall - Money - Coin Values-contact-sheet.png",
+    "sha256": "247a3026fb91bff47fc7a69bc54203a8c1b757bfd7f99bb768256a7841fa21a5"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\paired-stems\\Working Wall - Money - Coin Values-page-01.png",
+      "sha256": "3178e6a436d1465142864c860a3a647df8921e09e298a5f01cf6a7d3eec54c82"
+    }
+  ]
+}

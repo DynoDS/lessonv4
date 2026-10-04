@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "pptxRoutes": [
+    "powerpoint",
+    "libreoffice"
+  ],
+  "docxRoutes": [
+    "libreoffice"
+  ],
+  "pdfRoutes": [
+    "pdftoppm",
+    "pymupdf"
+  ],
+  "blockedProbes": [],
+  "powerpointPython": "C:\\Users\\Daniel\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+  "probeNotes": []
+}

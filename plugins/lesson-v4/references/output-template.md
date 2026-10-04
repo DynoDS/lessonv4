@@ -561,7 +561,7 @@ Keep these delivery meanings exact:
 
 - `teacher-only` stores the answer, model or standard for speaker-note use and creates no visible answer slide.
 - `answer-slide` stores the answer, model or standard for speaker-note use and also authorises a separate visible answer/reveal slide.
-- `visible-in-unit` stores a completed prepared model that is visible as ordinary black teaching content in its source unit. It is not an answer reveal.
+- `visible-in-unit` stores a completed prepared model that is visible in its source unit as a worked example, in the worked-example purple. It is not an answer reveal.
 - `none` carries no answer, model or standard.
 
 `answer-slide` is valid for `starter`, `your-turn`, `practise`, `use-learning`, `do-task`, `apply` and `reflect`. On any other source-unit kind, `answer-slide` is valid only when `answer.kind` is `model` or `standard`, or when the unit is a My Turn or Our Turn completed live on a representation, where it is required and its reveal slide shows that representation finished. An exact answer on a Do beat, Our Turn or another smaller check uses `teacher-only`.
@@ -674,7 +674,7 @@ For a completed `Prepared example` that children are intentionally meant to see 
 }
 ```
 
-`visible-in-unit` is valid only with `modellingState: "Prepared example"`. It is not an answer reveal and does not create a following answer slide. The resource designer renders the structured completed outcome as ordinary black teaching content inside that source unit's prepared model. Do not use the `||` answer marker, answer-green text, an answer-green outline or another answer-reveal treatment on `visible-in-unit` content.
+`visible-in-unit` is valid only with `modellingState: "Prepared example"`. It is not an answer reveal and does not create a following answer slide. The resource designer renders the structured completed outcome as a worked example, in the worked-example purple, inside that source unit's prepared model. Do not use the `||` answer marker, answer-green text, an answer-green outline or another answer-reveal treatment on `visible-in-unit` content.
 
 A My Turn completed live on a representation uses `answer-slide`, so the finished representation follows on the next slide. Any other My Turn whose answer is not pupil-visible from the start uses `teacher-only`; a prepared completed model uses `visible-in-unit`.
 

@@ -24,6 +24,7 @@ const { A4 } = require("./layout-rules");
 // because a source with its bottom cut off is a different source.
 const PIECE_MAX_H_MM = A4.widthMm - 2 * A4.marginMm - 5;
 const { buildLabelDiagramSvg } = require("../../shared/visuals/label-diagram-svg");
+const { withoutTaughtMarks } = require("../../shared/text/criteria-marks");
 const { PALETTES } = require("../../shared/visuals/surface-profiles");
 const STICKIN_INK = PALETTES.ink.ink;
 
@@ -299,7 +300,10 @@ async function renderSourceCopy(item, baseDir, opts = {}) {
 
 // One write-on item → { html, widthMm, heightMm }, or null (with a warning)
 // when there is nothing to render.
-async function renderPieceHtml(item, opts = {}) {
+async function renderPieceHtml(marked, opts = {}) {
+  // Every piece is a figure, and a figure's words print plain: a taught
+  // word's braces never reach the pack (the colours release's third check).
+  const item = withoutTaughtMarks(marked);
   if (ROW_VISUALS[item.visual]) return renderRow(item);
   if (item.visual === "draw-box-row") return renderBoxRow(item);
   if (item.visual === "label-diagram") return renderLabelDiagram(item, opts.baseDir, opts);

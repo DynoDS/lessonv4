@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before\\causeCards-a3\\Working Wall - Why Is the Rainforest Shrinking.pdf",
+  "sourceSha256": "42a8fee7e338079cd7a9d0acfbfc1d6e5e1704c0130a4d60270f6a00e57b0690",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\causeCards-a3\\Working Wall - Why Is the Rainforest Shrinking-source.pdf",
+    "sha256": "42a8fee7e338079cd7a9d0acfbfc1d6e5e1704c0130a4d60270f6a00e57b0690"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\causeCards-a3\\Working Wall - Why Is the Rainforest Shrinking-contact-sheet.png",
+    "sha256": "56a56c5b7104cbcfecaf0fb0526031dd3001f225d7626bd4d1cec712818b49a3"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\before-png\\causeCards-a3\\Working Wall - Why Is the Rainforest Shrinking-page-01.png",
+      "sha256": "a811d3850ea2fc8cd9a17c9b59f426e631cd11f8bc928edd0cad66176291f8ca"
+    }
+  ]
+}

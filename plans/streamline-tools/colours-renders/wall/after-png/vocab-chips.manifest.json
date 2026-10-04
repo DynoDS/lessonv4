@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "source": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after\\vocab-chips\\Working Wall - Money Vocabulary.pdf",
+  "sourceSha256": "31d6a83862dde4be998a743b6e2153f30a3b4774591ff06929e94f18ab864a50",
+  "officeRoute": null,
+  "pdfRoute": "pdftoppm",
+  "dpi": 40,
+  "pdf": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\vocab-chips\\Working Wall - Money Vocabulary-source.pdf",
+    "sha256": "31d6a83862dde4be998a743b6e2153f30a3b4774591ff06929e94f18ab864a50"
+  },
+  "contactSheet": {
+    "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\vocab-chips\\Working Wall - Money Vocabulary-contact-sheet.png",
+    "sha256": "2c0720268b5fd37bb976d5a4fb8aa0f6572a311588b794537d2a4e058eda2cfa"
+  },
+  "pages": [
+    {
+      "number": 1,
+      "path": "C:\\Users\\Daniel\\Projects\\lessonv4-colours\\plans\\streamline-tools\\colours-renders\\wall\\after-png\\vocab-chips\\Working Wall - Money Vocabulary-page-01.png",
+      "sha256": "4d865c23d87d409a39394f2647ec816105f5b14eb7c3af8dd1b42b86bf61ccfb"
+    }
+  ]
+}
