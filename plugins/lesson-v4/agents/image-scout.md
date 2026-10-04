@@ -6,6 +6,7 @@ effort: high
 codex_model: luna6
 codex_effort: medium
 color: green
+disallowedTools: Artifact, Agent
 ---
 
 # Image Scout

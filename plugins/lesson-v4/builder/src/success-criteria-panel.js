@@ -43,6 +43,39 @@ function workIsOnPaper(ctx) {
 }
 // ─── END CONSTANTS ────────────────────────────────────────────
 
+// The lowest point a list of steps reaches in this panel, found by drawing it
+// on a slide nobody sees. Zero when it cannot be drawn (the real draw below
+// then refuses it by name, as before).
+function lowestStep(contentZone, content, ctx) {
+  const { drawContent } = require('./content');
+  const PptxGenJS = requireGlobal('pptxgenjs');
+  const dry = new PptxGenJS();
+  const page = dry.addSlide();
+  let bottom = 0;
+  const note = (o) => {
+    if (o && Number.isFinite(o.y) && Number.isFinite(o.h)) bottom = Math.max(bottom, o.y + o.h);
+  };
+  const probe = new Proxy(page, {
+    get(target, prop) {
+      if (prop === 'addShape') return (kind, o) => { note(o); return target.addShape(kind, o); };
+      if (prop === 'addText') return (text, o) => { note(o); return target.addText(text, o); };
+      if (prop === 'addImage') return (o) => { note(o); return target.addImage(o); };
+      const value = target[prop];
+      return typeof value === 'function' ? value.bind(target) : value;
+    }
+  });
+  const hadBarrier = !!ctx._cardBarrier;
+  ctx._cardBarrier = false;
+  try {
+    withoutRecording(() => drawContent(dry, probe, contentZone, content, ctx));
+  } catch (err) {
+    return 0;
+  } finally {
+    ctx._cardBarrier = hadBarrier;
+  }
+  return bottom;
+}
+
 function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
   const { drawContent } = require('./content');
   const label = data.criteriaLabel || data.label || '\u2713 Success Criteria';
@@ -64,8 +97,28 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
     );
   }
 
+  // The panel hugs its criteria. A short list keeps the card size of a normal
+  // one (steps.js), so two or three steps used to sit at the top of a box that
+  // ran the full height of the slide, with empty green under them. The teacher,
+  // 4 October 2026: "there's only two cards in there. Then there's a lot of
+  // empty dead green space." A card is a boundary, and a boundary taller than
+  // what it holds says the content is smaller than it is (the visual profile's
+  // Card boundary), so the box now ends where its last step does. The text is
+  // not blown up to fill the room instead: he called that overfilled on
+  // 17 September. Only a list of steps is hugged; a table or a row of figures
+  // keeps the zone it was given.
+  let panelH = zone.h;
+  if (criteria && criteria.type === 'steps' && !Number.isFinite(zone.measureFloorPt)) {
+    const reach = lowestStep({
+      x: zone.x + PAD, y: zone.y + PAD + LABEL_H, w: zone.w - 2 * PAD, h: zone.h - 2 * PAD - LABEL_H,
+      class: zone.class || 'C', sourceAuthoredText: true, criteriaPanel: true,
+      widestPracticePanel: !!zone.widestPracticePanel, compactCards: true
+    }, criteria.heading ? Object.assign({}, criteria, { heading: undefined }) : criteria, ctx);
+    if (reach > zone.y) panelH = Math.min(zone.h, reach - zone.y + PAD);
+  }
+
   slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-    x: zone.x, y: zone.y, w: zone.w, h: zone.h,
+    x: zone.x, y: zone.y, w: zone.w, h: panelH,
     fill: { color: BG },
     line: { color: LINE, width: LINE_W },
     rectRadius: RADIUS

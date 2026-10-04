@@ -14,7 +14,12 @@ const { SPACE } = require("../tokens");
 // multiple-choice helper field for field: text, select, options.
 
 function renderMultipleChoice(spec) {
-  const instr = spec.select === "all" ? "Tick all that apply." : "Tick one.";
+  // The question usually says what to do already ("Which of these have stayed
+  // the same? Tick them."), and the helper's own line then contradicted it:
+  // "Tick them." with "Tick one." printed underneath (the teacher, 4 October
+  // 2026). The line is printed only when the question's words do not say.
+  const says = /\b(tick|circle|choose|pick)\b/i.test(String(spec.text || ""));
+  const instr = says ? "" : spec.select === "all" ? "Tick all that apply." : "Tick one.";
   const options = (spec.options || [])
     .map(
       (opt) => `<li class="h-mc-opt"><span class="h-mc-box"></span><span>${esc(opt)}</span></li>`
@@ -23,7 +28,7 @@ function renderMultipleChoice(spec) {
   return `
     <div class="h-mc">
       ${spec.text ? `<p class="h-mc-stem">${promptHtml(spec.text)}</p>` : ""}
-      <p class="h-mc-instr">${esc(instr)}</p>
+      ${instr ? `<p class="h-mc-instr">${esc(instr)}</p>` : ""}
       <ul class="h-mc-opts">${options}</ul>
     </div>`;
 }

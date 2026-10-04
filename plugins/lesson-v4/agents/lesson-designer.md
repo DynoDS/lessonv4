@@ -6,6 +6,7 @@ effort: xhigh
 codex_model: sol61
 codex_effort: high
 color: "#0A1E3F"
+disallowedTools: Artifact, Agent
 ---
 
 # Lesson Designer

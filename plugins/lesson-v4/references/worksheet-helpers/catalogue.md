@@ -48,7 +48,7 @@ emailed. Never write `imageHref` yourself.
 - `questions` - One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap.
 - `written-answers` - A question answered in the child's own words, with ruled lines under it.
 - `source-text` - A passage, account or extract the child reads and works from.
-- `poem` - A poem the child reads line by line, its stanzas kept apart, with a box after each line to write in (a syllable count) when it needs one.
+- `poem` - A poem the child reads line by line, its stanzas kept apart, with a box after each line (a syllable count) when it needs one.
 - `annotated-text` - A passage in the middle with words underlined, circled, boxed or highlighted in colour, arrows between words and margin notes, or wide margins left for the child to annotate.
 
 **Tables**
@@ -101,7 +101,7 @@ emailed. Never write `imageHref` yourself.
 **Number and calculation**
 
 - `number-line` - A labelled number line with a `caption` beneath ("Each interval is worth 100."): `jumps` between marks and a `highlight`ed space, or instead `boxes` at ticks, `arrows`, a ruler's `unit` and `object`.
-- `blank-surface` - A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs rather than fills in.
+- `blank-surface` - A draw-your-own surface (bare number line, empty bars) the child constructs on.
 - `bar-model` - The White Rose bar model: a part-whole bar or a two-bar comparison.
 - `part-whole` - A whole joined to its parts: partitioning, decomposition, a missing addend.
 - `part-whole-money` - A whole circle with parts beneath it, joined by lines.
@@ -249,7 +249,7 @@ Smallest usable: **70mm wide x 20mm tall**. Spare height: never takes spare heig
 
 #### `poem`
 
-A poem the child reads line by line, its stanzas kept apart, with a box after each line to write in (a syllable count) when it needs one.
+A poem the child reads line by line, its stanzas kept apart, with a box after each line (a syllable count) when it needs one. Its lines are spaced to circle, underline and join with arrows too.
 
 Smallest usable: **70mm wide x 62mm tall**. Spare height: never takes spare height.
 
@@ -1461,16 +1461,17 @@ Smallest usable: **70mm wide x 26mm tall**. Spare height: never takes spare heig
 
 #### `blank-surface`
 
-A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs rather than fills in.
+A draw-your-own surface (bare number line, empty bars) the child constructs on. A full-width number line is 27mm tall; `work` puts its room where they write: `above` (jumps, the default), `below` or `both`.
 
-Smallest usable: **100mm wide x 41mm tall**. Spare height: never takes spare height.
+Smallest usable: **100mm wide x 15mm tall**. Spare height: never takes spare height.
 
 ```json
 {
   "helper": "blank-surface",
   "surface": "number-line",
   "start": 0,
-  "end": 100
+  "end": 100,
+  "work": "above"
 }
 ```
 
@@ -2429,7 +2430,7 @@ Smallest usable: **168mm wide x 34mm tall**. Spare height: never takes spare hei
 
 Sentence starters with room after each, inside a frame whose SHAPE says what kind of writing this is: a museum tag, a postcard, a plaque.
 
-Smallest usable: **90mm wide x 69mm tall**. Spare height: takes spare height first (it is writing space).
+Smallest usable: **90mm wide x 69mm tall**. Spare height: takes spare height first (it is writing space), and it stops when the content stops gaining.
 
 ```json
 {

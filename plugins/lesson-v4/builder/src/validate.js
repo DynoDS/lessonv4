@@ -263,8 +263,9 @@ function readPromisedPhotos(lessonDir) {
   return { promised, error: null };
 }
 
-// The signs (signals.js): a header `signal` beside the slide's `instruction`,
-// and a `signal` at the start of a text card. Four may be named, each once per
+// The signs (signals.js): a header `signal` beside the slide's `instruction`
+// (or alone in the header where the slide has none), and a `signal` at the
+// start of a text card. Four may be named, each once per
 // place, and a line to remember keeps only its own star.
 function validateSignals(slide, n, errors, warnings) {
   if (!slide || typeof slide !== 'object') return;
@@ -281,8 +282,6 @@ function validateSignals(slide, n, errors, warnings) {
   if (slide.signal !== undefined) {
     if (!TASK_SIGNALS.has(slide.signal)) {
       errors.push(`slide ${n}: signal ${JSON.stringify(slide.signal)} is not a sign the deck draws; use one of ${names}.`);
-    } else if (!slide.instruction) {
-      warnings.push(`slide ${n}: the header signal "${slide.signal}" draws inside the header instruction's pill, and this slide has no \`instruction\`, so it will not appear.`);
     }
   }
   const walk = (node) => {
@@ -340,6 +339,7 @@ function validateLesson(lesson, lessonDir) {
     warnings.push(...decorationCheck.warnings);
 
     validateSignals(slide, n, errors, warnings);
+    require('./readability-nudges').readabilityWarnings(slide, n, warnings);
 
     const tpl = slide && slide.template;
 

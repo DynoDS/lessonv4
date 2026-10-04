@@ -3105,3 +3105,12 @@ These rows quote lines the voice guide release (topic 8, release 5), on the voic
 ## 26 September 2026 primary-teaching clarification
 
 The Shaftesbury feedback authorises actual primary explanation and immediate prepared use. The concept requirement still spans meaningful instances; independent judgement may use taught instances when its conclusion has not been supplied. Unseen factual content is no longer compulsory. Significance keeps later remembrance and meaningful comparison; a second person is used when helpful or required and must be introduced properly. Exact updated preservation passages are recorded in `evaluations/shaftesbury-access-20260926/pin-migration.json`; baseline passages remain in its `pin-baseline` and instruction `baseline` directories. These edits are local and not a release.
+
+## His answers of 4 October 2026 (after judging 105 slide pairs blind)
+
+Recorded here because they change two colour paragraphs this ledger pins (HOME-COL-PROFILE-03 and -04 in `scripts/tests/colours_ledger_pins.json`).
+
+- On gaps: "I would say that I want a blank line gap between separate ideas in explanations and model answers." Tight single line breaks stay for a poem's lines, a worked calculation and a short run read as one list.
+- On colour: "As for color, I guess so. Any card of three or more black sentences gets its key line in orange. Is this going to work for every single thing though?" It does not suit every card, so the rule carries limits: one orange line per slide, chosen by what the line says; none where the lines are equals (a poem, a list, a sequence); none inside a case or quotation the task runs on, which is supplied orange as a whole; never the sticky line, a question or a line with a taught word. The measure is three sentences or about thirty words, because the card he marked on the digestive system deck (`all that black text needs colour`) was two long sentences.
+- What this replaces: his 12 September bound `Not on every Teach slide` and the playbook's `Reach for layout first`. The orange line is now the ordinary treatment of a long black card.
+- In his slide notes that day he also asked for: the pencil on tasks and the tick on answer slides; no lightning bolt on answer slides; the main task in a card, not the top-right cue; a question said once, not as title and again in the body. Those are built in the slide builder and the playbook (see `evaluations/slide-designer-context-2026-10-04/`).

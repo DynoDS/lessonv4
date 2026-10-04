@@ -137,7 +137,7 @@ module.exports = {
     whole: { label: "24" },
     parts: [{ label: "8" }, { label: "16" }],
   },
-  "blank-surface": { surface: "number-line", start: 0, end: 100 },
+  "blank-surface": { surface: "number-line", start: 0, end: 100, work: "above" },
   carroll: {
     rowLabel: "has wings",
     rowNotLabel: "no wings",

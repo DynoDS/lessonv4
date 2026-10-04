@@ -1,0 +1,394 @@
+{
+  "key": "divisibility",
+  "runs": {
+    "a": {
+      "notes": {
+        "minutes": 20,
+        "checkRuns": 16,
+        "firstCheckPassed": false,
+        "goesToPass": 13,
+        "lastCheckPassed": true,
+        "checks": [
+          {
+            "passed": false,
+            "lines": []
+          },
+          {
+            "passed": false,
+            "lines": []
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is short both ways: 91mm of height and 16mm of width in its tightest zone. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + instruction + a stack of [instruction + recording-table] + circle-the-answer + section-label + a stack of [1 x multiple-choice] + a stack of [instruction + recording-table]]: 341mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): zone \"a\" cannot hold a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + instruction + a stack of [instruction + recording-table] + circle-the-answer + section-label + instruction + a stack of [1 x multiple-choice] + a stack of [instruction + recording-table]]: needs 190mm wide, zone is 174mm"
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DIRECTED_MISSING: the Greater Depth sheet is returned, but no WORKSHEET_CONTENT_GAP note names it, so nobody downstream can read why it went back. Add the note beside its \"returned\" entry."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is short both ways: 65mm of height and 16mm of width in its tightest zone. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + instruction + a stack of [instruction + recording-table] + section-label + a stack of [1 x multiple-choice] + a stack of [instruction + recording-table]]: 317mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): zone \"a\" cannot hold a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + instruction + a stack of [instruction + recording-table] + section-label + instruction + a stack of [1 x multiple-choice] + a stack of [instruction + recording-table]]: needs 190mm wide, zone is 174mm"
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is short both ways: 53mm of height and 16mm of width in its tightest zone. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + instruction + a stack of [instruction + recording-table] + section-label + a stack of [1 x multiple-choice] + a stack of [instruction + recording-table]]: 305mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): zone \"a\" cannot hold a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + instruction + a stack of [instruction + recording-table] + section-label + instruction + a stack of [1 x multiple-choice] + a stack of [instruction + recording-table]]: needs 190mm wide, zone is 174mm"
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DIRECTED_MISSING: the Below sheet is returned, but no WORKSHEET_CONTENT_GAP note names it, so nobody downstream can read why it went back. Add the note beside its \"returned\" entry."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DIRECTED_MISSING: the Below sheet is returned, but no WORKSHEET_CONTENT_GAP note names it, so nobody downstream can read why it went back. Add the note beside its \"returned\" entry."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": []
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Expected - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 3mm: the content needs 270mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + circle-the-answer + section-label + named-claim + section-label + a stack of [instruction + circle-the-answer + written-answers]]: 285mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 270mm but the page has 267mm, a shortfall of 3mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Expected - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 3mm: the content needs 270mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + recording-table + circle-the-answer + section-label + named-claim + section-label + a stack of [instruction + circle-the-answer + written-answers]]: 279mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 270mm but the page has 267mm, a shortfall of 3mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Expected - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 7mm: the content needs 274mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + recording-table + circle-the-answer + section-label + named-claim + section-label + a stack of [circle-the-answer + written-answers]]: 283mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 274mm but the page has 267mm, a shortfall of 7mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"full\" (portrait), 91% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"full\" (portrait), 91% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"full\" (portrait), 91% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"full\" (portrait), 91% full."
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "Created [worksheet.json](/C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/divisibility-a/worksheet.json).\n\nBoth gates passed: `WORKSHEET_PREFLIGHT_OK` and `HELPER_DELIVERY_OK`.\n\nThe Expected sheet fits after the design’s authorised removal of the 11 circling task. Below was returned after its two authorised reductions because the remaining portrait page still exceeds the measured fit and its six-column table is too wide. Greater Depth was returned because the required five answer boxes have no faithful helper. The reasons are recorded in the spec for the adaptation designer.",
+        "usage": {
+          "input_tokens": 7748338,
+          "cached_input_tokens": 7562240,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 45011,
+          "reasoning_output_tokens": 26196
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "lastResort": false,
+        "ok": false,
+        "marker": "FIXED_RESOURCE_FLAGGED worksheets: Below, Greater Depth",
+        "omitted": [],
+        "standIns": [
+          {
+            "sheet": "Below",
+            "why": "the Expected sheet stands in for Below, and the Below section of the answer key is the Expected answers: the Below sheet could not be used as printed (a problem a child could not get past as printed, or a sheet that contradicts the objective)."
+          },
+          {
+            "sheet": "Greater Depth",
+            "why": "the Expected sheet stands in for Greater Depth, and the Greater Depth section of the answer key is the Expected answers: the Greater Depth sheet could not be used as printed (a problem a child could not get past as printed, or a sheet that contradicts the objective)."
+          }
+        ]
+      },
+      "buildLines": [
+        "AUTO_LAYOUT: Expected drawn in \"full\" (portrait), 91% full.",
+        "AUTO_LAYOUT: Below drawn in \"full\" (portrait), 91% full.",
+        "AUTO_LAYOUT: Greater Depth drawn in \"full\" (portrait), 91% full.",
+        "RECORDING: Expected - sheet, a copy per child. Q1: children complete the printed divisibility table. Q3: children circle the box sizes.",
+        "RECORDING: Below - sheet, a copy per child. Q1: children complete the printed divisibility table. Q3: children circle the box sizes.",
+        "RECORDING: Greater Depth - sheet, a copy per child. Q1: children complete the printed divisibility table. Q3: children circle the box sizes.",
+        "ANSWER_SHEET: 1 side.",
+        "SHEET_STANDS_IN: Below - the Expected sheet stands in for Below, and the Below section of the answer key is the Expected answers: the Below sheet could not be used as printed (a problem a child could not get past as printed, or a sheet that contradicts the objective).",
+        "SHEET_STANDS_IN: Greater Depth - the Expected sheet stands in for Greater Depth, and the Greater Depth section of the answer key is the Expected answers: the Greater Depth sheet could not be used as printed (a problem a child could not get past as printed, or a sheet that contradicts the objective).",
+        "Note: Expected: the 11 circling task (source ws-q-002) was removed under the lesson design's fit priority after the complete sheet was measured over the page.",
+        "Note: Below: question 4, the 11 circling task, was removed first under the adaptation's fit priority. The 715 row of question 1 was then removed under the next fit priority because the page still did not fit.",
+        "Note: WORKSHEET_CONTENT_GAP: Greater Depth - the 2â–¡4 search requires a row of five empty answer boxes, including one extra box so their number does not reveal how many answers there are. The available short-answer helper provides a single answer space and no faithful combination provides the specified five boxes. Return this sheet to the adaptation designer for a supported response surface.",
+        "Note: PAGE_PLAN_GAP: Below - after both authorised fit-priority reductions, the remaining content measures 305mm high at its narrowest usable shape and its required six-column table needs 190mm width. Portrait offers 174mm width; landscape offers only 180mm height. No one-page layout can carry the remaining required work. Return to the adaptation designer to revise the fit priority or response surface.",
+        "Note: WORKSHEET_CONTENT_GAP: Below - the directed sheet cannot be delivered on one page after the adaptation's two authorised fit reductions; see PAGE_PLAN_GAP for the measured width and height failure. Return to the adaptation designer.",
+        "Page fit: âœ“ Below: 1 page, Expected: 1 page, Greater Depth: 1 page"
+      ],
+      "pages": {
+        "levels": {
+          "below": [
+            "sheet-01.jpg"
+          ],
+          "expected": [
+            "sheet-02.jpg"
+          ],
+          "greaterDepth": [
+            "sheet-03.jpg"
+          ]
+        },
+        "answers": [
+          "answers-01.jpg"
+        ],
+        "slips": [],
+        "standIns": [
+          "below",
+          "greaterDepth"
+        ],
+        "pageCountMatches": true
+      }
+    },
+    "b": {
+      "notes": {
+        "minutes": 21,
+        "checkRuns": 4,
+        "firstCheckPassed": false,
+        "goesToPass": null,
+        "lastCheckPassed": false,
+        "checks": [
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (two-then-third-turned, portrait) is short both ways: 8mm of height and 60mm of width in its tightest zone. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + instruction + instruction + recording-table] + a stack of [instruction + recording-table] + circle-the-answer]: 258mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 364mm but the page has 267mm, a shortfall of 97mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 350mm but the page has 180mm, a shortfall of 170mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SPEC_INVALID: C:\\Users\\Daniel\\Projects\\lessonv4\\evaluations\\worksheet-designer-three-runs-2026-10-04\\runs\\divisibility-b\\worksheet.json is not valid worksheet JSON: Unexpected token ']', ...\"          ]"
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (two-then-third-turned, portrait) fits the page height with 18mm to spare, and fails on WIDTH: its tightest zone is 60mm too narrow for what it holds. Fewer, wider zones is the obvious next move and it is worth one try - but note that a picture is scaled by its WIDTH and its height follows, so a wider zone holds a TALLER picture. On a picture-led sheet, widening usually trades a width refusal for a height one, and the real answer is one picture fewer. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + instruction + instruction + recording-table] + a stack of [instruction + recording-table]]: 234mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 339mm but the page has 267mm, a shortfall of 72mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 324mm but the page has 180mm, a shortfall of 144mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 60mm: the content needs 327mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + instruction + instruction + recording-table] + a stack of [instruction + recording-table] + section-label + multiple-choice + a stack of [instruction + recording-table]]: 315mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 327mm but the page has 267mm, a shortfall of 60mm. Cut content or choose a roomier layout. full (landscape): the content needs 312mm but the page has 180mm, a shortfall of 132mm. Cut content or choose a roomier layout."
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "I created [worksheet.json](/C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/divisibility-b/worksheet.json) with the pupil sheets and answer keys. The two pre-authorised Below cuts are recorded in its notes.\n\n- `HELPER_DELIVERY_OK 0`\n- The worksheet validator did not pass: after both cuts and a full-width layout attempt, Below still needs 327 mm of the available 267 mm.\n\nThis requires a `PAGE_PLAN_GAP` back to the adaptation designer. The adaptation’s permitted reductions are insufficient, so I can’t report `WORKSHEET_PREFLIGHT_OK` or mark the worksheet run complete.",
+        "usage": {
+          "input_tokens": 5906217,
+          "cached_input_tokens": 5708288,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 36845,
+          "reasoning_output_tokens": 23751
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "lastResort": true,
+        "ok": false,
+        "marker": "FIXED_RESOURCE_FLAGGED worksheets: Below, Greater Depth",
+        "omitted": [],
+        "standIns": [
+          {
+            "sheet": "Below",
+            "why": "the Expected sheet stands in for Below, and the Below section of the answer key is the Expected answers: the page cannot hold the Below sheet (SHEET_DOES_NOT_FIT: layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 60mm: the content needs 327mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + instruction + instruction + recording-table] + a stack of [instruction + recording-table] + section-label + multiple-choice + a stack of [instruction + recording-table]]: 315mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 327mm but the page has 267mm, a shortfall of 60mm. Cut content or choose a roomier layout. full (landscape): the content needs 312mm but the page has 180mm, a shortfall of 132mm. Cut content or choose a roomier layout.)."
+          },
+          {
+            "sheet": "Greater Depth",
+            "why": "the Expected sheet stands in for Greater Depth, and the Greater Depth section of the answer key is the Expected answers: the Greater Depth sheet cannot be built (NUMBERING_CONFLICT: zone \"c\": questionGroupId is on a helper holding a SET of questions, which takes a run of numbers rather than one. Wrap the Part in a stack so question: true covers the Part as a whole.)."
+          }
+        ],
+        "refusedFirst": [
+          "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 60mm: the content needs 327mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + instruction + instruction + recording-table] + a stack of [instruction + recording-table] + section-label + multiple-choice + a stack of [instruction + recording-table]]: 315mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 327mm but the page has 267mm, a shortfall of 60mm. Cut content or choose a roomier layout. full (landscape): the content needs 312mm but the page has 180mm, a shortfall of 132mm. Cut content or choose a roomier layout."
+        ]
+      },
+      "buildLines": [
+        "AUTO_LAYOUT: Below drawn in \"big-left-two\" (landscape), 99% full.",
+        "AUTO_LAYOUT: Expected drawn in \"big-left-two\" (landscape), 99% full.",
+        "AUTO_LAYOUT: Greater Depth drawn in \"big-left-two\" (landscape), 99% full.",
+        "RECORDING: Below - sheet, a copy per child. Question 1 is a printed table children mark, so its grid must be on the page.",
+        "RECORDING: Expected - sheet, a copy per child. Question 1 is a printed table children mark, so its grid must be on the page.",
+        "RECORDING: Greater Depth - sheet, a copy per child. Question 1 is a printed table children mark, so its grid must be on the page.",
+        "ANSWER_LONG: Below (1) prints about 3 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Below (3) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Below (4) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Expected (1) prints about 3 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Expected (3) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Expected (4) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Greater Depth (1) prints about 3 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Greater Depth (3) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Greater Depth (4) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_SHEET: 1 side.",
+        "SHEET_STANDS_IN: Below - the Expected sheet stands in for Below, and the Below section of the answer key is the Expected answers: the page cannot hold the Below sheet (SHEET_DOES_NOT_FIT: layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 60mm: the content needs 327mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + instruction + instruction + recording-table] + a stack of [instruction + recording-table] + section-label + multiple-choice + a stack of [instruction + recording-table]]: 315mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 327mm but the page has 267mm, a shortfall of 60mm. Cut content or choose a roomier layout. full (landscape): the content needs 312mm but the page has 180mm, a shortfall of 132mm. Cut content or choose a roomier layout.).",
+        "SHEET_STANDS_IN: Greater Depth - the Expected sheet stands in for Greater Depth, and the Greater Depth section of the answer key is the Expected answers: the Greater Depth sheet cannot be built (NUMBERING_CONFLICT: zone \"c\": questionGroupId is on a helper holding a SET of questions, which takes a run of numbers rather than one. Wrap the Part in a stack so question: true covers the Part as a whole.).",
+        "Note: Below: removed the 11 circling task, then the 715 row in question 1, following the adaptation's pre-authorised fit order.",
+        "Page fit: âœ“ Below: 1 page, Expected: 1 page, Greater Depth: 1 page"
+      ],
+      "pages": {
+        "levels": {
+          "below": [
+            "sheet-01.jpg"
+          ],
+          "expected": [
+            "sheet-02.jpg"
+          ],
+          "greaterDepth": [
+            "sheet-03.jpg"
+          ]
+        },
+        "answers": [
+          "answers-01.jpg"
+        ],
+        "slips": [],
+        "standIns": [
+          "below",
+          "greaterDepth"
+        ],
+        "pageCountMatches": true
+      }
+    },
+    "c": {
+      "notes": {
+        "minutes": 23,
+        "checkRuns": 5,
+        "firstCheckPassed": false,
+        "goesToPass": null,
+        "lastCheckPassed": false,
+        "checks": [
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (two-then-third-turned, portrait) is short both ways: 39mm of height and 76mm of width in its tightest zone. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table] + circle-the-answer]: 278mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): zone \"a\" cannot hold a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table] + circle-the-answer]: needs 182mm wide, zone is 174mm halves-stacked (landscape): the content needs 370mm but the page has 180mm, a shortfall of 190mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SPEC_INVALID: C:\\Users\\Daniel\\Projects\\lessonv4\\evaluations\\worksheet-designer-three-runs-2026-10-04\\runs\\divisibility-c\\worksheet.json is not valid worksheet JSON: Unexpected token ']', ...\"          ]"
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (two-then-third-turned, portrait) is short both ways: 13mm of height and 76mm of width in its tightest zone. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: 254mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): zone \"a\" cannot hold a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: needs 182mm wide, zone is 174mm halves-stacked (landscape): the content needs 344mm but the page has 180mm, a shortfall of 164mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (two-then-third-turned, portrait) is short both ways: 1mm of height and 76mm of width in its tightest zone. Fewer, wider zones is the obvious next move and it is worth one try - but note that a picture is scaled by its WIDTH and its height follows, so a wider zone holds a TALLER picture. On a picture-led sheet, widening usually trades a width refusal for a height one, and the real answer is one picture fewer. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: 242mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): zone \"a\" cannot hold a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: needs 182mm wide, zone is 174mm halves-stacked (landscape): the content needs 332mm but the page has 180mm, a shortfall of 152mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (two-then-third-turned, portrait) is short both ways: 1mm of height and 76mm of width in its tightest zone. Fewer, wider zones is the obvious next move and it is worth one try - but note that a picture is scaled by its WIDTH and its height follows, so a wider zone holds a TALLER picture. On a picture-led sheet, widening usually trades a width refusal for a height one, and the real answer is one picture fewer. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: 242mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): zone \"a\" cannot hold a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: needs 182mm wide, zone is 174mm halves-stacked (landscape): the content needs 332mm but the page has 180mm, a shortfall of 152mm. Cut content or choose a roomier layout."
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "I created [worksheet.json](C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/divisibility-c/worksheet.json).\n\n`HELPER_DELIVERY_OK 0` passed. Worksheet preflight did not pass: after the adaptation’s two pre-authorised reductions, Below still has a page-plan gap. Its six-column table needs 182 mm, but the widest portrait zone is 174 mm; the closest automatic layout is also 1 mm short in height. The gap is recorded in the JSON notes. `WORKSHEET_PREFLIGHT_OK` was not printed, so the worksheet run cannot be marked complete until the Below page plan is revised upstream.",
+        "usage": {
+          "input_tokens": 5557782,
+          "cached_input_tokens": 5371648,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 30952,
+          "reasoning_output_tokens": 17305
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "lastResort": true,
+        "ok": false,
+        "marker": "FIXED_RESOURCE_FLAGGED worksheets: Below, Greater Depth",
+        "omitted": [],
+        "standIns": [
+          {
+            "sheet": "Below",
+            "why": "the Expected sheet stands in for Below, and the Below section of the answer key is the Expected answers: the page cannot hold the Below sheet (SHEET_DOES_NOT_FIT: layout \"auto\": no layout in the library holds these 2 zones. The closest shape (two-then-third-turned, portrait) is short both ways: 1mm of height and 76mm of width in its tightest zone. Fewer, wider zones is the obvious next move and it is worth one try - but note that a picture is scaled by its WIDTH and its height follows, so a wider zone holds a TALLER picture. On a picture-led sheet, widening usually trades a width refusal for a height one, and the real answer is one picture fewer. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: 242mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): zone \"a\" cannot hold a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: needs 182mm wide, zone is 174mm halves-stacked (landscape): the content needs 332mm but the page has 180mm, a shortfall of 152mm. Cut content or choose a roomier layout.)."
+          },
+          {
+            "sheet": "Greater Depth",
+            "why": "the Expected sheet stands in for Greater Depth, and the Greater Depth section of the answer key is the Expected answers: the Greater Depth sheet cannot be built (NUMBERING_CONFLICT: zone \"c\": questionGroupId is on a helper holding a SET of questions, which takes a run of numbers rather than one. Wrap the Part in a stack so question: true covers the Part as a whole.)."
+          }
+        ],
+        "refusedFirst": [
+          "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (two-then-third-turned, portrait) is short both ways: 1mm of height and 76mm of width in its tightest zone. Fewer, wider zones is the obvious next move and it is worth one try - but note that a picture is scaled by its WIDTH and its height follows, so a wider zone holds a TALLER picture. On a picture-led sheet, widening usually trades a width refusal for a height one, and the real answer is one picture fewer. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: 242mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): zone \"a\" cannot hold a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: needs 182mm wide, zone is 174mm halves-stacked (landscape): the content needs 332mm but the page has 180mm, a shortfall of 152mm. Cut content or choose a roomier layout."
+        ]
+      },
+      "buildLines": [
+        "AUTO_LAYOUT: Below drawn in \"thirds-stacked\" (portrait), 87% full.",
+        "AUTO_LAYOUT: Expected drawn in \"thirds-stacked\" (portrait), 87% full.",
+        "AUTO_LAYOUT: Greater Depth drawn in \"thirds-stacked\" (portrait), 87% full.",
+        "RECORDING: Below - sheet, a copy per child. Question 1 requires the printed twenty-cell table, and question 2 requires options to circle.",
+        "RECORDING: Expected - sheet, a copy per child. Question 1 requires the printed twenty-cell table, and question 2 requires options to circle.",
+        "RECORDING: Greater Depth - sheet, a copy per child. Question 1 requires the printed twenty-cell table, and question 2 requires options to circle.",
+        "ANSWER_LONG: Below (1) prints about 3 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Below (3) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Below (4) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Expected (1) prints about 3 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Expected (3) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Expected (4) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Greater Depth (1) prints about 3 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Greater Depth (3) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Greater Depth (4) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_SHEET: 1 side.",
+        "SHEET_STANDS_IN: Below - the Expected sheet stands in for Below, and the Below section of the answer key is the Expected answers: the page cannot hold the Below sheet (SHEET_DOES_NOT_FIT: layout \"auto\": no layout in the library holds these 2 zones. The closest shape (two-then-third-turned, portrait) is short both ways: 1mm of height and 76mm of width in its tightest zone. Fewer, wider zones is the obvious next move and it is worth one try - but note that a picture is scaled by its WIDTH and its height follows, so a wider zone holds a TALLER picture. On a picture-led sheet, widening usually trades a width refusal for a height one, and the real answer is one picture fewer. The most expensive single item is a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: 242mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): zone \"a\" cannot hold a stack of [section-label + a stack of [instruction + recording-table] + a stack of [instruction + recording-table] + instruction + data-table + a stack of [instruction + recording-table]]: needs 182mm wide, zone is 174mm halves-stacked (landscape): the content needs 332mm but the page has 180mm, a shortfall of 152mm. Cut content or choose a roomier layout.).",
+        "SHEET_STANDS_IN: Greater Depth - the Expected sheet stands in for Greater Depth, and the Greater Depth section of the answer key is the Expected answers: the Greater Depth sheet cannot be built (NUMBERING_CONFLICT: zone \"c\": questionGroupId is on a helper holding a SET of questions, which takes a run of numbers rather than one. Wrap the Part in a stack so question: true covers the Part as a whole.).",
+        "Note: Below question 4, the 11 circling task, is omitted under the adaptation's pre-authorised fit priority because 11 had its own Your Turn on the board and nothing else on the sheet depends on it. The 715 row in question 1 is also omitted under the next pre-authorised fit priority because the stop-when-odd step is met in questions 2 and 3.",
+        "Note: PAGE_PLAN_GAP: Below remains too large after both pre-authorised reductions. The six-column question 2 table needs 182mm where the widest portrait zone offers 174mm, and the closest auto layout is also 1mm short in height. The adaptation must revise the protected page plan before this sheet can pass preflight.",
+        "Page fit: âœ“ Below: 1 page, Expected: 1 page, Greater Depth: 1 page"
+      ],
+      "pages": {
+        "levels": {
+          "below": [
+            "sheet-01.jpg"
+          ],
+          "expected": [
+            "sheet-02.jpg"
+          ],
+          "greaterDepth": [
+            "sheet-03.jpg"
+          ]
+        },
+        "answers": [
+          "answers-01.jpg"
+        ],
+        "slips": [],
+        "standIns": [
+          "below",
+          "greaterDepth"
+        ],
+        "pageCountMatches": true
+      }
+    }
+  }
+}

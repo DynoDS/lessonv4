@@ -9,7 +9,25 @@ const SIDEBAR_RATIO = 0.30;
 const BANNER_H      = 0.70;
 const GAP_X         = 0.20;
 const GAP_Y         = 0.15;
+// The banner is one line tall, and it takes a second or a third when its
+// sentence needs them at the readable size. At one fixed line it held about
+// 68 characters, and a lesson's headline is often a sentence of 90 or 100:
+// eight of ten slide runs on 4 October 2026 were refused here (forty refusals
+// between them), and each time the designer gave up the layout or moved the
+// headline to another slide. The height comes off the picture below, which has
+// it to spare; past three lines the lead is a paragraph and belongs in a card,
+// so it is still refused by name.
+const BANNER_MAX_H  = 1.30;
+const BANNER_PT     = 18;
 // ─── END COORDINATES ──────────────────────────────────────────
+
+function bannerHeight(banner, width, ctx) {
+  if (!banner || banner.type !== 'text') return BANNER_H;
+  const { textNeed } = require('../content/stack');
+  const need = textNeed(banner, { w: width }, BANNER_PT, ctx);
+  if (!Number.isFinite(need) || need <= BANNER_H) return BANNER_H;
+  return Math.min(need, BANNER_MAX_H);
+}
 
 // A picture keeps its own shape, so a wide one in the body is held by the
 // column's width and cannot use the column's height. Its card hugs it and a
@@ -53,8 +71,9 @@ function drawBodySidebar(pptx, slide, data, ctx) {
   const sidebarW = (bz.w - GAP_X) * SIDEBAR_RATIO;
   const leftW    = bz.w - GAP_X - sidebarW;
 
-  const bannerZone = { x: bz.x, y: bz.y,                          w: leftW, h: BANNER_H,               class: 'B'      };
-  const bodyZ      = { x: bz.x, y: bz.y + BANNER_H + GAP_Y,       w: leftW, h: bz.h - BANNER_H - GAP_Y, class: 'E-wide' };
+  const bannerH = bannerHeight(data.banner, leftW, ctx);
+  const bannerZone = { x: bz.x, y: bz.y,                          w: leftW, h: bannerH,               class: 'B'      };
+  const bodyZ      = { x: bz.x, y: bz.y + bannerH + GAP_Y,        w: leftW, h: bz.h - bannerH - GAP_Y, class: 'E-wide' };
   const sidebarZone = { x: bz.x + leftW + GAP_X, y: bz.y,         w: sidebarW, h: bz.h,                class: 'E-narrow' };
 
   // A picture that cannot use the body's height gives it to the banner.

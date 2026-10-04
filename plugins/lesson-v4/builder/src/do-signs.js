@@ -60,4 +60,25 @@ function applyDoSigns(lesson, lessonDir) {
   return lesson;
 }
 
-module.exports = { applyDoSigns, badgeFor };
+function revealsAnswers(node) {
+  if (Array.isArray(node)) return node.some(revealsAnswers);
+  if (!node || typeof node !== 'object') return false;
+  if (node.revealPair && node.revealPair.state === 'answer') return true;
+  return Object.keys(node).some((key) => revealsAnswers(node[key]));
+}
+
+// The tick on answer and check slides, drawn here rather than left to be
+// remembered: it is the same sign in the same place in every lesson, and the
+// teacher looked for it on decks that carried none (4 October 2026). A sign
+// the slide already names is kept.
+function applyAnswerTicks(lesson) {
+  if (!lesson || !Array.isArray(lesson.slides)) return lesson;
+  for (const slide of lesson.slides) {
+    if (!slide || typeof slide !== 'object' || slide.signal !== undefined) continue;
+    const title = String(slide.title || slide.heading || '').trim();
+    if (ANSWER_TITLE.test(title) || CHECK_TITLE.test(title) || revealsAnswers(slide)) slide.signal = 'tick';
+  }
+  return lesson;
+}
+
+module.exports = { applyDoSigns, applyAnswerTicks, badgeFor };

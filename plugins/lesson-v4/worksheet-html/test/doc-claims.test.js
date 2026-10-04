@@ -237,10 +237,15 @@ test("the page and zone numbers the designer docs quote (worksheet-designer.md, 
   // uncoded sheets keep exactly the same teaching area.
   const { contentArea } = require("../src/render");
   const headed = contentArea({ orientation: "portrait", code: "C" });
+  // 267mm less the 28mm that makes the foot's clear strip up to 43mm (page.js).
   assert.ok(
-    Math.abs(headed.heightMm - 267) < 0.5,
+    Math.abs(headed.heightMm - 239) < 0.5,
     `a coded portrait sheet gives its zones ${headed.heightMm.toFixed(1)}mm - ` +
-      "worksheet-designer.md quotes 267mm"
+      "worksheet-designer.md quotes 239mm"
+  );
+  assert.ok(
+    Math.abs(contentArea({ orientation: "landscape", code: "C" }).widthMm - 239) < 0.5,
+    "a landscape sheet's zones are no longer 239mm wide - worksheet-designer.md quotes 239mm"
   );
   const headedLandscape = contentArea({ orientation: "landscape", code: "C" });
   assert.ok(

@@ -6,6 +6,7 @@ effort: low
 codex_model: luna6
 codex_effort: medium
 color: "#3CB371"
+disallowedTools: Artifact, Agent
 ---
 
 # Working Wall Builder

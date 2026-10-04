@@ -6,6 +6,7 @@ effort: low
 codex_model: luna6
 codex_effort: low
 color: "#33FF33"
+disallowedTools: Artifact, Agent
 ---
 
 # Slide Builder

@@ -1,0 +1,445 @@
+{
+  "key": "leisure",
+  "runs": {
+    "a": {
+      "notes": {
+        "minutes": 26,
+        "checkRuns": 13,
+        "firstCheckPassed": false,
+        "goesToPass": null,
+        "lastCheckPassed": false,
+        "checks": [
+          {
+            "passed": false,
+            "lines": [
+              "TIMELINE_ZONE_TOO_NARROW: the date label \"1840\" has 0.23in between its neighbours but needs 0.31in for the word \"1840\" even at the 9pt floor. Give the timeline a wider space, space the marks further apart, or shorten the label; the drawing never splits a word."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "NUMBERING_CONFLICT: Expected - zone \"d\": questionGroupId is on a helper holding a SET of questions, which takes a run of numbers rather than one. Wrap the Part in a stack so question: true covers the Part as a whole."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "INSTRUCTION_IS_A_LIST: this instruction carries 4 lines, so it is a list and will print as a paragraph of grey text. If they are the lesson's success criteria, leave them off: they stay on the board and are never printed on a worksheet. A list of a method's steps printed just as a reminder is left off too. Otherwise, if they are steps a child works through to reach the answer, they are part of its question: put them with it, one to a line, or in maths use \"method-frame\". If they are questions, use \"questions\" or \"written-answers\", which number them and give the child somewhere to answer. An instruction is one direction, in at most 2 lines."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"band-cols-split-right\" (landscape), 89% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"band-cols-split-right\" (portrait), 84% full.",
+              "TIMELINE_ZONE_TOO_NARROW: the date label \"1840\" has 0.23in between its neighbours but needs 0.31in for the word \"1840\" even at the 9pt floor. Give the timeline a wider space, space the marks further apart, or shorten the label; the drawing never splits a word."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"band-cols-split-right\" (landscape), 89% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"band-cols-split-right\" (portrait), 84% full.",
+              "TIMELINE_ZONE_TOO_NARROW: the date label \"1840\" has 0.23in between its neighbours but needs 0.31in for the word \"1840\" even at the 9pt floor. Give the timeline a wider space, space the marks further apart, or shorten the label; the drawing never splits a word."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"band-cols-split-right\" (landscape), 89% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"band-cols-split-right\" (portrait), 84% full.",
+              "SHEET_DOES_NOT_FIT: Below - the content needs 365mm but the page has 180mm, a shortfall of 185mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"band-cols-split-right\" (landscape), 89% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"band-cols-split-right\" (portrait), 84% full.",
+              "SHEET_DOES_NOT_FIT: Below - the content needs 358mm but the page has 267mm, a shortfall of 91mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"band-cols-split-right\" (landscape), 89% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"band-cols-split-right\" (portrait), 84% full.",
+              "SHEET_DOES_NOT_FIT: Below - the content needs 358mm but the page has 267mm, a shortfall of 91mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"band-cols-split-right\" (landscape), 89% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"band-cols-split-right\" (portrait), 84% full.",
+              "SHEET_DOES_NOT_FIT: Below - the content needs 358mm but the page has 267mm, a shortfall of 91mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"band-cols-split-right\" (landscape), 89% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"band-cols-split-right\" (portrait), 84% full.",
+              "SHEET_DOES_NOT_FIT: Below - the content needs 358mm but the page has 267mm, a shortfall of 91mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"band-cols-split-right\" (landscape), 89% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"band-cols-split-right\" (portrait), 84% full.",
+              "SHEET_DOES_NOT_FIT: Below - the content needs 358mm but the page has 267mm, a shortfall of 91mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"band-cols-split-right\" (landscape), 89% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"four-stacked\" (portrait), 89% full.",
+              "SHEET_DOES_NOT_FIT: Below - the content needs 352mm but the page has 267mm, a shortfall of 85mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"band-cols-split-right\" (landscape), 89% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"four-stacked\" (portrait), 89% full.",
+              "SHEET_DOES_NOT_FIT: Below - the content needs 352mm but the page has 267mm, a shortfall of 85mm. Cut content or choose a roomier layout."
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "Created [worksheet.json](C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/leisure-a/worksheet.json) with Expected, Below and Greater Depth sheets and answer keys.\n\n`HELPER_DELIVERY_OK` passed. Worksheet preflight did not pass: the Below sheet still measures 352 mm against 267 mm available after its authorised fit reductions. I recorded the 85 mm `PAGE_PLAN_GAP` in the spec. The remaining page plan needs revision by the adaptation designer before this can reach `WORKSHEET_PREFLIGHT_OK` and COMPLETE.",
+        "usage": {
+          "input_tokens": 8455288,
+          "cached_input_tokens": 8221952,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 63493,
+          "reasoning_output_tokens": 44151
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "noteReworded": true,
+        "lastResort": true,
+        "ok": false,
+        "marker": "FIXED_RESOURCE_FLAGGED worksheets: Below",
+        "omitted": [],
+        "standIns": [
+          {
+            "sheet": "Below",
+            "why": "the Expected sheet stands in for Below, and the Below section of the answer key is the Expected answers: the page cannot hold the Below sheet (the content needs 352mm but the page has 267mm, a shortfall of 85mm. Cut content or choose a roomier layout.)."
+          }
+        ],
+        "refusedFirst": [
+          "SHEET_DOES_NOT_FIT: Below - the content needs 352mm but the page has 267mm, a shortfall of 85mm. Cut content or choose a roomier layout."
+        ]
+      },
+      "buildLines": [
+        "AUTO_LAYOUT: Below drawn in \"band-cols-split-right\" (landscape), 89% full.",
+        "AUTO_LAYOUT: Expected drawn in \"band-cols-split-right\" (landscape), 89% full.",
+        "AUTO_LAYOUT: Greater Depth drawn in \"four-stacked\" (portrait), 89% full.",
+        "RECORDING: Below - sheet, a copy per child. Question 1 uses the printed pictures and tick table.",
+        "RECORDING: Expected - sheet, a copy per child. Question 1 uses the printed pictures and tick table.",
+        "RECORDING: Greater Depth - sheet, a copy per child. Question 1 uses the printed pictures and tick table.",
+        "ANSWER_SHEET: 1 side.",
+        "SHEET_STANDS_IN: Below - the Expected sheet stands in for Below, and the Below section of the answer key is the Expected answers: the page cannot hold the Below sheet (the content needs 352mm but the page has 267mm, a shortfall of 85mm. Cut content or choose a roomier layout.).",
+        "Note: Below fit reductions applied in the adaptation's order: removed the remote-control-car row, the 'Playing on a phone' option, and the leisure-time definition box. PAGE_PLAN_GAP: after those reductions, the Below content still measures 352mm in a full-width portrait layout against the height available, an 85mm shortfall. Its first question and timeline both need a full-width zone, so the remaining prompts cannot be distributed across narrower columns to recover the page. The Below fit priority does not authorise dropping the whole tick table. Expected auto-selects landscape; Below and Greater Depth use portrait to keep their longer responses and, for Below, its timeline together.",
+        "Page fit: âœ“ Below: 1 page, Expected: 1 page, Greater Depth: 1 page"
+      ],
+      "pages": {
+        "levels": {
+          "below": [
+            "sheet-01.jpg"
+          ],
+          "expected": [
+            "sheet-02.jpg"
+          ],
+          "greaterDepth": [
+            "sheet-03.jpg"
+          ]
+        },
+        "answers": [
+          "answers-01.jpg"
+        ],
+        "slips": [],
+        "standIns": [
+          "below"
+        ],
+        "pageCountMatches": true
+      }
+    },
+    "b": {
+      "notes": {
+        "minutes": 14,
+        "checkRuns": 8,
+        "firstCheckPassed": false,
+        "goesToPass": null,
+        "lastCheckPassed": false,
+        "checks": [
+          {
+            "passed": false,
+            "lines": [
+              "IMAGE_MISSING: no file at \"C:\\Users\\Daniel\\Projects\\lessonv4\\evaluations\\worksheet-designer-three-runs-2026-10-04\\runs\\leisure-b\\unsplash\\spinning-top.jpg\". A labelled diagram needs its picture on disk before the sheet is built.",
+              "IMAGE_MISSING: no file at \"C:\\Users\\Daniel\\Projects\\lessonv4\\evaluations\\worksheet-designer-three-runs-2026-10-04\\runs\\leisure-b\\unsplash\\spinning-top.jpg\". A labelled diagram needs its picture on disk before the sheet is built.",
+              "IMAGE_MISSING: no file at \"C:\\Users\\Daniel\\Projects\\lessonv4\\evaluations\\worksheet-designer-three-runs-2026-10-04\\runs\\leisure-b\\unsplash\\spinning-top.jpg\". A labelled diagram needs its picture on disk before the sheet is built."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "IMAGE_MISSING like the build's, not a raw stack trace.",
+              "IMAGE_UNREADABLE:), so pass that through as the build would."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (strip-right, portrait) is short both ways: 6mm of height and 36mm of width in its tightest zone. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + card-row + recording-table] + instruction + a stack of [instruction + timeline + circle-the-answer] + a stack of [instruction + chip-bank + writing-frame]]: 253mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 404mm but the page has 267mm, a shortfall of 137mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 397mm but the page has 180mm, a shortfall of 217mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 3 zones. The closest shape (strip-left-body-split-flip-h, portrait) is short both ways: 10mm of height and 36mm of width in its tightest zone. Fewer, wider zones is the obvious next move and it is worth one try - but note that a picture is scaled by its WIDTH and its height follows, so a wider zone holds a TALLER picture. On a picture-led sheet, widening usually trades a width refusal for a height one, and the real answer is one picture fewer. The most expensive single item is a stack of [a stack of [instruction + chip-bank + writing-frame] + a stack of [1 x multiple-choice]]: 157mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. thirds-stacked (portrait): the content needs 408mm but the page has 267mm, a shortfall of 141mm. Cut content or choose a roomier layout. thirds-stacked (landscape): the content needs 401mm but the page has 180mm, a shortfall of 221mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 3 zones. The closest shape (strip-left-body-split-flip-h, portrait) fits the page height with 17mm to spare, and fails on WIDTH: its tightest zone is 36mm too narrow for what it holds. Fewer, wider zones is the obvious next move and it is worth one try - but note that a picture is scaled by its WIDTH and its height follows, so a wider zone holds a TALLER picture. On a picture-led sheet, widening usually trades a width refusal for a height one, and the real answer is one picture fewer. The most expensive single item is a stack of [a stack of [instruction + chip-bank + writing-frame] + a stack of [1 x multiple-choice]]: 149mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. thirds-stacked (portrait): the content needs 376mm but the page has 267mm, a shortfall of 109mm. Cut content or choose a roomier layout. thirds-stacked (landscape): the content needs 385mm but the page has 180mm, a shortfall of 205mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (side-70-30, portrait) fits the page height with 12mm to spare, and fails on WIDTH: its tightest zone is 32mm too narrow for what it holds. Fewer, wider zones is the obvious next move and it is worth one try - but note that a picture is scaled by its WIDTH and its height follows, so a wider zone holds a TALLER picture. On a picture-led sheet, widening usually trades a width refusal for a height one, and the real answer is one picture fewer. The most expensive single item is a stack of [a stack of [instruction + card-row + recording-table] + a stack of [instruction + timeline + circle-the-answer] + a stack of [instruction + chip-bank + writing-frame]]: 229mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 376mm but the page has 267mm, a shortfall of 109mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 385mm but the page has 180mm, a shortfall of 205mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 109mm: the content needs 376mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + card-row + recording-table] + a stack of [instruction + timeline + circle-the-answer] + a stack of [instruction + chip-bank + writing-frame] + a stack of [instruction + chip-bank + writing-frame] + a stack of [1 x multiple-choice]]: 359mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 376mm but the page has 267mm, a shortfall of 109mm. Cut content or choose a roomier layout. full (landscape): the content needs 385mm but the page has 180mm, a shortfall of 205mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "NEVER_ARRIVES = new Set([\"unsatisfied\", \"omitted\"]);",
+              "PAGE_PLAN_GAP or WORKSHEET_CONTENT_GAP note names Expected either, ` +"
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "I created [worksheet.json](/C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/leisure-b/worksheet.json), including the pupil sheets, answer keys, and notes for the adaptation’s pre-authorised cuts.\n\nThe worksheet preflight did **not** pass. Below still needs 376mm on a 267mm portrait page, 109mm over, after those cuts and one-, two-, and three-zone layouts. The remaining protected work needs a revised page plan from the adaptation designer, so I can’t report `WORKSHEET_PREFLIGHT_OK`.\n\nThe helper delivery check passed: `HELPER_DELIVERY_OK 0`. The three approved worksheet photos are referenced by their specified filenames.",
+        "usage": {
+          "input_tokens": 4309203,
+          "cached_input_tokens": 4146944,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 33301,
+          "reasoning_output_tokens": 19441
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "noteReworded": false,
+        "lastResort": true,
+        "ok": false,
+        "marker": "",
+        "omitted": [],
+        "standIns": [],
+        "refusedFirst": [
+          "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 109mm: the content needs 376mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + card-row + recording-table] + a stack of [instruction + timeline + circle-the-answer] + a stack of [instruction + chip-bank + writing-frame] + a stack of [instruction + chip-bank + writing-frame] + a stack of [1 x multiple-choice]]: 359mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 376mm but the page has 267mm, a shortfall of 109mm. Cut content or choose a roomier layout. full (landscape): the content needs 385mm but the page has 180mm, a shortfall of 205mm. Cut content or choose a roomier layout."
+        ]
+      },
+      "buildLines": [
+        "INSTRUCTION_IS_A_LIST: this instruction carries 4 lines, so it is a list and will print as a paragraph of grey text. If they are the lesson's success criteria, leave them off: they stay on the board and are never printed on a worksheet. A list of a method's steps printed just as a reminder is left off too. Otherwise, if they are steps a child works through to reach the answer, they are part of its question: put them with it, one to a line, or in maths use \"method-frame\". If they are questions, use \"questions\" or \"written-answers\", which number them and give the child somewhere to answer. An instruction is one direction, in at most 2 lines."
+      ],
+      "pages": {
+        "levels": {},
+        "answers": [],
+        "slips": []
+      }
+    },
+    "c": {
+      "notes": {
+        "minutes": 28,
+        "checkRuns": 18,
+        "firstCheckPassed": false,
+        "goesToPass": 15,
+        "lastCheckPassed": true,
+        "checks": [
+          {
+            "passed": false,
+            "lines": [
+              "QUESTION_GROUP_INVALID: Below - questionGroupId \"below-qg-003\" holds only one Part. A Question group needs at least two Parts, or the Part is an ordinary question and carries no questionGroupId."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "QUESTION_GROUP_INVALID: Below - questionGroupId \"below-qg-003\" holds only one Part. A Question group needs at least two Parts, or the Part is an ordinary question and carries no questionGroupId."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": []
+          },
+          {
+            "passed": false,
+            "lines": []
+          },
+          {
+            "passed": false,
+            "lines": []
+          },
+          {
+            "passed": false,
+            "lines": [
+              "TIMELINE_ZONE_TOO_NARROW: the date label \"1840\" has 0.23in between its neighbours but needs 0.31in for the word \"1840\" even at the 9pt floor. Give the timeline a wider space, space the marks further apart, or shorten the label; the drawing never splits a word."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 167mm: the content needs 434mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + card-row + recording-table] + a stack of [instruction + timeline + circle-the-answer] + a stack of [instruction + chip-bank + written-answers] + a stack of [instruction + chip-bank + written-answers] + a stack of [1 x multiple-choice]]: 422mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 434mm but the page has 267mm, a shortfall of 167mm. Cut content or choose a roomier layout. full (landscape): the content needs 424mm but the page has 180mm, a shortfall of 244mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 1mm: the content needs 268mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + timeline + circle-the-answer] + a stack of [instruction + chip-bank + written-answers] + a stack of [instruction + chip-bank + written-answers] + a stack of [1 x multiple-choice]]: 253mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 268mm but the page has 267mm, a shortfall of 1mm. Cut content or choose a roomier layout. full (landscape): the content needs 258mm but the page has 180mm, a shortfall of 78mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "NUMBERING_CONFLICT: Expected - zone \"a\": questionGroupId is on a helper holding a SET of questions, which takes a run of numbers rather than one. Wrap the Part in a stack so question: true covers the Part as a whole."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Expected - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 1mm: the content needs 268mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + card-row + recording-table] + a stack of [instruction + written-answers] + a stack of [1 x written-answers] + a stack of [1 x questions]]: 303mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 268mm but the page has 267mm, a shortfall of 1mm. Cut content or choose a roomier layout. full (landscape): the content needs 268mm but the page has 180mm, a shortfall of 88mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "INSTRUCTION_IS_A_LIST: this instruction carries 4 lines, so it is a list and will print as a paragraph of grey text. If they are the lesson's success criteria, leave them off: they stay on the board and are never printed on a worksheet. A list of a method's steps printed just as a reminder is left off too. Otherwise, if they are steps a child works through to reach the answer, they are part of its question: put them with it, one to a line, or in maths use \"method-frame\". If they are questions, use \"questions\" or \"written-answers\", which number them and give the child somewhere to answer. An instruction is one direction, in at most 2 lines."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Greater Depth - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 20mm: the content needs 287mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + card-row + recording-table] + a stack of [1 x written-answers] + a stack of [1 x written-answers] + named-claim]: 300mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 287mm but the page has 267mm, a shortfall of 20mm. Cut content or choose a roomier layout. full (landscape): the content needs 287mm but the page has 180mm, a shortfall of 107mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"full\" (portrait), 97% full.",
+              "AUTO_LAYOUT: Expected -> \"full\" (portrait), 96% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"full\" (landscape), 74% full.",
+              "ANSWER_KEY_EXTRA: answerKey.below answers question (1), which the pupil sheet does not print. It prints: (1a), (1b), (2a), (2b)."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"full\" (portrait), 97% full.",
+              "AUTO_LAYOUT: Expected -> \"full\" (portrait), 96% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"full\" (landscape), 74% full.",
+              "EMPTY_SET: Below - zone \"a\" (timeline) has an empty eras, so the page prints the frame and nothing to act on. Fill eras in, or use a helper whose job the content actually is. If an upstream step emptied it, that step is the repair."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"full\" (portrait), 98% full.",
+              "AUTO_LAYOUT: Expected -> \"full\" (portrait), 96% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"full\" (landscape), 74% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"full\" (portrait), 98% full.",
+              "AUTO_LAYOUT: Expected -> \"full\" (portrait), 96% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"full\" (landscape), 74% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"full\" (portrait), 98% full.",
+              "AUTO_LAYOUT: Expected -> \"full\" (portrait), 96% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"full\" (landscape), 74% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"full\" (portrait), 98% full.",
+              "AUTO_LAYOUT: Expected -> \"full\" (portrait), 96% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"full\" (landscape), 74% full."
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "Created [worksheet.json](C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/leisure-c/worksheet.json) with Below, Expected, and Greater Depth sheets and their answer keys.\n\nBoth required checks passed: `WORKSHEET_PREFLIGHT_OK` and `HELPER_DELIVERY_OK 0`. The fit reductions and Greater Depth landscape layout are recorded in the worksheet notes.",
+        "usage": {
+          "input_tokens": 12425848,
+          "cached_input_tokens": 12184832,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 44320,
+          "reasoning_output_tokens": 25520
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "noteReworded": true,
+        "lastResort": false,
+        "ok": true,
+        "marker": "FIXED_RESOURCE_OK worksheets",
+        "omitted": [],
+        "standIns": []
+      },
+      "buildLines": [
+        "AUTO_LAYOUT: Below drawn in \"full\" (portrait), 98% full.",
+        "AUTO_LAYOUT: Expected drawn in \"full\" (portrait), 96% full.",
+        "AUTO_LAYOUT: Greater Depth drawn in \"full\" (landscape), 74% full.",
+        "RECORDING: Below - sheet, a copy per child. Q1: children tick the printed picture table. Q2a: children circle a name beside the printed timeline. Q3b: children tick the printed choices.",
+        "RECORDING: Expected - sheet, a copy per child. Q1: children tick the printed picture table.",
+        "RECORDING: Greater Depth - sheet, a copy per child. Q1: children tick the printed picture table. Q2a: children write beside the printed comparison. Q3: children explain Mia's printed claim.",
+        "ANSWER_SHEET: 1 side.",
+        "Note: Below: removed the whole tick table after the page measured well over; this is the adaptation's second pre-authorised fit reduction.",
+        "Note: Below: removed the \"Playing on a phone\" option from 3b to resolve the remaining 1mm fit shortfall; the adaptation pre-authorises this because Watching TV tests the same idea.",
+        "Note: Expected: removed the fourth tick-table row, remote-control car, to resolve the 1mm page shortfall; the lesson design pre-authorises this because the games console tests the same idea.",
+        "Note: Greater Depth: removed the fourth tick-table row, remote-control car, to stay within one page; the adaptation pre-authorises this because the games console tests the same idea.",
+        "Note: Greater Depth: removed the whole tick table after dropping its fourth row still left the page 20mm over. The adaptation pre-authorises this as its second reduction because question 3 uses the same knowledge.",
+        "Note: Greater Depth is landscape because the extended comparison and claim response need the wider page; Below and Expected remain portrait.",
+        "Page fit: âœ“ Below: 1 page, Expected: 1 page, Greater Depth: 1 page"
+      ],
+      "pages": {
+        "levels": {
+          "below": [
+            "sheet-01.jpg"
+          ],
+          "expected": [
+            "sheet-02.jpg"
+          ],
+          "greaterDepth": [
+            "sheet-03.jpg"
+          ]
+        },
+        "answers": [
+          "answers-01.jpg"
+        ],
+        "slips": [],
+        "standIns": [],
+        "pageCountMatches": true
+      }
+    }
+  }
+}

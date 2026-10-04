@@ -555,10 +555,26 @@ function resolveAutoSheet(sheet, meta) {
   const result = suggestLayouts(items, {
     yearGroup: meta && meta.yearGroup,
     orientation,
-    extra: { title: sheet.title },
+    extra: { title: sheet.title, fullPage: Boolean(meta && meta.fullPage === true) },
   });
 
+  let chosen = result;
+  let placed = items;
   if (!result.fits.length) {
+    const split = splitToFit(items, (candidate) =>
+      suggestLayouts(candidate, {
+        yearGroup: meta && meta.yearGroup,
+        orientation,
+        extra: { title: sheet.title, fullPage: Boolean(meta && meta.fullPage === true) },
+      })
+    );
+    if (split) {
+      chosen = split.result;
+      placed = split.items;
+    }
+  }
+
+  if (!chosen.fits.length) {
     // The refusal carries the same millimetre verdict the suggest tool
     // prints, because the person reading it has the same decision to make:
     // is this a shape problem or a brief bigger than a page?
@@ -569,27 +585,154 @@ function resolveAutoSheet(sheet, meta) {
     throw new WorksheetError(
       "SHEET_DOES_NOT_FIT",
       `layout "auto": no layout in the library holds these ${items.length} ` +
-        `zones. ${[...lines, ...examples].join(" ")}`
+        `zones. ${[...lines, ...examples].join(" ")}` +
+        partPrices(items, meta && meta.yearGroup)
     );
   }
 
-  const best = result.fits[0];
+  const best = chosen.fits[0];
   const zones = {};
   best.zones.forEach((id, i) => {
-    zones[id] = items[i];
+    zones[id] = placed[i];
   });
 
   const { layout, orientation: _requested, zones: _items, ...rest } = sheet;
+  const resolved = { ...rest, layout: best.layout, orientation: best.orientation, zones };
+
+  // One column on a portrait page may take the narrower working width (see
+  // NARROW_SPARE_MM in page.js). Whether it does is settled in sheetsOf, on
+  // the numbered page; this only says the sheet is a candidate.
+  const narrowIfFits =
+    best.orientation === "portrait" && placed.length === 1 && sheet.narrow !== false;
+  if (narrowIfFits) resolved.narrowIfFits = true;
+
   return {
-    sheet: { ...rest, layout: best.layout, orientation: best.orientation, zones },
+    sheet: resolved,
     choice: {
+      narrowIfFits,
       layout: best.layout,
       name: best.name,
       orientation: best.orientation,
       fillPct: best.fillPct,
       verdict: best.verdict,
+      splitFrom: placed === items ? null : items.length,
+      zoneCount: placed.length,
     },
   };
+}
+
+// A column of content too tall for any page is very often a page's worth laid
+// out in one column. On 4 October 2026 fifteen worksheet designers were given
+// five lessons: most wrote each sheet first as ONE zone holding everything,
+// were refused for height, and passed by doing nothing but moving the second
+// half of that same stack into a second zone. The refusal had told them the
+// opposite ("rearranging zones does not create height, stop trying shapes"),
+// which is true of the zones they handed over and false of the ones they could
+// have: two columns on a landscape page hold what one column cannot.
+//
+// So before an auto sheet is refused, the engine tries the split itself. A
+// plain stack is cut at a boundary between two of its own parts, and nowhere
+// else: the content, its wording and its order are exactly what was written,
+// so a set that gets harder as it goes still does. A cut never falls straight
+// after a heading or an instruction, which would leave it at the foot of one
+// column with what it introduces at the top of the next. Fewest cuts wins, and
+// between equal cuts the same comfort ranking that chooses every other shape.
+//
+// It never runs on a sheet that already fits, so a page that fitted as written
+// is drawn exactly as before.
+// What each part of a refused sheet costs, said in the refusal itself.
+//
+// A refusal used to give one number, the shortfall, and the designer found out
+// which parts made it up by cutting something and asking again: one Year 4
+// PSHE sheet went 32mm over, 19mm, 5mm, 2mm, 4mm across five checks (4 October
+// 2026). `suggest.js --measure` prints these prices, and thirteen runs of
+// fifteen never ran it, because it is a second tool to remember at the moment
+// the first one has just said no. So the prices come with the no, and the cut
+// that clears the page can be chosen once.
+function partPrices(items, yearGroup) {
+  try {
+    const { needsContent, describeContent } = require("./helpers");
+    const price = (content) =>
+      Math.round(needsContent(withPhase(content, phaseFor(yearGroup))).minHeightMm);
+    const lines = [];
+    items.forEach((item, index) => {
+      const parts = item && Array.isArray(item.stack) && item.stack.length > 1 ? item.stack : [item];
+      const label = items.length > 1 ? `zone ${index + 1}: ` : "";
+      lines.push(
+        label +
+          parts.map((part, i) => `(${i + 1}) ${describeContent(part)} ${price(part)}mm`).join("; ")
+      );
+    });
+    return (
+      ` What each part needs at its smallest, top to bottom - ${lines.join(" | ")}.` +
+      " A stack also needs the gaps between its parts, about 8mm between one question and the next. Take off enough in one" +
+      " go, in fit-priority order, to clear the whole shortfall."
+    );
+  } catch (error) {
+    return "";
+  }
+}
+
+const NEVER_ENDS_A_ZONE = new Set(["section-label", "instruction"]);
+const MOST_ZONES_TRIED = 4;
+
+function isPlainStack(item) {
+  return (
+    Boolean(item) &&
+    typeof item === "object" &&
+    !Array.isArray(item) &&
+    Object.keys(item).length === 1 &&
+    Array.isArray(item.stack) &&
+    item.stack.length >= 2
+  );
+}
+
+function oneMoreCut(items) {
+  const out = [];
+  items.forEach((item, i) => {
+    if (!isPlainStack(item)) return;
+    for (let cut = 1; cut < item.stack.length; cut += 1) {
+      const last = item.stack[cut - 1];
+      if (last && NEVER_ENDS_A_ZONE.has(last.helper)) continue;
+      out.push([
+        ...items.slice(0, i),
+        { stack: item.stack.slice(0, cut) },
+        { stack: item.stack.slice(cut) },
+        ...items.slice(i + 1),
+      ]);
+    }
+  });
+  return out;
+}
+
+function splitToFit(items, suggest) {
+  const { comfortPenalty } = require("./suggest");
+  let level = [items];
+  while (level.length && level[0].length < MOST_ZONES_TRIED) {
+    const next = [];
+    const seen = new Set();
+    for (const candidate of level) {
+      for (const cut of oneMoreCut(candidate)) {
+        const key = cut.map((entry) => (Array.isArray(entry.stack) ? entry.stack.length : 1)).join(",");
+        if (seen.has(key)) continue;
+        seen.add(key);
+        next.push(cut);
+      }
+    }
+    let best = null;
+    for (const candidate of next) {
+      const result = suggest(candidate);
+      if (!result.fits.length) continue;
+      const top = result.fits[0];
+      const score = [top.strain, comfortPenalty(top.fillPct)];
+      if (!best || score[0] < best.score[0] || (score[0] === best.score[0] && score[1] < best.score[1])) {
+        best = { items: candidate, result, score };
+      }
+    }
+    if (best) return best;
+    level = next;
+  }
+  return null;
 }
 
 // Criteria panels on every sheet, found before any shape is chosen. Left in,
@@ -670,16 +813,29 @@ function resolveAutoLayouts(worksheet) {
   const out = {};
   let changed = false;
 
+  // Every sheet is tried before the first refusal is thrown. A pack has up to
+  // three sheets, and a refusal that named only the first sent the designer
+  // round once per sheet: fix Below, be told about Expected, fix that, be told
+  // about Greater Depth. The first refusal is still the one thrown, unchanged,
+  // so a caller that acts on one sheet at a time (the build's last resort)
+  // behaves as it did; the rest ride along in `alsoRefused` for the preflight
+  // to print in the same breath.
+  let refusal = null;
   for (const [key, sheet] of Object.entries(sheets)) {
     let resolved;
     try {
       resolved = resolveAutoSheet(sheet, meta);
     } catch (error) {
-      if (error instanceof WorksheetError) {
-        error.message = `${SHEET_LABELS[key] || key} - ${error.message}`;
-        error.location = { sheet: key };
+      if (!(error instanceof WorksheetError)) throw error;
+      error.message = `${SHEET_LABELS[key] || key} - ${error.message}`;
+      error.location = { sheet: key };
+      if (!refusal) {
+        refusal = error;
+        refusal.alsoRefused = [];
+      } else {
+        refusal.alsoRefused.push(error);
       }
-      throw error;
+      continue;
     }
     out[key] = resolved.sheet;
     if (resolved.choice) {
@@ -687,6 +843,8 @@ function resolveAutoLayouts(worksheet) {
       changed = true;
     }
   }
+
+  if (refusal) throw refusal;
 
   return {
     worksheet: changed ? { ...worksheet, sheets: out } : worksheet,
@@ -843,12 +1001,32 @@ function sheetsOf(worksheet) {
               : null,
           layout: page.layout,
           orientation: page.orientation === "landscape" ? "landscape" : "portrait",
+          // A fixture approved before the trim strip existed (page.js).
+          fullPage: meta.fullPage === true,
+          // Set by the engine on a one-column portrait sheet that fits the
+          // narrower working width (resolveAutoSheet).
           zones: numberer.numberZones(
             withPhase(page.zones || {}, phaseFor(meta.yearGroup))
           ),
           decorations: page.decorations || [],
         },
       });
+      // One column on a portrait page takes the narrower working width when
+      // the FINAL page still fits there (see NARROW_SPARE_MM in page.js). It is
+      // decided here, on the numbered zones the page will print, because a
+      // question number takes a gutter of its own: an approved maths sheet
+      // fitted 144mm before its numbers and needed 154mm with them. The same
+      // fit check every sheet gets, run on the narrower page, so a sheet that
+      // would squeeze keeps the full width.
+      const made = out[out.length - 1].spec;
+      if (sheet.narrowIfFits === true && pages.length === 1) {
+        try {
+          const { checkFit } = require("./render");
+          if (checkFit({ ...made, narrow: true }).length === 0) made.narrow = true;
+        } catch (error) {
+          // Left at the full width.
+        }
+      }
     });
 
     numberer.finish();
@@ -1097,11 +1275,20 @@ const PUPIL_TEXT_FIELDS = new Set([
 const WRITE_IN_BLANK = /_{2,}/g; // printed as a write-in box, not as underscores
 const INLINE_EMPHASIS = /\*\*/g; // methods.js turns **this** into <strong>
 
+const DRAWN_DIGIT_BOX = /[□▢☐◻▫]/g;
+
 function comparableText(value) {
   // A criterion's colour marks print as colour, not as characters.
   return plainCriteria(String(value))
     .replace(INLINE_EMPHASIS, "")
+    // A sentence starter that trails off into a blank is finished on the ruled
+    // lines under it, so its blank and the full stop after it are not drawn
+    // (helpers/frames.js, starterText).
+    .replace(/\s*_{2,}\s*[.?!]?\s*$/, "")
     .replace(WRITE_IN_BLANK, "")
+    // An empty-box character is drawn as a box, as a write-in blank is drawn
+    // as a line, so neither is looked for among the printed characters.
+    .replace(DRAWN_DIGIT_BOX, "")
     .replace(/\s+/g, "")
     .toLowerCase();
 }
@@ -1114,6 +1301,7 @@ function comparableHtml(html) {
     .replace(/&gt;/g, ">")
     .replace(/&nbsp;/g, " ")
     .replace(WRITE_IN_BLANK, "")
+    .replace(DRAWN_DIGIT_BOX, "")
     .replace(/\s+/g, "")
     .toLowerCase();
 }

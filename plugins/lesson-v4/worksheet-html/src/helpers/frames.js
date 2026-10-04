@@ -484,7 +484,7 @@ function renderWritingFrame(spec) {
   const starters = (spec.starters || [])
     .map((starter) => {
       const ruled = Array.from(
-        { length: starterLinesCount(starter) },
+        { length: spec.slip ? 0 : starterLinesCount(starter) },
         () => `<span class="h-wf-line" style="height:${lineMm}mm"></span>`
       ).join("");
       return `
@@ -505,12 +505,39 @@ function renderWritingFrame(spec) {
     </div>`;
 }
 
+// One or the other. A starter the child completes IN the sentence ("Children
+// had ______ time to play.") is answered in its blank, and ruled lines under it
+// ask for the same answer twice (the teacher, 4 October 2026: "it has line for
+// them to write to fill the game, then writing lines to write. It's got to be
+// one or the other"). A starter that only trails off ("This was because
+// ______.") is finished on the lines, so its trailing blank is not drawn.
+const STARTER_BLANK = /_{2,}/;
+const TRAILING_BLANK = /\s*_{2,}\s*[.?!]?\s*$/;
+
+function starterRaw(starter) {
+  return typeof starter === "string" ? starter : starter.text;
+}
+
+// Filled in where it stands: it has a blank, and it does not END on one. A
+// frame that ends on a blank ("The sensible choice is to ______ because
+// ______.") is a sentence to write out, and keeps its lines.
+function starterFillsItsOwnBlank(starter) {
+  const raw = String(starterRaw(starter) ?? "");
+  return STARTER_BLANK.test(raw) && !TRAILING_BLANK.test(raw);
+}
+
 function starterLinesCount(starter) {
+  if (starterFillsItsOwnBlank(starter)) return 0;
   return typeof starter === "string" ? 1 : Math.max(1, starter.lines || 1);
 }
 
 function starterText(starter) {
-  return typeof starter === "string" ? starter : starter.text;
+  const raw = starterRaw(starter);
+  const text = String(raw ?? "");
+  // Only a starter whose ONE blank is the trailing one loses it: the lines
+  // under it are that blank.
+  const stripped = text.replace(TRAILING_BLANK, "");
+  return TRAILING_BLANK.test(text) && !STARTER_BLANK.test(stripped) ? stripped : text;
 }
 
 // The frame holds a stem and several starters, so it is a panel rather than a
@@ -528,10 +555,17 @@ function measureWritingFrame(spec, widthMm) {
 
   const body = (spec.starters || []).reduce((h, starter) => {
     const textMm = linesFor(starterText(starter), innerMm) * LINE_MM;
-    return h + textMm + starterLinesCount(starter) * lineMm + STARTER_GAP_MM;
+    // On a question slip the child writes in their book, so the frame keeps its
+    // sentence starters and loses the ruled lines under them.
+    return h + textMm + (spec.slip ? 0 : starterLinesCount(starter)) * lineMm + STARTER_GAP_MM;
   }, 0);
 
   return stemMm + body + WF_PAD_V_MM * 2;
+}
+
+function enoughWritingFrame(spec, widthMm) {
+  const lines = (spec.starters || []).reduce((n, starter) => n + starterLinesCount(starter), 0);
+  return measureWritingFrame(spec, widthMm) + lines * writingLineMm(spec) * (WRITING_LINE_GROWN_RATIO - 1);
 }
 
 function needsWritingFrame(spec) {
@@ -1123,6 +1157,12 @@ const helpers = {
     measure: measureWritingFrame,
     needs: needsWritingFrame,
     greed: 3, // writing space is the right home for spare room
+    // And only as far as its ruled lines can use it. With no ceiling a frame
+    // whose answer goes in a gap in its sentence took the page's spare height
+    // and printed as a box of blank paper under one line of print (the
+    // teacher, 4 October 2026: "why is there so much dead space under written
+    // lines to write on?").
+    enough: enoughWritingFrame,
   },
   steps: {
     requires: ["steps"],

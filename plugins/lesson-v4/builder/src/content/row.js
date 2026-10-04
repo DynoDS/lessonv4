@@ -405,4 +405,14 @@ function measureRow(zone, data, ctx) {
   return tallest > 0 ? { h: Math.min(tallest, zone.h) } : null;
 }
 
-module.exports = { drawRow, measureRow };
+// The width each item of a row is drawn at, for a stack working out how tall
+// the row's words need it to be (content/stack.js, itemNeed).
+function rowWidths(zone, data, ctx) {
+  const items = Array.isArray(data.items) ? data.items : [];
+  if (items.length === 0) return [];
+  const itemW = (zone.w - GAP * (items.length - 1)) / items.length;
+  if (!(itemW > 0)) return [];
+  return itemWidths(items, itemW, zone, ctx);
+}
+
+module.exports = { drawRow, measureRow, rowWidths };

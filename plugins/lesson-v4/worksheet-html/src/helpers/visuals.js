@@ -80,11 +80,22 @@ const balancedPatternPlateSpec = (spec) => ({
 //
 // Spare height belongs to writing space, or at the foot of the page where a
 // teacher trims it. A helper that genuinely redraws itself taller can say so.
-function fromShared(module, toSpec, { capMm, minWidthMm, minHeightMm, greed = 0 }) {
+function fromShared(module, toSpec, { capMm, minWidthMm, minHeightMm, greed = 0, maxWidthMm }) {
+  // `maxWidthMm` (a number, or a function of the spec) stops a drawing that has
+  // no reason to be page-wide from stretching to the zone: it is drawn at that
+  // width against the left, and measured at it.
+  const widest = (spec) => (typeof maxWidthMm === "function" ? maxWidthMm(spec) : maxWidthMm);
   return {
-    render: (spec) => `<div class="h-figure">${module.tightSvg(toSpec(spec)).svg}</div>`,
-    measure: (spec, widthMm) =>
-      heightFromAspect(module.tightSvg(toSpec(spec)).aspect, widthMm, capMm),
+    render: (spec) => {
+      const max = widest(spec);
+      const style = max ? ` style="max-width:${max}mm;margin-right:auto"` : "";
+      return `<div class="h-figure"${style}>${module.tightSvg(toSpec(spec)).svg}</div>`;
+    },
+    measure: (spec, widthMm) => {
+      const max = widest(spec);
+      const drawn = max && typeof widthMm === "number" ? Math.min(widthMm, max) : widthMm;
+      return heightFromAspect(module.tightSvg(toSpec(spec)).aspect, drawn, capMm);
+    },
     needs: (spec) => ({
       minWidthMm: atLeast(minWidthMm, spec),
       minHeightMm: atLeast(minHeightMm, spec),
@@ -235,8 +246,19 @@ const helpers = {
       start: spec.start,
       end: spec.end,
       bars: spec.bars,
+      work: spec.work,
     }),
-    { capMm: 150, minWidthMm: 100, minHeightMm: 70, greed: 0 }
+    {
+      capMm: 150,
+      minWidthMm: 100,
+      minHeightMm: 70,
+      greed: 0,
+      // A line a child draws two or three jumps on does not need the page's
+      // width: on a full-width zone it ran 174mm for a 34-wide subtraction
+      // (the teacher, 4 October 2026: "number line doesn't have to be that
+      // wide"). Bars keep the zone's width.
+      maxWidthMm: (spec) => (spec.surface === "bar" ? undefined : 130),
+    }
   ),
 
   // A 2x2 sorting grid, the Carroll-diagram companion to venn: the same idea

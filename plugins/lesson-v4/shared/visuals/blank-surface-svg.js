@@ -44,10 +44,22 @@
 const FONT   = 'Arial';
 const CHAR_W = 0.58;       // Arial-bold character-width estimate (× font size)
 
-// Number line: a wide, faint baseline with a tall empty band above for jumps.
+// Number line: a wide, faint baseline with an empty band above for jumps.
+//
+// The band was 300 above and 110 below, which made the surface 2.4 times as
+// wide as it was tall. On a sheet that is 71mm of height at full width, so a
+// page designer wanting four of them had to squeeze each beside its sum, where
+// the start number printed tiny; on the board it came out as a short faint
+// line. Year 4 Maths Lesson 21 (3 October 2026) lost its worksheet to this:
+// four lines and two other tasks needed 434mm of a 267mm page, and the repairs
+// left four questions where six were designed. The teacher, shown the same
+// sheet with the band at 90 and 55 (a full-width line 27mm tall, all six tasks
+// on one side): "the reshaped one is right", on the sheet and on the board.
 const NL_LINE_W  = 1000;   // length of the baseline
-const NL_ABOVE_H = 300;    // empty drawing band ABOVE the line (the child's jumps)
-const NL_BELOW_H = 110;    // band BELOW the line (end labels + a little working room)
+const NL_ABOVE_H = 90;     // empty drawing band ABOVE the line (the child's jumps)
+const NL_BELOW_H = 55;     // band BELOW the line (the end labels sit in it)
+const NL_BELOW_WORK_H = 130; // band below when the child writes UNDER the line: the labels, then a row of handwriting
+const NL_ROOM_NONE = 16;   // the sliver left above a line nobody draws over
 const NL_STROKE  = 5;      // baseline stroke width
 const NL_COL     = '#9AA5B1';   // faint soft grey — reads as "draw your own here"
 
@@ -86,8 +98,18 @@ function esc(s) {
 // `profile` is optional: the stick-in pack passes its own so this prints in
 // ink. The line stays faint and the bar outline quiet,
 // in the greys nearest their board colours.
-function tightSvg(data, profile) {
+//
+// `look` is optional and the board's alone: `endFontSize` and `stroke`, in this
+// drawing's own units, for the number line's end labels and baseline. The board
+// places this drawing at whatever width its zone has, so a label drawn at one
+// size in these units prints at a different point size on every slide; the
+// board asks for the size that lands the label at its readable floor in the
+// zone it actually has (see builder/src/content/blank-surface.js). Paper passes
+// nothing and prints as it always has.
+function tightSvg(data, profile, look) {
   const C = printsInInk(profile) ? INK : COLOURS;
+  const endFs = look && Number.isFinite(look.endFontSize) && look.endFontSize > 0 ? look.endFontSize : END_FS;
+  const lineStroke = look && Number.isFinite(look.stroke) && look.stroke > 0 ? look.stroke : NL_STROKE;
   const surface = data && data.surface === 'bar' ? 'bar' : 'number-line';
 
   const parts = [];
@@ -125,18 +147,27 @@ function tightSvg(data, profile) {
   if (surface === 'number-line') {
     const start = data.start == null ? '' : String(data.start);
     const end   = data.end == null ? '' : String(data.end);
-    const baseY = NL_ABOVE_H;
+    // Where the child works decides where the room goes. Jumps are drawn
+    // ABOVE the line, so by default the band is above and only the end labels
+    // sit below. A line a child writes numbers UNDER (their own stops, missing
+    // values) wants its room below instead, and one that takes both wants
+    // both. The teacher, 4 October 2026: "it depends what the number line is,
+    // whether they write above like these, below like missing numbers ... the
+    // worksheet designer should know the difference so we can sort dead space".
+    const work = data.work === 'below' || data.work === 'both' ? data.work : 'above';
+    const aboveH = work === 'below' ? NL_ROOM_NONE : NL_ABOVE_H;
+    const belowH = work === 'above' ? NL_BELOW_H : NL_BELOW_WORK_H;
+    const baseY = aboveH;
 
-    // Reserve the FULL working surface in the crop — the empty band above (for
-    // jumps) and the small band below — so the child is given real height to
-    // construct in, not a thin strip cropped to the line itself.
-    ext(0, 0, NL_LINE_W, NL_ABOVE_H + NL_BELOW_H);
+    // Reserve the FULL working surface in the crop, so the child is given real
+    // height to construct in, not a thin strip cropped to the line itself.
+    ext(0, 0, NL_LINE_W, aboveH + belowH);
 
-    drawLine(0, baseY, NL_LINE_W, baseY, C.NL_COL, NL_STROKE);
+    drawLine(0, baseY, NL_LINE_W, baseY, C.NL_COL, lineStroke);
 
-    const labelY = baseY + END_GAP + END_FS * 0.5;
-    if (start !== '') drawText(0, labelY, start, END_FS, 'start', C.END_COL);
-    if (end !== '')   drawText(NL_LINE_W, labelY, end, END_FS, 'end', C.END_COL);
+    const labelY = baseY + END_GAP + endFs * 0.5;
+    if (start !== '') drawText(0, labelY, start, endFs, 'start', C.END_COL);
+    if (end !== '')   drawText(NL_LINE_W, labelY, end, endFs, 'end', C.END_COL);
   } else {
     let n = Number(data.bars);
     n = Number.isFinite(n) ? Math.max(1, Math.min(4, Math.round(n))) : 1;
@@ -168,7 +199,8 @@ function cacheKey(data) {
   if (surface === 'number-line') {
     const s = data && data.start != null ? data.start : '';
     const e = data && data.end != null ? data.end : '';
-    return `blank-surface:nl:${s}:${e}`;
+    const w = data && (data.work === 'below' || data.work === 'both') ? data.work : 'above';
+    return `blank-surface:nl:${s}:${e}:${w}`;
   }
   let n = Number(data && data.bars);
   n = Number.isFinite(n) ? Math.max(1, Math.min(4, Math.round(n))) : 1;

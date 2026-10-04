@@ -116,6 +116,9 @@ function doSignRoom(data) {
 }
 
 function instructionNeedsTwoLines(data) {
+  // An answer slide takes the taller header its question slide needed, so the
+  // pair's body does not move (content/reveal-pair.js, settlePairedHeaders).
+  if (data && data.pairedHeaderTwoLine === true) return true;
   const text = data && typeof data.instruction === 'string' ? data.instruction.trim() : '';
   if (!text) return false;
   const { textBoxWidthIn } = require('./glyph-width');

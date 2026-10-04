@@ -1,0 +1,403 @@
+{
+  "key": "renga",
+  "runs": {
+    "a": {
+      "notes": {
+        "minutes": 15,
+        "checkRuns": 8,
+        "firstCheckPassed": false,
+        "goesToPass": 6,
+        "lastCheckPassed": true,
+        "checks": [
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 75mm: the content needs 342mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [poem + a stack of [1 x instruction] + a stack of [1 x instruction] + questions + a stack of [1 x instruction] + card-row + circle-the-answer + match-up]: 409mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 342mm but the page has 267mm, a shortfall of 75mm. Cut content or choose a roomier layout. full (landscape): the content needs 322mm but the page has 180mm, a shortfall of 142mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (halves-side, landscape) is over by 3mm: the content needs 183mm and the page has 180mm. The most expensive single item is a stack of [poem + a stack of [1 x instruction] + a stack of [1 x instruction] + questions + a stack of [1 x instruction]]: 223mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 344mm but the page has 267mm, a shortfall of 77mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 324mm but the page has 180mm, a shortfall of 144mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Expected - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (side-40-60, portrait) fits the page height with 8mm to spare, and fails on WIDTH: its tightest zone is 4mm too narrow for what it holds. Fewer, wider zones is the obvious next move and it is worth one try - but note that a picture is scaled by its WIDTH and its height follows, so a wider zone holds a TALLER picture. On a picture-led sheet, widening usually trades a width refusal for a height one, and the real answer is one picture fewer. The most expensive single item is a stack of [poem + a stack of [1 x instruction] + a stack of [1 x instruction] + questions + a stack of [1 x instruction]]: 234mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 285mm but the page has 267mm, a shortfall of 18mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 271mm but the page has 180mm, a shortfall of 91mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Greater Depth - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (side-60-40, landscape) is over by 9mm: the content needs 189mm and the page has 180mm. The most expensive single item is a stack of [poem + a stack of [1 x instruction] + a stack of [1 x instruction] + a stack of [1 x written-answers] + a stack of [1 x instruction]]: 233mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 291mm but the page has 267mm, a shortfall of 24mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 277mm but the page has 180mm, a shortfall of 97mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"two-left-big\" (landscape), 97% full.",
+              "AUTO_LAYOUT: Expected -> \"two-above-big\" (portrait), 86% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"two-above-big\" (portrait), 86% full.",
+              "ANSWER_KEY_EXTRA: answerKey.below answers question (6), which the pupil sheet does not print. It prints: (1), (2), (3), (4), (5)."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"two-left-big\" (landscape), 97% full.",
+              "AUTO_LAYOUT: Expected -> \"two-above-big\" (portrait), 86% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"two-above-big\" (portrait), 86% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"two-left-big\" (landscape), 97% full.",
+              "AUTO_LAYOUT: Expected -> \"two-above-big\" (portrait), 86% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"two-above-big\" (portrait), 86% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"two-left-big\" (landscape), 97% full.",
+              "AUTO_LAYOUT: Expected -> \"two-above-big\" (portrait), 86% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"two-above-big\" (portrait), 86% full."
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "Completed [worksheet.json](/C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/renga-a/worksheet.json) with Below, Expected, and Greater Depth sheets plus their answer keys.\n\nThe authorised line naming/count prompts were removed from Below and Expected to fit the page, and recorded in the teacher notes. Below uses landscape for its matching task; Expected and Greater Depth use portrait.\n\nValidation passed: `WORKSHEET_PREFLIGHT_OK` and `HELPER_DELIVERY_OK`.",
+        "usage": {
+          "input_tokens": 4983792,
+          "cached_input_tokens": 4825600,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 31522,
+          "reasoning_output_tokens": 14673
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "lastResort": false,
+        "ok": true,
+        "marker": "FIXED_RESOURCE_OK worksheets",
+        "omitted": [],
+        "standIns": []
+      },
+      "buildLines": [
+        "AUTO_LAYOUT: Below drawn in \"two-left-big\" (landscape), 97% full.",
+        "AUTO_LAYOUT: Expected drawn in \"two-above-big\" (portrait), 86% full.",
+        "AUTO_LAYOUT: Greater Depth drawn in \"two-above-big\" (portrait), 86% full.",
+        "RECORDING: Below - sheet, a copy per child. Questions 1, 2 and 4 need the printed renga for counts, circling and marking links; question 6 needs the printed matching cards.",
+        "RECORDING: Expected - sheet, a copy per child. Questions 1, 2 and 4 need the printed renga for counts, circling and marking links; question 6 needs the printed stanza choices to compare.",
+        "RECORDING: Greater Depth - sheet, a copy per child. Questions 1, 2 and 4 need the printed renga for counts, circling and marking links; question 6 needs the printed stanza choices to compare.",
+        "ANSWER_SHEET: 1 side.",
+        "Note: Below question 3, asking how many syllables the broken line should have, is omitted under the adaptation's pre-authorised fit priority. The counts and line-circling remain, and the teacher has been told about the reduction.",
+        "Note: Expected question 3, naming the broken line and its correct count, is omitted under the lesson's pre-authorised fit priority. The counts and circling still show the shape check, and the teacher has been told about the reduction.",
+        "Note: Below uses landscape because the four-card matching task needs the extra width for clear matching lines.",
+        "Page fit: âœ“ Below: 1 page, Expected: 1 page, Greater Depth: 1 page"
+      ],
+      "pages": {
+        "levels": {
+          "below": [
+            "sheet-01.jpg"
+          ],
+          "expected": [
+            "sheet-02.jpg"
+          ],
+          "greaterDepth": [
+            "sheet-03.jpg"
+          ]
+        },
+        "answers": [
+          "answers-01.jpg"
+        ],
+        "slips": [],
+        "standIns": [],
+        "pageCountMatches": true
+      }
+    },
+    "b": {
+      "notes": {
+        "minutes": 32,
+        "checkRuns": 12,
+        "firstCheckPassed": false,
+        "goesToPass": 9,
+        "lastCheckPassed": true,
+        "checks": [
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 67mm: the content needs 334mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [poem + instruction] + instruction + questions + instruction + card-row + circle-the-answer + match-up]: 405mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 334mm but the page has 267mm, a shortfall of 67mm. Cut content or choose a roomier layout. full (landscape): the content needs 314mm but the page has 180mm, a shortfall of 134mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (halves-side, landscape) is over by 1mm: the content needs 181mm and the page has 180mm. The most expensive single item is a stack of [a stack of [poem + instruction] + instruction + questions + instruction]: 221mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 338mm but the page has 267mm, a shortfall of 71mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 318mm but the page has 180mm, a shortfall of 138mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Expected - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (side-60-40, landscape) is over by 5mm: the content needs 185mm and the page has 180mm. The most expensive single item is a stack of [a stack of [poem + instruction] + instruction + questions + instruction]: 232mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 279mm but the page has 267mm, a shortfall of 12mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 265mm but the page has 180mm, a shortfall of 85mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Greater Depth - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (side-60-40, landscape) is over by 3mm: the content needs 183mm and the page has 180mm. The most expensive single item is a stack of [a stack of [poem + instruction] + instruction + written-answers + instruction]: 231mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 285mm but the page has 267mm, a shortfall of 18mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 271mm but the page has 180mm, a shortfall of 91mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": []
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Greater Depth - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (side-60-40, landscape) is over by 1mm: the content needs 181mm and the page has 180mm. The most expensive single item is a stack of [a stack of [poem + instruction] + written-answers + instruction]: 217mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 283mm but the page has 267mm, a shortfall of 16mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 263mm but the page has 180mm, a shortfall of 83mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Greater Depth - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (side-60-40, landscape) is over by 1mm: the content needs 181mm and the page has 180mm. The most expensive single item is a stack of [a stack of [poem + instruction] + written-answers + instruction]: 217mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 289mm but the page has 267mm, a shortfall of 22mm. Cut content or choose a roomier layout. halves-stacked (landscape): the content needs 269mm but the page has 180mm, a shortfall of 89mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 2 zones. The closest shape (side-40-60, portrait) fits the page height with 8mm to spare, and fails on WIDTH: its tightest zone is 14mm too narrow for what it holds. Fewer, wider zones is the obvious next move and it is worth one try - but note that a picture is scaled by its WIDTH and its height follows, so a wider zone holds a TALLER picture. On a picture-led sheet, widening usually trades a width refusal for a height one, and the real answer is one picture fewer. The most expensive single item is a stack of [poem + circle-the-answer + match-up]: 272mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. halves-stacked (portrait): the content needs 377mm but the page has 267mm, a shortfall of 110mm. Cut content or choose a roomier layout. halves-side (portrait): zone \"b\" cannot hold a stack of [poem + circle-the-answer + match-up]: needs 90mm wide, zone is 84mm"
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"side-40-60\" (landscape), 94% full.",
+              "AUTO_LAYOUT: Expected -> \"halves-side\" (portrait), 75% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"halves-side\" (portrait), 82% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"side-40-60\" (landscape), 94% full.",
+              "AUTO_LAYOUT: Expected -> \"halves-side\" (portrait), 75% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"halves-side\" (portrait), 82% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"side-40-60\" (landscape), 94% full.",
+              "AUTO_LAYOUT: Expected -> \"halves-side\" (portrait), 75% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"halves-side\" (portrait), 82% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Below -> \"side-40-60\" (landscape), 94% full.",
+              "AUTO_LAYOUT: Expected -> \"halves-side\" (portrait), 75% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"halves-side\" (portrait), 82% full."
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "Completed [worksheet.json](C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/renga-b/worksheet.json) with Below, Expected, and Greater Depth sheets and a complete answer key.\n\nTo fit the pages, I used the adaptation’s pre-authorised Below reduction, the lesson design’s pre-authorised Expected reduction, and both Greater Depth fit-priority adjustments. These are recorded in `notes`. Below uses landscape for its option cards and match-up; Expected and Greater Depth use portrait.\n\nBoth required checks pass: `WORKSHEET_PREFLIGHT_OK` and `HELPER_DELIVERY_OK 0`.",
+        "usage": {
+          "input_tokens": 8545555,
+          "cached_input_tokens": 8346880,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 44661,
+          "reasoning_output_tokens": 26416
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "lastResort": false,
+        "ok": true,
+        "marker": "FIXED_RESOURCE_OK worksheets",
+        "omitted": [],
+        "standIns": []
+      },
+      "buildLines": [
+        "AUTO_LAYOUT: Below drawn in \"side-40-60\" (landscape), 94% full.",
+        "AUTO_LAYOUT: Expected drawn in \"halves-side\" (portrait), 75% full.",
+        "AUTO_LAYOUT: Greater Depth drawn in \"halves-side\" (portrait), 82% full.",
+        "RECORDING: Below - sheet, a copy per child. Questions 1 to 4 require children to write in the printed renga, and question 5 asks them to mark its printed options.",
+        "RECORDING: Expected - sheet, a copy per child. Questions 1 to 4 require children to write in the printed renga, and question 5 asks them to mark its printed options.",
+        "RECORDING: Greater Depth - sheet, a copy per child. Questions 1 to 4 require children to write in the printed renga, and question 5 asks them to mark its printed options.",
+        "ZONE_CORRECTED: Below page 1 - the browser measured content a hair taller than the estimate, so its zone was given the difference from the page's spare room (\"a\" +2.0mm). Same content, same shape, verified clean.",
+        "BUILD_DIAGNOSTIC: {\"signal\":\"ZONE_CORRECTED\",\"artifact\":\"worksheet\",\"faultClass\":\"composition\",\"location\":{\"sheet\":\"below\",\"page\":1},\"message\":\"Zones grown to the browser's own measurement: \\\"a\\\" +2.0mm.\"}",
+        "ANSWER_SHEET: 1 side.",
+        "Note: Below: omitted adaptation prompt (3), the single number showing how many syllables the broken line should have. The adaptation pre-authorised this removal if the page could not hold everything; the counts in question 1 and the circled line in question 2 still show the shape check.",
+        "Note: Expected: omitted prompt 3, naming the broken line and its expected count, under the lesson design fit priority because the page would not otherwise fit. The counts in question 1 and the circled stanza in question 2 still show the shape check.",
+        "Note: Greater Depth: combined prompts 2 and 3 using the fit-priority wording: Find the line that breaks the shape. Write it again so it fits, and keep what it says. The rewrite identifies the line while keeping the required syllable and meaning constraints.",
+        "Note: Greater Depth: reduced question 6 to three writing lines, following the adaptation fit priority after the combined line-rewrite prompt still left the page 1mm over the closest layout.",
+        "Note: Below is landscape because the printed three-stanza option cards and the four-card match-up need more width than portrait columns provide. Expected and Greater Depth stay portrait with their poem options.",
+        "Page fit: âœ“ Below: 1 page, Expected: 1 page, Greater Depth: 1 page"
+      ],
+      "pages": {
+        "levels": {
+          "below": [
+            "sheet-01.jpg"
+          ],
+          "expected": [
+            "sheet-02.jpg"
+          ],
+          "greaterDepth": [
+            "sheet-03.jpg"
+          ]
+        },
+        "answers": [
+          "answers-01.jpg"
+        ],
+        "slips": [],
+        "standIns": [],
+        "pageCountMatches": true
+      }
+    },
+    "c": {
+      "notes": {
+        "minutes": 25,
+        "checkRuns": 10,
+        "firstCheckPassed": false,
+        "goesToPass": 9,
+        "lastCheckPassed": false,
+        "checks": [
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 63mm: the content needs 330mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + poem] + instruction + questions + instruction + a stack of [instruction + card-row + circle-the-answer] + match-up]: 403mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 330mm but the page has 267mm, a shortfall of 63mm. Cut content or choose a roomier layout. full (landscape): the content needs 310mm but the page has 180mm, a shortfall of 130mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 103mm: the content needs 370mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + poem] + instruction + questions + instruction + a stack of [source-text + circle-the-answer] + match-up]: 460mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 370mm but the page has 267mm, a shortfall of 103mm. Cut content or choose a roomier layout. full (landscape): the content needs 359mm but the page has 180mm, a shortfall of 179mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 94mm: the content needs 361mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + poem] + instruction + questions + instruction + card-row + a row of [circle-the-answer + match-up]]: 359mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 361mm but the page has 267mm, a shortfall of 94mm. Cut content or choose a roomier layout. full (landscape): the content needs 319mm but the page has 180mm, a shortfall of 139mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 78mm: the content needs 345mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + poem] + instruction + instruction + card-row + a row of [circle-the-answer + match-up]]: 346mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 345mm but the page has 267mm, a shortfall of 78mm. Cut content or choose a roomier layout. full (landscape): the content needs 303mm but the page has 180mm, a shortfall of 123mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - the content needs 345mm but the page has 267mm, a shortfall of 78mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 49mm: the content needs 316mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a stack of [instruction + poem] + instruction + instruction + card-row + circle-the-answer + match-up]: 384mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 316mm but the page has 267mm, a shortfall of 49mm. Cut content or choose a roomier layout. full (landscape): the content needs 296mm but the page has 180mm, a shortfall of 116mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": []
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 54mm: the content needs 321mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a row of [instruction + poem] + a row of [2 x instruction] + a row of [card-row + circle-the-answer] + match-up]: 317mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 321mm but the page has 267mm, a shortfall of 54mm. Cut content or choose a roomier layout. full (landscape): the content needs 281mm but the page has 180mm, a shortfall of 101mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": []
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 54mm: the content needs 321mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a row of [instruction + poem] + a row of [2 x instruction] + a row of [card-row + circle-the-answer] + match-up]: 317mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 321mm but the page has 267mm, a shortfall of 54mm. Cut content or choose a roomier layout. full (landscape): the content needs 281mm but the page has 180mm, a shortfall of 101mm. Cut content or choose a roomier layout."
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "`HELPER_DELIVERY_OK 0` passed. The worksheet preflight did not pass: Below still needs 321 mm on a portrait page with 267 mm available, even after the adaptation’s authorised prompt removal. The design gives no further permitted cuts.\n\n`PAGE_PLAN_GAP: Below` needs to return to the adaptation designer for revision. I saved the current specification at [worksheet.json](C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/renga-c/worksheet.json), but it is not ready to print because `WORKSHEET_PREFLIGHT_OK` was not reached.",
+        "usage": {
+          "input_tokens": 5396711,
+          "cached_input_tokens": 5236992,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 56720,
+          "reasoning_output_tokens": 37678
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "lastResort": true,
+        "ok": false,
+        "marker": "FIXED_RESOURCE_FLAGGED worksheets: Below, Greater Depth",
+        "omitted": [],
+        "standIns": [
+          {
+            "sheet": "Below",
+            "why": "the Expected sheet stands in for Below, and the Below section of the answer key is the Expected answers: the page cannot hold the Below sheet (SHEET_DOES_NOT_FIT: layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 54mm: the content needs 321mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a row of [instruction + poem] + a row of [2 x instruction] + a row of [card-row + circle-the-answer] + match-up]: 317mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 321mm but the page has 267mm, a shortfall of 54mm. Cut content or choose a roomier layout. full (landscape): the content needs 281mm but the page has 180mm, a shortfall of 101mm. Cut content or choose a roomier layout.)."
+          },
+          {
+            "sheet": "Greater Depth",
+            "why": "the Expected sheet stands in for Greater Depth, and the Greater Depth section of the answer key is the Expected answers: the page cannot hold the Greater Depth sheet (SHEET_DOES_NOT_FIT: layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 17mm: the content needs 284mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a row of [instruction + poem] + a stack of [instruction + written-answers] + instruction + a row of [card-row + circle-the-answer] + written-answers]: 278mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 284mm but the page has 267mm, a shortfall of 17mm. Cut content or choose a roomier layout. full (landscape): the content needs 258mm but the page has 180mm, a shortfall of 78mm. Cut content or choose a roomier layout.)."
+          }
+        ],
+        "refusedFirst": [
+          "SHEET_DOES_NOT_FIT: Below - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 54mm: the content needs 321mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a row of [instruction + poem] + a row of [2 x instruction] + a row of [card-row + circle-the-answer] + match-up]: 317mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 321mm but the page has 267mm, a shortfall of 54mm. Cut content or choose a roomier layout. full (landscape): the content needs 281mm but the page has 180mm, a shortfall of 101mm. Cut content or choose a roomier layout."
+        ]
+      },
+      "buildLines": [
+        "AUTO_LAYOUT: Below drawn in \"full\" (portrait), 98% full.",
+        "AUTO_LAYOUT: Expected drawn in \"full\" (portrait), 98% full.",
+        "AUTO_LAYOUT: Greater Depth drawn in \"full\" (portrait), 98% full.",
+        "RECORDING: Below - sheet, a copy per child. The children write counts in the printed poem, mark its stanzas and links, circle an option and write about its printed choices.",
+        "RECORDING: Expected - sheet, a copy per child. The children write counts in the printed poem, mark its stanzas and links, circle an option and write about its printed choices.",
+        "RECORDING: Greater Depth - sheet, a copy per child. The children write counts in the printed poem, mark its stanzas and links, circle an option and write about its printed choices.",
+        "ANSWER_LONG: Below (3) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Below (5) prints about 3 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Expected (3) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Expected (5) prints about 3 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Greater Depth (3) prints about 4 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_LONG: Greater Depth (5) prints about 3 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_SHEET: 1 side.",
+        "SHEET_STANDS_IN: Below - the Expected sheet stands in for Below, and the Below section of the answer key is the Expected answers: the page cannot hold the Below sheet (SHEET_DOES_NOT_FIT: layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 54mm: the content needs 321mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a row of [instruction + poem] + a row of [2 x instruction] + a row of [card-row + circle-the-answer] + match-up]: 317mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 321mm but the page has 267mm, a shortfall of 54mm. Cut content or choose a roomier layout. full (landscape): the content needs 281mm but the page has 180mm, a shortfall of 101mm. Cut content or choose a roomier layout.).",
+        "SHEET_STANDS_IN: Greater Depth - the Expected sheet stands in for Greater Depth, and the Greater Depth section of the answer key is the Expected answers: the page cannot hold the Greater Depth sheet (SHEET_DOES_NOT_FIT: layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 17mm: the content needs 284mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [a row of [instruction + poem] + a stack of [instruction + written-answers] + instruction + a row of [card-row + circle-the-answer] + written-answers]: 278mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 284mm but the page has 267mm, a shortfall of 17mm. Cut content or choose a roomier layout. full (landscape): the content needs 258mm but the page has 180mm, a shortfall of 78mm. Cut content or choose a roomier layout.).",
+        "Note: Below: omitted the authorised prompt asking for the broken line's count; the written counts and circled line retain that evidence.",
+        "Note: Expected: omitted the authorised prompt asking which line breaks the shape and its expected count; the written counts and circled stanza retain that evidence.",
+        "Note: Greater Depth: used the adaptation's authorised combined line-finding and rewrite prompt, and reduced the final response space to three lines as authorised.",
+        "Page fit: âœ“ Below: 1 page, Expected: 1 page, Greater Depth: 1 page"
+      ],
+      "pages": {
+        "levels": {
+          "below": [
+            "sheet-01.jpg"
+          ],
+          "expected": [
+            "sheet-02.jpg"
+          ],
+          "greaterDepth": [
+            "sheet-03.jpg"
+          ]
+        },
+        "answers": [
+          "answers-01.jpg"
+        ],
+        "slips": [],
+        "standIns": [
+          "below",
+          "greaterDepth"
+        ],
+        "pageCountMatches": true
+      }
+    }
+  }
+}

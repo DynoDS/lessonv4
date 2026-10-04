@@ -6,6 +6,7 @@ effort: xhigh
 codex_model: sol61
 codex_effort: medium
 color: "#0A1E3F"
+disallowedTools: Artifact, Agent
 ---
 
 # Lesson Designer - Focused Repair

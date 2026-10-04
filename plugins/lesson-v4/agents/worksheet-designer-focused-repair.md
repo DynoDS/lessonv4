@@ -6,6 +6,7 @@ effort: high
 codex_model: luna6
 codex_effort: medium
 color: "#E87722"
+disallowedTools: Artifact, Agent
 ---
 
 # Worksheet Designer — Focused Repair

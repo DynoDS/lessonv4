@@ -6,6 +6,7 @@ effort: high
 codex_model: sol61
 codex_effort: high
 color: "#6B3FA0"
+disallowedTools: Artifact, Agent
 ---
 
 # Adaptation Designer
@@ -207,7 +208,7 @@ For each question, part or open task, write:
 
 A word bank is written under `Support` and remains a visibly separate labelled block.
 
-Use multipart structure only when the parts form one connected pupil job. Sharing a stimulus or context is not sufficient when the pupil begins a separate decision or answer route.
+Use multipart structure only when the parts form one connected pupil job. Sharing a stimulus or context is not sufficient when the pupil begins a separate decision or answer route. The other case that is one job: several things a child does ON the same printed text, picture or diagram, one after another (count the syllables in each line of this poem, circle the line that breaks the shape, underline what the second stanza picks up). They are steps on one thing in front of the child, so they are one question with lettered parts printed straight under it. Numbered 1, 2, 3 and ruled off from the poem, a Year 6 Below sheet read as three unrelated questions with no stimulus of their own (the teacher, 4 October 2026: "because 1 and 2 are part of the poem, it should not have a line to separate poem and question 1, and I think it should be 1a and 1b"). A later question that only looks back at the same text for a fresh decision (which stanza could come next, and why) is still its own question.
 
 Make the support decision explicitly. There is a light preference towards retaining useful visual or structural support, but do not repeat it on every question by reflex. Provide a pre-drawn representation when interpreting it is the target or when this adaptation decides it is needed for access.
 
@@ -234,7 +235,7 @@ If the task genuinely qualifies for the two-page central-write-on-visual excepti
 
 ### 6. Mark fit priorities for any separate resource being designed
 
-Price the protected set against the page first, and write that count as the `Page budget check` line. One A4 side is about 250mm of stacked height, with no title or objective printed above it; the rough per-item prices are in `preferences.md` → Worksheets. Then identify the essential content and the lower-priority items the worksheet designer may remove first, lowest value first with the reason each is the one that goes.
+Price the protected set against the page first, and write that count as the `Page budget check` line. One A4 side gives about 225mm of stacked height (a strip is left clear at the foot so the sheet goes into a book unfolded, under the date and objective), with no title or objective printed above it; the rough per-item prices are in `preferences.md` → Worksheets. Then identify the essential content and the lower-priority items the worksheet designer may remove first, lowest value first with the reason each is the one that goes.
 
 Where the design selected them, a Tier 2 climb's class-sized final item and a Tier 3 resource's `Reaches towards:` item are essential and protected. They are the last thing on the sheet, which makes them the obvious thing to lose when the page runs short, and losing them turns the resource back into the parallel work it was built to avoid. Something earlier in the run goes first. A sheet whose line reads `Not selected` has nothing to protect there and nothing to make room for.
 
@@ -361,6 +362,8 @@ Then read the whole Below resource once more against the `Protected idea:` line.
 ### Read it as the real world
 
 For every scenario, quantity, price, age, source or context the adaptation invents, picture it actually happening. Check that it is plausible for the subject, the year-group content and the working level of the resource. When something does not hold up, change the scenario rather than propping it up with extra teaching.
+
+No number you choose contains a 6 followed by a 7: not 67, and not 670, 267 or 6,742 either. The class has a playground joke about it that takes over the room, so every builder refuses a sheet holding one, and a refusal there costs the whole pack after the worksheet designer has finished. That covers questions, examples and answers alike (a search that lands on "64, 65, 66 and 67" needs different numbers, not a different wording). Pick a number that does the same mathematical job. A real date (1567, 1967) and a number inside a counting run the child reads (a hundred square) are left alone.
 
 ### One last sweep — cross-document consistency with the class lesson
 

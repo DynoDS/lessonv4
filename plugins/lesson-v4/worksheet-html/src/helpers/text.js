@@ -4,7 +4,7 @@
 // read. Nothing here is subject-specific. A source is a history source, a
 // science explanation or an RE text depending only on what is put in it.
 
-const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, PT_MM, BLANK_MM, esc, promptHtml, linesFor } = require("./shared");
+const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, PT_MM, BLANK_MM, esc, escWithDigitBoxes, promptHtml, linesFor } = require("./shared");
 const { SPACE, TYPE, INSET } = require("../tokens");
 const { formatQuestionLabel } = require("../labels");
 
@@ -252,8 +252,20 @@ function questionTextWidths(widthMm, picture, showNumbers) {
   return { belowMm, inlineMm };
 }
 
+// A question that asks for words gets a line to write them on.
+//
+// The blank beside a short question is 25mm: room for a number or one word. A
+// question that says "Write one thing that has stayed the same." was short
+// enough to keep that blank beside it, and a child was left a thumb's width
+// for a sentence (the teacher, 4 October 2026: "the tiniest lines, they can't
+// write much!"). A prompt that opens by asking for writing takes the full
+// line under it instead.
+// "Write a number between -5 and -1." asks for a number, and keeps the short blank.
+const ASKS_FOR_WORDS = /^\s*(explain|describe|give a reason|say why|tell|write\b(?![^.?!]*\b(number|numeral|digit|fraction|decimal|answer|total|amount|time|date|missing)\b))/i;
+
 function blankBelow(question, widthMm, picture, showNumbers = true) {
   const { belowMm, inlineMm } = questionTextWidths(widthMm, picture, showNumbers);
+  if (ASKS_FOR_WORDS.test(String(question ?? ""))) return true;
   return linesFor(question, inlineMm) > linesFor(question, belowMm);
 }
 
@@ -272,6 +284,22 @@ function promptIsShort(question, widthMm, picture, showNumbers = true) {
   if (linesFor(question, inlineMm) > 1) return false;
   const charMm = 12 * PT_MM * 0.5; // body type, the width linesFor assumes
   return String(question).length * charMm <= inlineMm * SHORT_PROMPT_SHARE;
+}
+
+// The answer to a calculation goes straight after its equals sign.
+//
+// A question written on two lines ("87 - 34 =" and then "Draw the jumps.") is
+// not a short prompt, so its answer blank went to the far end of the last
+// line: the far side of the page from the sum it answers (the teacher, 4
+// October 2026: "where they write their answer is the other side of the page!
+// That should be next to the question"). When a line of the prompt ends in an
+// equals sign, the blank is drawn there and nowhere else.
+const ENDS_IN_EQUALS = /=[ 	]*$/m;
+
+function answerAfterEquals(text) {
+  const value = String(text ?? "");
+  if (!value.includes("\n") || !ENDS_IN_EQUALS.test(value) || /_{2,}/.test(value)) return null;
+  return value.replace(ENDS_IN_EQUALS, "= ___");
 }
 
 function renderQuestions(spec, widthMm = 100) {
@@ -298,8 +326,8 @@ function renderQuestions(spec, widthMm = 100) {
       }">
         ${showNumbers ? `<span class="h-num">${esc(formatQuestionLabel(i + (spec.startAt || 1)))}</span>` : ""}
         ${pictureMarkup(pictures && pictures[i])}
-        <span class="h-text">${promptHtml(questionText(q))}</span>
-        ${slip ? "" : '<span class="h-blank"></span>'}
+        <span class="h-text">${promptHtml((!slip && answerAfterEquals(questionText(q))) || questionText(q))}</span>
+        ${slip || answerAfterEquals(questionText(q)) ? "" : '<span class="h-blank"></span>'}
       </li>`
     )
     .join("");
@@ -444,7 +472,7 @@ function renderWrittenAnswers(spec, widthMm = 100) {
       const prompt = hasPrompt
         ? `<div class="h-written-prompt">
             ${pictureMarkup(pictures && pictures[i])}
-            <span class="h-text">${esc(q.text)}</span>
+            <span class="h-text">${escWithDigitBoxes(q.text)}</span>
           </div>`
         : "";
       // Spare room is shared out in proportion to how much of it each item can
@@ -644,6 +672,17 @@ const css = `
   /* A write-in blank inside prompt text, swapped in for a designer's run of
      underscores. One uniform width everywhere: wide enough for a real written
      word, and never hinting by its length at which word it wants. */
+  .h-ask { color: var(--colour-question); }
+  .h-digit-box {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 1.15em;
+    height: 1.35em;
+    margin: 0 0.12em;
+    border: var(--rule-line) solid var(--colour-ink);
+    border-radius: 0.5mm;
+    vertical-align: -0.32em;
+  }
   .h-blank {
     display: inline-block;
     width: ${BLANK_MM}mm;
@@ -782,6 +821,10 @@ const css = `
     align-self: flex-end;
     height: 5mm;
   }
+  /* A blank inside the words (a gap in a sentence, the answer after an equals
+     sign) sits on its line of print at that line's own height: at the 5mm of
+     the blank after a question it made the line taller than it was measured. */
+  .h-text .h-blank { height: 0.9em; margin-left: 0; }
   /* The prompt was going to wrap anyway, so the blank takes its own row and
      the words above it get the full width back. It keeps the left-hand gutter
      so the writing line still starts where every other one does. */

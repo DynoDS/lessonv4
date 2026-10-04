@@ -50,6 +50,24 @@ function drawHeaderPill(slide, text, fontPt, box, align, signal) {
   return 0;
 }
 
+// A sign with no cue beside it: a small pill holding the drawing alone, where
+// the cue's pill would end. An answer slide's tick needs no words.
+function drawSignalAlone(slide, signal, box) {
+  const iconH = Math.min(0.40, box.h - 0.10);
+  const iconW = signalWidth(signal, iconH);
+  if (!iconW) return;
+  const w = iconW + 0.24;
+  const px = box.x + box.w - w + 0.05;
+  slide.addShape('roundRect', {
+    x: px, y: box.y, w: w, h: box.h,
+    fill: { color: CARD.fill },
+    line: CARD.lineW ? { color: CARD.line, width: CARD.lineW } : { type: 'none' },
+    rectRadius: CARD.radius,
+    shadow: Object.assign({}, CARD.shadow)
+  });
+  drawSignal(slide, signal, { x: px + 0.12, y: box.y + (box.h - iconH) / 2, h: iconH });
+}
+
 function drawTitleHeader(slide, data, ctx) {
   const title = data.title || data.heading || '';
   const instruction = data.instruction || '';
@@ -92,6 +110,11 @@ function drawTitleHeader(slide, data, ctx) {
       fontFace: FONT, fontSize: SIZE_CEILINGS.instruction, bold: true,
       color: COLOURS.body, align: textX ? 'left' : (instructionH > HEADER_TITLE.instructionH ? 'center' : 'right'), valign: 'middle',
       margin: 0, fit: FIT
+    });
+  } else if (pills && data.signal) {
+    drawSignalAlone(slide, data.signal, {
+      x: HEADER_TITLE.instructionX, y: HEADER_TITLE.instructionY,
+      w: HEADER_TITLE.instructionW - badgeRoom, h: HEADER_TITLE.instructionH
     });
   }
   // Drawn last, so the instruction's pill can never sit on top of it: the
@@ -190,6 +213,11 @@ function drawStarterHeader(slide, data, ctx) {
       fontFace: FONT, fontSize: SIZE_CEILINGS.instruction, bold: true,
       color: COLOURS.body, align: textX ? 'left' : 'right', valign: 'middle',
       margin: 0, fit: FIT
+    });
+  } else if (pills && data.signal) {
+    drawSignalAlone(slide, data.signal, {
+      x: HEADER_STARTER.instructionX, y: HEADER_STARTER.instructionY,
+      w: HEADER_STARTER.instructionW, h: HEADER_STARTER.instructionH
     });
   }
 }

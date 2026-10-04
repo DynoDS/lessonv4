@@ -997,6 +997,11 @@ const css = `
      the page disagreed about how tall the block is. */
   .h-ns-row {
     display: flex; flex-wrap: nowrap; align-items: flex-start;
+    /* The tile's own height: its line of print and its padding. A box a child
+       writes in takes the same, so "72 - 2[] = 4[]" reads as one line of
+       boxes (Daniel, 4 October 2026: "don't like that answer boxes aren't even
+       same size as the orange boxes"). */
+    --ns-tile-h: calc(var(--type-sectionLabel) * 1.35 + 2 * var(--inset-card-v) + 2 * var(--rule-line));
     gap: ${NS_GAP_MM}mm;
     padding: ${NS_PAD_MM}mm 0;
   }
@@ -1010,8 +1015,13 @@ const css = `
      the same treatment a word bank gives a word handed over. */
   .h-ns-tile {
     box-sizing: border-box;
-    min-width: ${NS_TILE_MIN_MM}mm; text-align: center;
-    padding: var(--inset-card);
+    /* A one-digit tile is exactly as wide as the box a child writes a digit
+       in beside it, so "2 [ ]" reads as two boxes of one size (the teacher, 4
+       October 2026: "the black boxes children fill in need to be the same
+       width and height as the orange boxes"). The tile comes in to the box's
+       width; widening the box instead put an approved sheet over its page. */
+    min-width: ${NS_CELL_MM}mm; text-align: center;
+    padding: var(--inset-card-v) var(--inset-cell-h);
     border: var(--rule-line) solid var(--colour-given);
     border-radius: 1.5mm;
     font-size: var(--type-sectionLabel); font-weight: bold;
@@ -1025,16 +1035,16 @@ const css = `
      sheet an empty box is the one thing that always means "yours". */
   .h-ns-box {
     box-sizing: border-box; flex: none;
-    height: ${NS_BOX_H_MM}mm;
+    height: max(${NS_BOX_H_MM}mm, var(--ns-tile-h));
     border: var(--rule-line) solid var(--colour-ink);
-    border-radius: 1mm;
+    border-radius: 1.5mm;
   }
   /* A digit frame: one cell per digit, sharing their internal rules so the
      frame reads as one answer rather than as four separate boxes. */
   .h-ns-cells { display: flex; }
   .h-ns-cell {
     box-sizing: border-box; flex: none;
-    width: ${NS_CELL_MM}mm; height: ${NS_BOX_H_MM}mm;
+    width: ${NS_CELL_MM}mm; height: max(${NS_BOX_H_MM}mm, var(--ns-tile-h));
     border: var(--rule-line) solid var(--colour-ink);
     margin-left: -${RULE.line}mm;
   }

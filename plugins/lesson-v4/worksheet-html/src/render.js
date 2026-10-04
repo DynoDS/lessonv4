@@ -13,7 +13,7 @@
 // nobody had subtracted. A rectangle placed at a millimetre offset has neither
 // problem, and it is exactly what the gallery already draws.
 
-const { pageSize, printableArea, DEFAULT_MARGIN_MM } = require("./page");
+const { pageSize, printableArea, DEFAULT_MARGIN_MM, narrowSpareMm, footSpareMm, rightSpareMm } = require("./page");
 const { renderDecorationLayers } = require("./decorations");
 const { cssVariables, SPACE, TYPE } = require("./tokens");
 const { NOTE_LINE_MM, linesFor, esc } = require("./helpers/shared");
@@ -101,8 +101,8 @@ function headerMm(spec) {
 function contentArea(spec) {
   const area = printableArea(spec.orientation || "portrait", DEFAULT_MARGIN_MM);
   return {
-    widthMm: area.widthMm,
-    heightMm: area.heightMm - headerMm(spec),
+    widthMm: area.widthMm - narrowSpareMm(spec) - rightSpareMm(spec),
+    heightMm: area.heightMm - headerMm(spec) - footSpareMm(spec),
   };
 }
 
@@ -427,7 +427,31 @@ function zoneRules(placed) {
       const width = p.w - (joinsNext ? 0 : GUTTER_MM);
       return `<div class="zone-rule" style="left:${p.x}mm;top:${p.y - GUTTER_MM / 2}mm;width:${width}mm"></div>`;
     })
-    .join("");
+    .join("") + columnRules(placed);
+}
+
+// And the hairline down between two columns. Zones side by side were told
+// apart only by the gutter between them, so a question in the left column ran
+// on, to the eye, into whatever sat level with it on the right (the teacher,
+// 4 October 2026: "can there always be a line down the middle to separate the
+// 2 columns too?"). Drawn in the middle of the gutter, for as far down as the
+// two zones are both there.
+function columnRules(placed) {
+  const zones = placed.filter((p) => p.content);
+  const near = (a, b) => Math.abs(a - b) < 0.01;
+  const out = [];
+  for (const p of zones) {
+    for (const q of zones) {
+      if (q === p || !near(q.x, p.x + p.w)) continue;
+      const top = Math.max(p.y, q.y);
+      const bottom = Math.min(p.y + p.h, q.y + q.h);
+      if (!(bottom - top > 1)) continue;
+      out.push(
+        `<div class="zone-rule zone-rule--down" style="left:${q.x - GUTTER_MM / 2}mm;top:${top}mm;height:${bottom - top}mm"></div>`
+      );
+    }
+  }
+  return out.join("");
 }
 
 // How much room a zone's CONTENT actually gets, which is not the size of the
@@ -758,7 +782,7 @@ ${cssVariables()}
     /* The heading's band is padding, so the work below it starts under the
        heading rather than behind it, and the area below is exactly the height
        every measurement in this file was taken against. */
-    padding: ${DEFAULT_MARGIN_MM + headerMm(spec)}mm ${DEFAULT_MARGIN_MM}mm ${DEFAULT_MARGIN_MM}mm;
+    padding: ${DEFAULT_MARGIN_MM + headerMm(spec)}mm ${DEFAULT_MARGIN_MM + narrowSpareMm(spec) + rightSpareMm(spec)}mm ${DEFAULT_MARGIN_MM + footSpareMm(spec)}mm ${DEFAULT_MARGIN_MM}mm;
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
@@ -784,6 +808,7 @@ ${cssVariables()}
   .area { position: relative; width: 100%; height: 100%; z-index: 1; }
   .zone { position: absolute; box-sizing: border-box; overflow: hidden; }
   .zone-rule { position: absolute; border-top: var(--rule-hair) solid var(--colour-rule); }
+  .zone-rule--down { border-top: 0; border-left: var(--rule-hair) solid var(--colour-rule); }
 
   /* A full-page data table owns the remaining page after any heading above
      it. Let its rows share that real height instead of stopping at the
@@ -809,7 +834,7 @@ ${cssVariables()}
      the sheet's furniture competing with its work for that. */
   .sheet-code {
     position: absolute;
-    right: ${DEFAULT_MARGIN_MM}mm; top: ${HEADER_TOP_MM}mm;
+    right: ${DEFAULT_MARGIN_MM + narrowSpareMm(spec) + rightSpareMm(spec)}mm; top: ${HEADER_TOP_MM}mm;
     font-size: var(--type-note);
     line-height: 1.35;
     color: var(--colour-quiet);

@@ -104,7 +104,19 @@ function textSlot(value, where, role) {
     fail(where, 'a worked example is purple, so this line cannot be orange as well. ' +
       'Lift another line with orange, or none.');
   }
-  if (item.orange && Array.isArray(item.emphasis) &&
+  const keyLines = Array.isArray(item.emphasis) ? item.emphasis.filter((e) => e && e.role === 'key-line') : [];
+  if (keyLines.length > 1) {
+    fail(where, `${keyLines.length} sentences of this line are marked "key-line". One sentence of a card is orange, the one you would say louder.`);
+  }
+  if (keyLines.length && (role === 'question' || role === 'sticky')) {
+    fail(where, `a ${role === 'question' ? 'question stays blue' : 'line to remember stays purple'}; ` +
+      'a "key-line" belongs inside an explanation line.');
+  }
+  if (keyLines.length && (item.orange || item.worked)) {
+    fail(where, `this line is ${item.orange ? 'orange' : 'a purple worked example'} as a whole, so it takes no "key-line" inside it.`);
+  }
+  if (keyLines.length) item.orange = 'key-line';
+  if (item.orange === true && Array.isArray(item.emphasis) &&
       item.emphasis.some((e) => e && e.role === 'vocabulary')) {
     fail(where, 'orange cannot go on a line carrying a taught word in vocabulary green; ' +
       'the two colours fight. Put the orange on another line.');
@@ -130,7 +142,7 @@ function toText(slot, role, extra) {
   if (role === 'question') {
     if (tellsAndAsks(out.value)) out.asksInBlue = true;
     else out.color = QUESTION_BLUE;
-  } else if (slot.orange) out.color = TEACH_ORANGE;
+  } else if (slot.orange === true) out.color = TEACH_ORANGE;
   else if (slot.worked) out.colorRole = 'worked-purple';
   return Object.assign(out, extra || {});
 }
@@ -672,7 +684,7 @@ function expandSlide(slide, slideNumber) {
       (s.sides || []).map((x) => x.text), (s.columns || []).map((x) => x.text))
     .filter((x) => x && x.orange);
   if (oranges.length > 1) {
-    fail(at, `${oranges.length} lines are orange. One line per slide may be orange, the one you would say louder.`);
+    fail(at, `${oranges.length} lines are orange or carry a "key-line". One line per slide is orange, the one you would say louder.`);
   }
 
   if (def.column) {

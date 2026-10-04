@@ -1,5 +1,5 @@
 {
-  "meta": {
+  "meta": { "fullPage": true,
     "lesson": "Partitioning four-digit numbers",
     "lo": "To partition 4-digit numbers",
     "yearGroup": "Year 4",

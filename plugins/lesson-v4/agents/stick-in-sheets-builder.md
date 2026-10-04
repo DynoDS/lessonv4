@@ -6,6 +6,7 @@ effort: low
 codex_model: luna6
 codex_effort: low
 color: "#FFB347"
+disallowedTools: Artifact, Agent
 ---
 
 # Stick-in Sheets Builder

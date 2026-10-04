@@ -26,9 +26,15 @@ const { spawnSync } = require('node:child_process');
 
 const CHECK = path.join(__dirname, '..', 'scripts', 'check-slide-design.js');
 
-// A reference table sharing a stack with a short line of text: the text is
-// holding height it does not use, which is exactly when a weight can move.
-function lessonWithTableWeight(weight) {
+// A reference table sharing a stack with a line of text that is holding height
+// it does not use, which is exactly when a weight can move.
+//
+// Beside a plain line the stack now moves that height itself (4 October 2026:
+// it measures what a table needs, and the last test here pins that the slide
+// passes with nothing said). The advice is still what a designer gets beside
+// something the stack cannot measure, so the line here is one that fills its
+// share, which it cannot.
+function lessonWithTableWeight(weight, plainLine) {
   return {
     lessonName: 'Weight Advice',
     subject: 'Maths',
@@ -41,7 +47,9 @@ function lessonWithTableWeight(weight) {
         primary: {
           type: 'stack',
           items: [
-            { type: 'text', value: 'Use the table to help you.', weight: 2.2 },
+            plainLine
+              ? { type: 'text', value: 'Use the table to help you.', weight: 2.2 }
+              : { type: 'text', value: 'Use the table to help you.', weight: 2.2, heightMode: 'fill' },
             {
               type: 'table',
               weight,
@@ -95,6 +103,15 @@ test('the weight a short zone asks for is a weight that clears it', () => {
     `the advised weight of ${advised[1]} did not clear the refusal that offered it:\n` +
       taken.slice(-900)
   );
+});
+
+test('beside a plain line that has height to spare, the table is given it and nothing is refused', () => {
+  // The slide Year 4 Maths Lesson 16 spent three repair passes on: the table
+  // one weight short, the line above it in room it did not use.
+  const output = runCheck(lessonWithTableWeight(1, true));
+  if (/AUTOFIT_(DEPENDENCY_MISSING|NOT_PERMITTED)/.test(output)) return;
+  assert.doesNotMatch(output, /TABLE_ZONE_TOO_SHORT/, output.slice(-900));
+  assert.match(output, /SLIDE_DESIGN_CHECK_OK/, output.slice(-900));
 });
 
 test('no weight is offered when no weight would reach it', () => {

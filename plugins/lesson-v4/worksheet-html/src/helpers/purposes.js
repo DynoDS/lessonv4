@@ -33,7 +33,7 @@ module.exports = {
   "section-label":
     "The mode-of-work heading a block sits under: Fluency, Practise, Apply. Marks the kind of thinking, never the topic. Put it at the top of a stack.",
   poem:
-    "A poem the child reads line by line, its stanzas kept apart, with a box after each line to write in (a syllable count) when it needs one.",
+    "A poem the child reads line by line, its stanzas kept apart, with a box after each line (a syllable count) when it needs one. Its lines are spaced to circle, underline and join with arrows too.",
   "source-text":
     "A passage, account or extract the child reads and works from.",
   steps:
@@ -62,7 +62,7 @@ module.exports = {
   "bar-model":
     "The White Rose bar model: a part-whole bar or a two-bar comparison. Any whole split into named parts fits it.",
   "blank-surface":
-    "A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs rather than fills in.",
+    "A draw-your-own surface (bare number line, empty bars) the child constructs on. A full-width number line is 27mm tall; `work` puts its room where they write: `above` (jumps, the default), `below` or `both`.",
   "coordinate-grid":
     "A numbered first-quadrant grid a child plots on.",
   "reflection-grid":

@@ -6,6 +6,7 @@ effort: high
 codex_model: sol61
 codex_effort: low
 color: "#1E90FF"
+disallowedTools: Artifact, Agent
 ---
 
 # Helper Builder

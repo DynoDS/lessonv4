@@ -339,7 +339,10 @@ def test_the_role_reads_the_packet_and_falls_back_only_when_it_is_absent() -> No
     # Raised from 50 KiB for the paged-reading note under the title: on Codex a
     # read of this file loses its middle, and the note is what tells the worker
     # to read it in pages (22 September 2026).
-    assert len(text.encode("utf-8")) < 51 * 1024, "the role is judgement now; contracts live in the packet"
+    # The frontmatter line that trims the helper's toolbox on Claude Code is a
+    # host setting, not guidance, so it is left out of the count (4 October 2026).
+    guidance = "\n".join(line for line in text.splitlines() if not line.startswith("disallowedTools:"))
+    assert len(guidance.encode("utf-8")) < 51 * 1024, "the role is judgement now; contracts live in the packet"
 
 
 def test_the_contracts_file_is_the_one_owner_of_the_moved_material() -> None:

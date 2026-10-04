@@ -30,6 +30,7 @@ function esc(s) {
 const BLANK_CHARS = 12;
 const BLANK_MM = 25; // the printed width of one blank; tracks BLANK_CHARS at body size
 const BLANK_RUN = /_{2,}/g;
+const DIGIT_BOX = /[\u25A1\u25A2\u2610\u25FB\u25AB]/g;
 
 function blankWidth(value) {
   if (value == null) return BLANK_MM;
@@ -46,11 +47,49 @@ function normaliseBlanks(text, widthMm) {
 
 // Escape first, then swap the runs: the replacement carries markup that must
 // not itself be escaped.
+const DIGIT_BOX_HTML = '<span class="h-digit-box"></span>';
+
+// The question, in the question's colour.
+//
+// On a slide the thing a child is asked is blue and what they are told is
+// black. On a sheet a block of print ran scene, question and instruction
+// together in one black paragraph (the teacher, 4 October 2026, on a PSHE slip
+// of four situations: "slides have colour hierarchy, we need that here"). So
+// where a prompt holds both, the sentence that asks is drawn in question blue
+// and the scene around it stays black. A prompt that is ONLY a question stays
+// black: colour is for telling two things apart, and a page of all-blue
+// questions tells nothing apart.
+const SENTENCE = /[^\n]*?[.!?](?:&quot;|&#39;|["'\u201d\u2019)])*(?=\s|$)|[^\n]+$|\n/gm;
+const ASKS = /\?(?:&quot;|&#39;|["'\u201d\u2019)])*\s*$/;
+
+function colourAsks(escaped) {
+  const pieces = String(escaped).match(SENTENCE);
+  if (!pieces) return escaped;
+  const words = pieces.filter((piece) => piece.trim());
+  const asks = words.filter((piece) => ASKS.test(piece));
+  if (!asks.length || asks.length === words.length) return escaped;
+  return pieces
+    .map((piece) => (ASKS.test(piece) && piece.trim() ? piece.replace(/^(\s*)([\s\S]*?)(\s*)$/, '$1<span class="h-ask">$2</span>$3') : piece))
+    .join("");
+}
+
+// Escaped text with its empty-box characters drawn, for a helper that prints
+// its words without the write-in blanks promptHtml adds.
+function escWithDigitBoxes(text) {
+  return colourAsks(esc(text ?? "")).replace(DIGIT_BOX, DIGIT_BOX_HTML);
+}
+
 function promptHtml(text, widthMm) {
   const width = blankWidth(widthMm);
   const style = widthMm == null ? "" : ` style="width:${width}mm"`;
-  return esc(text ?? "")
+  return colourAsks(esc(text ?? ""))
     .replace(BLANK_RUN, `<span class="h-blank"${style}></span>`)
+    // A missing digit is typed upstream as an empty-box character ("2\u25A14 is
+    // divisible by 6"), which the font draws smaller than a full stop is tall:
+    // a Year 6 sheet asked what the missing digit could be and showed no
+    // visible place for one (Daniel, 4 October 2026: "it says 2 box 4, but the
+    // box is so small"). Drawn as a box a child's digit fits in.
+    .replace(DIGIT_BOX, DIGIT_BOX_HTML)
     .replace(/\r\n|\r|\n/g, "<br>");
 }
 
@@ -119,6 +158,7 @@ function legibleWidthMm(svg) {
 }
 
 module.exports = {
+  escWithDigitBoxes,
   BODY_PT,
   PT_MM,
   LINE_MM,

@@ -57,6 +57,16 @@ const GAP_MM = SPACE.item;
 const TIGHT_GAP_MM = SPACE.tight;
 const INTRODUCERS = new Set(["section-label", "instruction"]);
 
+// A text the questions under it are ABOUT (a poem, a source). No rule is drawn
+// between it and its first question: ruled off, a Year 6 renga read as a poem
+// and then three unrelated questions (the teacher, 4 October 2026: "because 1
+// and 2 are part of the poem, it should not have a line to separate poem and
+// question 1"). Only the rule goes. The gap stays, so no sheet is measured or
+// laid out differently.
+const STIMULI = new Set(["poem", "source-text"]);
+const isStimulus = (item) =>
+  Boolean(item && !Array.isArray(item) && typeof item === "object" && STIMULI.has(item.helper));
+
 function introduces(item) {
   return Boolean(
     item && !Array.isArray(item) && typeof item === "object" && INTRODUCERS.has(item.helper)
@@ -419,7 +429,8 @@ function makeCompose({
           const divided =
             gap === QUESTION_START_GAP_MM &&
             startsQuestion(items, i) &&
-            item.helper !== "section-label";
+            item.helper !== "section-label" &&
+            !isStimulus(items[i - 1]);
           // A data table that is the last thing in the stack, under nothing but
           // headings, is a page that IS the table: it may take the rest of a
           // full page (render.js). Anywhere else it keeps its reading height.

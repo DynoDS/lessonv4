@@ -2082,6 +2082,7 @@ function main(argv = process.argv.slice(2)) {
   });
   writeText(process.stdout, result.stdout);
   writeText(process.stderr, result.stderr);
+  if (preview && !settled) keepAttempt(args[0], result);
 
   if (result.ok) {
     if (result.previewDir) {
@@ -2100,6 +2101,36 @@ function main(argv = process.argv.slice(2)) {
   }
   console.error(`SLIDE_DESIGN_CHECK_FAILED: ${result.reason}`);
   return 1;
+}
+
+// Each attempt the designer checks is kept beside its lesson, with what the
+// check said about it. A designer rewrites one candidate file as it repairs, so
+// the first attempt and its refusals were gone by the end of every run, and
+// "what would have saved this run a repair" could not be answered from the run
+// itself: ten runs on 4 October 2026 left nothing to replay. Evidence only.
+// Nothing reads these files during a lesson, and a folder that cannot be
+// written never stops the check.
+function keepAttempt(candidatePath, result) {
+  try {
+    const folder = path.join(path.dirname(path.resolve(candidatePath)), 'slide-attempts');
+    fs.mkdirSync(folder, { recursive: true });
+    const taken = fs.readdirSync(folder)
+      .map((name) => /^attempt-(\d+)\.json$/.exec(name))
+      .filter(Boolean)
+      .map((found) => Number(found[1]));
+    const number = String((taken.length ? Math.max(...taken) : 0) + 1).padStart(2, '0');
+    fs.copyFileSync(candidatePath, path.join(folder, `attempt-${number}.json`));
+    const verdict = result.ok
+      ? `SLIDE_DESIGN_CHECK_OK: ${result.slideCount} slides`
+      : `SLIDE_DESIGN_CHECK_FAILED: ${result.reason}`;
+    fs.writeFileSync(
+      path.join(folder, `attempt-${number}.check.txt`),
+      [verdict, String(result.stdout || ''), String(result.stderr || '')].join('\n'),
+      'utf8'
+    );
+  } catch (err) {
+    // Keeping evidence is never a reason to fail a check.
+  }
 }
 
 if (require.main === module) {

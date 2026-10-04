@@ -142,7 +142,9 @@ for (const [how, greaterDepth] of [
     assert.ok(files.includes("Omission - Worksheets.pdf"));
     assert.ok(files.some((f) => /greaterDepth\.html$/.test(f)));
     assert.match(key, /The Expected sheet stands in here for the Greater Depth sheet, which the page could not hold\./);
-    assert.equal(timesInKey(key), 2);
+    // Printed once, under Expected: a stand-in's answers are not repeated
+    // under its own heading (Daniel, 4 October 2026).
+    assert.equal(timesInKey(key), 1);
   });
 }
 
@@ -221,7 +223,9 @@ test("a Below sheet with a word bank typed into its question gets the Expected s
   assert.match(stdout, /^SHEET_STANDS_IN: Below - .*: the Below sheet cannot be built \(WORD_BANK_INLINE/m);
   assert.ok(files.includes("Omission - Worksheets.pdf"));
   assert.match(key, /The Expected sheet stands in here for the Below sheet, which could not be built\./);
-  assert.equal(timesInKey(key), 2);
+  // Printed once, under Expected: a stand-in's answers are not repeated
+    // under its own heading (Daniel, 4 October 2026).
+    assert.equal(timesInKey(key), 1);
 });
 
 test("a Below sheet whose picture cannot be read gets the Expected sheet at the last resort", () => {
@@ -542,7 +546,9 @@ test("a fault that is not about page fit never prints the faulty sheet", () => {
   assert.doesNotMatch(stdout, /SHEET_OMITTED/);
   assert.match(stdout, /^SHEET_STANDS_IN: Greater Depth - .*cannot be built \(ANSWER_KEY_MISSING/m);
   assert.ok(files.includes("Omission - Worksheets.pdf"));
-  assert.equal(timesInKey(key), 2);
+  // Printed once, under Expected: a stand-in's answers are not repeated
+    // under its own heading (Daniel, 4 October 2026).
+    assert.equal(timesInKey(key), 1);
 
   const broken = specWithOneUnfittable();
   broken.sheets.greaterDepth = fittingSheet("Write a number between −5 and −1.");

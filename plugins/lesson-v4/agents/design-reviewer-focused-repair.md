@@ -6,6 +6,7 @@ effort: xhigh
 codex_model: sol61
 codex_effort: medium
 color: "#7A1F2B"
+disallowedTools: Artifact, Agent
 ---
 
 # Design Reviewer - Focused Repair

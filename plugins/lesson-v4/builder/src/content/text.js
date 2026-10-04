@@ -53,6 +53,15 @@ function textSignal(data, zone, fontPt) {
   return { h: h, w: w, indent: w + STAR_GAP };
 }
 
+// The width a card's sign takes from its words, at the largest the sign is
+// ever drawn in this zone, for a stack measuring what the words need
+// (content/stack.js, textNeed).
+function signIndent(data, zone) {
+  const ceiling = data.fontSize || TEXT_CEILINGS[zone.class] || FALLBACK_CEILING;
+  const sign = textSignal(data, Object.assign({}, zone, { h: SIGN_H_MAX + 2 * PAD }), ceiling);
+  return sign ? sign.indent : 0;
+}
+
 function isPortrait(zone) {
   return zone.h > zone.w;
 }
@@ -362,4 +371,4 @@ function measureTextValue(zone, data, ctx, value) {
   };
 }
 
-module.exports = { drawText, measureText, estimateLines, fillGrowCeiling, TEXT_CEILINGS, FALLBACK_CEILING };
+module.exports = { drawText, measureText, estimateLines, fillGrowCeiling, signIndent, TEXT_CEILINGS, FALLBACK_CEILING };

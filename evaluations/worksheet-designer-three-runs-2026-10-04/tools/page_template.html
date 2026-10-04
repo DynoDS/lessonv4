@@ -1,0 +1,425 @@
+<title>Worksheet Three Runs</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bitter:wght@600;700&display=swap">
+<style>
+/* Layout: one lesson at a time; inside it one band per level (Below, Expected, Greater Depth, answers); each band shows the three runs' pages side by side with one choice and one thoughts box underneath. */
+:root {
+  --bg: #f3f5f2; --panel: #ffffff; --ink: #1d2623; --muted: #5c6b66; --line: #d3dad6;
+  --a: #2f5fa8; --a-soft: #e6edf8; --b: #a85a1c; --b-soft: #f8ecdf; --c: #6b3fa0; --c-soft: #efe8f7;
+  --pick: #1f6f55; --pick-soft: #dff1ea; --warn: #9a3324; --warn-soft: #f9e6e2; --shade: rgba(20, 28, 25, 0.9);
+  --display: "Bitter", Georgia, serif; --body: "Atkinson Hyperlegible", "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151b19; --panel: #1f2724; --ink: #e8eeeb; --muted: #9fb0aa; --line: #34403c;
+    --a: #8fb4ee; --a-soft: #223149; --b: #e9a868; --b-soft: #40301f; --c: #c3a2ec; --c-soft: #33264a;
+    --pick: #6fd0ad; --pick-soft: #1d3a31; --warn: #f0a092; --warn-soft: #472520; --shade: rgba(5, 8, 7, 0.94); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151b19; --panel: #1f2724; --ink: #e8eeeb; --muted: #9fb0aa; --line: #34403c;
+  --a: #8fb4ee; --a-soft: #223149; --b: #e9a868; --b-soft: #40301f; --c: #c3a2ec; --c-soft: #33264a;
+  --pick: #6fd0ad; --pick-soft: #1d3a31; --warn: #f0a092; --warn-soft: #472520; --shade: rgba(5, 8, 7, 0.94); color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1700px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 110px; display: flex; flex-direction: column; gap: 18px; }
+h1 { font-family: var(--display); font-size: 1.7rem; line-height: 1.2; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-size: 1.25rem; margin: 0; text-wrap: balance; }
+h3 { font-family: var(--display); font-size: 1.1rem; margin: 0; }
+p { margin: 0; }
+.intro { display: flex; flex-direction: column; gap: 8px; max-width: 64ch; }
+.intro p { color: var(--muted); }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+.tab { font: inherit; font-weight: 700; padding: 8px 14px; border-radius: 6px; border: 2px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; }
+.tab[aria-selected="true"] { border-color: var(--ink); }
+.tab:disabled { opacity: 0.55; cursor: default; }
+.tab .done { color: var(--pick); margin-left: 6px; font-weight: 400; }
+.tab:focus-visible, .choice:focus-visible, button:focus-visible, summary:focus-visible, textarea:focus-visible, input:focus-visible { outline: 3px solid var(--pick); outline-offset: 2px; }
+.lessonhead { display: flex; flex-direction: column; gap: 6px; }
+.lessonhead .lo { color: var(--muted); max-width: 70ch; }
+.three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.runs { font-size: 0.9rem; }
+.runs > div { padding: 8px 12px; border-radius: 6px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.runs b { font-family: var(--display); }
+.runs .ra { background: var(--a-soft); } .runs .ra b { color: var(--a); }
+.runs .rb { background: var(--b-soft); } .runs .rb b { color: var(--b); }
+.runs .rc { background: var(--c-soft); } .runs .rc b { color: var(--c); }
+.band { display: flex; flex-direction: column; gap: 12px; padding-block: 14px 4px; border-top: 2px solid var(--ink); }
+.band > h3 small { font-family: var(--body); font-weight: 400; font-size: 0.85rem; color: var(--muted); margin-left: 8px; }
+.rowbox { display: flex; flex-direction: column; gap: 10px; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.rowbox.judged { border-color: var(--pick); }
+.sheet { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sheet button.shot { all: unset; cursor: zoom-in; display: block; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: #fff; }
+.sheet img { display: block; width: 100%; height: auto; background: #fff; }
+.sheet.a button.shot { border-top: 5px solid var(--a); }
+.sheet.b button.shot { border-top: 5px solid var(--b); }
+.sheet.c button.shot { border-top: 5px solid var(--c); }
+.cap { font-size: 0.85rem; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.cap b { color: var(--ink); }
+.cap .slips { font-weight: 700; color: var(--warn); }
+.none { color: var(--muted); font-style: italic; padding: 14px 10px; border: 1px dashed var(--line); border-radius: 4px; }
+.vote { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.choice { font: inherit; font-weight: 700; padding: 8px 16px; border-radius: 6px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); cursor: pointer; }
+.choice[aria-pressed="true"] { background: var(--pick-soft); border-color: var(--pick); color: var(--pick); }
+.wrong { display: inline-flex; gap: 8px; align-items: center; padding: 7px 12px; border-radius: 6px; border: 2px solid var(--line); background: var(--bg); cursor: pointer; font-weight: 700; }
+.wrong:has(input:checked) { background: var(--warn-soft); border-color: var(--warn); color: var(--warn); }
+.wrong input { width: 18px; height: 18px; margin: 0; }
+.rowbox textarea, .whole textarea { font: inherit; width: 100%; min-height: 64px; resize: vertical; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }
+.whole { display: flex; flex-direction: column; gap: 6px; padding-block: 14px; border-top: 2px solid var(--ink); }
+.judge { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--panel); border-top: 2px solid var(--ink); padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); }
+.judge .in { max-width: 1700px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: baseline; }
+.tally { font-weight: 700; }
+.status { font-size: 0.85rem; color: var(--muted); }
+.box { position: fixed; inset: 0; z-index: 40; background: var(--shade); display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px; }
+.box .scroller { flex: 1 1 auto; min-height: 0; width: 100%; overflow: auto; display: flex; justify-content: center; align-items: flex-start; }
+.box img { max-width: min(100%, 1300px); height: auto; background: #fff; border-radius: 4px; }
+.box.fit img { max-height: 100%; width: auto; }
+.box .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; color: #f2f5f3; }
+.box button { font: inherit; font-weight: 700; padding: 8px 14px; border-radius: 6px; border: 2px solid #f2f5f3; background: transparent; color: #f2f5f3; cursor: pointer; }
+.box button[aria-pressed="true"] { background: #f2f5f3; color: #1d2623; }
+.box button:disabled { opacity: 0.4; cursor: default; }
+.box .cap2 { font-weight: 700; }
+@media (max-width: 760px) {
+  .three { grid-template-columns: 1fr; }
+  h1 { font-size: 1.35rem; }
+}
+</style>
+
+<div class="wrap">
+  <div class="intro">
+    <h1>Three goes at the same worksheet</h1>
+    <p>Each lesson's worksheets were designed three times, from exactly the same lesson design and the same adaptation. Nothing was changed between the three goes.</p>
+    <p>They are called A, B and C. None of them is the original. Where they differ, the instructions are leaving something to chance. Where all three are wrong in the same way, something is wrong in general.</p>
+    <p>Choose under each set and type what you think. Tap a page to see it large.</p>
+  </div>
+
+  <div class="tabs" id="tabs" role="tablist" aria-label="Lessons"></div>
+
+  <div class="lessonhead">
+    <h2 id="lessonTitle"></h2>
+    <p class="lo" id="lessonLo"></p>
+  </div>
+
+  <div class="three runs" id="runs"></div>
+
+  <div id="bands"></div>
+
+  <div class="whole">
+    <h3>This lesson as a whole</h3>
+    <textarea id="notes" placeholder="Anything about this lesson's worksheets as a whole? (optional)"></textarea>
+  </div>
+</div>
+
+<div class="judge">
+  <div class="in">
+    <div class="tally" id="tally"></div>
+    <div class="status" id="status">Loading your answers...</div>
+  </div>
+</div>
+
+<div class="box fit" id="box" hidden>
+  <div class="bar">
+    <span class="cap2" id="boxCap"></span>
+    <button type="button" id="boxA" data-side="a" aria-pressed="false">Show A</button>
+    <button type="button" id="boxB" data-side="b" aria-pressed="false">Show B</button>
+    <button type="button" id="boxC" data-side="c" aria-pressed="false">Show C</button>
+    <button type="button" id="boxZoom">Bigger</button>
+    <button type="button" id="boxClose">Close</button>
+  </div>
+  <div class="scroller"><img id="boxImg" alt=""></div>
+  <div class="bar">
+    <button type="button" class="bp" data-choice="A" aria-pressed="false">A is best</button>
+    <button type="button" class="bp" data-choice="B" aria-pressed="false">B is best</button>
+    <button type="button" class="bp" data-choice="C" aria-pressed="false">C is best</button>
+    <button type="button" class="bp" data-choice="same" aria-pressed="false">All about the same</button>
+    <button type="button" id="boxPrev">Previous set</button>
+    <button type="button" id="boxNext">Next set</button>
+  </div>
+</div>
+
+<script>
+const DATA = /*DATA*/;
+const SIDES = ["a", "b", "c"];
+const $ = (id) => document.getElementById(id);
+let current = Math.max(0, DATA.findIndex((L) => L.ready));
+let votes = {};          // lesson key -> {rows: {rowId: {c, w, n}}, notes}
+let db = null;
+let storeReady = false;
+const busy = {}, dirty = {};
+let noteTimer = null;
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+function lessonVotes(id) {
+  if (!votes[id]) votes[id] = { rows: {}, notes: "" };
+  if (!votes[id].rows) votes[id].rows = {};
+  return votes[id];
+}
+function rowsOf(L) { const out = []; (L.bands || []).forEach((b) => b.rows.forEach((r) => out.push(r))); return out; }
+function judgedCount(L) { const v = lessonVotes(L.id).rows; return rowsOf(L).filter((r) => v[r.id] && v[r.id].c).length; }
+
+function renderTabs() {
+  const tabs = $("tabs");
+  tabs.textContent = "";
+  DATA.forEach((L, i) => {
+    const b = el("button", "tab", L.tag);
+    b.type = "button";
+    b.id = "tab-" + L.id;
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-selected", i === current ? "true" : "false");
+    if (!L.ready) { b.disabled = true; b.appendChild(el("span", "done", "still being made")); }
+    else b.appendChild(el("span", "done", judgedCount(L) + " of " + rowsOf(L).length));
+    b.addEventListener("click", () => { flushNotes(); current = i; renderLesson(); window.scrollTo(0, 0); });
+    tabs.appendChild(b);
+  });
+}
+
+function sheetNode(side, page, rowId) {
+  const wrap = el("div", "sheet " + side);
+  const name = side.toUpperCase();
+  if (!page) {
+    wrap.appendChild(el("div", "none", name + " has no page here."));
+    return wrap;
+  }
+  const shot = el("button", "shot");
+  shot.type = "button";
+  shot.setAttribute("aria-label", name + ", open large");
+  const img = el("img");
+  img.loading = "lazy";
+  img.src = page.img;
+  img.alt = name + ": " + page.what;
+  shot.appendChild(img);
+  shot.addEventListener("click", () => openBox(rowId, side));
+  wrap.appendChild(shot);
+  const cap = el("div", "cap");
+  cap.appendChild(el("b", null, name));
+  cap.appendChild(el("span", null, page.what));
+  if (page.flag) cap.appendChild(el("span", "slips", page.flag));
+  wrap.appendChild(cap);
+  return wrap;
+}
+
+function renderLesson() {
+  const L = DATA[current];
+  $("lessonTitle").textContent = L.label;
+  $("lessonLo").textContent = L.lo || "";
+  const runs = $("runs");
+  runs.textContent = "";
+  SIDES.forEach((s) => {
+    const d = el("div", "r" + s);
+    d.appendChild(el("b", null, "How " + s.toUpperCase() + "'s go went"));
+    ((L.runs || {})[s] || []).forEach((line) => d.appendChild(el("span", null, line)));
+    runs.appendChild(d);
+  });
+  const bands = $("bands");
+  bands.textContent = "";
+  (L.bands || []).forEach((band) => {
+    const sec = el("div", "band");
+    const h = el("h3", null, band.label);
+    if (band.note) h.appendChild(el("small", null, band.note));
+    sec.appendChild(h);
+    band.rows.forEach((r) => {
+      const box = el("div", "rowbox");
+      box.id = "row-" + r.id;
+      const three = el("div", "three");
+      SIDES.forEach((s) => three.appendChild(sheetNode(s, r[s], r.id)));
+      box.appendChild(three);
+      const vote = el("div", "vote");
+      [["A", "A is best"], ["B", "B is best"], ["C", "C is best"], ["same", "All about the same"]].forEach(([c, label]) => {
+        const b = el("button", "choice", label);
+        b.type = "button";
+        b.dataset.choice = c;
+        b.setAttribute("aria-pressed", "false");
+        b.addEventListener("click", () => choose(r.id, c));
+        vote.appendChild(b);
+      });
+      const wl = el("label", "wrong");
+      const cb = el("input");
+      cb.type = "checkbox";
+      cb.id = "wrong-" + L.id + "-" + r.id;
+      cb.addEventListener("change", () => setWrong(r.id, cb.checked));
+      wl.appendChild(cb);
+      wl.appendChild(el("span", null, "Something is wrong on all three"));
+      vote.appendChild(wl);
+      box.appendChild(vote);
+      const note = el("textarea");
+      note.id = "note-" + L.id + "-" + r.id;
+      note.placeholder = "What do you think? What is good, what is wrong, what you would change.";
+      note.setAttribute("aria-label", "Your thoughts on this set");
+      note.addEventListener("input", () => { clearTimeout(noteTimer); noteTimer = setTimeout(flushNotes, 1200); });
+      note.addEventListener("blur", flushNotes);
+      box.appendChild(note);
+      sec.appendChild(box);
+    });
+    bands.appendChild(sec);
+  });
+  paint();
+}
+
+function paint() {
+  const L = DATA[current];
+  const v = lessonVotes(L.id);
+  rowsOf(L).forEach((r) => {
+    const box = $("row-" + r.id);
+    if (!box) return;
+    const mine = v.rows[r.id] || {};
+    box.classList.toggle("judged", !!mine.c);
+    box.querySelectorAll(".choice").forEach((b) => b.setAttribute("aria-pressed", b.dataset.choice === mine.c ? "true" : "false"));
+    const cb = box.querySelector("input[type=checkbox]");
+    if (cb) cb.checked = !!mine.w;
+    const note = box.querySelector("textarea");
+    if (note && document.activeElement !== note) note.value = mine.n || "";
+  });
+  if (document.activeElement !== $("notes")) $("notes").value = v.notes || "";
+  const all = rowsOf(L);
+  const count = (c) => all.filter((r) => (v.rows[r.id] || {}).c === c).length;
+  $("tally").textContent = judgedCount(L) + " of " + all.length + " judged in this lesson. A best " + count("A") + ", B best " + count("B") + ", C best " + count("C") + ", about the same " + count("same") + ".";
+  if (storeReady) $("status").textContent = db ? "Your answers save as you go." : "Your answers are kept in this browser only, so tell Claude your choices in the chat as well.";
+  renderTabs();
+  paintBox();
+}
+
+function choose(rowId, c) {
+  const L = DATA[current];
+  const v = lessonVotes(L.id);
+  const mine = Object.assign({}, v.rows[rowId]);
+  mine.c = mine.c === c ? "" : c;
+  v.rows[rowId] = mine;
+  save(L.id);
+  paint();
+}
+function setWrong(rowId, on) {
+  const L = DATA[current];
+  const v = lessonVotes(L.id);
+  v.rows[rowId] = Object.assign({}, v.rows[rowId], { w: !!on });
+  save(L.id);
+}
+
+function flushNotes() {
+  if (noteTimer !== null) { clearTimeout(noteTimer); noteTimer = null; }
+  const L = DATA[current];
+  const v = lessonVotes(L.id);
+  let changed = false;
+  rowsOf(L).forEach((r) => {
+    const input = $("note-" + L.id + "-" + r.id);
+    if (!input) return;
+    const was = (v.rows[r.id] || {}).n || "";
+    if (was !== input.value) { v.rows[r.id] = Object.assign({}, v.rows[r.id], { n: input.value }); changed = true; }
+  });
+  if ((v.notes || "") !== $("notes").value) { v.notes = $("notes").value; changed = true; }
+  if (changed) save(L.id);
+}
+$("notes").addEventListener("input", () => { clearTimeout(noteTimer); noteTimer = setTimeout(flushNotes, 1200); });
+$("notes").addEventListener("blur", flushNotes);
+
+function body(id) {
+  const v = lessonVotes(id);
+  const rows = {};
+  Object.keys(v.rows).forEach((k) => { const s = v.rows[k]; if (s && (s.c || s.n || s.w)) rows[k] = { c: s.c || "", w: !!s.w, n: s.n || "" }; });
+  return { rows: rows, notes: v.notes || "", updatedAt: new Date().toISOString() };
+}
+function save(id) {
+  if (!db) {
+    try { localStorage.setItem("worksheet-three-runs", JSON.stringify(votes)); } catch (e) {}
+    return;
+  }
+  dirty[id] = true;
+  if (!busy[id]) pump(id);
+}
+async function pump(id) {
+  busy[id] = true;
+  while (dirty[id]) {
+    dirty[id] = false;
+    try { await db.doc("votes/" + id).set(body(id)); }
+    catch (e) { $("status").textContent = "That answer did not save. Please tell Claude your choice in the chat."; }
+  }
+  busy[id] = false;
+}
+
+// Large view: one set at a time, flick between A, B and C.
+let boxRow = 0, boxSide = "a";
+function paintBox() {
+  if ($("box").hidden) return;
+  const L = DATA[current];
+  const all = rowsOf(L);
+  const r = all[boxRow];
+  if (!r[boxSide]) boxSide = SIDES.find((s) => r[s]) || "a";
+  const page = r[boxSide];
+  $("boxImg").src = page.img;
+  $("boxImg").alt = boxSide.toUpperCase() + ": " + page.what;
+  $("boxCap").textContent = boxSide.toUpperCase() + ": " + page.what + " (set " + (boxRow + 1) + " of " + all.length + ")";
+  SIDES.forEach((s) => {
+    const b = $("box" + s.toUpperCase());
+    b.disabled = !r[s];
+    b.setAttribute("aria-pressed", s === boxSide ? "true" : "false");
+  });
+  const mine = (lessonVotes(L.id).rows[r.id] || {}).c;
+  document.querySelectorAll(".bp").forEach((b) => b.setAttribute("aria-pressed", b.dataset.choice === mine ? "true" : "false"));
+}
+function openBox(rowId, side) {
+  flushNotes();
+  boxRow = Math.max(0, rowsOf(DATA[current]).findIndex((r) => r.id === rowId));
+  boxSide = side;
+  $("box").hidden = false;
+  paintBox();
+  $("boxClose").focus();
+}
+function closeBox() {
+  const r = rowsOf(DATA[current])[boxRow];
+  $("box").hidden = true;
+  const target = $("row-" + r.id);
+  if (target) target.scrollIntoView({ block: "center" });
+}
+function step(d) { const n = rowsOf(DATA[current]).length; boxRow = (boxRow + d + n) % n; paintBox(); }
+function turn(d) {
+  const r = rowsOf(DATA[current])[boxRow];
+  const have = SIDES.filter((s) => r[s]);
+  boxSide = have[(have.indexOf(boxSide) + d + have.length) % have.length];
+  paintBox();
+}
+SIDES.forEach((s) => $("box" + s.toUpperCase()).addEventListener("click", () => { boxSide = s; paintBox(); }));
+$("boxPrev").addEventListener("click", () => step(-1));
+$("boxNext").addEventListener("click", () => step(1));
+$("boxClose").addEventListener("click", closeBox);
+$("boxZoom").addEventListener("click", () => {
+  const fit = $("box").classList.toggle("fit");
+  $("boxZoom").textContent = fit ? "Bigger" : "Fit the screen";
+});
+document.querySelectorAll(".bp").forEach((b) => b.addEventListener("click", () => choose(rowsOf(DATA[current])[boxRow].id, b.dataset.choice)));
+document.addEventListener("keydown", (e) => {
+  if ($("box").hidden) return;
+  if (e.key === "Escape") closeBox();
+  else if (e.key === "ArrowRight") turn(1);
+  else if (e.key === "ArrowLeft") turn(-1);
+  else if (e.key.toLowerCase() === "a" || e.key.toLowerCase() === "b" || e.key.toLowerCase() === "c") {
+    const s = e.key.toLowerCase();
+    if (rowsOf(DATA[current])[boxRow][s]) { boxSide = s; paintBox(); }
+  }
+});
+
+renderLesson();
+
+(async () => {
+  try { db = (window.claude && window.claude.use) ? await window.claude.use("db") : null; } catch (e) { db = null; }
+  if (db) {
+    db.collection("votes").onSnapshot((snap) => {
+      snap.docs.forEach((d) => {
+        if (busy[d.id] || dirty[d.id]) return;   // do not let an older copy overwrite a choice still being saved
+        const b = d.data() || {};
+        const rows = {};
+        Object.keys(b.rows || {}).forEach((k) => { const s = b.rows[k] || {}; rows[k] = { c: s.c || "", w: !!s.w, n: s.n || "" }; });
+        votes[d.id] = { rows: rows, notes: b.notes || "" };
+      });
+      storeReady = true;
+      paint();
+    }, () => { storeReady = true; db = null; paint(); });
+  } else {
+    try { votes = JSON.parse(localStorage.getItem("worksheet-three-runs") || "{}") || {}; } catch (e) { votes = {}; }
+    storeReady = true;
+    paint();
+  }
+})();
+</script>

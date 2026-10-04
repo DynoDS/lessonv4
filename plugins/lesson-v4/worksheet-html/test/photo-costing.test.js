@@ -72,7 +72,7 @@ const writtenAnswer = () => ({
 });
 
 const fits = (items) =>
-  suggestLayouts(items, { extra: { title: "Label the parts" } }).fits.length > 0;
+  suggestLayouts(items, { extra: { title: "Label the parts", fullPage: true } }).fits.length > 0;
 
 test("a write-on labelled photograph is about half a page, not most of one", () => {
   const spec = writeOnPhoto();

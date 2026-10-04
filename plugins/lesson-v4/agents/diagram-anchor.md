@@ -6,6 +6,7 @@ effort: high
 codex_model: sol61
 codex_effort: medium
 color: "#C77DFF"
+disallowedTools: Artifact, Agent
 ---
 
 # Diagram Anchor

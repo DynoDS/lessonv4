@@ -14,12 +14,23 @@ function blocksIn(node, found, path = '', slideIndex = -1) {
   });
 }
 
+// What a question slide and its answer slide may differ in besides the paired
+// values: the header's own furniture. The pair exists so the board a child
+// checks against does not move, and none of these moves it. The Do badge is
+// added by the builder to the task slide alone, so comparing it refused every
+// paired Do beat until the designer named the bolt on the answer slide too,
+// which is the bolt the teacher then saw on answer slides (4 October 2026).
+// The sign is a pencil on the question and a tick on the answer, and the cue
+// beside it ("Answer on your own.") has no business on the answers.
+// `settlePairedHeaders` keeps the two headers the same height.
+const PAIR_HEADER_FURNITURE = ['title', 'heading', 'speakerNotes', 'notes', 'instruction', 'signal', 'doSign', 'pairedHeaderTwoLine'];
+
 function staticSlide(node, root = false) {
   if (Array.isArray(node)) return node.map((item) => staticSlide(item));
   if (!node || typeof node !== 'object') return node;
   const out = {};
   Object.keys(node).sort().forEach((key) => {
-    if (root && ['title', 'heading', 'speakerNotes', 'notes'].includes(key)) return;
+    if (root && PAIR_HEADER_FURNITURE.includes(key)) return;
     if (node.revealPair) {
       if (key === 'revealPair') {
         out[key] = { id: node.revealPair.id, state: '[paired state]' };
@@ -140,5 +151,33 @@ function pairedEntries(data, ctx) {
   return pair;
 }
 
+// A header cue too long for one line takes two, and the body starts lower on
+// that slide. A pair's two slides may carry different cues and signs, so when
+// either needs the taller header both take it: the body below sits at one
+// height on the question and on its answers.
+function settlePairedHeaders(lesson) {
+  const slides = lesson && lesson.slides;
+  if (!Array.isArray(slides)) return lesson;
+  const { instructionNeedsTwoLines } = require('../layout');
+  const blocks = [];
+  slides.forEach((slide, index) => blocksIn(slide, blocks, '', index));
+  const slidesOf = new Map();
+  blocks.forEach((found) => {
+    const id = found.block.revealPair && found.block.revealPair.id;
+    if (typeof id !== 'string') return;
+    if (!slidesOf.has(id)) slidesOf.set(id, new Set());
+    slidesOf.get(id).add(found.slideIndex);
+  });
+  slidesOf.forEach((indexes) => {
+    const pair = [...indexes].map((index) => slides[index])
+      .filter((slide) => slide && typeof slide === 'object' && slide.headerStyle !== 'starter');
+    if (indexes.size !== 2 || pair.length !== 2) return;
+    if (pair.some((slide) => instructionNeedsTwoLines(slide))) {
+      pair.forEach((slide) => { slide.pairedHeaderTwoLine = true; });
+    }
+  });
+  return lesson;
+}
+
 const PAIRED_LAYOUT = Symbol('paired reveal layout');
-module.exports = { pairedEntries, pairedText, PAIRED_LAYOUT };
+module.exports = { pairedEntries, pairedText, PAIRED_LAYOUT, settlePairedHeaders };

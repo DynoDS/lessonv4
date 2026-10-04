@@ -6,6 +6,7 @@ effort: xhigh
 codex_model: sol61
 codex_effort: high
 color: "#7A1F2B"
+disallowedTools: Artifact, Agent
 ---
 
 # Design Reviewer

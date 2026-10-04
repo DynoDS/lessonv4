@@ -2,7 +2,8 @@
 'use strict';
 
 const fs = require('fs');
-const { applyDoSigns } = require('./src/do-signs');
+const { applyDoSigns, applyAnswerTicks } = require('./src/do-signs');
+const { settlePairedHeaders } = require('./src/content/reveal-pair');
 const path = require('path');
 const os = require('os');
 
@@ -228,6 +229,10 @@ async function main() {
   // Each Do beat's badge (a sheet, or a lightning bolt for a quick check) comes
   // from the lesson design beside this file (src/do-signs.js).
   applyDoSigns(raw, path.dirname(jsonPath));
+  // The tick on answer and check slides, then one header height for each
+  // question slide and its answers (src/content/reveal-pair.js).
+  applyAnswerTicks(raw);
+  settlePairedHeaders(raw);
   const lesson = sanitizeHouseStyle(raw);
   // A taught word's braces come off every figure before anything is drawn
   // or pre-rendered (src/figure-marks.js).

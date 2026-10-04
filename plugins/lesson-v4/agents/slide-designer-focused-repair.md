@@ -6,6 +6,7 @@ effort: xhigh
 codex_model: sol61
 codex_effort: medium
 color: "#9932CC"
+disallowedTools: Artifact, Agent
 ---
 
 # Slide Designer — Focused Repair

@@ -6,6 +6,7 @@ effort: medium
 codex_model: luna6
 codex_effort: medium
 color: "#BA55D3"
+disallowedTools: Artifact, Agent
 ---
 
 # Slide Decorator

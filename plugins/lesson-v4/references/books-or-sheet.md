@@ -126,6 +126,14 @@ The slip redraws what it can to fit (a method frame puts its labels above its
 boxes); a figure that still needs more than half a page cannot go on one, and
 the preflight names it as `SLIP_TOO_WIDE`.
 
+The build settles which half. A slip of a few short questions prints two
+across, down the page. A slip whose questions would run taller than half the
+page prints across the page's full width instead, its questions in two
+half-page columns in the order written, and is cut across the middle, so the
+child still has room under it to write. Every question still sits in a column
+half a page wide either way, so nothing about what fits on a slip changes, and
+there is nothing for you to choose.
+
 That is a question for you, not a verdict. Holding a wide figure is not by
 itself a reason for `"sheet"`: ask what the child does with it. A figure the
 children draw or copy for themselves in their books is marked `"onSlip": false`.

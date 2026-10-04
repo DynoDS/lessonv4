@@ -396,6 +396,8 @@ test("content that fits carries no verdict, because there is nothing to explain"
 test("content nothing can hold says how far over it is, in millimetres", () => {
   const result = suggestLayouts([TALL_CHART, TALL_CHART, TALL_CHART, TALL_CHART], {
     orientation: "landscape",
+    // Calibrated on the full page, before the 43mm trim strip (page.js).
+    extra: { fullPage: true },
   });
   assert.equal(result.fits.length, 0);
   assert.ok(result.verdict, "nothing fitted and no verdict was given");
@@ -417,6 +419,8 @@ test("the verdict never contradicts the refusals printed under it", () => {
   // shapes against content that cannot fit on paper.
   const result = suggestLayouts([TALL_CHART, TALL_CHART, TALL_CHART, TALL_CHART], {
     orientation: "landscape",
+    // Calibrated on the full page, before the 43mm trim strip (page.js).
+    extra: { fullPage: true },
   });
 
   if (result.verdict.kind === "too-tall-for-any-page") {
@@ -478,7 +482,8 @@ test("a shape that squeezes the work is not offered above one that does not", ()
 
   const { fits } = suggestLayouts([wideChart, answers], {
     yearGroup: 4,
-    extra: { title: "Bar charts", lo: "To read a bar chart" },
+    // `fullPage`: calibrated on the full page, before the 43mm trim strip (page.js).
+    extra: { title: "Bar charts", lo: "To read a bar chart", fullPage: true },
   });
 
   const strained = fits.filter((f) => f.strain > 0);

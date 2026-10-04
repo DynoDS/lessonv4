@@ -45,6 +45,32 @@ function requiredZoneHeight(rowCount) {
 }
 
 
+// Whether every cell's words stand in a row this tall at the table's reading
+// floor, for a stack asking how tall the table has to be (content/stack.js).
+// The measure keeps a little in hand, as the sort board's does, so a height it
+// accepts passes the fit. A table with a picture in a cell is not measured: how
+// small a picture may go is not a question of lines.
+function cellsHold(rows, widths, rowH) {
+  const { wrappedLineCount } = require('../glyph-width');
+  for (const row of rows) {
+    if (!Array.isArray(row)) continue;
+    for (let c = 0; c < row.length; c += 1) {
+      const cell = row[c];
+      if (isPictureCell(cell)) return false;
+      const words = plainWords(cell).replace(/\*\*|\[\[|\]\]/g, '');
+      if (!words.trim()) continue;
+      let ems = 0;
+      for (const para of words.split('\n')) {
+        const n = para.trim() ? wrappedLineCount(para, TABLE_MIN_PT, widths[c] - 0.06, c === 0) : 1;
+        if (!Number.isFinite(n)) return false;
+        ems += (1.2 + 1.26 * (n - 1)) * 1.02;
+      }
+      if (ems * TABLE_MIN_PT / 72 + 0.03 > rowH) return false;
+    }
+  }
+  return true;
+}
+
 // A cell is words (a string) or a picture: any content object with a `type`,
 // usually `{ "type": "image", "imagePath": "..." }`, so one column can hold words
 // in some rows and a picture in others (the teacher, 29 September 2026: a
@@ -152,6 +178,9 @@ function drawTable(pptx, slide, zone, data, ctx) {
     // substitute the helper's number for it.
     refusal.zoneHeight = zone.h;
     throw refusal;
+  }
+  if (zone.measureFloorPt && !cellsHold(rows, widths, rowH)) {
+    throw new Error('TABLE_MEASURE: the cells do not hold their words at this height.');
   }
   // One hierarchy across the table: short headings must not grow independently
   // while the longer evidence they describe shrinks to the floor.

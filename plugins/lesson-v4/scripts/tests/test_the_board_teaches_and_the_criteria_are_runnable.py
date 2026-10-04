@@ -188,20 +188,32 @@ class TheExplanationIsSeparatePiecesNotABlock(unittest.TestCase):
         """Daniel settled the colour question the same day: "Orange was fine
         to break up black teach, we should do that." Orange is free on a Teach
         slide because its existing text job tints a value a question hands the
-        child, and a Teach slide is not asking."""
+        child, and a Teach slide is not asking.
+
+        On 4 October 2026, having judged a hundred slides and asked for colour
+        wherever a card's sentences were all black, he made it the ordinary
+        treatment: "Any card of three or more black sentences gets its key
+        line in orange." So the permission is now the default, and the playbook
+        no longer tells the designer to reach for layout first."""
         profile = flat(self.PROFILE)
-        self.assertIn("One line of a Teach slide's explanation may be orange, and only one", profile)
+        self.assertIn("A card of black sentences takes its key line in orange", profile)
+        self.assertIn("the ordinary treatment of such a card, not an occasional one", profile)
         self.assertIn("a Teach slide is not asking", profile)
-        self.assertIn("which line you would say louder", profile)
-        # Layout is still the first reach.
-        self.assertIn("Reach for layout first", flat(self.COMPOSITION))
+        self.assertIn("the one you would say louder", profile)
+        self.assertIn("a card of black sentences takes its key line in orange", flat(self.COMPOSITION))
+        self.assertNotIn("Reach for layout first", flat(self.COMPOSITION))
 
     def test_the_three_bounds_hold_the_permission(self) -> None:
         """Without these it becomes the tic Daniel asked about on the last
         rule the same afternoon."""
         profile = flat(self.PROFILE)
         self.assertIn("One line per slide", profile)
-        self.assertIn("Not on every Teach slide", profile)
+        # 4 October 2026: the colour is wanted on every such card, so the bound
+        # is no longer how often, but that the line is chosen for what it says,
+        # and that a card of equal lines takes none.
+        self.assertNotIn("Not on every Teach slide", profile)
+        self.assertIn("Chosen by what the line says, never by where it sits", profile)
+        self.assertIn("Not where the lines are equals", profile)
         self.assertIn("has a tic rather than a voice", profile)
         self.assertIn("never touches the sticky line", profile)
         # And not a line carrying a taught term: a PSHE slide put a whole line

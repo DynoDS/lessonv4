@@ -590,6 +590,9 @@ test("every helper draws the words its own example gives it", () => {
     // Picks the map's write-on variant; a child reads the markers it draws,
     // never the switch's own value.
     "worksheetMode",
+    // Where on a blank number line the child works (above, below, both): it
+    // moves the empty room, and prints nothing.
+    "work",
   ]);
 
   for (const [name, example] of Object.entries(examples)) {
@@ -673,6 +676,7 @@ test("a helper's example shows every field the helper reads", () => {
     // to leave the answer space off. It is never written into a sheet.
     questions: ["startAt", "showNumbers", "slip"],
     "written-answers": ["phase", "startAt", "showNumbers", "slip"],
+    "writing-frame": ["slip"],
     "circle-the-answer": ["phase"],
     "fact-file": ["phase"],
     // Turns the panel border off. The framed form is the one to reach for, and

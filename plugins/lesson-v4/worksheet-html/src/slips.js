@@ -323,7 +323,16 @@ function forSlip(node) {
   // boxes but puts each label above them rather than in a column beside them,
   // which asked for about 130mm and made every slip a full-width strip
   // (Daniel, 29 September 2026); same labels, same boxes, same order.
-  if (node.helper === "questions" || node.helper === "written-answers" || node.helper === "method-frame") {
+  // A writing frame keeps its sentence starters, which are the question's
+  // support, and drops the ruled lines under them for the same reason a
+  // written answer does (Daniel, 4 October 2026, on a PSHE slip: "they don't
+  // need the writing lines for children to write on, because they're in books").
+  if (
+    node.helper === "questions" ||
+    node.helper === "written-answers" ||
+    node.helper === "method-frame" ||
+    node.helper === "writing-frame"
+  ) {
     out.slip = true;
   }
   if (isStack(node) || isRow(node)) {
@@ -535,7 +544,9 @@ function slipPadTopMm(codeBeside) {
   return CUT_PAD_MM + (codeBeside ? 0 : CODE_LINE_MM);
 }
 
-// Slips are always half a page wide, two across. A slip is stuck into an
+// A slip's questions are always set half a page wide (and since 4 October 2026
+// a slip taller than half the page prints across the full width in two such
+// columns: see renderWideSlipsPage). A slip is stuck into an
 // exercise book, and a full-width strip is as wide as the page it goes on:
 // Daniel, 29 September 2026, "otherwise there's no point in it being a strip".
 // A slip holding something wider than half a page cannot be made. The worksheet
@@ -710,6 +721,28 @@ const SLIP_CSS = `
     color: var(--colour-quiet);
     font-weight: bold;
   }
+  /* A slip half a page the other way: the page's full width, its questions in
+     two columns, cut across. */
+  /* Two columns filled downwards, in rows: the second column's first question
+     starts level with the first column's, and so does each one after it. Left to two separate
+     columns, question 4 sat higher than question 2 whenever question 3 was a
+     line shorter than question 1 (Daniel, 4 October 2026). */
+  .slip-halves {
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: repeat(2, ${contentWidthMm(2)}mm);
+    column-gap: ${2 * CUT_PAD_MM}mm;
+    row-gap: ${GAP_MM}mm;
+    align-items: start;
+    overflow: hidden;
+    position: relative;
+  }
+  /* The same hairline a sheet draws between its two columns. */
+  .slip-halves::before {
+    content: ""; position: absolute; top: 0; bottom: 0; left: 50%;
+    border-left: var(--rule-hair) solid var(--colour-rule);
+  }
+
   .cut { position: absolute; border: 0 dashed #9a9a9a; }
   .cut--across { left: 0; right: 0; border-top-width: 0.3mm; }
   .cut--down { top: 0; bottom: 0; border-left-width: 0.3mm; }
@@ -791,6 +824,66 @@ function renderSlipsPage({ nodes, cols, rows, code, title, slipMm, codeBeside = 
   );
 }
 
+// Half a page the other way.
+//
+// A slip half a page WIDE that runs the whole height of the page is a strip as
+// tall as the book it is stuck into, with no room left under it to answer. So
+// when the half-width slip is taller than half the page, the same questions
+// are set out across the page's full width in two columns, in the order
+// written, and the page is cut across instead: Daniel, 4 October 2026, on a
+// Year 4 PSHE slip of four long situations, "1 2 one column, 3 4 next column
+// ... teacher can cut in the middle", and then "slips can be half a page,
+// whether that's vertically or horizontally". This replaces "always half a
+// page wide" (29 September 2026) with "always half a page".
+function renderWideSlipsPage({ left, right, rows, code, title, slipMm }) {
+  const cells = [];
+  for (let i = 0; i < rows; i += 1) {
+    cells.push(
+      `<div class="slip slip--code-above"><div class="slip-code">${esc(code || "")}${recordingIcon("books")}</div>` +
+        `<div class="slip-halves" data-worksheet-zone="slip-${i + 1}" ` +
+        `style="grid-template-rows:repeat(${Math.max(left.length, right.length)},auto)">` +
+        `${bodyHtml(left, SLIP_COLS)}${bodyHtml(right, SLIP_COLS)}` +
+        `</div></div>`
+    );
+  }
+  const cuts = [];
+  for (let r = 1; r < rows; r += 1) {
+    cuts.push(`<div class="cut cut--across" style="top:${(PAGE_TOP_INSET_MM + slipMm * r).toFixed(2)}mm"></div>`);
+  }
+  return documentHtml(
+    `${title || "Worksheet"} - slips`,
+    `<div class="slips" style="grid-template-columns:1fr;` +
+      `grid-template-rows:repeat(${rows},${slipMm.toFixed(2)}mm);align-content:start">` +
+      `${cells.join("")}</div>${cuts.join("")}`
+  );
+}
+
+// The split of a slip's questions into two columns that makes the shorter slip.
+async function widePlan(laid, heightOf) {
+  // A zone's own stack of questions is opened out, so the cut can fall between
+  // two questions of one zone as well as between two zones.
+  const nodes = laid.flatMap((node) =>
+    node && Array.isArray(node.stack) && Object.keys(node).length === 1 ? node.stack : [node]
+  );
+  if (nodes.length < 2) return null;
+  let best = null;
+  for (let cut = Math.ceil(nodes.length / 2); cut < nodes.length; cut += 1) {
+    const left = nodes.slice(0, cut);
+    const right = nodes.slice(cut);
+    // Row by row, because the two columns share their rows: each row is as
+    // tall as the taller of its two questions.
+    const rows = Math.max(left.length, right.length);
+    let tallMm = Math.max(0, rows - 1) * GAP_MM;
+    for (let r = 0; r < rows; r += 1) {
+      const l = left[r] ? await heightOf([left[r]]) : 0;
+      const rr = right[r] ? await heightOf([right[r]]) : 0;
+      tallMm += Math.max(l, rr);
+    }
+    if (!best || tallMm < best.tallMm) best = { left, right, tallMm };
+  }
+  return best;
+}
+
 // The browser's own height for one slip's content, in millimetres.
 async function measuredContentMm(browser, nodes, cols) {
   const page = await browser.newPage();
@@ -843,6 +936,29 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
   const askedMm = contentMm + (browser ? 1 : 0);
   const slipMm = askedMm + slipPadTopMm(codeBeside) + CUT_PAD_MM;
   let rows = rowsFor(slipMm);
+
+  // Taller than half the page: try it half a page the other way first.
+  if (rows < 2) {
+    try {
+      const heightOf = (part) =>
+        browser ? measuredContentMm(browser, part, cols) : Promise.resolve(estimatedContentMm(part, cols));
+      const plan = await widePlan(laid, heightOf);
+      if (plan) {
+        const wideMm = plan.tallMm + (browser ? 1 : 0) + slipPadTopMm(false) + CUT_PAD_MM;
+        let wideRows = rowsFor(wideMm);
+        while (wideRows >= 2) {
+          const html = renderWideSlipsPage({ left: plan.left, right: plan.right, rows: wideRows, code, title, slipMm: wideMm });
+          if (!browser) return { html, cols: 1, rows: wideRows, wide: true };
+          const { pdf, fitProblems } = await htmlToPdf(html, { browser, inspectFit: true });
+          if (!fitProblems.length) return { html, pdf, cols: 1, rows: wideRows, wide: true };
+          wideRows -= 1;
+        }
+      }
+    } catch (error) {
+      // The half-width slip below is still the answer when this cannot be planned.
+    }
+  }
+
   if (rows < 1) return { skipped: "its questions are too long to fit a slip shorter than a page" };
 
   while (rows >= 1) {

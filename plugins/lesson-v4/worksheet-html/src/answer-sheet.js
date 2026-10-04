@@ -137,9 +137,14 @@ function answerSheetHtml(worksheet, answerKey, { stoodIn = {}, size = "normal" }
   const sections = present.map((name) => {
     const heading = coded ? `${LEVEL_LABELS[name]} (${LEVEL_CODES[name]})` : LEVEL_LABELS[name];
     const standIn = stoodIn[name]
-      ? `<p class="a-standin">The Expected sheet stands in here for the ${esc(LEVEL_LABELS[name])} sheet, ${esc(stoodIn[name])}. These are the Expected answers.</p>`
+      ? `<p class="a-standin">The Expected sheet stands in here for the ${esc(LEVEL_LABELS[name])} sheet, ${esc(stoodIn[name])}. Its answers are the Expected answers${present.includes("expected") ? ", printed once under Expected" : ""}.</p>`
       : "";
-    const rows = (answerKey[name] || []).map((raw) => {
+    // A stand-in is the Expected sheet again, so its answers are the Expected
+    // answers again. Printed under each heading they filled the page with the
+    // same key three times (Daniel, 4 October 2026); the heading and the reason
+    // stay, and the answers are printed once, where the sheet they belong to is.
+    const repeated = Boolean(stoodIn[name]) && present.includes("expected") && name !== "expected";
+    const rows = (repeated ? [] : answerKey[name] || []).map((raw) => {
       const entry = printedEntry(raw);
       const long = estimatedLines(entry.answer, size) > 1;
       const where = `${LEVEL_LABELS[name]} ${formatQuestionLabel(entry.question)}`;

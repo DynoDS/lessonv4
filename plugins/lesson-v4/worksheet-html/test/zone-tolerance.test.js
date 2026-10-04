@@ -114,6 +114,8 @@ test("tolerance never pushes a sheet that fitted over the edge of the page", () 
   // a helper's own measurements change underneath it.
   const sheetWith = (tables) => ({
     title: "Tight",
+    // Calibrated on the full page, before the 43mm trim strip (page.js).
+    fullPage: true,
     layout: "halves-stacked",
     orientation: "portrait",
     zones: {

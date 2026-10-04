@@ -94,7 +94,11 @@ test("the Expected sheet stands in for a returned Below sheet, with its answers 
   assert.ok(standIn && expected, built.key);
   assert.match(standIn[0], /^The Expected sheet stands in here for the Below sheet, whose picture never arrived\./);
   assert.ok(!/redesign|[A-Z]{3,}_/.test(standIn[0]), standIn[0]);
-  assert.deepStrictEqual(standIn.slice(1), expected, "the key covers it with the Expected answers");
+  // The answers are printed once, under Expected, and the stand-in's heading
+  // points there instead of repeating them (Daniel, 4 October 2026).
+  assert.match(standIn[0], /Its answers are the Expected answers, printed once under Expected\.$/);
+  assert.deepStrictEqual(standIn.slice(1), [], "the stand-in does not repeat the Expected answers");
+  assert.ok(expected.length > 0, "the Expected answers are still printed");
 });
 
 test("a pack that returned no sheet is built as it always was", () => {
@@ -143,6 +147,6 @@ test("a sheet returned for its teaching: the key says in plain words it could no
   assert.ok(standIn, built.key);
   assert.strictEqual(
     standIn[0],
-    "The Expected sheet stands in here for the Below sheet, which could not be used as printed. These are the Expected answers."
+    "The Expected sheet stands in here for the Below sheet, which could not be used as printed. Its answers are the Expected answers, printed once under Expected."
   );
 });

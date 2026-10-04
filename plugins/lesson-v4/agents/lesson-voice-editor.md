@@ -6,6 +6,7 @@ effort: medium
 codex_model: sol61
 codex_effort: medium
 color: "#B5446E"
+disallowedTools: Artifact, Agent
 ---
 
 # Lesson Voice Editor

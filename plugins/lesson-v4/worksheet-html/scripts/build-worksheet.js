@@ -94,6 +94,27 @@ function withoutSheet(worksheet, key) {
     : { ...worksheet, sheets };
 }
 
+// The no-67 rule is about numbers a class reads. The spec's top-level `notes`
+// and each sheet's `recordingReason` are the designer's words to the teacher
+// about the page itself, printed on no sheet and no answer key, and they quote
+// measurements the engine handed over: a portrait page is 267mm tall, so a
+// note saying a sheet "needs 352mm against 267mm available" refused a whole
+// history pack (three runs of one lesson, 4 October 2026).
+function whatAClassReads(spec) {
+  if (!spec || typeof spec !== "object" || Array.isArray(spec)) return spec;
+  const { notes, ...rest } = spec;
+  if (rest.sheets && typeof rest.sheets === "object") {
+    rest.sheets = Object.fromEntries(
+      Object.entries(rest.sheets).map(([key, sheet]) => {
+        if (!sheet || typeof sheet !== "object" || Array.isArray(sheet)) return [key, sheet];
+        const { recordingReason, ...kept } = sheet;
+        return [key, kept];
+      })
+    );
+  }
+  return rest;
+}
+
 function readSpec(file) {
   let raw;
   let spec;
@@ -111,7 +132,7 @@ function readSpec(file) {
   } catch (e) {
     throw new WorksheetError("SPEC_INVALID", `${file} is not valid JSON: ${e.message}`);
   }
-  const sixSeven = sixSevenNumbers(spec);
+  const sixSeven = sixSevenNumbers(whatAClassReads(spec));
   if (sixSeven.length) {
     throw new WorksheetError("NUMBER_CONTAINS_SIX_SEVEN", sixSevenMessage(sixSeven, "worksheet").replace(/^NUMBER_CONTAINS_SIX_SEVEN: /, ""));
   }
@@ -313,7 +334,10 @@ async function main() {
       for (const choice of resolvedAuto.choices) {
         console.log(
           `AUTO_LAYOUT: ${choice.label} drawn in "${choice.layout}" ` +
-            `(${choice.orientation}), ${choice.fillPct}% full.`
+            `(${choice.orientation}), ${choice.fillPct}% full.` +
+            (choice.splitFrom
+            ? ` The engine set it out in ${choice.zoneCount} zones, in the order written, because it did not fit in ${choice.splitFrom}.`
+            : "")
         );
       }
       break;

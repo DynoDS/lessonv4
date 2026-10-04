@@ -9762,7 +9762,7 @@
     },
     {
      "file": "agents/worksheet-designer.md",
-     "text": "A prompt with one answer (`Is Sam correct? Explain your answer.`) stays whole. `teacher-voice.md` §6 `One ask, then the place to answer it` is the rule upstream authors write to; this is the same rule catching what reaches you fused.",
+     "text": "A prompt with one answer (`Is Sam correct? Explain your answer.`) stays whole. `teacher-voice.md` §6 `One ask, then the place to answer it` is the rule upstream authors write to; this is the same rule catching what reaches you fused. The number belongs to the ask as well: a scene or a lead-in (`These are made-up children. Freya was 8 in 1845.`) sits above the numbered question, unnumbered, so the number prints beside `Who probably had more leisure time?` and not beside the sentence that only sets it up. - **Every space says what it is for.** A child and a teacher both read a blank area as \"something goes here\", so an unlabelled one is a question nobody asked. A working box carries the line that says what to do in it (`Show how you found them all.`), or it is left off. A word bank that serves more than the question beside it says which (`Use these words in questions 2 and 3.`). A table whose rows differ by something (before and after, then and now) names that in its first column's heading rather than leaving the corner cell empty. The boundary: a number line, a grid or lines under a question need no label, because the question above them is the label.",
      "section": {
       "heading": "### 3. Fill the zones",
       "occurrence": 0,

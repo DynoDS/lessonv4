@@ -25,7 +25,23 @@ const blankSurfaceKey = cacheKey;   // (spec) → stable pre-render cache key
 
 // ─── SLIDE-SPECIFIC CONSTANTS ─────────────────────────────────
 const PAD       = 0.10;   // zone inner padding (inches)
-const RENDER_PX = 1000;   // longest side of the pre-rendered PNG
+const RENDER_PX = 2000;   // longest side of the pre-rendered PNG
+
+// The start number on a board number line is never under 20pt, and the line is
+// drawn thick enough to see from the back (the teacher, 3 October 2026, of a
+// Your Turn slide whose line was faint and whose start number was too small to
+// read: "maybe thicker line and bigger number. 20 font size is min").
+//
+// The drawing scales with the zone it lands in, and the zone is only known
+// while the slide is being drawn, after the pictures are made. So a number line
+// that carries an end label is made at each of these label sizes (in the
+// drawing's own units), and the slide takes the smallest that prints at 20pt or
+// more at the width it really has: about 20 to 27pt on any slide, never a
+// number that grows with the column. The line's thickness follows the label,
+// so it comes out near 4pt everywhere.
+const BOARD_MIN_PT     = 20;
+const LABEL_UNITS      = [26, 34, 46, 60, 80, 110, 150];
+const STROKE_PER_LABEL = 0.18;
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 async function preRenderBlankSurfaces(lesson) {
@@ -44,20 +60,55 @@ async function preRenderBlankSurfaces(lesson) {
   }
   walk(lesson);
 
-  const map = {};
-  for (const [key, spec] of Object.entries(specs)) {
-    const { svg, aspect } = buildSvg(spec);
+  const render = async (svg, aspect) => {
     // Render so the LONGER side is RENDER_PX — keeps the surface crisp whatever
     // its proportions, without a fixed square forcing a wide surface to render small.
     const resize = aspect >= 1 ? { width: RENDER_PX } : { height: RENDER_PX };
+    return sharp(Buffer.from(svg), { density: 144 }).resize(resize).png().toBuffer();
+  };
+
+  const map = {};
+  for (const [key, spec] of Object.entries(specs)) {
     try {
-      const png = await sharp(Buffer.from(svg), { density: 144 }).resize(resize).png().toBuffer();
-      map[key] = { png, aspect };
+      const plain = buildSvg(spec);
+      map[key] = { png: await render(plain.svg, plain.aspect), aspect: plain.aspect };
+      if (!labelledNumberLine(spec)) continue;
+      map[key].sizes = [];
+      for (const units of LABEL_UNITS) {
+        const built = buildSvg(spec, undefined, { endFontSize: units, stroke: units * STROKE_PER_LABEL });
+        map[key].sizes.push({ units, widthUnits: built.w, aspect: built.aspect, png: await render(built.svg, built.aspect) });
+      }
     } catch (e) {
       // skip — placeholder shown at draw time
     }
   }
   return map;
+}
+
+function labelledNumberLine(spec) {
+  if (!spec || spec.surface === 'bar') return false;
+  const shown = (value) => value != null && String(value) !== '';
+  return shown(spec.start) || shown(spec.end);
+}
+
+// The box a drawing of this shape takes in the zone: as wide as the zone, or as
+// tall, whichever keeps it inside.
+function placedSize(aspect, innerW, innerH) {
+  let w = innerW;
+  let h = w / aspect;
+  if (h > innerH) { h = innerH; w = h * aspect; }
+  return { w, h };
+}
+
+// The smallest label size that prints at the board's floor in this zone, or the
+// largest there is when even that falls short (a zone only a few inches wide).
+function sizeForZone(entry, innerW, innerH) {
+  if (!entry.sizes || !entry.sizes.length) return entry;
+  for (const size of entry.sizes) {
+    const { w } = placedSize(size.aspect, innerW, innerH);
+    if (size.units * (w * 72 / size.widthUnits) >= BOARD_MIN_PT) return size;
+  }
+  return entry.sizes[entry.sizes.length - 1];
 }
 
 function drawBlankSurface(pptx, slide, zone, data, ctx) {
@@ -70,14 +121,12 @@ function drawBlankSurface(pptx, slide, zone, data, ctx) {
 
   if (innerW <= 0.05 || innerH <= 0.05) return;
 
-  const entry = ctx.blankSurfaceImages && ctx.blankSurfaceImages[key];
+  const stored = ctx.blankSurfaceImages && ctx.blankSurfaceImages[key];
+  const entry = stored && stored.png ? sizeForZone(stored, innerW, innerH) : stored;
   if (entry && entry.png) {
     // Place by the image's true aspect ratio so it fills the slot with no
     // deadspace — width-bound or height-bound, whichever keeps it inside.
-    const aspect = entry.aspect || 1;
-    let w = innerW;
-    let h = w / aspect;
-    if (h > innerH) { h = innerH; w = h * aspect; }
+    const { w, h } = placedSize(entry.aspect || 1, innerW, innerH);
     const x = innerX + (innerW - w) / 2;
     const y = innerY + (innerH - h) / 2;
     slide.addImage({
@@ -89,4 +138,4 @@ function drawBlankSurface(pptx, slide, zone, data, ctx) {
   }
 }
 
-module.exports = { drawBlankSurface, preRenderBlankSurfaces, blankSurfaceKey };
+module.exports = { drawBlankSurface, preRenderBlankSurfaces, blankSurfaceKey, sizeForZone, placedSize, BOARD_MIN_PT };

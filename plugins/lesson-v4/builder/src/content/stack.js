@@ -228,7 +228,7 @@ function visibleText(value) {
 // family's), a line with a picture set into it, or a word too wide to break.
 // A reveal pair needs the room of the longer of its question and its answer,
 // so both slides of the pair settle the same way.
-function textNeed(item, zone, pt, ctx) {
+function textNeed(item, zone, pt, ctx, countSign) {
   if (!item || item.type !== 'text') return null;
   if (String(item.heightMode || '').toLowerCase() === 'fill') return null;
   if (item.picture) return null;
@@ -245,9 +245,19 @@ function textNeed(item, zone, pt, ctx) {
   }
   const size = Number.isFinite(item.fontSize) ? Math.min(item.fontSize, pt) : pt;
   const { wrappedLineCount, RENDER_SAFETY } = require('../glyph-width');
+  // A card that opens with a sign (the pencil on a task) gives the sign its
+  // width before the words begin. Uncounted, a task above a table was measured
+  // at four lines in a card that wraps it to five, so the stack saw nothing
+  // short and the fit refused it (a Year 6 maths task, 4 October 2026).
+  // Counted only where a stack shares height by need (`countSign`). A centred
+  // column of cards that fit their words (packToContent) keeps its old measure:
+  // counted there, a pencil card in a column that already passed came out a
+  // third taller with larger print, on four finished slides, and how those
+  // cards look is the teacher's to choose, not a measure's to change.
+  const sign = countSign && item.signal ? require('./text').signIndent(item, zone) : 0;
   let most = 0;
   for (const value of values) {
-    const indent = /^\s*✨/.test(String(value)) ? STAR_INDENT : 0;
+    const indent = /^\s*✨/.test(String(value)) ? STAR_INDENT : sign;
     // The glyph table carries a few per cent of width in hand so a box drawn
     // for its own words never comes up short; the fit pass measures the real
     // font without it. Counted with it, a line that fits the real font wraps
@@ -271,10 +281,30 @@ function textNeed(item, zone, pt, ctx) {
 // criterion at `pt` or more, found by drawing it where nobody sees. Null for
 // any other panel, or when the list does not fit at that size even at `most`,
 // so the real draw says why in its own words.
+//
+// The sort children do is measured the same way: the board decides how its
+// cards are arranged, so only the board can say how tall it must be for every
+// card's words to print at `pt`. It used to keep the share its weight guessed,
+// and a board a few tenths of an inch short was refused once for every card
+// while a row of two short cards under it sat in room it did not use (a Year 4
+// history sort, 4 October 2026).
+//
+// So are a table and a word bank. Each refuses a zone too short for it in its
+// own words, so each knows its least height, and until the stack asked, the
+// words above a table could not have an inch the table was not using: a Year 6
+// maths task was refused for its instruction while the table under it stood
+// in rows twice the height its cells needed (4 October 2026).
 function panelNeed(item, zone, pt, most, ctx) {
-  if (!item || item.type !== 'sc-panel') return null;
-  const content = item.content || item.criteria;
-  if (!content || content.type !== 'steps') return null;
+  if (!item) return null;
+  if (item.type === 'sort-board') {
+    if (!Array.isArray(item.bank)) return null;
+  } else if (item.type === 'table' || item.type === 'chip-bank') {
+    // Measured as drawn; nothing about the item to check first.
+  } else {
+    if (item.type !== 'sc-panel') return null;
+    const content = item.content || item.criteria;
+    if (!content || content.type !== 'steps') return null;
+  }
   const { drawContent } = require('./index');
   const { withoutRecording } = require('../warnings');
   const PptxGenJS = require('../require-global')('pptxgenjs');
@@ -308,15 +338,82 @@ function panelNeed(item, zone, pt, most, ctx) {
   return hi + SETTLE_TOLERANCE;
 }
 
+// A row or a column is measured only when it is plain: these fields and no
+// others. One that carries a coloured border, an accent or numbering draws its
+// cards inside a frame, or adds words to them, that this measure knows nothing
+// of. Measured as if plain, two bordered destination cards on a Year 5 history
+// example were given a strip their words did not fit, on a slide that had
+// passed (4 October 2026). Anything not listed here keeps its weight's share.
+const PLAIN_ROW = new Set(['type', 'items', 'weight', 'equaliseTextCards']);
+const PLAIN_COLUMN = new Set(['type', 'items', 'weight', 'verticalAlign', 'fitCards', 'heightRatio']);
+function isPlain(node, fields) {
+  return Object.keys(node).every(function (key) { return fields.has(key); });
+}
+
+// What a block of words needs when it sits inside a row: a text card, or a
+// stack of text cards one above the other. Null for anything else, so a row
+// holding a picture or a drawn figure is left to its weight as before.
+function wordsNeed(item, zone, pt, ctx) {
+  if (!item || typeof item !== 'object') return null;
+  if (item.type === 'text') return textNeed(item, zone, pt, ctx, true);
+  if (item.type !== 'stack' || !Array.isArray(item.items) || !item.items.length) return null;
+  if (!isPlain(item, PLAIN_COLUMN)) return null;
+  if (item.heightRatio != null && Number(item.heightRatio) !== 1) return null;
+  // Cards that fit their words and centre (packToContent below) are measured
+  // the way that packing measures them, and keep its margin above and below.
+  const packs = isPackingStack(item);
+  let total = GAP * (item.items.length - 1) + (packs ? 2 * PACK_MARGIN : 0);
+  for (const child of item.items) {
+    let card = child;
+    if (packs && child && child.heightMode) {
+      card = Object.assign({}, child);
+      delete card.heightMode;
+    }
+    const need = card && card.type === 'text' ? textNeed(card, zone, pt, ctx, !packs) : null;
+    if (need == null) return null;
+    total += need;
+  }
+  return total;
+}
+
+// What a row of words needs: the tallest of its items at the width each is
+// drawn at. A stack used to measure only the text cards and criteria panels it
+// held directly, so a row of two cards kept the share its weight guessed and
+// its words were refused at the fit: on 4 October 2026 the words inside rows
+// and inside rows of stacks were the largest refusal left once the headline
+// strip and the sorting letters were mended, in six runs of ten. Measured
+// here, a row takes what it needs from the room the stack has.
+function rowNeed(item, zone, pt, ctx) {
+  const items = Array.isArray(item.items) ? item.items : [];
+  if (!items.length || !isPlain(item, PLAIN_ROW)) return null;
+  const widths = require('./row').rowWidths(zone, item, ctx);
+  if (widths.length !== items.length) return null;
+  let tallest = 0;
+  for (let i = 0; i < items.length; i += 1) {
+    const need = wordsNeed(items[i], Object.assign({}, zone, { w: widths[i] }), pt, ctx);
+    if (need == null) return null;
+    tallest = Math.max(tallest, need);
+  }
+  return tallest || null;
+}
+
 // What one item needs at `pt`, and whether it may take more: words and a
 // criteria panel take; a picture keeps what its card reaches and gives the rest.
-function itemNeed(item, zone, share, pt, most, ctx) {
+//
+// A row of words, the sort children do, a table and a word bank are measured
+// only when `wide` asks: see settleByNeed for when it does.
+const LATE_JOINERS = new Set(['row', 'sort-board', 'table', 'chip-bank']);
+function itemNeed(item, zone, share, pt, most, ctx, wide) {
   if (!item || typeof item !== 'object') return null;
   if (item.type === 'text') {
-    const need = textNeed(item, zone, pt, ctx);
+    const need = textNeed(item, zone, pt, ctx, true);
     return need == null ? null : { need, takes: true };
   }
-  if (item.type === 'sc-panel') {
+  if (item.type === 'row') {
+    const need = wide ? rowNeed(item, zone, pt, ctx) : null;
+    return need == null ? null : { need, takes: true };
+  }
+  if (item.type === 'sc-panel' || (wide && LATE_JOINERS.has(item.type))) {
     const need = panelNeed(item, zone, pt, most, ctx);
     return need == null ? null : { need, takes: true };
   }
@@ -333,12 +430,46 @@ function itemNeed(item, zone, share, pt, most, ctx) {
   return null;
 }
 
+// Words, criteria and pictures are shared out among themselves first, as they
+// always were, and a row of cards or a sort keeps the share its weight gives.
+// Those two join the sharing only when something cannot hold its words at 18pt
+// without them: when the row or the sort is itself short, or when the words
+// beside it are short and have nobody else to take from. So a slide that
+// fitted before a row could be measured lays out exactly as it did: measured
+// on every slide, a row of short cards gave height it was using for larger
+// print to lines that already fitted (four slides in 33 finished decks moved
+// that way, 4 October 2026, none of them refused before).
 function settleByNeed(items, heights, zone, zoneFor, ctx) {
   if (!ctx || items.length < 2) return;
-  if (!items.some(function (it) { return it && (it.type === 'text' || it.type === 'sc-panel'); })) return;
+  const settles = function (it) { return it && (it.type === 'text' || it.type === 'sc-panel' || LATE_JOINERS.has(it.type)); };
+  if (!items.some(settles)) return;
+  const contained = function (it) { return it && LATE_JOINERS.has(it.type); };
+  if (!items.some(contained)) {
+    settleAmong(items, heights, zone, zoneFor, ctx, false);
+    return;
+  }
+  const stackH = heights.reduce(function (sum, h) { return sum + h; }, 0);
+  const containerShort = items.some(function (item, i) {
+    if (!contained(item)) return false;
+    const n = itemNeed(item, zoneFor(item, zone.y, heights[i]), heights[i], FLOOR_PT, stackH, ctx, true);
+    return Boolean(n) && n.need > heights[i] + SETTLE_TOLERANCE;
+  });
+  if (!containerShort) {
+    const written = heights.slice();
+    if (settleAmong(items, heights, zone, zoneFor, ctx, false) !== 'short of room') return;
+    written.forEach(function (h, i) { heights[i] = h; });
+  }
+  settleAmong(items, heights, zone, zoneFor, ctx, true);
+}
+
+// One sharing of the stack's height among the items it measures. Says what
+// came of it: 'fits' when nothing was short and nothing moved, 'shared' when
+// the height was shared out by need, 'short of room' when no sharing holds
+// everything at 18pt and the weights stay as written.
+function settleAmong(items, heights, zone, zoneFor, ctx, wide) {
   const measure = function (pt, most) {
     return items.map(function (item, i) {
-      return itemNeed(item, zoneFor(item, zone.y, heights[i]), heights[i], pt, most, ctx);
+      return itemNeed(item, zoneFor(item, zone.y, heights[i]), heights[i], pt, most, ctx, wide);
     });
   };
 
@@ -351,7 +482,7 @@ function settleByNeed(items, heights, zone, zoneFor, ctx) {
   const stackH = heights.reduce(function (sum, h) { return sum + h; }, 0);
   const atFloor = measure(FLOOR_PT, stackH);
   const short = atFloor.some(function (n, i) { return n && n.takes && n.need > heights[i] + SETTLE_TOLERANCE; });
-  if (!short) return;
+  if (!short) return 'fits';
 
   const room = pool(atFloor);
   const total = function (needs) {
@@ -377,11 +508,11 @@ function settleByNeed(items, heights, zone, zoneFor, ctx) {
   const atTarget = measure(TARGET_PT, stackH);
   if (atTarget.every(function (n, i) { return !n === !atFloor[i]; }) && total(atTarget) <= room) {
     shareOut(atTarget);
-    return;
+    return 'shared';
   }
   if (total(atFloor) <= room) {
     shareOut(atFloor);
-    return;
+    return 'shared';
   }
   // No sharing of this height holds everything at 18pt. The weights stay as
   // written, so the refusal names the item they left short. When the stack has
@@ -389,12 +520,13 @@ function settleByNeed(items, heights, zone, zoneFor, ctx) {
   // mend it: the Year 4 PSHE task above spent its repair passes moving weights
   // in a column that did not have the room. With an item it cannot measure,
   // that item's weight might, so it says nothing.
-  if (atFloor.some(function (n) { return !n; })) return;
+  if (atFloor.some(function (n) { return !n; })) return 'short of room';
   warn(ctx.slideIndex,
     'the words and criteria stacked in one ' + zone.w.toFixed(2) + 'in-wide zone need about ' +
     total(atFloor).toFixed(2) + 'in at the 18pt floor and have ' + room.toFixed(2) + 'in, so no ' +
     'weights will fit them. Give them more room: a wider zone, one of them on the other side ' +
     'of the slide, or the beat across two slides. Nothing was shrunk or cut.');
+  return 'short of room';
 }
 
 // ─── cards that fit their words, then line up ─────────────────────
@@ -610,6 +742,7 @@ function drawStack(pptx, slide, zone, data, ctx) {
 }
 
 module.exports = {
+  textNeed,
   drawStack,
   stackLayout,
   measureStack,

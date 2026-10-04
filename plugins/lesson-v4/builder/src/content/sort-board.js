@@ -137,30 +137,49 @@ function resolveBankPictures(bank, ctx) {
 }
 
 // Where a words-only card's parts go: its label at the top, its words below.
+//
+// The letter is a line of its own, so its band is never thinner than one line
+// at the readable size. It used to be three tenths of the card whatever that
+// came to, and on a card under about an inch tall that is less than a line: the
+// arrangement that looked best by the size of its words was then refused later
+// for letters in 0.19in boxes that need 0.34in. Six of ten slide runs met that
+// on 4 October 2026, twenty-six refusals between them, and one run used its
+// last repair attempt walking into it. With the letter's line counted here, an
+// arrangement that cannot hold it scores what it is worth, and the board takes
+// the arrangement that can (usually one row of taller cards).
+const BANK_LABEL_MIN_H = 0.34;
 function cardParts(card, h) {
   const inner = h - 2 * PANEL_PAD;
-  const labelH = card.label ? Math.min(0.45, inner * 0.3) : 0;
+  const labelH = card.label ? Math.max(BANK_LABEL_MIN_H, Math.min(0.45, inner * 0.3)) : 0;
   return { labelH: labelH, pictureH: 0, textH: inner - labelH };
 }
 
-// How tall a card's words stand at one size in one width.
-function wordsHeight(card, w, pt) {
-  const { wrappedLineCount } = require('../glyph-width');
+// How tall a card's words stand at one size in one width. The measure keeps a
+// little in hand (a narrower line, a taller one) so an arrangement it accepts
+// always passes the fit; `bare` is the same measure with nothing in hand, the
+// way the fit pass counts, for saying a card is certain not to fit.
+function wordsHeight(card, w, pt, bare) {
+  const { wrappedLineCount, RENDER_SAFETY } = require('../glyph-width');
   if (!card.text) return 0;
-  const textW = w - 2 * PANEL_PAD - 0.05;
+  const textW = bare ? (w - 2 * PANEL_PAD) * RENDER_SAFETY : w - 2 * PANEL_PAD - 0.05;
   const plain = card.text.replace(/\{\{|\}\}|\[\[|\]\]|<<|>>|\*\*|\|\|/g, '');
   let ems = 0;
   for (const para of plain.split('\n')) {
     const n = para.trim() ? wrappedLineCount(para, pt, textW, true) : 1;
     if (!Number.isFinite(n)) return Infinity;
-    ems += (1.2 + 1.26 * (n - 1)) * 1.02;
+    ems += (1.2 + 1.26 * (n - 1)) * (bare ? 1 : 1.02);
   }
   return ems * pt / 72;
 }
 
-function cardTextFits(card, w, h, pt) {
-  if (!card.text) return true;
-  return wordsHeight(card, w, pt) <= cardParts(card, h).textH - 0.03;
+// How much taller a card would have to be for its words to print at `pt`:
+// nothing when they fit. `inline` is the card whose letter leads its words on
+// the same line, so the words have the whole card.
+function cardShortBy(card, w, h, pt, inline, bare) {
+  if (!card.text) return 0;
+  const room = inline ? h - 2 * PANEL_PAD : cardParts(card, h).textH;
+  const words = inline ? { text: titleWords(card) } : card;
+  return Math.max(0, wordsHeight(words, w, pt, bare) - (room - (bare ? 0 : 0.03)));
 }
 
 // A pictured card's words: its letter, then its title, on one line where they
@@ -202,7 +221,7 @@ function smallestPictureArea(bank, layout) {
   }));
 }
 
-function bestArrangement(bank, innerW, bankH, pictured) {
+function arrangementFor(bank, innerW, bankH, pictured, inline) {
   let best = null;
   const most = Math.min(pictured ? 6 : 4, bank.length);
   for (let cols = 1; cols <= most; cols += 1) {
@@ -223,13 +242,44 @@ function bestArrangement(bank, innerW, bankH, pictured) {
     }
     let pt = 0;
     for (let size = BANK_CARD_FONT_MAX; size >= 18; size -= 1) {
-      if (bank.every(function (card) { return cardTextFits(card, cardW, cardH, size); })) { pt = size; break; }
+      if (bank.every(function (card) { return cardShortBy(card, cardW, cardH, size, inline) === 0; })) { pt = size; break; }
     }
-    if (!best || pt > best.pt || (pt === best.pt && cols > best.cols)) {
-      best = { cols: cols, rows: rows, cardW: cardW, cardH: cardH, pt: pt };
+    // How much taller the whole bank would have to be for this arrangement to
+    // hold every card at 18pt. Among arrangements that hold none, the nearest
+    // one is drawn: the widest used to win a tie at nought, which for cards of
+    // whole sentences is the arrangement furthest from fitting.
+    // A card too short for one line is no nearer than any other.
+    const short = pt ? 0 : (cardH < BANK_CARD_MIN_H ? Infinity : rows * Math.max.apply(null, bank.map(function (card) {
+      return cardShortBy(card, cardW, cardH, 18, inline);
+    })));
+    // Between arrangements equally near, the wider one, as it always was: the
+    // measure keeps a little in hand, so a board it calls a hair short can
+    // still pass the fit, and that board is drawn as it was before.
+    const bestShort = best ? best.short : Infinity;
+    const level = (!Number.isFinite(short) && !Number.isFinite(bestShort)) || Math.abs(short - bestShort) <= 1e-6;
+    const nearer = level ? cols > (best ? best.cols : 0) : short < bestShort;
+    if (!best || pt > best.pt || (pt === best.pt && (pt ? cols > best.cols : nearer))) {
+      best = { cols: cols, rows: rows, cardW: cardW, cardH: cardH, pt: pt, short: short, inlineLabel: inline };
     }
   }
   return best;
+}
+
+// The arrangement the cards are drawn in.
+//
+// A lettered card gives its letter a line of its own, and that line is a third
+// of an inch the words do not have. When no arrangement holds every card's
+// words at 18pt that way, the letter leads the words on the same line instead,
+// as it does on a picture card, and the words take the whole card. Three of ten
+// slide runs on 4 October 2026 were refused for cards of one sentence each
+// (twenty-two refusals between them, one for every card), and the only thing a
+// designer could do about a card's size was give the board a different slide.
+// A board whose words fit with the letter above them is drawn exactly as before.
+function bestArrangement(bank, innerW, bankH, pictured) {
+  const own = arrangementFor(bank, innerW, bankH, pictured, false);
+  if (pictured || own.pt || !bank.some(function (card) { return card.label && card.text; })) return own;
+  const led = arrangementFor(bank, innerW, bankH, pictured, true);
+  return led.pt ? led : own;
 }
 
 function drawSortTask(pptx, slide, zone, data, groups, ctx) {
@@ -300,6 +350,27 @@ function drawSortTask(pptx, slide, zone, data, groups, ctx) {
       'Give the sort a taller zone, or split it by complete groups across two slides; nothing was shrunk or cut.'
     );
   }
+  // A stack asking how tall this board has to be (content/stack.js) draws it
+  // where nobody sees and is told whether the cards' words reach the size.
+  if (zone.measureFloorPt && !(arrangement.pt >= zone.measureFloorPt)) {
+    throw new Error('SORT_BOARD_MEASURE: the cards do not reach ' + zone.measureFloorPt + 'pt at this height.');
+  }
+  const certain = !pictured && !arrangement.pt && bank.some(function (card) {
+    return cardShortBy(card, cardW, cardH, 18, arrangement.inlineLabel, true) > 0;
+  });
+  if (certain) {
+    // One account of the whole bank, beside the fit pass's line for each card:
+    // a card's size is the board's doing, so "wider or taller" on six cards in
+    // turn names nothing the designer can change.
+    const { warn } = require('../warnings');
+    warn(ctx.slideIndex,
+      `the ${bank.length} cards to sort do not all fit their words at the 18pt floor in any arrangement: ` +
+      `the nearest, ${cols} across in ${rows} row(s), needs the board ` +
+      `${Number.isFinite(arrangement.short) ? 'about ' + arrangement.short.toFixed(2) + 'in' : 'a good deal'} taller ` +
+      '(or as much less taken by the instruction and the places). Give the sort more height: a slide of its own, ' +
+      'the whole body, a one-line instruction, or the sort split by complete groups across two slides. ' +
+      'Nothing was shrunk or cut.');
+  }
   const cardGroup = fitGroupId(zone, 'sort-bank-cards');
   const labelGroup = fitGroupId(zone, 'sort-bank-labels');
 
@@ -344,6 +415,20 @@ function drawSortTask(pptx, slide, zone, data, groups, ctx) {
         x: x + PANEL_PAD, y: textY, w: cardW - 2 * PANEL_PAD, h: parts.textH,
         fontFace: FONT, fontSize: BANK_CARD_FONT_MAX, bold: true, color: COLOURS.body,
         align: 'center', valign: 'middle', margin: 0, fit: FIT,
+        objectName: growFitObjectName(cardGroup, BANK_CARD_FONT_MAX, 'sort-bank-card-' + index)
+      });
+      return;
+    }
+    if (arrangement.inlineLabel) {
+      // The letter leads the words in house blue, as it does on a picture
+      // card, and the words have the whole card.
+      const words = splitAnswerRuns(card.text, true, COLOURS.body);
+      const runs = (card.label ? [{ text: card.label + '  ', options: { color: COLOURS.title, bold: true } }] : [])
+        .concat(typeof words === 'string' ? [{ text: words, options: { color: COLOURS.body, bold: true } }] : words);
+      slide.addText(runs, {
+        x: x + PANEL_PAD, y: textY, w: cardW - 2 * PANEL_PAD, h: cardH - 2 * PANEL_PAD,
+        fontFace: FONT, fontSize: BANK_CARD_FONT_MAX, bold: true, color: COLOURS.body,
+        align: 'left', valign: 'middle', margin: 0, fit: FIT,
         objectName: growFitObjectName(cardGroup, BANK_CARD_FONT_MAX, 'sort-bank-card-' + index)
       });
       return;

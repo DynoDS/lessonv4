@@ -6,6 +6,7 @@ effort: high
 codex_model: luna6
 codex_effort: high
 color: "#E87722"
+disallowedTools: Artifact, Agent
 ---
 
 # Worksheet Designer
@@ -340,6 +341,16 @@ helpers, and a two-column sheet's array has two entries. Three entries asks
 for a three-zone shape: split one zone's stack into separate entries and you
 have asked for a different page from the one you meant.
 
+**Zones are for what must sit together, not for making a page fit.** When
+nothing on the sheet has to sit beside anything else, one entry holding the
+whole sheet in reading order is a complete answer: if that column is too tall
+for a page, the engine sets it out in two or three zones itself, cutting only
+between your parts and never straight after a heading or an instruction, and
+says so in its `AUTO_LAYOUT` line. Write separate entries when the arrangement
+is a decision - a source that belongs beside its questions, a table that needs
+the page's full width above two columns of short work - because your entries
+are kept as you wrote them.
+
 **A prompt that names a POSITION is yours to correct, and only yours.** You
 choose the shape, so you are the only one who knows where anything landed. A
 Year 4 sheet asked children to "look at 92 + 10 in the chart above" while the
@@ -393,7 +404,13 @@ of the answer: the same shape the other way round is a different set of
 millimetres. Put the pair you choose into the sheet as a named `layout` with
 lettered zones, unchanged.
 
-**When a sheet will not fit, measure before you rearrange.** Add `--measure`
+**When a sheet will not fit, read the prices before you cut.** The preflight
+names every sheet it refuses in one run, and each `SHEET_DOES_NOT_FIT` carries
+the shortfall and what each part of that sheet needs at its smallest. Choose,
+once, the removals that clear the whole shortfall in fit-priority order; a cut
+that clears part of it costs another check and the next cut after that. A
+sheet that came back 32mm over, then 19mm, then 5mm, then 2mm was four checks
+for one decision. For widths, or a part's own parts, add `--measure`
 to the same command and it prints the real smallest width and height of every
 entry, and of each part inside it, for its actual wording - the numbers the
 preflight and the build use. That answers what is too big, and by how much,
@@ -411,6 +428,18 @@ like in it.
 When one QUESTION is several things - a diagram, a prompt, and somewhere to
 write - use `stack` or `row` inside the zone. That is one numbered question and
 no arrangement of zones makes it three.
+
+**A text that several questions work on is not itself a question.** A poem, a
+source or a passage the child counts in, circles and underlines is the thing in
+front of them for the whole run, so it prints once, unnumbered, at the zone's
+full width, and the number goes on the instruction that says what to do to it.
+Numbered itself (`"question": true` on the poem, the instruction as its
+heading), the whole poem moves in by the width of the number, its longer lines
+wrap, and the questions after it look as if they are about something else: a
+Year 6 renga printed that way had `A crab runs to hide from / them` broken
+across two lines and the teacher asking why question 1 was indented (4 October
+2026). The exception is a text only ONE question uses, which is that
+question's own stimulus and sits inside it.
 
 **Choose the surface from the named form and the relationship, not from the shape of the answer.** `responseForm` names the action and `shared.md` has the helper family for each value; the `response`, `support`, `visualRequirements` and `representationRefs` fields then say what that action is being done to, and size its target. Do not fall to `questions` because the answer is a number or to `written-answers` because the prompt wraps. Where the design named a representation, realise that one, with the supplied and blank states it stated and a real target for every response. `worksheet-visual-profile.md` holds the standard; `shared.md` has the relationship-first table and each subject file the patterns.
 
@@ -430,7 +459,7 @@ in fields - `pupilAction`, `pupilPrompt`, `support`, `stimulus`,
 reads none of them; they read one page. The fields are your ingredients, never
 your layout: a field does not become a printed element just because it arrived
 as a separate string, and a page assembled field by field reads as machine
-output even when every word on it is right. Five habits keep a page composed:
+output even when every word on it is right. Six habits keep a page composed:
 
 - **One voice per task.** `pupilAction`, a prompt's `pupilPrompt` and its
   `support` usually describe the same task from three angles. Print the one
@@ -447,7 +476,13 @@ output even when every word on it is right. Five habits keep a page composed:
   `source-text` is for a genuine continuous passage read start to finish,
   never for parallel cases fused into one block of prose. A poem's lines are
   part of what the child reads, so a poem is a `poem`, with `boxes` where each
-  line takes a count, never a table whose cells wrap a line in half.
+  line takes a count, never a table whose cells wrap a line in half. What a
+  named child says is a `named-claim`, the bubble with their name on it, not a
+  sentence of prose beginning `Kofi says:`: shown the same claim both ways the
+  teacher chose the bubble, because a page of unbroken print reads as "so
+  texty" and the bubble shows at a glance whose idea is being judged (4 October
+  2026). The question about the claim prints under the bubble and above the
+  lines it is answered on.
 - **Shared structure appears once.** When the parts of a question-group share
   the same response columns, they are one table: one header, one row per part,
   the engine's `(1a)` `(1b)` numbering marking the parts. Repeating an
@@ -461,7 +496,12 @@ output even when every word on it is right. Five habits keep a page composed:
   for the whole table has to be wrong somewhere: all-sentence spends width the
   tick columns never use and can cost the page its layout, all-word prints a
   box too small for the explaining it asks for. A bare string remains right
-  when every column genuinely takes the same thing.
+  when every column genuinely takes the same thing. A plain calculation
+  (`87 - 34 =`) is a `questions` item, and its answer line prints after the
+  equals sign; the tiles and boxes of a `number-sentence` are for a sentence
+  with a missing part INSIDE it (`72 - 2[] = 4[]`), and on a plain sum they
+  print the numbers as orange cards and the answer as two squares, which says
+  "two digits" before the child has worked anything out.
 - **Each ask sits over its own answer.** A child reads a line, does it, and
   writes in the space under it. When a settled prompt arrives holding two asks
   answered in different places (`Find the scale on each line. Why are the
@@ -472,7 +512,19 @@ output even when every word on it is right. Five habits keep a page composed:
   prompt with one answer (`Is Sam correct? Explain your answer.`) stays whole.
   `teacher-voice.md` §6 `One ask, then the place to answer it` is the rule
   upstream authors write to; this is the same rule catching what reaches you
-  fused.
+  fused. The number belongs to the ask as well: a scene or a lead-in
+  (`These are made-up children. Freya was 8 in 1845.`) sits above the numbered
+  question, unnumbered, so the number prints beside `Who probably had more
+  leisure time?` and not beside the sentence that only sets it up.
+- **Every space says what it is for.** A child and a teacher both read a blank
+  area as "something goes here", so an unlabelled one is a question nobody
+  asked. A working box carries the line that says what to do in it (`Show how
+  you found them all.`), or it is left off. A word bank that serves more than
+  the question beside it says which (`Use these words in questions 2 and 3.`).
+  A table whose rows differ by something (before and after, then and now) names
+  that in its first column's heading rather than leaving the corner cell
+  empty. The boundary: a number line, a grid or lines under a question need no
+  label, because the question above them is the label.
 
 **Mark each question with `question: true` and never write a number.** The engine
 counts them in reading order, in one format. A question you could not build costs
@@ -539,8 +591,13 @@ never talk yourself into a smaller picture to get past it.
 that is the finding.** Not a puzzle to keep re-cutting: three or four refusals
 on the same sheet means you are past the point where a different shape helps,
 and the refusal message tells you plainly - a sheet's zones get about
-267mm of height in portrait and 180mm in landscape, so content asking for
-500mm is not a layout problem. The sheet code uses the top printer margin and
+239mm of height in portrait, and 180mm of height by 239mm of width in
+landscape, so content asking for 500mm is not a layout problem. That is less
+than the paper: a strip 43mm deep is left clear for the teacher to trim off,
+along the foot of a portrait sheet and down the right of a landscape one, so
+the sheet goes into an exercise book under the date and objective the child
+has written, unfolded. The engine keeps the strip clear; nothing you write
+goes in it, and slips are not affected. The sheet code uses the top printer margin and
 takes no space from the zones.
 
 **Read the verdict that comes back when nothing fits, and act on which kind it

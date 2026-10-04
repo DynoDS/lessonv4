@@ -1,0 +1,279 @@
+{
+  "key": "subtract",
+  "runs": {
+    "a": {
+      "notes": {
+        "minutes": 20,
+        "checkRuns": 9,
+        "firstCheckPassed": false,
+        "goesToPass": 5,
+        "lastCheckPassed": true,
+        "checks": [
+          {
+            "passed": false,
+            "lines": []
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Expected - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 57mm: the content needs 324mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [questions + blank-surface] + a stack of [questions + blank-surface] + section-label + a stack of [1 x written-answers] + section-label + a stack of [questions + drawing-space]]: 294mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 324mm but the page has 267mm, a shortfall of 57mm. Cut content or choose a roomier layout. full (landscape): the content needs 396mm but the page has 180mm, a shortfall of 216mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Greater Depth - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 90mm: the content needs 357mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [questions + blank-surface] + a stack of [questions + blank-surface] + section-label + a stack of [inequality-with-boxes + instruction + drawing-space] + a stack of [1 x written-answers]]: 307mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 357mm but the page has 267mm, a shortfall of 90mm. Cut content or choose a roomier layout. full (landscape): the content needs 429mm but the page has 180mm, a shortfall of 249mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Greater Depth - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 75mm: the content needs 342mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [instruction + blank-surface] + a stack of [instruction + blank-surface] + section-label + a stack of [inequality-with-boxes + drawing-space] + a stack of [1 x written-answers]]: 293mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 342mm but the page has 267mm, a shortfall of 75mm. Cut content or choose a roomier layout. full (landscape): the content needs 414mm but the page has 180mm, a shortfall of 234mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"side-60-40\" (landscape), 89% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"side-60-40\" (landscape), 89% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"side-60-40\" (landscape), 89% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"side-60-40\" (landscape), 89% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"side-60-40\" (landscape), 89% full."
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "Created [worksheet.json](/C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/subtract-a/worksheet.json) with the Expected and Greater Depth sheets. The Below adaptation uses Expected unchanged, so it has no separate sheet.\n\nBoth required checks passed: `WORKSHEET_PREFLIGHT_OK` and `HELPER_DELIVERY_OK`. I also inspected the rendered pages; the number lines, digit boxes, and writing spaces are clear.",
+        "usage": {
+          "input_tokens": 6983638,
+          "cached_input_tokens": 6792320,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 34390,
+          "reasoning_output_tokens": 21221
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "ok": true,
+        "marker": "FIXED_RESOURCE_OK worksheets",
+        "omitted": [],
+        "standIns": []
+      },
+      "buildLines": [
+        "AUTO_LAYOUT: Expected drawn in \"side-60-40\" (landscape), 89% full.",
+        "RECORDING: Expected - sheet, a copy per child. Questions 1 and 2: children construct and label the backward jumps on the printed number lines.",
+        "RECORDING: Greater Depth - sheet, a copy per child. Questions 1 and 2: children construct and label backward jumps on the printed number lines.",
+        "ANSWER_SHEET: 1 side.",
+        "Note: Greater Depth is landscape so the two independent number lines fit in one column and the connected search and its explanation stay together in the other.",
+        "Page fit: âœ“ Expected: 1 page, Greater Depth: 1 page"
+      ],
+      "pages": {
+        "levels": {
+          "expected": [
+            "sheet-01.jpg"
+          ],
+          "greaterDepth": [
+            "sheet-02.jpg"
+          ]
+        },
+        "answers": [
+          "answers-01.jpg"
+        ],
+        "slips": [],
+        "pageCountMatches": true
+      }
+    },
+    "b": {
+      "notes": {
+        "minutes": 12,
+        "checkRuns": 5,
+        "firstCheckPassed": false,
+        "goesToPass": 2,
+        "lastCheckPassed": true,
+        "checks": [
+          {
+            "passed": false,
+            "lines": [
+              "NUMBERING_CONFLICT: Greater Depth - zone \"b\": questionGroupId is on a helper holding a SET of questions, which takes a run of numbers rather than one. Wrap the Part in a stack so question: true covers the Part as a whole."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"big-left-two\" (landscape), 98% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"halves-side\" (landscape), 98% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"big-left-two\" (landscape), 99% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"halves-side\" (landscape), 98% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"big-left-two\" (landscape), 99% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"halves-side\" (landscape), 98% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"big-left-two\" (landscape), 99% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"halves-side\" (landscape), 98% full."
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "Completed [worksheet.json](/C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/subtract-b/worksheet.json), with Expected and Greater Depth sheets. Below uses Expected unchanged, as directed by the adaptation.\n\nValidation passed: `WORKSHEET_PREFLIGHT_OK` and `HELPER_DELIVERY_OK`. The preflight selected landscape layouts for both sheets.",
+        "usage": {
+          "input_tokens": 6255857,
+          "cached_input_tokens": 6074112,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 26607,
+          "reasoning_output_tokens": 14275
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "ok": true,
+        "marker": "FIXED_RESOURCE_OK worksheets",
+        "omitted": [],
+        "standIns": []
+      },
+      "buildLines": [
+        "AUTO_LAYOUT: Expected drawn in \"big-left-two\" (landscape), 99% full.",
+        "AUTO_LAYOUT: Greater Depth drawn in \"halves-side\" (landscape), 98% full.",
+        "RECORDING: Expected - sheet, a copy per child. Questions 1 and 2: children construct and label the backward jumps on the printed number lines.",
+        "RECORDING: Greater Depth - sheet, a copy per child. Questions 1 and 2: children construct jumps on the printed number lines; question 3 has the digit-box stimulus and search space.",
+        "ANSWER_SHEET: 1 side.",
+        "Page fit: âœ“ Expected: 1 page, Greater Depth: 1 page"
+      ],
+      "pages": {
+        "levels": {
+          "expected": [
+            "sheet-01.jpg"
+          ],
+          "greaterDepth": [
+            "sheet-02.jpg"
+          ]
+        },
+        "answers": [
+          "answers-01.jpg"
+        ],
+        "slips": [],
+        "pageCountMatches": true
+      }
+    },
+    "c": {
+      "notes": {
+        "minutes": 13,
+        "checkRuns": 6,
+        "firstCheckPassed": false,
+        "goesToPass": 4,
+        "lastCheckPassed": true,
+        "checks": [
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Expected - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 86mm: the content needs 353mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [questions + blank-surface] + a stack of [questions + blank-surface] + section-label + a stack of [1 x written-answers] + section-label + a stack of [instruction + blank-surface + questions]]: 296mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 353mm but the page has 267mm, a shortfall of 86mm. Cut content or choose a roomier layout. full (landscape): the content needs 461mm but the page has 180mm, a shortfall of 281mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": false,
+            "lines": []
+          },
+          {
+            "passed": false,
+            "lines": [
+              "SHEET_DOES_NOT_FIT: Greater Depth - layout \"auto\": no layout in the library holds these 1 zones. The closest shape (full, portrait) is over by 78mm: the content needs 345mm and the page has 267mm. No shape gets this inside a page's height. Rearranging zones moves height around a page, it does not create any, so cutting is what is left rather than another shape - stop trying shapes. The most expensive single item is a stack of [section-label + a stack of [questions + blank-surface] + a stack of [questions + blank-surface] + a stack of [number-sentence + instruction + drawing-space] + a stack of [1 x written-answers]]: 293mm tall at the narrowest it is allowed to be. Composing it with another item that shares its picture, asking it without its picture, or taking it off and saying so in `notes` are the three moves, in that order. full (portrait): the content needs 345mm but the page has 267mm, a shortfall of 78mm. Cut content or choose a roomier layout. full (landscape): the content needs 417mm but the page has 180mm, a shortfall of 237mm. Cut content or choose a roomier layout."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"side-60-40\" (landscape), 92% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"halves-side\" (landscape), 100% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"side-60-40\" (landscape), 92% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"halves-side\" (landscape), 100% full."
+            ]
+          },
+          {
+            "passed": true,
+            "lines": [
+              "AUTO_LAYOUT: Expected -> \"side-60-40\" (landscape), 92% full.",
+              "AUTO_LAYOUT: Greater Depth -> \"halves-side\" (landscape), 100% full."
+            ]
+          }
+        ],
+        "friction": [],
+        "final": "Created [worksheet.json](/C:/Users/Daniel/Projects/lessonv4/evaluations/worksheet-designer-three-runs-2026-10-04/runs/subtract-c/worksheet.json) with Expected and Greater Depth sheets. Below uses Expected unchanged, as directed by the adaptation.\n\nValidation passed: `WORKSHEET_PREFLIGHT_OK` and `HELPER_DELIVERY_OK`. The Expected sheet uses landscape `side-60-40`; Greater Depth uses landscape `halves-side`.",
+        "usage": {
+          "input_tokens": 5485985,
+          "cached_input_tokens": 5311232,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 31776,
+          "reasoning_output_tokens": 19304
+        }
+      },
+      "hasSpec": true,
+      "build": {
+        "ok": true,
+        "marker": "FIXED_RESOURCE_OK worksheets",
+        "omitted": [],
+        "standIns": []
+      },
+      "buildLines": [
+        "AUTO_LAYOUT: Expected drawn in \"side-60-40\" (landscape), 92% full.",
+        "AUTO_LAYOUT: Greater Depth drawn in \"halves-side\" (landscape), 100% full.",
+        "RECORDING: Expected - sheet, a copy per child. Questions 1 and 2 require children to construct backward jumps on the printed number lines.",
+        "RECORDING: Greater Depth - sheet, a copy per child. Questions 1 and 2 require children to construct backward jumps on the printed number lines.",
+        "ANSWER_LONG: Greater Depth (3b) prints about 3 lines on the teacher's answer sheet. Give the answer and the one idea that decides the mark, in a line or two; the full model stays upstream.",
+        "ANSWER_SHEET: 1 side.",
+        "Page fit: âœ“ Expected: 1 page, Greater Depth: 1 page"
+      ],
+      "pages": {
+        "levels": {
+          "expected": [
+            "sheet-01.jpg"
+          ],
+          "greaterDepth": [
+            "sheet-02.jpg"
+          ]
+        },
+        "answers": [
+          "answers-01.jpg"
+        ],
+        "slips": [],
+        "pageCountMatches": true
+      }
+    }
+  }
+}

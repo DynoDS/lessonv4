@@ -584,6 +584,19 @@ function main() {
     // off: priced as content, a panel would ask for a real question to be cut
     // to make room for it, and a sheet laid out by the engine that fails would
     // stop this check before a named sheet's panel was ever mentioned.
+    // The same no-67 check the build runs. Left to the build alone, a designer
+    // passed this preflight, reported the sheet finished, and the build then
+    // refused the whole pack over a 67 in one answer (a Year 4 subtraction
+    // sheet, 4 October 2026).
+    {
+      const { sixSevenNumbers, sixSevenMessage, worksheetClassCopy } = require("../../shared/text/no-six-seven");
+      const hits = sixSevenNumbers(worksheetClassCopy(worksheet));
+      if (hits.length) {
+        console.log(sixSevenMessage(hits, "worksheet"));
+        process.exitCode = 1;
+      }
+    }
+
     const panelsFound = sheetCriteriaPanels(worksheet);
     const withoutTheirPanels = withoutSheetCriteriaPanels(worksheet);
     const stillOn = new Set(sheetCriteriaPanels(withoutTheirPanels).map((found) => found.sheet));
@@ -606,7 +619,10 @@ function main() {
     for (const choice of resolvedAuto.choices) {
       console.log(
         `AUTO_LAYOUT: ${choice.label} -> "${choice.layout}" ` +
-          `(${choice.orientation}), ${choice.fillPct}% full.`
+          `(${choice.orientation}), ${choice.fillPct}% full.` +
+          (choice.splitFrom
+            ? ` The engine set it out in ${choice.zoneCount} zones, in the order written, because it did not fit in ${choice.splitFrom}.`
+            : "")
       );
     }
 
@@ -684,6 +700,8 @@ function main() {
   } catch (error) {
     if (error instanceof WorksheetError) {
       fail(error.signal, error.message);
+      // Every other sheet the same step refused, so one check names them all.
+      for (const other of error.alsoRefused || []) fail(other.signal, other.message);
       return;
     }
     // The image resolver names its own signal in the message (IMAGE_MISSING:,

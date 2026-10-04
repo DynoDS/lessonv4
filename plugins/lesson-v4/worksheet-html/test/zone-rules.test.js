@@ -57,3 +57,17 @@ test("a zone that opens with a heading is not ruled, as a heading marks itself",
   });
   assert.equal(rules(html).length, 0);
 });
+
+test("two zones side by side get one line down the gutter between them", () => {
+  const { renderSheet } = require("../src/render");
+  const html = renderSheet({
+    title: "Columns",
+    layout: "halves-side",
+    orientation: "portrait",
+    zones: {
+      a: { helper: "questions", question: true, items: ["Why?"] },
+      b: { helper: "questions", question: true, items: ["How?"] },
+    },
+  });
+  assert.strictEqual((html.match(/class="zone-rule zone-rule--down"/g) || []).length, 1);
+});

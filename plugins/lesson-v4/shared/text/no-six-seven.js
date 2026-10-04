@@ -101,4 +101,23 @@ function sixSevenMessage(hits, what) {
   );
 }
 
-module.exports = { sixSevenNumbers, sixSevenMessage };
+// A worksheet spec with the designer's words to the teacher taken out: the
+// top-level `notes` and each sheet's `recordingReason` are printed on no sheet
+// and no answer key, and quote page measurements (a portrait page was 267mm
+// tall), so they are not numbers a class reads.
+function worksheetClassCopy(spec) {
+  if (!spec || typeof spec !== "object" || Array.isArray(spec)) return spec;
+  const { notes, ...rest } = spec;
+  if (rest.sheets && typeof rest.sheets === "object") {
+    rest.sheets = Object.fromEntries(
+      Object.entries(rest.sheets).map(([key, sheet]) => {
+        if (!sheet || typeof sheet !== "object" || Array.isArray(sheet)) return [key, sheet];
+        const { recordingReason, ...kept } = sheet;
+        return [key, kept];
+      })
+    );
+  }
+  return rest;
+}
+
+module.exports = { sixSevenNumbers, sixSevenMessage, worksheetClassCopy };

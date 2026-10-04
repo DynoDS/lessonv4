@@ -143,8 +143,11 @@ test('a sign must be one of the four, and a line to remember takes none', () => 
   assert.ok(bad.errors.some((e) => /not a sign/.test(e)), bad.errors.join('\n'));
   const twice = validateLesson(lesson({ type: 'text', value: '✨ Keep this.', signal: 'pencil' }), __dirname);
   assert.ok(twice.errors.some((e) => /one sign/.test(e)), twice.errors.join('\n'));
+  // A header sign with no cue beside it draws alone (headers.js), so it is
+  // neither refused nor warned about.
   const header = validateLesson(lesson({ type: 'text', value: 'Write it.' }, { signal: 'talk' }), __dirname);
-  assert.ok(header.warnings.some((w) => /no `instruction`/.test(w)), header.warnings.join('\n'));
+  assert.ok(!header.errors.some((e) => /sign/.test(e)), header.errors.join('\n'));
+  assert.ok(!header.warnings.some((w) => /no `instruction`/.test(w)), header.warnings.join('\n'));
 });
 
 test('a teach-layout slide carries its header sign through', () => {

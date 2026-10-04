@@ -1392,3 +1392,20 @@ and its pin moved in place.
 User-authorised changes replace the abstraction-heavy teaching example, require primary-level explanation and teacher support, and distinguish necessary teaching from unnecessary definitions of familiar words. The response still uses taught relationships; useful rehearsal, subject vocabulary, accuracy and visible essential teaching remain. The voice check judges actual teaching language, not just grammar or brevity.
 
 Affected stored passages: WS-A18. The original ledger records remain as history. Current wording and exact before/after mappings: `evaluations/shaftesbury-access-20260926/candidate.diff` and `pin-migration.json`; user evidence and scope: `findings.md`. This updates the intentional wording checks; it does not establish generation quality.
+
+## 4 October 2026: three runs of five lessons
+
+Fifteen worksheet designer runs on Codex (five lessons, three each) were judged by the teacher level by level. Records and his answers: `evaluations/worksheet-designer-three-runs-2026-10-04/` (README and the page's `votes` collection).
+
+Affected stored passages:
+
+- HOME-WS-PREF-PAGE-03. The rough prices were re-measured from the engine after a Below sheet priced at 233mm measured 299mm on the page: a table is priced by its rows, a heading, a claim bubble, a blank number line and a working box have prices of their own, and the 8mm gap under every question is counted. The 250mm budget and the rest of the paragraph are unchanged.
+- WS-DEC-05-STANDS-IN. His words on an answer sheet that printed the same key three times: "if expected sheet stands in, it should say answers twice. Instead, heading should change or only show answers to whatever symbol was on the sheet" (read as: it should not say them twice). A stand-in keeps its heading and its reason; its answers are printed once, under Expected.
+
+The original ledger records remain as history.
+
+## 4 October 2026 (evening): the trim strip, the narrower page, slips either way
+
+His words, in order: "all sheets, portrait, should always have at least 4.3cm gap from bottom, because children write date and lo in book, and sheet has to go in, we're not allowed to fold"; "landscape should be 4.3cm of the right missing"; "slips dont need to be any different". On width: "b for all" (144mm of working width, chosen from the same sheets at 174, 144 and 124mm), then "rather than in the middle, be aligned left, so I dont have to trim all 4 sides, just 3". On slips: "slips can be half a page, whether thats vertically or horizontally" (this replaces "always half a page wide" of 29 September).
+
+Affected stored passages: HOME-WS-PREF-PAGE-03 (page heights: about 225mm portrait, 165mm by 239mm landscape) and WS-O33 (the worksheet designer's page sizes: 239mm of height in portrait, 180mm by 239mm in landscape). The adaptation designer and `lesson-designer-components.md` quote the same 225mm. The engine: `TRIM_STRIP_MM` and `NARROW_SPARE_MM` in `worksheet-html/src/page.js`. Fixtures approved before the rule carry `meta.fullPage: true` and print as they did.

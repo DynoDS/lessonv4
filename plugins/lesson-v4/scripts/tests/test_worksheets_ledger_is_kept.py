@@ -148,6 +148,24 @@ class TheTeachersDecisionsAreWritten(unittest.TestCase):
         self.assertIn("*\"Yes that looks incredible and premium.\"*", text("references/worksheet-visual-profile.md"))
         self.assertIn("`Is she correct? Explain your answer.`, `Who is correct? Explain your answer.`", text("references/subject-maths.md"))
 
+    def test_a_taught_drawing_is_printed_only_for_below(self) -> None:
+        """3 October 2026, on the Year 4 subtraction sheets: "only below would
+        need them on the sheet, they can draw them. I would want below with the
+        visual and everyone else just strips." The rule sits with the two
+        agents that choose the response form, and the age table stays the one
+        owner of what a child can draw."""
+        maths = section_by_heading(ROOT / "references" / "subject-maths.md", "## The worksheet's sections in maths", 0)
+        self.assertIn("it is printed only for the child who needs it printed", maths)
+        self.assertIn("The printed representation is Below's support", maths)
+        self.assertIn("`Use Expected unchanged` does not fit Below where Expected leaves the drawing to the child", maths)
+        self.assertIn("\"only below would need them on the sheet, they can draw them. "
+                      "I would want below with the visual and everyone else just strips.\"", maths)
+        self.assertIn("is owned by `books-or-sheet.md` → `What children can make in their books, by age`", maths)
+        # The boundary stays beside the rule: what no child could reproduce is
+        # printed for every level.
+        self.assertIn("Print the representation for every level where the child works on something they could not reproduce", maths)
+        self.assertIn("## What children can make in their books, by age", (ROOT / "references" / "books-or-sheet.md").read_text(encoding="utf-8"))
+
 
 class TheBriefGapRouteSitsWhereItsWordsPoint(unittest.TestCase):
     def test_the_route_is_between_the_principle_and_how_to_apply(self) -> None:

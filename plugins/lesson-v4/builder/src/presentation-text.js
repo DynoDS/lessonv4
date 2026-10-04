@@ -20,7 +20,12 @@ const EMPHASIS_ROLES = new Set([
   'reasoning-demand',
   'problem-state',
   'safety-warning',
-  'vocabulary'
+  'vocabulary',
+  // The one sentence of a longer card you would say louder, in orange: the
+  // way into a card of black sentences (teacher-slide-visual-profile ->
+  // Semantic colour). On a teach-layout line that is one sentence, the line's
+  // own "orange": true does the same job.
+  'key-line'
 ]);
 
 const LEGACY_MARKER_RE = /\|\||\*\*|\[\[|\]\]|\{\{|\}\}|<<|>>/;
@@ -186,6 +191,9 @@ function emphasisOptions(role, baseColor, bold) {
   }
   if (role === 'vocabulary') {
     return { ...base, color: COLOURS.green, bold: true };
+  }
+  if (role === 'key-line') {
+    return { ...base, color: COLOURS.orange };
   }
 
   throw new Error(

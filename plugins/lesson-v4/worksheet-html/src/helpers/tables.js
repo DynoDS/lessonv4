@@ -279,8 +279,18 @@ function renderRecordingTable(spec) {
   return `
     <div class="h-record-block">
       ${spec.caption ? `<p class="h-record-caption">${esc(spec.caption)}</p>` : ""}
-      <table class="h-table h-record">
-        <thead><tr>${head}</tr></thead>
+      <table class="h-table h-record"${Number.isFinite(recordingWidestMm(spec)) ? ` style="max-width:${recordingWidestMm(spec).toFixed(1)}mm"` : ""}>
+        ${
+          // Columns with no headings at all are a row of answer boxes. The
+          // empty heading row printed as a thin strip across the top of them
+          // (Daniel, 4 October 2026: "why does the going deeper table have a
+          // really thin line for the row?"), so the widths go on a colgroup.
+          spec.columns.some((c) => String(c ?? "").trim() !== "")
+            ? `<thead><tr>${head}</tr></thead>`
+            : `<colgroup>${sizes
+                .map((size) => `<col style="width:${((size.columnMm / totalMm) * 100).toFixed(1)}%">`)
+                .join("")}</colgroup>`
+        }
         <tbody>${body}</tbody>
       </table>
       ${spec.note ? `<p class="h-record-note">${esc(spec.note)}</p>` : ""}
@@ -304,7 +314,31 @@ function flatRecordingHeightMm(spec) {
   );
 }
 
+// The widest a recording table is drawn. Its columns are sized for what is
+// written in them (a tick, a number, a word, a sentence), and stretched to a
+// 239mm landscape zone a row of tick boxes became a row of 25mm cells with a
+// mark in each (the teacher, 4 October 2026: "table doesn't have to be that
+// wide ... they're just putting tick or cross right?"). A little slack over
+// its own widths, then it stops and sits against the left.
+const RECORDING_SLACK = 1.25;
+
+// Only where it costs next to nothing: a table whose printed cells (a clue in
+// every row) would wrap much harder at the narrower width keeps the zone's
+// width, because a taller table is a worse trade than a wide one. One more
+// line in a heading is allowed for.
+function recordingWidestMm(spec) {
+  const natural = columnWriting(spec).reduce((sum, size) => sum + size.columnMm, 0);
+  const capped = Math.max(80, natural) * RECORDING_SLACK;
+  return recordingHeightAt(spec, capped) > recordingHeightAt(spec, 261) + LINE_MM + 0.5 ? Infinity : capped;
+}
+
 function measureRecordingTable(spec, widthMm) {
+  const total = columnWriting(spec).reduce((sum, size) => sum + size.columnMm, 0) || 1;
+  const given = typeof widthMm === "number" && widthMm > 0 ? widthMm : total;
+  return recordingHeightAt(spec, Math.min(given, recordingWidestMm(spec)));
+}
+
+function recordingHeightAt(spec, available) {
   const capMm = spec.caption ? LINE_MM * 1.4 : 0;
   const flatRowMm = writingFor(spec).rowMm;
   const sizes = columnWriting(spec);
@@ -312,7 +346,6 @@ function measureRecordingTable(spec, widthMm) {
   // table's own smallest usable width - the narrowest it is ever drawn at,
   // which is also where its given cells wrap hardest.
   const total = sizes.reduce((sum, size) => sum + size.columnMm, 0) || 1;
-  const available = typeof widthMm === "number" && widthMm > 0 ? widthMm : total;
   const widths = sizes.map((size) => (size.columnMm / total) * available);
   const headMm = rowHeightMm(spec.columns || [], widths, LINE_MM * 1.6);
   let bodyMm = 0;

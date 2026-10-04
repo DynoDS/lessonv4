@@ -6,6 +6,7 @@ effort: xhigh
 codex_model: luna6
 codex_effort: xhigh
 color: "#1C6B32"
+disallowedTools: Artifact, Agent
 ---
 
 # Stick-in Sheets Designer

@@ -713,6 +713,12 @@ class MakeLessonRuntimeTests(unittest.TestCase):
                 # line endings a checkout wrote: git turns LF into CRLF here, and
                 # a budget read off the disk counts one byte per line of nothing.
                 repository_text = compact_text.replace("\r\n", "\n")
+                # The budget is for guidance. The frontmatter line that leaves
+                # two never-used tools out of the helper's toolbox on Claude
+                # Code (4 October 2026) is a host setting, so it is not counted.
+                repository_text = "\n".join(
+                    line for line in repository_text.split("\n") if not line.startswith("disallowedTools:")
+                )
                 # The slide designer's repair carries the speech guidance's
                 # own list of who opens it, word for word (the voice guide
                 # release, his decision 4), and since 4.2.300 the recheck

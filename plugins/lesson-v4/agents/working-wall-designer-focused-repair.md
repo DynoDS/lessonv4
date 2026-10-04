@@ -6,6 +6,7 @@ effort: high
 codex_model: sol61
 codex_effort: medium
 color: "#2E8B57"
+disallowedTools: Artifact, Agent
 ---
 
 # Working Wall Designer — Focused Repair
