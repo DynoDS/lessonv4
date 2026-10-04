@@ -1369,3 +1369,8 @@ they govern.
   the date "(16 September 2026)" off the maths file's Classroom Secrets paragraph,
   every other word kept. At the merge, `sj-change/sj_09_follow_at_merge.py` moved
   the pin and the home to the undated words; the rule is unchanged.
+
+## After the design reviewer release (topic 8, release 2, 26 September 2026)
+
+- **WS-I05** (the reviewer's section 4 list, pinned whole) moved with the design reviewer release (topic 8, release 2), on the design reviewer's list (`2026-09-23-design-reviewer-ledger.md`), whose mapping is `2026-09-26-design-reviewer-mapping.md`: the amount bullet is cut (its settled item 10: one copy of each rule; RV-K09).
+- **WS-Q02, WS-Q08, HOME-WS-REV-03 and the home record of the reviewer's section 5** moved, and **WS-Q10 and WS-Q11** with them: the two stories this list's change plan left to that release (its Q10 and Q11) are gone, its settled item 11: a dated story leaves for the build log, where the release copied its sentences first, and its reason stays. Q10's instruction stays as "Read the forms rather than confirming the objective matches.", and Q11's teeth sheet stays as a plain undated example: "is the shape this check exists to catch, as in a *name the layers of teeth* sheet that asked for three names on three ruled lines under an unused diagram."

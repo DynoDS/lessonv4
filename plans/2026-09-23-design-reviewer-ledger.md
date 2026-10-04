@@ -177,6 +177,14 @@ Read back:
   answered.
 - **Settled items 5 to 11 (his c to h): yes** (his "8C." read as yes to c). He asked
   what the change log is; answered (the build review log).
+- **A Teach example written as an instruction to look (RV-C10; from the reviewer
+  release's first check, 26 September):** the release first sent it to the lesson
+  designer. The check found his words keep a wording fix with the reviewer ("if it's a
+  small thing, say it's words aren't right and it thinks these words would be better,
+  then the reviewer changes them"; his later "y" named only the picture swap and the
+  Do rewrite for the designer). Asked, with the example "Look at the diagram.",
+  whether the reviewer rewrites it itself as what children will notice ("Notice the
+  enamel is the hardest layer."), he answered "yes". C10 stays the reviewer's.
 
 ### Settled without a question
 
@@ -973,3 +981,9 @@ The finished topics' pin files hold 117 of these rows, marked "pinned" in their 
 - **RV-T05**: geography's page section now says "The design reviewer reads the finished design against this file and asks whether it reads as the subject.", where it said "The design-reviewer reads the book at the end of the lesson": the reviewer reads the finished design against the whole file and never sees a book (the subject-files list's SJ-G45, its settled item 7, out-of-date text).
 - **RV-T06**: its words were in the writing guide (`references/authoring-subject-files.md`), removed by his decisions 1 and 3 on the subject-files list (24 September): "forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future." and "just remove it completely" (SJ-B15).
 - **RV-T07, RV-T08**: their words were in the make-subject-file skill (`skills/make-subject-file/SKILL.md`), removed by his decisions 1 and 3 on the subject-files list (24 September): "forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future." and "just remove it completely" (SJ-C07, SJ-C33).
+
+## After the design reviewer release (topic 8, release 2, 26 September 2026)
+
+- **Built on its side branch**, the change plan's release 2 (`2026-09-24-topic-8-change-plan.md`, section 3): every decision and settled item there, with his words as the standard. Where each row went is in `2026-09-26-design-reviewer-mapping.md`; the pins are `scripts/tests/design_reviewer_ledger_pins.json`, with `test_design_reviewer_ledger_is_kept.py`; the scripts and the report are in `streamline-tools/rv-change/` and `streamline-tools/rv-release-report.md`.
+- **Rows earlier releases changed after this list's snapshot**, mapped to the words they left: RV-S39 (the success-criteria release), RV-K10, L02, L08 and T22 (the worksheets release), RV-T05 to T08 (the subject-files release, recorded above).
+- **Rows release 7A changes** (RV-H12, H14, J48, K02, S05, S25, T11; its mapping's last section) follow its words when the mapping is rebuilt on the merged tree.

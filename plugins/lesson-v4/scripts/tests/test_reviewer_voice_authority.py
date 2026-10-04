@@ -56,9 +56,9 @@ class ReviewerVoiceAuthorityTests(unittest.TestCase):
             "polish.",
             reviewer,
         )
-        # The reason: strings ship verbatim, so today the teacher fixes them.
+        # The reason: strings ship verbatim, so otherwise the teacher fixes them.
         self.assertIn("no downstream agent is permitted to reword it", reviewer)
-        self.assertIn("the teacher edits it out by hand", reviewer)
+        self.assertIn("the teacher would have to edit it out by hand", reviewer)
 
     def test_the_sweep_is_enumerated_not_an_impression(self) -> None:
         """"The voice seemed fine" is what failed; the sweep walks strings."""

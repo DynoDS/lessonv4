@@ -994,3 +994,8 @@ The standing rule: the reason stays, the incident goes to the build log, a case 
 ## After the subject-files release (4.2.291, 25 September 2026)
 
 - **VG-M42, VG-M43 and VG-M44**: their words were in the writing guide (`references/authoring-subject-files.md`) and the make-subject-file skill (`skills/make-subject-file/SKILL.md`), removed by his decisions 1 and 3 on the subject-files list (24 September): "forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future." and "just remove it completely".
+
+## After the design reviewer release (topic 8, release 2, 26 September 2026)
+
+- **VG-O25**: the reason a wrong-register string is not polish ended "and today the teacher edits it out by hand", a moment written as a reason; it now says "and the teacher would have to edit it out by hand" (the design reviewer release (topic 8, release 2), on the design reviewer's list (`2026-09-23-design-reviewer-ledger.md`), whose mapping is `2026-09-26-design-reviewer-mapping.md`, its settled item 11: a dated story leaves for the build log, where the release copied its sentences first, and its reason stays; RV-D06).
+- **VG-O26**: "Read each one first as the child: the actual eight- or nine-year-old the year group names" is now "Read each one first as the child: the actual child in this class" (the lead's reading of his words, not his own wording (he said "I actually don't know why it says nine-year-old. Um, because the plugin is for years one, two, three, four, five, and six, right?" of other lines on the rest-of-preferences list, 24 September): the reader the voice sweep imagines is the actual child in this class; RV-G09).

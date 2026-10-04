@@ -151,7 +151,7 @@ class TheGuidanceReachesBothAgentsTests(unittest.TestCase):
         # Designer, which reads the same tier rule in subject-maths.md.
         self.assertIn("Below and Greater Depth sheets do not exist at this stage", reviewer)
         self.assertIn(
-            "read the forms rather than confirming the objective matches", reviewer
+            "Read the forms rather than confirming the objective matches", reviewer
         )
         self.assertIn(
             "say whether the lesson should have met it once first", reviewer

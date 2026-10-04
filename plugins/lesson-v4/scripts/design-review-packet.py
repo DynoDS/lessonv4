@@ -103,7 +103,12 @@ PREFERENCE_REVIEW_ROUTES = (
         "Read its Lesson Designer parts when a unit's child-facing content "
         "states a rule or fact whose meaning, reason or example lives only "
         "in its script, or when a substantial task arrives with "
-        "instructions only.",
+        "instructions only."
+        " Read its `Lesson Designer content boundaries` too whenever the "
+        "view's `Names on the board` lists a real person, place, "
+        "organisation or event, for `A name, or a thing the class has "
+        "never met, arrives with its context`; a made-up person or a label "
+        "such as `Chart A` is not this case.",
     ),
     (
         "Cognitive Load Triage on Scaffolds",
@@ -146,7 +151,11 @@ PREFERENCE_REVIEW_ROUTES = (
         "photograph or representation attached. Count those units from the "
         "view before judging any of them: a lesson with several is the shape "
         "of the failure this section exists to catch, and a lesson whose "
-        "units genuinely name no such thing is right to have none.",
+        "units genuinely name no such thing is right to have none."
+        " Read it too whenever a beat quotes, voices or names a made-up "
+        "person who is present in it, for `A person the lesson invents "
+        "counts as something in the world`; one only referred back to is "
+        "not this case.",
     ),
     (
         "Sticky Knowledge",
@@ -185,7 +194,10 @@ PREFERENCE_REVIEW_ROUTES = (
         "Source and Scenario Integrity",
         "Read for real, classic, sensitive or changing sources and claims, "
         "a named source, story or clip that may cost more explaining than it "
-        "teaches, and any beat that invites children's own experience.",
+        "teaches, and any beat that invites children's own experience."
+        " Read it too when a made-up person or story stands for a group "
+        "the objective is about (`An invented case is evidence about the "
+        "group`).",
     ),
     # Only the teaching half. The page half (columns, pricing, blank space,
     # typeface) belongs to the page designers, and the reviewer is told not
@@ -1452,6 +1464,20 @@ def board_reading(design: dict) -> list[tuple[str, list[str], list[str]]]:
     return reading
 
 
+def spoken_reading(design: dict) -> list[str]:
+    """What the teacher says: each unit's script, without its `Say to
+    children:` opening, and the script of each vocabulary slide. The class
+    hears it and cannot read it, so it is never a place a name is listed from;
+    it only shows which words the lesson treats as names."""
+    spoken: list[str] = []
+    for unit in lesson_units(design):
+        script = (unit.get("speakerNotes") or {}).get("script")
+        if isinstance(script, str) and script.strip():
+            spoken.append(re.sub(r"^\s*Say to children:\s*", "", script, count=1))
+    spoken.extend(script for _anchor, _group, script in vocabulary_introductions(design) if script.strip())
+    return spoken
+
+
 def build_board_names(design: dict) -> list[str]:
     """Every name the class reads on the board, where it first appears, and
     whether the board said it earlier.
@@ -1480,6 +1506,15 @@ def build_board_names(design: dict) -> list[str]:
         for text in [piece for piece in title if not capitalised_throughout(piece)] + board:
             for name in board_names_in(text):
                 known.update(re.sub(r"['’]s$", "", word) for word in name.split() if word not in CONNECTORS)
+    # A one-word name that opens its board sentence (`England, 1485 to 1603.`,
+    # `Bruegel painted ...`) is capitalised there for being first, so the board
+    # alone cannot tell it from `Look`. The teacher's script can: a word it
+    # capitalises where nothing else made it so is a name, as a word the board
+    # capitalises mid-sentence is. The script only vouches for a word; a name
+    # only the script says is not listed, because the class cannot read it.
+    for spoken in spoken_reading(design):
+        for name in board_names_in(spoken):
+            known.update(re.sub(r"['’]s$", "", word) for word in name.split() if word not in CONNECTORS)
 
     def title_names(piece: str) -> list[str]:
         names = board_names_in(piece, known)
