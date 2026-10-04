@@ -12,9 +12,17 @@ The teacher's latest message reacts to a deck this pipeline already produced, ra
 
 ## Edit the existing files in place
 
-Open the existing `lesson.json` in the lesson's working folder and change exactly the slides the teacher named. Then re-run only the builders whose input changed: the slide-builder for `lesson.json`, the worksheet-builder for `worksheet.json`, and the same for any other sidecar file the change touched. You are not starting a new run, so you do not set up a fresh working folder or archive the old one; you edit the files already there.
+Open the lesson's working folder (`[OUTPUT_DIR]/working/[lesson-slug]`, found by the lesson's title; ask which when more than one could be meant) and change exactly what the teacher named, in each file that shows it (`lesson.json`, `worksheet.json`, `working-wall.json`, `stick-in-sheets.json`). Then rebuild only the resources whose file changed, each with `run-fixed-resource.py` and the kind, folders and lesson name its build used (`slides`, `worksheets`, `wall`, `stick-in`; its summary in `build-results/` holds them). You are not starting a new run, so you do not set up a fresh working folder or archive the old one; you edit the files already there.
 
 Leave the designers out of it. The designers (lesson-designer and slide-designer) rebuild every slide from the brief each time they run: a lesson run re-chooses every example and can re-order the sequence. So re-spawning a designer to apply one small fix silently rewrites or drops slides the teacher was happy with. That is how a "decide who is right" slide vanishes between versions when all the teacher asked for was a font change. A targeted edit to the JSON keeps every slide the teacher didn't mention exactly as it was, which is the whole reason to edit rather than rebuild.
+
+## A change lands on every resource that shows it
+
+A change the teacher asks for lands on every resource that shows it, and nothing else changes. Renaming the character to Maya changes the slides, the speaker notes, the worksheet and its answer key, and any wall card or stick-in piece that carries the name; every other slide stays exactly as it was.
+
+A change to words children see is made in `lesson-design.json` too, because the next lesson reads it for the exact words children saw; nothing is redesigned. Re-run its check, `"[PYTHON]" "[PLUGIN_ROOT]/scripts/validate-lesson-design.py" "[WORKING_DIR]/lesson-design.json" "[WORKING_DIR]/photo-requirements.json"`, and require `LESSON_DESIGN_OK`.
+
+When `filing.txt` in the working folder says `DELIVERY=folder` or `DELIVERY=sorted`, save the rebuilt files again with the `run-fixed-resource.py deliver` step the lesson's save used (`build-results/delivery.json` holds the command it ran), adding `--revision`. Each fixed file replaces the one this lesson saved there, except a file on the drive that is no longer the one it saved: that one is held back on a `DELIVERY_HELD_BACK:` line. Ask the teacher before saving over it, and on their yes save it again without `--revision`.
 
 ## A question and its answer slide are one unit
 

@@ -53,8 +53,7 @@ projection of real coordinates - because a coastline or a border drawn from
 chosen coordinates renders cleanly and is wrong about the world.
 
 There is no writable checkout to resolve, nothing to version, and nothing to
-commit or push. If a lesson is holding a helper open for any of those reasons,
-that is the old route and it no longer applies.
+commit or push.
 
 ## What may run while it builds
 
@@ -77,8 +76,8 @@ from a real picture and that picture has to be in the contract.
 
 The verdict command itself lives in the runtime's own "Close the check" step,
 which every run reaches. Do not run a second copy from here: this route is read
-only on a `build`, and a check written where only some runs can see it is how
-the substitutes on an ordinary run went unchecked in the first place.
+only on a `build`, and a check written where only some runs can see it goes
+unrun on the rest.
 
 ## Say it in the report
 
@@ -100,8 +99,7 @@ nobody installs.
   (for example, room for the intended working), use
   `{"feature": "<exact feature>", "visualReview": "<where and what to inspect>"}`.
   Do not invent an ignored property to satisfy an assertion. Delivery prints
-  these as `HELPER_VISUAL_REVIEW` for the existing resource inspection; they
-  are not mechanically certified. Use configuration assertions whenever the
+  these as `HELPER_VISUAL_REVIEW`; they are not mechanically certified. Use configuration assertions whenever the
   required setting is expressible, with visual inspection for size and meaning.
   Compare what the configuration actually draws with the feature's meaning;
   a property that the renderer ignores is not evidence. Render a small probe when

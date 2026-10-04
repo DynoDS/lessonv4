@@ -241,6 +241,12 @@ def command_for(args) -> list[str]:
             command.extend(["--letterbox", args.letterbox])
         if args.plan and args.plan_index:
             command.extend(["--plan", args.plan, "--plan-index", str(args.plan_index)])
+        # The lesson's record of what it saved stays in its working folder, so an
+        # edit saved later can tell a file it saved from one changed on the drive
+        # since (his answer, 24 September 2026). An edit's save adds --revision.
+        command.extend(["--record", str(working / "build-results" / "saved-files.json")])
+        if args.revision:
+            command.append("--revision")
         command.extend(["--source", str(output)])
         for filename in args.file:
             command.extend(["--file", filename])
@@ -438,7 +444,16 @@ def run(args) -> int:
             print("FIXED_RESOURCE_FAILED deliver", file=sys.stderr)
             return 1
         summary["ok"] = True
+        # A file an edit's save held back is one changed on the drive since the
+        # lesson saved it: the teacher is asked before it is saved over.
+        summary["heldBack"] = [
+            line[len("HELD_BACK="):].split(" (")[0]
+            for line in completed.stdout.splitlines()
+            if line.startswith("HELD_BACK=")
+        ]
         atomic_write_json(Path(args.summary_output), summary)
+        for name in summary["heldBack"]:
+            print(f"DELIVERY_HELD_BACK: {name}")
         print("FIXED_RESOURCE_OK deliver")
         return 0
 
@@ -536,6 +551,15 @@ def parser() -> argparse.ArgumentParser:
             "SHEET_STANDS_IN line) when the Expected sheet passes every check; an "
             "Expected sheet the page cannot hold is omitted, named with its "
             "measurement."
+        ),
+    )
+    root.add_argument(
+        "--revision",
+        action="store_true",
+        help=(
+            "deliver only: this save replaces an earlier save of the same lesson "
+            "after an edit; a file on the drive that is no longer the one the "
+            "lesson saved is held back and named, never overwritten"
         ),
     )
     root.add_argument("--letterbox", default="")

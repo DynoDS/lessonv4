@@ -60,10 +60,10 @@ SLICE_BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "worksheet-render": (
         "**Worksheet Designer** — launch whenever the role exists, reading",
-        "### Track C — Scaffold (scaffold-designer → scaffold-builder, runs in parallel with Track A and Track B)",
+        "### Track D — Working Wall (working-wall-designer → fixed wall build, runs after slide-designer; in parallel with Tracks B and the rest of A)",
     ),
     "other-resources": (
-        "### Track C — Scaffold (scaffold-designer → scaffold-builder, runs in parallel with Track A and Track B)",
+        "### Track D — Working Wall (working-wall-designer → fixed wall build, runs after slide-designer; in parallel with Tracks B and the rest of A)",
         "## Phase 3 — Service Each Branch as It Lands",
     ),
     "phase3": (
@@ -176,8 +176,7 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
     ),
     "other-resources": (
         "Each of these builds settles on its own. Track D ends when the wall"
-        " builder returns its evidence result; Track F ends when the stick-in"
-        " build is accepted.",
+        " build is accepted; Track F ends when the stick-in build is accepted.",
         "Load `focused-repair` for a build diagnostic on either.",
         "A track that ends with an empty spec earns no build; record it and"
         " carry on.",
@@ -195,10 +194,12 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
         " confirmation; return to the track the fault came from.",
     ),
     "finalize": (
-        "Load `delivery` for final assembly, the teacher report and sync.",
+        "Load `delivery` for final assembly, the teacher report and saving the"
+        " resources.",
     ),
     "delivery": (
-        "This is the last slice. The run ends with the teacher report.",
+        "This is the last slice. The run ends with the teacher report and"
+        " where the lesson was saved.",
     ),
 }
 

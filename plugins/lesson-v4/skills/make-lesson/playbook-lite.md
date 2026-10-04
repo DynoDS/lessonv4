@@ -1,15 +1,5 @@
 # Make Lesson — Lightweight runtime playbook
 
-This is the active runtime playbook. It deliberately avoids a generic job
-controller. The host launches named workers directly, waits through the host's
-normal worker lifecycle, and runs deterministic checks at meaningful file
-boundaries. Do not create orchestration job specs, completion events, worker
-snapshots, transition receipts, scheduler audits or latency reports. The one
-timing record a run keeps is the `WORKER_TIMELINE:` block that
-`worker-launch.py audit` prints from the host's own log: it costs the
-orchestrator nothing to produce, it is copied once into the run report, and
-it is what says whether a change made runs faster.
-
 ## Lightweight execution protocol
 
 For a named model worker:
@@ -51,7 +41,9 @@ actually produced before declaring the stage failed.
 Canonical validated files are the checkpoints. On an interrupted run, resume
 from the latest checkpoint whose validator still passes and whose upstream
 teacher input belongs to this working directory. Do not manufacture a second
-queue or receipt system.
+queue or receipt system. Do not create orchestration job specs, completion
+events, worker snapshots, transition receipts, scheduler audits or latency
+reports.
 
 Run deterministic commands directly. Require their exit status, exact success
 marker, and structured summary when the command defines one. A failed build may
@@ -97,9 +89,6 @@ Write the teacher's original message verbatim to
 On a mismatch, rewrite and read back once more; a second mismatch means the
 working directory is not holding files, so stop and report that infrastructure
 fault, because nothing later in the run can persist its outputs either.
-Store clarification replies separately as
-`teacher-clarifications/001.txt`, `002.txt`, and so on. Put genuinely useful
-host inference in `orchestrator-context.md`; it never overrides teacher text.
 
 A separately supplied lesson plan remains `LESSON_PLAN_INPUT`; a supplied
 worksheet remains `TEACHER_WORKSHEET_INPUT`. Do not paste either into the brief.
@@ -115,6 +104,9 @@ run is for and that the surrounding lessons are context, not a script. Never
 summarise the plan into either file. If the path does not resolve, say so and
 stop, unless the message also carries a usable year and objective - then design
 from that and flag the file.
+
+A lesson-plan-only request still preserves that file separately after reading
+only enough to resolve the routing above.
 
 ### Say where the lesson will be saved
 
@@ -144,9 +136,8 @@ whatever the mode.
   `DRIVE_CHECKED=no`: say the day is unchecked. Other errors: plan to leave the
   resources in `OUTPUT_DIR`; saving never gates the lesson.
 
-For direct fixed slides, worksheets and stick-in sheets, let
-`run-fixed-resource.py` own output-family collision archiving. The retained wall
-builder owns its wall-family archive.
+`run-fixed-resource.py` owns output-family collision archiving for the slides,
+worksheets, working wall and stick-in sheets.
 
 ---
 
@@ -329,13 +320,6 @@ review. Re-run the prepared `validator.command` yourself:
 when it passes, continue on the exact `Result` in `design-review.md` and record
 the packet failure in the run report.
 
-For an owner repair after the verified Phase 2 freeze, prepare a fresh review
-packet. Its validator checks live references without the initial-only rule
-that every frozen picture must still be cited. Preserve exhausted pictures and
-their receipts as history; never add a false use or restart their call budget.
-In the direct-review fallback for this later phase, omit
-`--initial-photo-namespace` and pass that exact command to the reviewer.
-
 When it fails, the fault is in the review pass's own corrections, because the
 design validated before the reviewer opened it. Send it back to the pass that
 wrote it. Launch one focused clean-context `design-reviewer` job from the compact
@@ -355,6 +339,13 @@ is a minute's work for the pass that wrote it against a whole fresh design
 attempt for a Lesson Designer that never saw the string. Record the round in the
 run's friction file like any other repair.
 
+For an owner repair after the verified Phase 2 freeze, prepare a fresh review
+packet. Its validator checks live references without the initial-only rule
+that every frozen picture must still be cited. Preserve exhausted pictures and
+their receipts as history; never add a false use or restart their call budget.
+In the direct-review fallback for this later phase, omit
+`--initial-photo-namespace` and pass that exact command to the reviewer.
+
 For `APPROVED`, continue. For `REDESIGN REQUIRED`, give Lesson Designer the
 current canonical files plus the complete diagnosis. Preserve named passing
 content, edit the same paths, do not rewrite the initial scaffold request, and
@@ -373,13 +364,12 @@ unresolved findings: a run that builds the lesson and names the dispute gives
 the teacher something to judge in the morning, where stopping delivers
 nothing.
 
-Append genuine corrections and remaining teacher choices to the shared build
-review log when `PLUGIN_SOURCE_ROOT` is available. Read routing values directly
-from the approved `lesson-design.json`, never from prose.
+Read routing values directly from the approved `lesson-design.json`, never from
+prose.
 
 With the design approved, run
-`"[PYTHON]" "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host codex` and read
-the result. A design or review worker that ran below its declared setting is
+`"[PYTHON]" "[PLUGIN_ROOT]/scripts/worker-launch.py" audit --host [codex|claude] --working-dir "[WORKING_DIR]"`
+and read the result. A design or review worker that ran below its declared setting is
 worth redoing here, where one worker repeats; after Phase 2 the same fault costs
 the whole package. Continue either way and carry the marker to the run report.
 
@@ -450,10 +440,9 @@ distribution is `covered` by the real map with the belts shaded on it. Write
 helpers.** It says the picture route supplies this visual, so it is finished
 only when a filename for it reaches the contract, and `picture` is where that
 filename goes. A reason claiming the contract already covers it is a different
-claim and nothing can check it: a geography run wrote exactly that for two maps,
-froze a contract holding neither, and the deck filled both holes with the
-nearest live map helper - coastlines drawn from chosen coordinates, on a lesson
-about where a real forest is. When the picture route cannot run, the honest
+claim and nothing can check it: a contract frozen without the picture leaves the
+deck to fill the hole with the nearest live helper, drawn from chosen
+coordinates rather than the real place. When the picture route cannot run, the honest
 answer is `gap`, not a substitute whose picture nobody will source.
 
 ### The helper route
@@ -481,10 +470,9 @@ exactly the late need that ceiling exists to allow. Re-run the design
 validator, the photo-cap check and the helper check. A UK three-pin plug and socket is this route's shape: one real object, the
 same every time, that no renderer should own.
 
-Record the decision as `gap` only when neither route can run, and carry the
-matching `SLIDE_HELPER_GAP` or `WORKSHEET_HELPER_GAP` into the run report. Do
-not silently replace a missing visual with an unfaithful picture, an approximate
-emoji or generic decoration.
+Record the decision as `gap` only when neither route can run. Do not silently
+replace a missing visual with an unfaithful picture, an approximate emoji or
+generic decoration.
 
 ### Close the check
 
@@ -503,9 +491,7 @@ Here is the last point at which a missing picture costs one design revision
 rather than a lesson: afterwards the contract is frozen, the sourcing wave has
 sailed, and a designer meeting the hole can only compose around it.
 
-Run it whatever the decisions say. The command used to sit only in the helper
-route, which is read only on a `build`, so the ordinary run - all `covered` and
-`substitute` - never ran it, and the requirement stated here held nothing.
+Run it whatever the decisions say.
 
 ---
 
@@ -521,7 +507,7 @@ arrived**, with `--spec` `lesson.json`/`--surface slides` and `worksheet.json`/
 
 Require `HELPER_DELIVERY_OK`. A failure means a use recorded as drawn by a helper
 is drawn by it nowhere in the specification: the silent substitution this check
-exists to catch. Each designer now runs this same check at its own gate, so a
+exists to catch. Each designer runs this same check at its own gate, so a
 failure here is a designer that skipped it; repair through that surface's focused
 designer repair, rebuild, re-check.
 
@@ -584,7 +570,7 @@ Carry the same line into the run report's picture results.
 
 Launch independent first-pass designers concurrently when host slots permit:
 Slide Designer and worksheet adaptation/routing work. Working Wall and stick-in
-design wait for `lesson.json` only when their prompts require it. Each worker
+design start the moment `lesson.json` passes (Track A). Each worker
 owns only its named canonical specification.
 
 **The tracks below are reference for whichever branch has landed, not a running
@@ -595,11 +581,7 @@ dependants before going back to what you were reading.
 
 Releasing is normally seconds of deterministic work - finalise the returned
 picture batch, build adaptation's provisional contract, launch the next
-designer - and each one frees a whole branch. A geography run left five sourced
-photographs unpublished for fourteen minutes and adaptation's contract unbuilt
-for twelve, then ran both in seconds once an unrelated Slide Designer returned.
-The worksheet branch waits on that contract and finished last, so the package
-landed twelve minutes late on a fifty-seven minute run.
+designer - and each one frees a whole branch.
 
 Run printable Chrome preflight once before worksheet, wall or stick-in builds:
 `node "[PLUGIN_ROOT]/worksheet-html/scripts/ensure-chrome.js"`. Its last line
@@ -668,7 +650,7 @@ Require: LANDED_SENTENCE_OK
 TERMINAL_STATE: COMPLETE
 ```
 
-Wait for both files and require both markers. `slide-room.json` is absent
+Wait for both files and require all four markers. `slide-room.json` is absent
 only when this machine had no render route; treat that as a quieter run, not a
 fault. It is not a licence to skip the measurement: the Slide Decorator renders
 the deck again for its own pass, so where this file is missing it measures those
@@ -698,6 +680,7 @@ LESSON_JSON: [WORKING_DIR]/lesson.json
 SLIDE_ROOM: [WORKING_DIR]/slide-room.json  (absent when nothing could render)
 PHOTO_REQUIREMENTS_PATH: [WORKING_DIR]/phase2-initial-photo-requirements.json
 PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]
+[FLAGGED_SLIDES: the numbers after `FIXED_RESOURCE_FLAGGED slides:`, on a flagged deck]
 
 OWNED_OUTPUTS:
 - [WORKING_DIR]/lesson.json  (picture and decoration fields only)
@@ -737,8 +720,8 @@ rendered pages rather than against the record's own word. Between them those
 are what separate a pass weighed slide by slide from one thought about the
 whole deck, so the decorator cannot close on its own word for either. Carry
 its `OPTIONAL_PICTURE_LIBRARY`, `OPTIONAL_PICTURE_ROOM`,
-`OPTIONAL_PICTURE_SHAPE` and `OPTIONAL_PICTURE_TOTALS` lines into the run
-report.
+`OPTIONAL_PICTURE_SHAPE`, `OPTIONAL_PICTURE_TOTALS` and any
+`OPTIONAL_PICTURE_DECLINED:` lines into the run report.
 
 **A decorator that fails, stalls or never returns degrades, never blocks.**
 The layer carries no teaching. After its one infrastructure retry, build the
@@ -798,7 +781,6 @@ says `essential: true`; `finalize-picture-assignment.py` prints
 picture wave, not a re-point, and it is taken now: an essential photograph that
 never arrived is a hole in the teaching, and each track's reconcile below will
 otherwise close it silently by pointing the reference at a surviving picture.
-A deck shipped twelve of sixteen slides bare that way on 21 September 2026.
 
 ---
 
@@ -838,10 +820,8 @@ build diagnostic, run one focused Slide Designer repair and rebuild once.
 `FIXED_RESOURCE_FLAGGED slides: [numbers]` is a delivered deck; slides not yet
 repaired get their one round first.
 
-The Slide Decorator remains the earlier optional-picture stage. It runs the optional drawing pass the
-Slide Designer used to run last, at the same point and over the same private
-preview, in a worker of its own so the wall and stick-in branches need not
-wait for it. It looks at nothing after the build and judges no photograph.
+The Slide Decorator remains the earlier optional-picture stage. It looks at
+nothing after the build and judges no photograph.
 
 ---
 
@@ -850,7 +830,8 @@ wait for it. It looks at nothing after the build and judges no photograph.
 Read `worksheet.resourceMode` from approved `lesson-design.json`.
 
 - `shared-frame`: skip Adaptation Designer;
-- teacher-provided expected worksheet: consider adaptation but do not generate a
+- teacher-provided expected worksheet: run Adaptation Designer when available;
+  it may find no Below or Greater Depth sheet is needed, and never makes a
   second expected sheet;
 - other per-child generated worksheet: run Adaptation Designer when available.
 
@@ -894,8 +875,8 @@ a contract carrying adaptation photos it rejects valid ids and stalls the
 worksheet behind a needless diagnosis.
 
 `PHOTO_CONTRACT_PROVISIONAL_OK 0` means this adaptation asked for no pictures.
-The command refuses a file that is not the adaptation document, so a zero can no
-longer be a wiring mistake wearing the face of a lesson that needed none.
+The command refuses a file that is not the adaptation document, so a zero is
+never a wiring mistake wearing the face of a lesson that needed none.
 
 If adaptation fails deterministically, preserve the expected worksheet route and
 report adaptation omitted. Do not rerun unrelated branches.
@@ -906,9 +887,8 @@ reports one or more, and the Phase 2 picture stage is `attempting`:
 Launch the Worksheet Designer first, then start this wave beside it. The
 adaptation has just named every picture its sheets could want, and the sheet
 that decides which of them it keeps takes ten minutes or more to design. Waiting
-for that answer before searching put a four to nine minute picture search on
-the end of the worksheet chain, where it was the last thing the run did; sourcing
-now, in parallel, takes it off the end. The price is a picture the sheet then
+for that answer before searching puts the picture search on the end of the
+worksheet chain; sourcing now, in parallel, takes it off the end. The price is a picture the sheet then
 drops: fetched, kept as evidence, never used. That cost is reported, never hidden.
 
 Compile from the immutable snapshot build-provisional just wrote, naming only
@@ -935,8 +915,7 @@ receipts join the same provenance run at the merge, where an early picture the
 sheet did not take is accounted for and its published file removed.
 
 A compile or manifest failure degrades this wave only: the pictures wait for the
-supplemental wave below, which then sources whatever the sheet promotes, exactly
-as before this wave existed.
+supplemental wave below, which then sources whatever the sheet promotes.
 
 ---
 
@@ -975,7 +954,6 @@ HELPER_CHECK: [WORKING_DIR]/helper-check.json
 PHOTO_REQUIREMENTS_PATH: [selected contract path]
 PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]
 [ADAPTATION_DESIGN when accepted]
-[TEACHER_WORKSHEET_INPUT when supplied]
 
 OWNED_OUTPUTS:
 - [WORKING_DIR]/worksheet.json
@@ -1096,11 +1074,6 @@ diagnostic permits one focused Worksheet Designer repair and one rebuild.
 
 ---
 
-### Track C — Scaffold (scaffold-designer → scaffold-builder, runs in parallel with Track A and Track B)
-
-This branch remains unavailable while its agents are marked Planned. Do not
-invent it. Mention the omission only when the approved design requested one.
-
 ### Track D — Working Wall (working-wall-designer → fixed wall build, runs after slide-designer; in parallel with Tracks B and the rest of A)
 
 Launch Working Wall Designer on every run, the moment the Slide Designer's
@@ -1118,8 +1091,7 @@ card contracts this lesson triggers.
 Pass `--plan-lesson` on any run from a long-term plan: the wall is the one
 resource whose question looks forward, and that row names what the unit
 still has to come. Omit it otherwise; the view then tells the designer to be
-correspondingly cautious. That is what replaced two complete
-reference files and a hunt through the lesson. Name the two packet files as
+correspondingly cautious. Name the two packet files as
 authoritative inputs beside `lesson-design.json`, `lesson.json` and the
 photo contract. If prepare fails after its one infrastructure retry, launch
 the designer on the full files anyway and write one `FRICTION:` line: a
@@ -1132,7 +1104,11 @@ finds nothing wall-worthy writes `cards: []` with its rationale for the run
 report. It owns only `working-wall.json`. Its deterministic check is:
 
 ```bash
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" check \n  --plugin-root "[PLUGIN_ROOT]" \n  --working-dir "[WORKING_DIR]" \n  --working-wall "[WORKING_DIR]/working-wall.json" \n  --lesson "[WORKING_DIR]/lesson.json"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" check \
+  --plugin-root "[PLUGIN_ROOT]" \
+  --working-dir "[WORKING_DIR]" \
+  --working-wall "[WORKING_DIR]/working-wall.json" \
+  --lesson "[WORKING_DIR]/lesson.json"
 ```
 
 Require exactly `WORKING_WALL_DESIGN_OK`. The check refuses an empty wall with no
@@ -1148,8 +1124,7 @@ build the wall directly, only when `cards` is non-empty:
 
 Same command as the slides, worksheets and stick-ins; no builder agent. The
 build script refuses a wall whose printed sheets do not match the pages its
-cards laid out, and `working-wall-designer` judges the finished sheet at FINAL
-RESOURCE REVIEW.
+cards laid out.
 
 One wall diagnostic permits one focused wall-owner repair and rebuild. Preserve
 the exact output path from the build result.
@@ -1169,7 +1144,8 @@ On `STICK_IN_LAUNCH`, launch the stick-in designer directly with approved
 `lesson-design.json`, `lesson.json` and applicable picture contract. The
 write-on test is the designer's judgement, never decided here; a lesson with
 no write-on moment gets an empty `items` list with a short rationale. It owns
-only `stick-in-sheets.json`. Its check is `check-json.py` over that file,
+only `stick-in-sheets.json`, and returns each moment it left off for want of a
+visual on a `Left off:` line. Its check is `check-json.py` over that file,
 then `"[PYTHON]" "[PLUGIN_ROOT]/scripts/resource-opportunities.py" stick-in-kits
 --lesson-design "[WORKING_DIR]/lesson-design.json" --stick-in
 "[WORKING_DIR]/stick-in-sheets.json"`. Require `STICK_IN_KITS_OK`: a sort the
@@ -1219,11 +1195,16 @@ invalidate a clean independent branch.
 
 **A branch that has built its resource, passed its check and resolved any
 reported material content gap is finished.** Read the returned adaptation and
-resource notes as well as the terminal marker. Missing support or a wrong
+resource notes, and each `returned` entry in `worksheet.json`, as well as the
+terminal marker. Missing support or a wrong
 answer remains a content gap when recorded in notes; a note naming another
-owner does not resolve it. Send that bounded decision to its existing owner,
-validate and re-review the changed pedagogy, then resume only the affected
-resource. Use the picture wave below only if the repair actually needs a new
+owner does not resolve it. Send that bounded decision to its existing owner (an
+Expected sheet's to the Lesson Designer, a Below or Greater Depth sheet's to the
+Adaptation Designer, its author, which redesigns a returned sheet without the
+picture a `picture` entry names), validate, re-review a changed lesson design,
+then resume only the affected resource: the Worksheet Designer puts a redesign
+in, taking off its entry and note, and the sheets rebuild (a
+`RETURN_RECORD_LEFT:` line says one was left: an accepted minor issue). Use the picture wave below only if the repair actually needs a new
 picture. Preserve optional teacher choices and harmless observations as notes;
 an unresolved material gap remains a blocking fault in the final report.
 Nothing waits on an unrelated sibling: Track A's build lands while the
@@ -1231,8 +1212,9 @@ worksheet branch is still designing, and no stage after this one compares one
 resource against another. Only the deterministic
 finalisation waits for every branch.
 
-**The content-gap picture wave.** `SLIDE_CONTENT_GAP` or
-`WORKSHEET_CONTENT_GAP` does not end the resource. The picture ladder (real
+**The content-gap picture wave.** An Expected sheet's `WORKSHEET_CONTENT_GAP`,
+or a slide repair that leaves a reference unrepaired and names the decision the
+Lesson Designer needs, does not end the resource. The picture ladder (real
 search up through Unsplash, Wikimedia, Openverse and the open web, then
 authorised controlled generation with its visual checks) is a rescue route, not
 only a service for pictures the
@@ -1252,7 +1234,7 @@ writes, a printed copy, or a redesigned beat that teaches the same thing from
 what did arrive. Add or respecify the visual as a picture requirement,
 real-first with an authorised fallback (a real place's geography publishes only
 after its visual check confirms it), point the affected representation use at
-that filename, keep the picture cap. A replacement for a spent filename takes a
+that filename, within the run ceiling of 24. A replacement for a spent filename takes a
 new id and filename, and pitches the evidence at the level the teaching needs,
 which is the designer's own rule. Every beat that leaned on the lost source is
 re-judged, not trimmed around: a timeline that held three sources across two
@@ -1264,12 +1246,11 @@ lesson is genuinely about does the dependent task go, and then
 
 Re-run the design validator and photo-cap check, then run Phase 1.25 again over
 the revised files: a revision that removes a source, rewrites the model beat
-and re-points the Do beats is a new lesson, and the one this pipeline delivered
-without a second review was the one the teacher refused to teach. The review
+and re-points the Do beats is a new lesson. The review
 costs three minutes; a redesign it returns follows the Phase 1.25 rules.
 Then snapshot the revision as the next wave number, run the supplemental-wave
-mechanics over that snapshot, naming already-terminal filenames so nothing
-finished reopens, and relaunch the blocked designer on the published picture. One wave per run; a gap that
+mechanics over that snapshot, naming only the revision's new filenames so
+nothing finished reopens, and relaunch the blocked designer on the published picture. One wave per run; a gap that
 survives it excludes as before, the pending helper still built for
 `/install-helper`.
 
@@ -1292,8 +1273,9 @@ faults into it: a semantic build diagnostic, a picture reference the receipts
 say will never be honoured, or a helper-delivery failure.
 Each identifies the resource, location and owner.
 
-Use the compact focused-repair role for the named owner when present, otherwise
-its full creation role. Give it the exact artefact/location, the required
+Use the compact focused-repair role for the named owner, and its full creation
+role when the change is to what children read: the compact roles may not author
+or drop it. Give it the exact artefact/location, the required
 change, the protected passing content and the existing build diagnostic.
 
 - `slide-designer`: use `[PLUGIN_ROOT]/agents/slide-designer-focused-repair.md`;
@@ -1327,33 +1309,41 @@ Potential cross-resource impact: [specific relationships or None]
 Repair scope: REPAIR_SCOPE_OK
 ```
 
+A full creation role's prompt adds: copy the file to `[file].before-repair`
+first, and before returning run `check-repair-scope.py --new-words --before
+"[file].before-repair" --after "[file]"` for the scope line: it passes new words
+for children and still fails a lost question, table row or place to write.
+
 Rebuild only that resource and rerun its deterministic check: that rerun is the
 repair's confirmation, and a repair whose rebuild still fails has not worked.
 There is no second round for the same fault. Record the round in the run's
 friction file, whatever its result.
 
 A fault the round uncovered where it did not touch is a different fault and
-gets its own round. Maths 15 (22 September 2026) repaired Expected until it fit,
-the untouched Greater Depth sheet then failed for the first time, and reading
-that as a second round cost the class its whole pack.
+gets its own round.
 
 **A deck the round did not clear still ships**, its slides flagged for the
-teacher (Daniel, 16 September 2026: "flag the slides and deliver it"). Hand `lesson.json` on as it stands: start any wall
+teacher (the teacher's ruling: "flag the slides and deliver it"). Hand `lesson.json` on as it stands: start any wall
 or stick-in track waiting for it, build as Track A says, then run the Slide
-Decorator over that flagged deck, passing the build's `SLIDES_FLAGGED:` numbers
-as `--flagged-slides`. Those slides answer `slide-flagged` and take no drawing;
+Decorator over that flagged deck, passing the numbers the build's
+`FIXED_RESOURCE_FLAGGED slides:` line names as `FLAGGED_SLIDES:`, and as
+`--flagged-slides` to your own optional-picture check. Those slides answer `slide-flagged` and take no drawing;
 every slide that drew is decorated as usual, because one fault blanking two
 slides should not also empty the layer on the sixteen beside them. Exclude the
 deck only when the build cannot write one.
 
 **A pack the round did not clear still ships too**, for the same reason. When a
-sheet still returns `SHEET_DOES_NOT_FIT` after its own round, rerun the
-worksheet build with `--omit-unfittable`: the sheets that fit are built, the key
-covers those sheets, and each omitted sheet is named on a `SHEET_OMITTED:` line
-with the measurement that refused it. Carry that into the report as a teacher
-flag naming the missing tier, and list the pack as delivered. The flag rescues a
-too-small page and nothing else: any other fault still refuses the build, and
-the last sheet standing is never omitted.
+Below or Greater Depth sheet still fails after its own round, or an Expected
+sheet still returns `SHEET_DOES_NOT_FIT`, rerun the worksheet build with
+`--omit-unfittable`. A Below or Greater Depth sheet the build still cannot make
+gets the Expected sheet and its answers in its place whenever the Expected sheet
+passes, named on a `SHEET_STANDS_IN:` line with why. Only an Expected sheet the
+page cannot hold, and then any copy of it, is omitted, named on a
+`SHEET_OMITTED:` line with the measurement that refused it. Carry each line into
+the report as a teacher flag naming the tier, and list the pack as delivered;
+like a flagged deck, a pack short a sheet is `PARTIAL`. Any other fault on the
+Expected sheet still refuses the build, and the last sheet standing is never
+omitted.
 
 A repair that declares a real cross-resource impact has changed something
 another resource mirrors. Rebuild both affected resources and recheck that
@@ -1367,10 +1357,11 @@ different fault the tracks reconcile before they build, where the resource owner
 re-points that one reference and keeps the learning it was serving.
 
 **When re-pointing cannot keep the learning, the owner is the wrong repairer.**
-A repair returning `SLIDE_CONTENT_GAP` or `WORKSHEET_CONTENT_GAP` because the
-missing picture *was* the task's evidence has named the one fault only the
-Lesson Designer can fix: it goes to the content-gap picture wave whenever it
-surfaces, never to exclusion.
+A repair returning `WORKSHEET_CONTENT_GAP` on an Expected sheet, or a slide repair
+naming the decision the Lesson Designer needs, because the missing picture *was*
+the task's evidence has named the one fault only the Lesson Designer can fix: it
+goes to the content-gap picture wave whenever it surfaces, never to exclusion. A
+Below or Greater Depth sheet's goes to the Adaptation Designer.
 
 ---
 
@@ -1444,7 +1435,8 @@ The log lives on the Desktop, so it does not depend on where the run started,
 and each entry carries the plugin version. Require `BUILD_REVIEW_LOG_OK`. There
 is no pending-log branch and no checkout to go looking for. A finding is one a
 future run would hit again: a check that refused a correct output, a renderer
-that could not draw what the lesson needed, two rules that disagreed.
+that could not draw what the lesson needed, two rules that disagreed. The
+review's own corrections are not findings: they stay in `design-review.md`.
 
 ---
 
@@ -1453,12 +1445,12 @@ that could not draw what the lesson needed, two rules that disagreed.
 Write `[WORKING_DIR]/run-report.md` with:
 
 - outcome: `COMPLETE`, `PARTIAL`, `BLOCKED` or `UNVERIFIED`;
-- delivered resources with exact paths from fixed build summaries or the wall
-  builder, each path in backticks;
+- delivered resources with exact paths from the fixed build summaries, each
+  path in backticks;
 - the lesson walk-through: copy `[WORKING_DIR]/design-decisions.md` to
   `[OUTPUT_DIR]/[lesson title] - walk-through.md`, listed with the delivered
   resources. It is the lesson as the designer would teach it, and what the
-  teacher reads to see where the lesson is going; it goes wherever the deck goes;
+  teacher reads to see where the lesson is going; it stays with the run report;
 - excluded earned resources and exact reasons;
 - blocking faults, accepted minor issues and failed build attempts. A minor
   issue is one a check or designer raised and something judged harmless: a
@@ -1478,8 +1470,9 @@ Write `[WORKING_DIR]/run-report.md` with:
   over that folder installs it. Nothing else surfaces it, so one the report
   omits is one nobody installs;
 - the worker-launch audit marker and the `WORKER_TIMELINE:` block it prints
-  under `## Worker launches`, both from `worker-launch.py audit` run
-  immediately beforehand and copied verbatim;
+  under `## Worker launches`, both from `worker-launch.py audit --host
+  [codex|claude] --working-dir "[WORKING_DIR]"` run immediately beforehand and
+  copied verbatim;
 - every line of `[WORKING_DIR]/friction.md`, the run's tagged record of
   obstacles, blocks and repairs. It keeps blocks a repair closed; `Blocking
   faults` above lists only what is still broken;
@@ -1504,9 +1497,12 @@ teacher-facing report naming the topic, year, subject, objective,
 exact files, pedagogical highlights, design-review result and every teacher
 flag.
 
-A package missing an earned output is `PARTIAL`; a fault that stopped a resource building or passing its
-own check is `BLOCKED`; a wall the builder could not verify against its page contract, which
-reaches the report as `PAGE_FIT_UNVERIFIED`, is `UNVERIFIED`. Use exact summary
+A package missing an earned output, or delivering flagged slides or a pack
+short a sheet, is `PARTIAL`: under `## Outcome` a `Slides to check:` line names
+the slides, and each `SHEET_OMITTED:` line is copied. A fault that stopped a
+resource building or passing its own check is `BLOCKED`; sheets printed with no
+browser to check their page fit, which reach the report as
+`PAGE_FIT_UNVERIFIED`, are `UNVERIFIED`. Use exact summary
 output paths, never guessed filenames. `BLOCKED` labels the record, not the
 delivery: every resource that built is handed over,
 faults named first. Exclusion is for a resource that never built or failed its
@@ -1515,9 +1511,12 @@ own check.
 ### Report format
 
 Keep the teacher report concise. Always include a `Teacher flags` section, using
-`None` when empty. It carries each flagged slide and its fault, the design reviewer's unresolved findings, any
+`None` when empty. It carries each flagged slide and its fault, the design reviewer's unresolved findings, each
+sheet left out or stood in for and why, every `flagsForTeacher` entry, any
 declared cross-resource impact from a repair, every picture a designer was
-uneasy about, and every `SETUP_NOTE:` the start-up check printed. Worksheet pupil sheets and answer key remain separate. When the
+uneasy about, each `PICTURE_LOW_RESOLUTION:` picture, why the wall is empty (its
+`rationaleNote`), each stick-in moment left off for want of a visual, and every
+`SETUP_NOTE:` the start-up check printed. Worksheet pupil sheets and answer key remain separate. When the
 walk-through says the lesson left something for another lesson, say what in one line.
 
 ---
@@ -1557,16 +1556,3 @@ and whether you'd like them sorted into term, week and day folders." Then run
 who ignores it is not asked again. Whenever the teacher answers, now or in a
 later conversation, follow `Choosing where lessons are saved` in
 `[PLUGIN_ROOT]/references/computer-setup.md`.
-
-### Edge cases
-
-- A lesson-plan-only request still preserves that file separately after reading
-  only enough to resolve Phase-0 routing.
-- A teacher worksheet is the Expected/base sheet; generate only genuinely
-  needed adaptations around it.
-- A generated worksheet is expected unless the teacher supplied one.
-- Ambiguous or incomplete Lesson Designer output is not silently repaired by
-  the host.
-
-The lesson design remains the single pedagogical source of truth. Downstream
-roles coordinate through validated files, not conversations or scheduler state.

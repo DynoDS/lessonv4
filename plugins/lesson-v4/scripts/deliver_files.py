@@ -101,7 +101,35 @@ def destination_for(
     return destination
 
 
-def copy_into(destination: Path, files: list[Path]) -> None:
+def read_saved(record: Path | None) -> dict:
+    """What this lesson saved last time, file by file: {target path: sha256}."""
+    if record is None or not record.is_file():
+        return {}
+    try:
+        data = json.loads(record.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    saved = data.get("saved") if isinstance(data, dict) else None
+    return dict(saved) if isinstance(saved, dict) else {}
+
+
+def write_saved(record: Path, saved: dict) -> None:
+    record.parent.mkdir(parents=True, exist_ok=True)
+    record.write_text(
+        json.dumps({"schemaVersion": 1, "saved": saved}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
+def copy_into(destination: Path, files: list[Path], *, saved: dict | None = None,
+              revision: bool = False, held: list | None = None) -> None:
+    # A lesson fixed after it was saved is saved again, and each fixed file
+    # replaces the one this lesson put there. A file on the drive that is no
+    # longer the one it saved (someone edited it there, or the record never had
+    # it) is held back rather than overwritten, so the teacher is asked first
+    # (his answer, 24 September 2026). `saved` is the lesson's own record of
+    # what it saved, updated here as each file is copied.
+    #
     # Three different things can stop a copy here and they used to arrive as
     # one message. "The drive is unavailable" sends the teacher to look at a
     # drive that is mounted and working; what actually happened on 8
@@ -118,7 +146,15 @@ def copy_into(destination: Path, files: list[Path]) -> None:
             # place reports a problem that does not exist.
             if target.exists() and target.resolve() == path.resolve():
                 continue
+            if revision and target.exists():
+                now = file_check(target)["sha256"]
+                if now != file_check(path)["sha256"] and (saved or {}).get(str(target)) != now:
+                    if held is not None:
+                        held.append(path)
+                    continue
             shutil.copy2(path, target)
+            if saved is not None:
+                saved[str(target)] = file_check(target)["sha256"]
     except PermissionError as exc:
         raise PermissionError(
             f"DELIVERY_NOT_PERMITTED: {destination} exists and this run was "
@@ -141,6 +177,9 @@ def sync_files(
     source: Path,
     requested: list[str],
     dry_run: bool,
+    saved: dict | None = None,
+    revision: bool = False,
+    held: list | None = None,
 ) -> tuple[Path, list[Path], list[Path]]:
     """Sorted delivery: school year, term, week, subject and day folders."""
     if not term_file.is_file():
@@ -165,12 +204,13 @@ def sync_files(
         day,
     )
     if not dry_run:
-        copy_into(destination, files)
+        copy_into(destination, files, saved=saved, revision=revision, held=held)
     return destination, files, skipped
 
 
 def copy_to_folder(
-    *, folder: Path, source: Path, requested: list[str], dry_run: bool
+    *, folder: Path, source: Path, requested: list[str], dry_run: bool,
+    saved: dict | None = None, revision: bool = False, held: list | None = None,
 ) -> tuple[Path, list[Path], list[Path]]:
     """Plain delivery: straight into the chosen folder."""
     if not source.is_dir():
@@ -181,7 +221,7 @@ def copy_to_folder(
     if not files:
         raise FileNotFoundError(f"No lesson output files found in {source}")
     if not dry_run:
-        copy_into(folder, files)
+        copy_into(folder, files, saved=saved, revision=revision, held=held)
     return folder, files, skipped
 
 
@@ -331,6 +371,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--source", required=True, type=Path)
     parser.add_argument("--file", action="append", default=[], dest="files")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--record", type=Path,
+        help="the lesson's record of each file it saved and its fingerprint, kept in its working folder",
+    )
+    parser.add_argument(
+        "--revision", action="store_true",
+        help=(
+            "this save replaces an earlier save of the same lesson: a file on the drive "
+            "that is no longer the one the record says this lesson saved is held back, "
+            "never overwritten"
+        ),
+    )
     return parser
 
 
@@ -342,6 +394,10 @@ def main(argv: list[str] | None = None) -> int:
     folder = args.folder or (Path(saved["folder"]) if saved["folder"] else None)
     term_file = args.term_file or (Path(saved["termDates"]) if saved["termDates"] else None)
     mode = args.mode or saved["mode"]
+    # The lesson's own record of what it saved, read before and written after a
+    # save into a folder; the letterbox route keeps none.
+    record = read_saved(args.record)
+    held: list[Path] = []
     try:
         if mode == "letterbox":
             branch = saved.get("branch") or plugin_settings.DEFAULT_LETTERBOX_BRANCH
@@ -395,18 +451,30 @@ def main(argv: list[str] | None = None) -> int:
                 source=args.source.resolve(),
                 requested=args.files,
                 dry_run=args.dry_run,
+                saved=record,
+                revision=args.revision,
+                held=held,
             )
         else:
             destination, files, skipped = copy_to_folder(
                 folder=folder.resolve(), source=args.source.resolve(),
                 requested=args.files, dry_run=args.dry_run,
+                saved=record, revision=args.revision, held=held,
             )
+        if args.record and not args.dry_run and mode != "letterbox":
+            write_saved(args.record, record)
     except (OSError, ValueError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1
 
     print(f"DESTINATION={destination}")
     for path in files:
+        if path in held:
+            print(
+                f"HELD_BACK={path.name} (changed on the drive since this lesson saved it; "
+                "ask the teacher before saving over it)"
+            )
+            continue
         print(f"FILE={path.name}")
     for path in skipped:
         print(f"SKIPPED={path.name} (a run record, not a teaching resource; it stays in the output folder)")

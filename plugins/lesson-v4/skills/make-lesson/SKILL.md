@@ -7,7 +7,9 @@ description: >
   decided by the lesson-designer; every artefact is rendered downstream from that single
   source of truth. Use this skill
   whenever a teacher asks to plan a lesson, make a lesson PowerPoint, build lesson
-  resources, or produce a lesson pack.
+  resources, or produce a lesson pack. Also use it when the teacher gives feedback
+  on a lesson it already made ("the answer on slide 6 is wrong", "rename the
+  character to Maya"), to edit that lesson in place.
   If the teacher has pasted a learning objective, a lesson plan, or has asked
   "make me a lesson for Y[X] on [topic]", trigger this skill.
 ---
@@ -17,7 +19,13 @@ description: >
 You are the host adapter for the lesson pipeline. You do not design lessons or
 manually publish picture rows. Semantic decisions belong to the named specialist
 agents; deterministic validation, rendering and file operations belong to the
-bundled command helpers.
+bundled command helpers. Ambiguous or incomplete Lesson Designer output is not
+silently repaired by the host.
+
+When the teacher's message is feedback on a lesson this skill already built, not
+a new brief, do not start a new run: resolve the package root as below, then
+read `[PLUGIN_ROOT]/references/revising-in-place.md` and edit that lesson in
+place.
 
 Your job is to:
 
@@ -33,15 +41,15 @@ The pipeline splits work across three layers:
 1. **Pedagogy** — `lesson-designer` settles the lesson and writes
    `design-decisions.md`, `lesson-design.json` and `photo-requirements.json`.
 2. **Rendering** — named semantic resource designers write checked
-   specifications; deterministic commands build the direct fixed resources;
-   the retained Working Wall builder performs its required physical-output
-   judgement.
+   specifications; deterministic commands build the resources from them.
 3. **Delivery** — once every branch has settled, prove the pictures and tell
    the teacher what was made.
 
 The resource-design agents never make pedagogical decisions. They read the
-approved pedagogical contract and specify their own resource. Validated canonical
-files and picture evidence carry continuity. Conversation history does not.
+approved pedagogical contract, the lesson design, which remains the single
+pedagogical source of truth, and specify their own resource. Validated canonical
+files and picture evidence carry continuity; conversation history and scheduler
+state do not.
 
 ---
 
@@ -107,8 +115,7 @@ Claude Code and Codex on the teacher's computer start your next turn when a
 worker finishes, so ending a turn while workers run is safe there and nothing
 here changes. ChatGPT Work's cloud does not: a turn that ends with a worker
 still running is where the run stops, because nothing starts the next turn, and
-an unattended or scheduled run has nobody to type one (a real run stalled after
-each of its first three workers, 13 September 2026).
+an unattended or scheduled run has nobody to type one.
 
 On such a host, or whenever you notice a finished worker did not wake you,
 never end your turn while a worker is running or a step of the lesson remains.
@@ -154,8 +161,7 @@ On Codex the host keeps its own record of what it launched. Read it back:
 ```
 
 The working directory picks this run's own record when another lesson is being
-built at the same time; without it the newest record wins, and on 22 September
-2026 a history report printed a maths lesson's timings. Run it twice: once when the approved design is settled, because a design made at
+built at the same time; without it the newest record wins. Run it twice: once when the approved design is settled, because a design made at
 the wrong setting is cheapest to redo before anything is built on it, and once
 before the run report. Put the final marker line in the report's
 `## Worker launches` section.
@@ -172,8 +178,9 @@ fields from you: asking resolves the role's settings and prints them, so a role
 whose settings are missing or misspelled fails there, where you can see it,
 rather than at launch, where Claude Code cannot place the name and drops the
 worker onto your own model without saying so. Put the printed
-`WORKER_LAUNCH_HOST_NATIVE` lines in the report's `## Worker launches` section in
-place of an audit marker.
+`WORKER_LAUNCH_HOST_NATIVE` lines in the report's `## Worker launches` section
+beside the `WORKER_LAUNCH_AUDIT_UNAVAILABLE` marker that `audit --host claude`
+prints.
 `WORKER_LAUNCH_AUDIT_UNAVAILABLE` is a host that keeps no readable record. It is
 not a fault and never stops a run.
 
@@ -293,7 +300,6 @@ particular:
   `Slide design check: SLIDE_DESIGN_CHECK_OK: [N] slides`;
 - `SLIDE_DESIGN_CHECK_FAILED` keeps every unresolved `BUILD_DIAGNOSTIC:` line
   verbatim;
-- Working Wall Builder keeps its existing short structured Output Report;
 - any role whose assignment defines another exact short marker keeps that marker.
 
 ### The run's friction record
@@ -348,7 +354,7 @@ friction, no block and no repair, do not create the file.
 
 Do this before loading any runtime slice.
 
-`PLUGIN_ROOT` is the actual `lesson-resources` package directory used by this
+`PLUGIN_ROOT` is the actual `lesson-v4` package directory used by this
 run. It is not the current working directory, `OUTPUT_DIR`, or a guessed source
 checkout.
 
@@ -359,7 +365,7 @@ Obtain exactly one `PLUGIN_ROOT_CANDIDATE` from the active host:
 - **Codex:** use the absolute path shown for this activated
   `skills/make-lesson/SKILL.md`; take the directory containing `SKILL.md`, then
   its parent twice.
-- **Another host:** use the absolute installed `lesson-resources` package
+- **Another host:** use the absolute installed `lesson-v4` package
   directory supplied by that host.
 
 If `[PLUGIN_ROOT_CANDIDATE]/scripts/verify-plugin-root.py` does not exist, stop
@@ -386,8 +392,7 @@ exists, and one `SETUP_NOTE:` line per thing the teacher should hear. Store the
 interpreter; in PowerShell call it as `& "[PYTHON]" ...`. Never substitute
 `python3`, `python` or `py` for it. It is found unelevated because the workers
 run unelevated: an interpreter found with extra access can be one no worker can
-start, which is how Codex runs spent their first command in most workers
-rediscovering Python (13 September 2026).
+start.
 
 - `SETUP_OK`: carry on.
 - `SETUP_NEEDS_FIX`: something every build needs is missing: the builders'
@@ -456,9 +461,8 @@ When a command fails because `PLUGIN_ROOT` no longer resolves:
    infrastructure failure: use its one infrastructure retry, with the new root.
 4. Record one `FRICTION:` line naming both versions.
 
-Stopping branches to avoid "mixing versions" is the failure, not the caution: a
-real run lost its working wall, stick-in sheets and filing to a patch release
-that changed none of them. Stop only when the re-verification itself fails, and
+Stopping branches to avoid "mixing versions" is the failure, not the caution.
+Stop only when the re-verification itself fails, and
 report that exactly as a start-up verification failure.
 
 `PLUGIN_SOURCE_ROOT` is separate. It means a writable git checkout of this
@@ -536,12 +540,9 @@ pipeline branches, so a NEXT block often names more than one step: unless a step
 carries a condition this run does not meet, every step it names is due, and
 starting one branch never finishes the others.
 
-The order of work belongs to those blocks rather than to a list here, because a
-list here can only key each slice to an event ("before the first Worksheet
-Designer job", "before the first repair round") that you cannot recognise until
-you are holding the slice that names it. Two failures come from exactly that
-gap, so treat both as things NEXT tells you and a linear read of the playbook
-will not:
+The order of work belongs to those blocks, not to a list here. Two failures come
+from reading the slices as a list, so treat both as things NEXT tells you and a
+linear read of the playbook will not:
 
 - **A branch that has built and checked its resource is finished.** It does not
   wait for a sibling, and no later stage compares one resource against another.

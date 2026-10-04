@@ -80,7 +80,7 @@ DECIDED_RESOURCES = [
 STATUS_LINE_RE = re.compile(
     rf"^Package status: ({'|'.join(PACKAGE_STATUSES)})$"
 )
-SHARED_LOG_STATUS_RE = re.compile(r"^Status: (UPDATED|QUEUED|NOT REQUIRED)$")
+SHARED_LOG_STATUS_RE = re.compile(r"^Status: (UPDATED|NOT REQUIRED)$")
 NOT_DELIVERED_RE = re.compile(r"^-\s*(?P<name>.+?):\s*NOT DELIVERED\s*-\s*(?P<reason>\S.*)$")
 
 NONE_LINE_RE = re.compile(r"^-\s*none\.?\s*$", re.IGNORECASE)
@@ -676,6 +676,44 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                 + "; a package with slides to check is PARTIAL, not COMPLETE."
             )
 
+    # ── A pack short a sheet is delivered, and its sheet is named ─────────
+    # The deck's rule, extended to the sheets (settled item f of the playbook
+    # list, 24 September 2026): one sheet the page cannot hold never withholds
+    # a pack, so the pack is delivered without it, the report names the sheet
+    # the class is not getting, and the package is not finished. The worksheet
+    # build's own summary names each such sheet; nothing else says it.
+    sheet_build = read_json(working / "build-results" / "worksheets.json", "worksheets build summary", [])
+    omitted_sheets = []
+    if isinstance(sheet_build, dict) and isinstance(sheet_build.get("omittedSheets"), list):
+        omitted_sheets = [
+            str(entry.get("sheet")).strip() for entry in sheet_build["omittedSheets"]
+            if isinstance(entry, dict) and str(entry.get("sheet") or "").strip()
+        ]
+    if omitted_sheets:
+        copied = [
+            line for line in sections.get("## Outcome", "").splitlines()
+            if "SHEET_OMITTED:" in line
+        ]
+        unnamed = [sheet for sheet in omitted_sheets if not any(sheet in line for line in copied)]
+        if unnamed:
+            failures.append(
+                "outcome: the pack was delivered without the "
+                + ", ".join(unnamed)
+                + " sheet(s); copy each `SHEET_OMITTED:` line under Outcome so the "
+                "teacher knows which children have no sheet."
+            )
+        if "worksheets" in excluded_names or "worksheets" not in delivered_names:
+            failures.append(
+                "worksheets: the build delivered the pack without the sheet(s) it could "
+                "not fit; list it under Delivered resources, not as withheld."
+            )
+        if package_status == "COMPLETE":
+            failures.append(
+                "COMPLETE: the pack was delivered without the "
+                + ", ".join(omitted_sheets)
+                + " sheet(s); a package short a sheet is PARTIAL, not COMPLETE."
+            )
+
     # Every retained picture failure and friction record must be reported.
     obligations = report_obligations(working, failures)
     require_obligations(
@@ -782,7 +820,7 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
         failures,
     )
 
-    # ── Shared investigation log: QUEUED/UPDATED lines carry their path ──
+    # ── Shared investigation log: an UPDATED line carries its path ──────
     shared_log = sections.get("## Shared investigation log", "")
     shared_status_lines = [
         line.strip() for line in shared_log.splitlines()
@@ -798,10 +836,10 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
             shared_status = "NOT REQUIRED"
         else:
             failures.append(
-                "shared investigation log: a status of UPDATED, QUEUED or NOT REQUIRED "
+                "shared investigation log: a status of UPDATED or NOT REQUIRED "
                 "is required."
             )
-    if shared_status in ("UPDATED", "QUEUED"):
+    if shared_status == "UPDATED":
         if not shared_status_lines:
             failures.append(
                 f"shared investigation log: `{shared_status}` requires a `Status: {shared_status}` line."
@@ -813,19 +851,8 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
         if not path_lines:
             failures.append(
                 f"shared investigation log: `{shared_status}` requires a `Path:` line naming "
-                "the log that was (or would have been) written."
+                "the log that was written."
             )
-        elif shared_status == "QUEUED":
-            queued_token = path_lines[0][len("Path:"):].strip().strip("`").strip()
-            if Path(queued_token).name != "pending-build-review-log.md":
-                failures.append(
-                    "shared investigation log: a QUEUED entry's only path is "
-                    "[WORKING_DIR]/pending-build-review-log.md."
-                )
-            elif not path_exists(queued_token, working, output):
-                failures.append(
-                    f"shared investigation log: queued path does not exist: {queued_token}"
-                )
 
     # ── Helper gaps are reported, never silently absorbed ────────────────
     owed_helpers = helper_obligations(working)
@@ -872,7 +899,7 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
             )
         if "PAGE_FIT_UNVERIFIED" in text:
             failures.append(
-                "COMPLETE: the report carries PAGE_FIT_UNVERIFIED; an unverified review "
+                "COMPLETE: the report carries PAGE_FIT_UNVERIFIED; unverified page fit "
                 "cannot close as COMPLETE."
             )
         missing_live_pictures = set(obligations["picture"]) - reviewed_retired_pictures(working)

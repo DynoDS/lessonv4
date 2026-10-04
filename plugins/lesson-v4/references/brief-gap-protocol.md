@@ -1,6 +1,6 @@
 # Brief-Gap Protocol
 
-For every downstream specialist in the pipeline - slide-designer, slide-builder, worksheet-designer, working-wall-designer, stick-in-sheets-designer, image-scout, adaptation-designer, and any future agent that reads a lesson-designer brief and produces a structural artefact. Each specialist carries the one-line standing rule - never invent or reword content to bridge a gap - and opens this protocol only when a real gap is in front of it. Most runs have no gap and never read this file.
+For every downstream specialist in the pipeline - slide-designer, slide-decorator, worksheet-designer, working-wall-designer, stick-in-sheets-designer, image-scout, adaptation-designer, and any future agent that reads a lesson-designer brief and produces a structural artefact. Each specialist carries the one-line standing rule - never invent or reword content to bridge a gap - and opens this protocol only when a real gap is in front of it. Most runs have no gap and never read this file.
 
 ---
 

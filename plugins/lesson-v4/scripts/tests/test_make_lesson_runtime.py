@@ -93,10 +93,10 @@ BOUNDS: dict[str, tuple[str, str | None]] = {
     ),
     "worksheet-render": (
         "**Worksheet Designer** — launch whenever the role exists, reading",
-        "### Track C — Scaffold (scaffold-designer → scaffold-builder, runs in parallel with Track A and Track B)",
+        "### Track D — Working Wall (working-wall-designer → fixed wall build, runs after slide-designer; in parallel with Tracks B and the rest of A)",
     ),
     "other-resources": (
-        "### Track C — Scaffold (scaffold-designer → scaffold-builder, runs in parallel with Track A and Track B)",
+        "### Track D — Working Wall (working-wall-designer → fixed wall build, runs after slide-designer; in parallel with Tracks B and the rest of A)",
         "## Phase 3 — Service Each Branch as It Lands",
     ),
     "phase3": (
@@ -337,15 +337,6 @@ class MakeLessonRuntimeTests(unittest.TestCase):
                     1,
                 )
 
-    def test_every_runtime_slice_stays_bounded(self) -> None:
-        for name in BOUNDS:
-            with self.subTest(slice=name):
-                completed = self.run_slice(name)
-                self.assertLess(
-                    len(completed.stdout),
-                    70000,
-                )
-
     def test_initial_design_slice_excludes_later_review_work(
         self,
     ) -> None:
@@ -549,6 +540,10 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # decision they govern rather than in a reference. The file is now the
         # thing to consolidate: a third raise should be a consolidation pass
         # instead, and the per-slice budget below is the one that still says no.
+        # Consolidated on 26 September 2026 rather than raised: the playbook
+        # release (topic 10 of the streamline) took out what no run read, the
+        # stories already in the build log and the stale lines, and wrote the
+        # teacher's decisions into the room that made.
         self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 77 * 1024)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:

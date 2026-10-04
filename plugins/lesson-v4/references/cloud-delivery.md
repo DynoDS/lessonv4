@@ -52,11 +52,10 @@ meanwhile.
    A command's output is cut off at about a million characters, and a 1.2 MB
    deck is 1.6 million characters of base64, so read any file over 700 KB in
    base64 pieces of at most 900,000 characters from the start, join them, and
-   check the joined length before creating the blob. Reading it whole first
-   truncated silently and cost a wasted blob (14 September 2026). A cut-off
-   read can also look complete: on 13 September the middle of the RE deck came
-   back as the words "474280 bytes omitted", was decoded and posted, and the
-   teacher got a PowerPoint that would not open. `lesson.json` records each
+   check the joined length before creating the blob. Reading it whole
+   truncates silently, and a cut-off read can look complete: a middle that
+   comes back as the words "bytes omitted" is decoded and posted, and the
+   teacher gets a PowerPoint that will not open. `lesson.json` records each
    file's `checks` (its bytes and SHA-256 as built): the decoded bytes you post
    must match them.
 3. Read the branch back and confirm every file and `lesson.json` are there,

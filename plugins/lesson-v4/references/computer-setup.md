@@ -96,8 +96,7 @@ A scheduled run asks for "the next lesson from the <plan> plan", and follows
 ## Scheduled lessons in ChatGPT Work or Codex
 
 OpenAI has three places a scheduled lesson could run. Only two can build one,
-because a lesson needs separate AI workers and only those two can start them
-(each proved on 13 September 2026):
+because a lesson needs separate AI workers and only those two can start them:
 
 - **ChatGPT Work, Cloud.** Runs with the teacher's computer off. It can start
   workers at the plugin's own models, reach the internet, commit to GitHub
@@ -159,8 +158,7 @@ is replaced. The alternative is public repositories.
 
 Without a token, a private drawings library is simply unreachable: every fetch
 comes back 404 on both the plain file address and the API, and the run builds
-each lesson with no drawings and a note saying so. Checked against the real
-private library on 20 September 2026: 404 without, 200 with.
+each lesson with no drawings and a note saying so.
 
 **In the Codex app** a task runs on the teacher's own computer and saves straight
 to the save folder like any lesson made there. Two things to tell the teacher:
