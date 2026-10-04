@@ -4,7 +4,7 @@
 
 Use this guide when writing pupil-facing teaching resources in the teacher's voice: lesson slides, worksheets, questions, worked examples, model answers, success criteria, sentence stems and task instructions.
 
-This is a **runtime voice guide**, not the calibration evidence archive. Apply these rules as defaults, but do not let "voice" override good teaching, factual accuracy, age-appropriateness, safeguarding, clarity or the specific purpose of the resource.
+This is a **runtime voice guide**, not the calibration evidence archive. Treat this guide as the default runtime specification. Apply these rules as defaults, but do not let "voice" override good teaching, factual accuracy, age-appropriateness, safeguarding, clarity or the specific purpose of the resource.
 
 A sentence can sound like the teacher and still be wrong for the task if it:
 - gives away the answer;
@@ -17,9 +17,9 @@ A sentence can sound like the teacher and still be wrong for the task if it:
 
 This guide owns **how the voice sounds**. What the words must **achieve** is owned by `preferences.md` → Written Voice (House Style) and applies at full strength alongside this file: understanding over decodability, density and paragraph breaks, protecting the answer, the printed-surface habits, and the em dash rule.
 
-When authoring anything a child reads or hears, read sections 1-3, 15 and 17. Read §4 once when considering the whole lesson at completion, not for each string. Read the numbered section for the kind of thing you are writing at the moment you write it: **a question or an instruction a child acts on opens §6**, a definition or explanation §5, a model answer §8, a worked example §9, success criteria §10, a misconception warning §11, a comparison prompt §12, a practical lesson §13. **A speaker-note script opens §16H before the first one you write in a lesson**, because it is the only example here at the real length and the failure it exists for is a note too thin to teach from. Read the rest of §16's calibrated examples only when wording remains uncertain after that.
+When authoring anything a child reads or hears, read sections 1-3, 15 and 17. Read §4 once when considering the whole lesson at completion, not for each string, and §14 once, when the kind of lesson is settled. Read the numbered section for the kind of thing you are writing at the moment you write it: **a question or an instruction a child acts on opens §6**, a definition or explanation §5, a sentence stem or other support §7, a model answer §8, a worked example §9, success criteria §10, a misconception warning §11, a comparison or critique prompt §12, a practical lesson §13. **A speaker-note script opens §16H before the first one you write in a lesson**, because it is the only example here at the real length and the failure it exists for is a note too thin to teach from. Read the rest of §16's calibrated examples only when wording remains uncertain after that.
 
-**§6 and §12 are the two most often missed, and they are missed the same way:** the writer does not notice which kind of thing they are writing, so the section that owns it is never opened. Questions and instructions are the most common thing anyone here writes, and a comparison prompt arrives disguised as a heading. Three reached real children. `Choose a job.` on an appliances sheet, which a class answered `Fireman`, and `Write one question you would ask before making a stronger judgement.` on a Greater Depth diet sheet, both §6 (5 September 2026). `What do their reasons share?` on a Year 4 RE slide, where §12's own calibrated wording was already sitting in that same slide's teacher script (11 September 2026). Every one was written by an agent that had read each section it was routed to. Routing by the kind of string only works if you stop and name the kind.
+**§6 and §12 are two of the four most often missed, and they are missed the same way:** the writer does not notice which kind of thing they are writing, so the section that owns it is never opened. Questions and instructions are the most common thing anyone here writes, and a comparison prompt arrives disguised as a heading. Questions and comparison prompts missed this way have reached real children. Every one was written by an agent that had read each section it was routed to. Routing by the kind of string only works if you stop and name the kind. **Definitions and scripts are the other two**, because a definition feels like a structured field being filled and a script feels like notes rather than writing; both are words a child reads or hears, and both are where the register slips first.
 
 The voice is the same across the primary years: age changes the support, not the humanity. KS1 normally needs more familiar vocabulary, more concrete meaning and stronger reading-access support. KS2 can carry richer vocabulary and more complex thought. Neither phase has a sentence-length target: do not make KS1 robotic by chopping every explanation into tiny sentences, and do not make KS2 abstract or academic merely because the children are older. Year 3 may need either treatment according to the material and the class. Written Voice's access rules (Below resources, Greater Depth) still apply at full strength.
 
@@ -86,7 +86,7 @@ Rather than:
 
 > Tudor England, 1485 to 1603. No shops, no switches.
 
-The user met the second on a built deck and called it "quick, punchy and summarised. It doesn't sound warm. It doesn't sound human" (14 September 2026). A clipped line is a label, and a teacher who does not know the topic cannot teach from a label; the sentence with its verb in is something they can say. The slide and the script are the same voice, the same route, at two lengths.
+The user met the second on a built deck and called it "quick, punchy and summarised. It doesn't sound warm. It doesn't sound human". A clipped line is a label, and a teacher who does not know the topic cannot teach from a label; the sentence with its verb in is something they can say. The slide and the script are the same voice, the same route, at two lengths.
 
 ## Speaker notes / spoken teaching
 
@@ -114,6 +114,18 @@ A teacher gives one instruction at a time and turns the caveat into a question:
 
 > Choose the materials that complete the circuit. For each one, say what it does. Then think - could we add another bulb and keep it bright?
 
+### As long as the idea needs, said to these children
+
+The teacher on his own speaker notes: "it doesn't have to be short sentences", and "speaker notes are as long as the idea needs, of course, and they're also conversational, so it links them nicely. It's talking to children. It just needs to think how can I talk to children to get them to understand it." So a script's length, and the length of its sentences, come from the idea rather than from a target: ask how you would say this to these children so that they understand it, and write that.
+
+A science lesson he taught and thought went well (how a tooth decays) sounds like this:
+
+- **The length is the idea's.** One step of the chain took a few short sentences (`When those germs feed on that sugar, they make something. They make acid.`); the slide that built the whole idea out of what is in the children's own mouths ran to about a hundred and fifty words; the slide that sent them off to write said what to do and stopped.
+- **Each note picks up where the last one left off**, so the notes are one talk across the slides rather than a caption for each: `So there is a hole in the enamel now. Does the acid stop there? No. It keeps going.`
+- **It talks to the children about themselves**: `Run your tongue along your teeth, near the gum. That slightly furry feeling? That's the plaque, and that's where the germs sit.`
+- **It asks, and answers, so the class thinks along**: `What is it called? The pulp. And what did we say was in the pulp? Nerves.`
+- **A phrase repeated for rhythm is how speech builds** (the teacher: "yes thats fine"): `It eats away a tiny bit of enamel today, a tiny bit more tomorrow, a tiny bit more the day after that.` §3's warning against a repeated shape still holds on the written board and page.
+
 ### Default relationship
 
 **Short/direct can become the slide. Fuller/conversational can expand it in the notes. Do not normally reverse this relationship.**
@@ -122,7 +134,7 @@ A teacher gives one instruction at a time and turns the caveat into a question:
 
 **When the script and the slide ask the same question in different words, the script's wording is the teacher's and the slide's is a compression of it. Put the spoken wording on the board.**
 
-A question gets written twice, once as it will be said and once as it will be printed, and the printed one drifts towards a tidy heading, because it is short, it sits where a label sits, and a compressed noun phrase looks more finished than a plain sentence. A Year 4 RE slide printed `What do their reasons share?` while its own script said `Tell your partner what is the same and what is different`. The plain version was already written, by the same agent, on the same slide. The board got the clever one, and `share` means something different to a nine-year-old than it does to an adult.
+A question gets written twice, once as it will be said and once as it will be printed, and the printed one drifts towards a tidy heading, because it is short, it sits where a label sits, and a compressed noun phrase looks more finished than a plain sentence. A Year 4 slide that prints `What do their reasons share?` while its own script says `Tell your partner what is the same and what is different` is the shape: the plain version is already written, by the same agent, on the same slide, and the board gets the clever one, where `share` means something different to a nine-year-old than it does to an adult.
 
 So read the two side by side before you finish a slide, and where they ask the same thing, carry the spoken wording across. Trim it to slide length; do not restate it.
 
@@ -156,6 +168,8 @@ A more sophisticated word is not automatically "too AI". Natural flow matters mo
 ### Important
 
 Do not force variation for its own sake. The goal is **natural rhythm**, not a checklist of sentence types.
+
+A phrase repeated on purpose for rhythm is the one exception, and only in speech: in a speaker note it is how speech builds (`a tiny bit ... a tiny bit more`), and the teacher wants it there (§2). On the written board and page, the warning above stands.
 
 ---
 
@@ -224,7 +238,7 @@ The same applies to placement. A light line can sit on the slide where children 
 
 ## Now there is room, so look harder, and refuse harder
 
-The user, once the decks had been stripped back to a picture, a landed sentence and a question: "now slides are simple and better, a bit of humour would make me like them more but has to be funny" (12 September 2026). Both halves are instructions.
+The user, once the decks had been stripped back to a picture, a landed sentence and a question: "now slides are simple and better, a bit of humour would make me like them more but has to be funny". Both halves are instructions.
 
 A lean board has room a crowded one never had, and a light line lands differently on it: on a wall of text it is one more thing to read, and on a slide holding four things it is the one a child reads twice. So the material is worth going back to, and the six routes above are worth going through properly rather than glancing at.
 
@@ -236,7 +250,7 @@ None is the right answer then, and a lesson with no light moment in it is not a 
 
 ## When humour is optional
 
-Ordinary teaching content can include a small light moment if it fits naturally.
+Ordinary teaching content can include a small light moment if it fits naturally, in every subject, maths and PSHE included: in the teacher's words, "Humour wherever" and "humour is allowed in pshe".
 
 ## When to keep it straight
 
@@ -375,7 +389,7 @@ The teacher's version puts them in it and then asks them:
 
 `Imagine` is doing the work in the first line: it is an invitation rather than a report, so the child is in the hall rather than reading about one. And the second line is a question to them rather than an instruction about a task, which is what makes them answer rather than comply. The two colours follow from the two jobs and `preferences.md` → Slide Designer presentation rules owns them: the scene tells, so it is black; the question asks, so it is blue on its own line.
 
-The same holds for a person or a class the lesson invents. `A class already dances most days` is a fact about strangers, and a child reads past it. `Imagine a class that danced most days`, or `A class in Year 3 has a lot of dance lessons each week`, is somebody they can picture and put themselves beside.
+The same holds for a person or a class the lesson invents. `A class already dances most days` is a fact about strangers, and a child reads past it. `Imagine a class that danced most days`, or `A class in Year 3 has a lot of dance lessons each week`, is somebody they can picture and put themselves beside. A class the lesson comes back to gets a name the first time, and not always a class code like `Class 4B` (`Oak Class`, `the class at Hilltop School`), and keeps it.
 
 **The test is whether a child could be in it. The word `Imagine` is one way there and must not become the way.** It is the obvious opener, it works, and a deck that reaches for it on every scenario has stopped having a voice and started having a habit, which children hear coming exactly as they hear a joke coming. The other routes are ordinary and often better: name the class and put it somewhere real (`A class in Year 3 has dance lessons three times a week`); address them directly (`You've got a wet break. What could you do?`); start from the thing rather than the frame (`It's raining, so nobody's going outside`); or give the person a name and let them speak, which `slide-speech-and-characters.md` owns. Ask which one this material hands you, the way §4 asks it of a light line, rather than opening the same door each time. And the limit at the other end: a real event, a real place or a real person is not imagined, so it is stated plainly and `Imagine` would be a lie about it.
 
@@ -816,7 +830,8 @@ Avoid these unless the context clearly justifies them:
 - first-person model-answer openings such as `I think...` when unnecessary;
 - adult-polished pupil exemplars;
 - making every slide follow the same sentence formula;
-- em dashes and en dashes in anything a child or parent reads: write a comma, brackets, a colon, a full stop or a spaced hyphen ( - ) instead (the full rule lives in Written Voice).
+
+**Never use em dashes and en dashes** in anything a child or parent reads: write a comma, brackets, a colon, a full stop or a spaced hyphen ( - ) instead (the full rule lives in Written Voice).
 
 Specific rejected/weak signals from calibration include:
 - `electricity can't just jump over a gap` - too informal for the intended resource;
@@ -940,7 +955,7 @@ Why they fit:
 - the wrong answer is named out loud before it is resolved, which is more memorable than only ever showing the right one;
 - they stop where the children's turn starts.
 
-What is **not** in them, and this is the part that goes wrong: no staging instruction (`begin with the photograph, then replace it`), no protective caveat (`these are imagined children, not the people in the photo`), no safeguarding note. Every one of those is real and belongs in the teacher line above, not in the middle of a sentence the teacher is reading aloud to thirty children. Welded into the script they break the delivery, because the teacher is halfway through talking to the class and suddenly reading a note to themselves. That is what makes a note confusing to read rather than merely thin.
+What is **not** in them, and this is the part that goes wrong: no staging instruction (`begin with the photograph, then replace it`), no protective caveat (`these are imagined children, not the people in the photo`), no safeguarding note. Every one of those is real and belongs in a teacher line of its own (a caveat or a safeguarding note in the teacher information below the script, a staging line for a model finished live in `On the board:` above it), not in the middle of a sentence the teacher is reading aloud to thirty children. Welded into the script they break the delivery, because the teacher is halfway through talking to the class and suddenly reading a note to themselves. That is what makes a note confusing to read rather than merely thin.
 
 ---
 
@@ -958,19 +973,3 @@ Before finalising pupil-facing material, quickly check:
 8. **If humour is present, did the content genuinely invite it?**
 9. **Asked once for the whole lesson, not of each sentence: looking at the sources, pictures, facts, numbers and people this lesson puts in front of the class, did any of them hand me an easy playful line, and did I take it?** Per sentence this question can only ever be answered no. See §4.
 10. **Across several sentences, does the rhythm feel human rather than mechanically even?**
-
----
-
-## Maintenance
-
-Treat this guide as the default runtime specification.
-
-Do **not** keep expanding it every time one sentence is corrected.
-
-Only change the guide when real resource work reveals:
-- a repeated miss;
-- a genuinely new register;
-- a contradiction in the current guidance;
-- a preference that survives more than one context.
-
-Keep detailed calibration examples, rejected alternatives and testing history in the teacher's separate evidence document rather than adding them all here.

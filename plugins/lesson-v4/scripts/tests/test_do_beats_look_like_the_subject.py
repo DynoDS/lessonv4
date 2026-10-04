@@ -122,7 +122,7 @@ class ASortsGroupsAreAPlainContrast(unittest.TestCase):
 
     def test_preferences_asks_for_one_plain_sentence_between_the_groups(self) -> None:
         text = flat(REF / "preferences.md")
-        self.assertIn("Say the difference between the two groups in one plain sentence a nine-year-old would follow.", text)
+        self.assertIn("Say the difference between the two groups in one plain sentence a child in this class would follow.", text)
         self.assertIn("is confusion rather than challenge, unless the idea being taught is that one thing can be both", text)
 
     def test_titles_and_headings_name_the_thing(self) -> None:

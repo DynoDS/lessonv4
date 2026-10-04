@@ -7,6 +7,20 @@ packet, model settings or production validators.
 Its job is to let a proposed voice change be measured against recorded human
 judgements, instead of being argued from one lesson that happened to read badly.
 
+## Changing the voice guide
+
+The guide (`references/teacher-voice.md`) is the default runtime specification.
+Do **not** keep expanding it every time one sentence is corrected.
+
+Only change the guide when real resource work reveals:
+- a repeated miss;
+- a genuinely new register;
+- a contradiction in the current guidance;
+- a preference that survives more than one context.
+
+Keep detailed calibration examples, rejected alternatives and testing history in
+the teacher's separate evidence document rather than adding them all to the guide.
+
 ## Fixture separation
 
 - `existing-10-input.json` is the frozen ten-case baseline. It contains only
@@ -17,7 +31,8 @@ judgements, instead of being argued from one lesson that happened to read badly.
   of the frozen set. It contains only evaluator input.
 - `calibration-gold.json` contains the human-labelled calibration decisions
   and short rationales.
-- `held-out-input.json` is an empty structure for the next fresh lesson. There
+- `held-out-input.json` carries the strings of the next fresh lessons, waiting
+  for labels (now the 112 of the Week 4 History and Science lessons). There
   is no held-out gold file: a human labels those cases separately, and a set
   stops being held out the moment it is used to tune anything.
 

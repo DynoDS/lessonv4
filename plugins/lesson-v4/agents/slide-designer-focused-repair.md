@@ -45,7 +45,7 @@ Read reference material only under these triggers, and only the affected rules o
 - an answer/reveal, slide-splitting or composition-rule fault, **or any repair that adds or removes a slide**: that rule and its regression tells in `slide-composition-playbook.md`. A finding names what would not fit, never the repair you choose, so a split arrives looking like a sizing job;
 - a representation fault: `slide-representations.md`, plus `modelling-formats.md` only when the affected source unit has a non-null modelling state whose interpretation is part of the repair;
 - success-criteria or sticky-knowledge placement: `slide-success-criteria.md`;
-- a speaking character, voiced claim, misconception, disagreement or advice-to-a-character treatment: `slide-speech-and-characters.md`;
+- a speaking character, a voiced claim, a misconception, a disagreement, a prediction to judge, an advice-to-a-character move, or anyone who simply says what they think, gives their reason or asks a question: `slide-speech-and-characters.md`;
 - an optional context-picture fault: `context-pictures.md`;
 - a finding that names a section of `preferences.md` or `teacher-voice.md`: that section only.
 

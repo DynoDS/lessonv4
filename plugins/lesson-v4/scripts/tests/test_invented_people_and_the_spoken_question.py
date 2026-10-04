@@ -134,11 +134,15 @@ class VoiceGuidanceStaysInTheAlwaysReadPathTests(unittest.TestCase):
         )
 
     def test_the_routing_card_carries_what_happens_when_it_is_skipped(self) -> None:
+        # The reason stays in the guide; the three prompts that reached
+        # children are kept in the build log (the voice guide release).
         voice = flat(VOICE)
-        self.assertIn("Choose a job.", voice)
-        self.assertIn("Fireman", voice)
+        self.assertIn("have reached real children", voice)
         self.assertIn("What do their reasons share?", voice)
         self.assertIn("Routing by the kind of string only works", voice)
+        self.assertNotIn("Fireman", voice)
+        log = flat(ROOT / "references" / "build-review-log.md")
+        self.assertIn("`Choose a job.` on an appliances sheet, which a class answered `Fireman`", log)
 
     def test_a_common_word_carrying_an_adult_sense_is_named(self) -> None:
         voice = flat(VOICE)

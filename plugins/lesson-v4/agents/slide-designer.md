@@ -52,7 +52,7 @@ Read before the first affected decision:
 - `preferences.md` Success Criteria and Sticky Knowledge, plus the relevant part of `slide-success-criteria.md`, when a source unit has `successCriteriaRefs` or `stickyKnowledgeRefs`. Read only the inline-helper rule when the first affected unit has `inline:true`.
 - `slide-representations.md` when a source unit has `representationRefs` or non-null `modellingState`.
 - `modelling-formats.md` when a canonical modelling state needs interpretation.
-- `slide-speech-and-characters.md` when a unit contains a speaking character, voiced claim, misconception, disagreement or advice-to-a-character move.
+- `slide-speech-and-characters.md` when a unit contains a speaking character, a voiced claim, a misconception, a disagreement, a prediction to judge, an advice-to-a-character move, or anyone who simply says what they think, gives their reason or asks a question.
 - `[PLUGIN_ROOT]/references/slide-visual-sizing.md` immediately before choosing the template, zone, row or stack for the first load-bearing visual, diagram or set of helpers.
 - the exact candidate template contract and every helper field contract in `templates.md` immediately before first use. Reopen a contract only when a later slide uses a different mode or field combination.
 - `brief-gap-protocol.md` only when no documented route can preserve a required slide.

@@ -2546,13 +2546,13 @@
   },
   {
    "id": "SC-D42",
-   "outcome": "unchanged in place",
+   "outcome": "unchanged in place until the voice guide release (topic 8, release 5); then the voice guide release (topic 8, release 5) changed words inside this pinned text, which follows them: its settled item 1: the guide's route names all four most-missed kinds, each with its reason, and the lesson designer points at that route instead of keeping a shorter copy of it (the guide's route names the criteria)",
    "present": [
     {
-     "file": "agents/lesson-designer.md",
-     "text": "§10 success criteria",
+     "file": "references/teacher-voice.md",
+     "text": "success criteria §10",
      "section": {
-      "heading": "## Reference Files - precedence and decision-point loading",
+      "heading": "## How to read this file",
       "occurrence": 0,
       "intro": false
      }

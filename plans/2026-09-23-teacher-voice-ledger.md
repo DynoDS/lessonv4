@@ -125,6 +125,14 @@ Read back:
   settled items a to h stand as written, with d looked at again in the humour fix.
   Every decision on this list is now answered.
 
+### His week 3 notes, and a phrase repeated for rhythm (26 September)
+
+Shown the four points the release took from his tooth-decay notes (the length is the idea's; each note picks up where the last left off; it talks to the children about themselves; it asks and answers, so the class thinks along) and asked whether repeating a phrase for rhythm, as those notes do ("a tiny bit ... a tiny bit more"), is fine in speaker notes, with the guide's warning against repeated phrases staying for what is written on a slide, he answered:
+
+> yes thats fine
+
+Read back: the four points stand; in speaker notes a phrase said again for rhythm is how speech builds, and the guide's warning against sentences of one repeated shape is for the written board and page.
+
 ### Settled without a question
 
 Each is settled by words you have already given, or by a fold that brings a copy
@@ -999,3 +1007,9 @@ The standing rule: the reason stays, the incident goes to the build log, a case 
 
 - **VG-O25**: the reason a wrong-register string is not polish ended "and today the teacher edits it out by hand", a moment written as a reason; it now says "and the teacher would have to edit it out by hand" (the design reviewer release (topic 8, release 2), on the design reviewer's list (`2026-09-23-design-reviewer-ledger.md`), whose mapping is `2026-09-26-design-reviewer-mapping.md`, its settled item 11: a dated story leaves for the build log, where the release copied its sentences first, and its reason stays; RV-D06).
 - **VG-O26**: "Read each one first as the child: the actual eight- or nine-year-old the year group names" is now "Read each one first as the child: the actual child in this class" (the lead's reading of his words, not his own wording (he said "I actually don't know why it says nine-year-old. Um, because the plugin is for years one, two, three, four, five, and six, right?" of other lines on the rest-of-preferences list, 24 September): the reader the voice sweep imagines is the actual child in this class; RV-G09).
+
+## After the voice guide release (topic 8, release 5, 26 September 2026)
+
+- **Built.** This list's release 5 is built on its side branch: decisions 1, 2, 4, 9 and 10 (turned round), 11 and 12, and settled items 1, 5, 6 and 8, with the stories out and his answer on speaker notes calibrated on the week 3 science lesson he named. Every row is pinned in `scripts/tests/teacher_voice_ledger_pins.json`; where each changed row went is `2026-09-26-teacher-voice-mapping.md`; the report is `streamline-tools/vg-release-report.md`.
+- **Decision 13** (a nine-year-old in four places) and his speaker-notes answer in the lesson designer's own notes line were release 7B's; the lead brought them into this release after its first check, in 7B's planned words and his, so the designer and the guide no longer pull against each other. 7B no longer carries them.
+- **Left for release 6** (humour on the board, waiting for his answer on `streamline-tools/humour-diagnosis.md`): the guide's §2 and §17, the look moved to where each board is written, where a light line rides on a board, and the reviewer's board question. This release carries only the diagnosis's parts it names for release 5: "humour wherever", maths and PSHE included, and the two "never the reverse" copies brought to "normally".

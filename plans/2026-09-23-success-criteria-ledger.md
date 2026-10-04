@@ -1342,3 +1342,7 @@ govern.
 ## After the design reviewer release (topic 8, release 2, 26 September 2026)
 
 - **SC-Q01** (the reviewer's section 3 list, pinned whole) moved with the design reviewer release (topic 8, release 2), on the design reviewer's list (`2026-09-23-design-reviewer-ledger.md`), whose mapping is `2026-09-26-design-reviewer-mapping.md`: the same two sentences as the quick-checks list's QC-C08 (the restating Do goes back to the lesson designer, his decision 2 there (24 September 2026, "1. y"): small wording fixes are the reviewer's, and a picture swap or a rewritten Do beat goes to the lesson designer with the reviewer naming the fix; "now" left the `unlocks` line). No success-criteria wording changed.
+
+## After the voice guide release (topic 8, release 5, 26 September 2026)
+
+- **SC-D42** moved with the voice guide release (topic 8, release 5), on the voice guide's list (`2026-09-23-teacher-voice-ledger.md`), whose mapping is `2026-09-26-teacher-voice-mapping.md`: the lesson designer's read line no longer lists the guide's sections one by one, so its "§10 success criteria" is now the guide's own route, "success criteria §10" (its settled item 1: the guide's route names all four most-missed kinds, each with its reason, and the lesson designer reads the guide by that route instead of keeping a shorter copy of it). The designer's pointer to the preference sections (the row's second quote) is unchanged.

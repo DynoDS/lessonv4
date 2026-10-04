@@ -694,7 +694,11 @@ class MakeLessonRuntimeTests(unittest.TestCase):
                 # line endings a checkout wrote: git turns LF into CRLF here, and
                 # a budget read off the disk counts one byte per line of nothing.
                 repository_text = compact_text.replace("\r\n", "\n")
-                self.assertLess(len(repository_text.encode("utf-8")), 8000)
+                # The slide designer's repair carries the speech guidance's
+                # own list of who opens it, word for word (the voice guide
+                # release, his decision 4), so it is allowed 200 bytes more.
+                budget = 8200 if owner == "slide-designer" else 8000
+                self.assertLess(len(repository_text.encode("utf-8")), budget)
                 self.assertIn(
                     f"name: {filename.removesuffix('.md')}",
                     compact_text,
