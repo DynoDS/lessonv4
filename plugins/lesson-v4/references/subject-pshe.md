@@ -9,8 +9,6 @@ Read this at the start of a PSHE lesson, before the route is chosen. This file a
 - Use **Dialogic** when the question genuinely permits several defensible choices or positions and children must justify a view.
 - Use **Task-Centred** when one sustained real-life task is the main learning experience and evidence.
 
-The PSHE label does not determine the route.
-
 ## Teach facts before dependent judgement
 
 Teach necessary factual, legal, anatomical or safeguarding knowledge directly before asking children to make a judgement that depends on it. When the learning is an idea children will apply beyond today's scenario (a boundary, consent, a fair share), name it in `concepts` and meet it on more than one scenario; a rule shown on one story is a fact about that story. Do not turn factual knowledge into an opinion poll or present a non-negotiable safety message as though every answer is equally defensible.
@@ -47,12 +45,4 @@ No beat needs a child's own experience to be completed; a private choice can sta
 
 ## Food and diet
 
-Diet lessons recur in every primary year, and three accuracy boundaries from UK guidance hold in all of them. They exist because a diet lesson fighting one simplistic rule (`it has an apple, so it is balanced`) most easily fails by installing a more sophisticated one.
-
-**Balance is a property of eating over time, never of one meal.** The Eatwell Guide describes proportions across a day or a week, so a single meal can illustrate balance but cannot be proved balanced, and a task asking children to `explain why the whole lunch is balanced` teaches the wrong unit however carefully the teaching talked about patterns over time. Ask instead for judgements one meal genuinely supports: plan or improve a meal and explain how each choice helps the body, or how the variety helps.
-
-**No invented per-meal quotas.** UK portion advice works across the whole day (at least five fruit and vegetables) and deliberately sets no rules for a single meal. A criterion like `Add two fruit or vegetable portions` turns balance into a lunchbox checklist, which is the apple misconception wearing better clothes.
-
-**A nutrient's "body job" is a teaching scaffold, not the definition of balance.** Energy, growth and repair, and vitamins and minerals is a fair simplification of what nutrients do, and real foods carry several at once. Balance itself is variety across food groups in sensible proportion, so let the jobs explain why variety matters and let an age-appropriate Eatwell-style representation carry what balance is. A meal judged balanced because each of the three jobs is ticked has replaced the concept with its scaffold.
-
-Keep food morally neutral throughout: no good or bad food labels, no judging any child's real food, and when the lesson touches processing, `processed means changed before we eat it, not automatically unhealthy` said once and in proportion, not run as a theme.
+A lesson about food, diet or healthy eating follows the NHS Eatwell Guide for what a balanced diet is and how it is shown.

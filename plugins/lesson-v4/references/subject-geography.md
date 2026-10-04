@@ -1,7 +1,5 @@
 # Subject Discipline: Geography
 
-Read this at the start of the run when the lesson is Geography, before the structure is chosen, because the routing below is part of that choice. Come back to it alongside the teaching-sequence file once the structure is set. The structure file tells you what shape the lesson takes; this one tells you what the thinking inside it should be.
-
 Geography lessons fail in a particular way, and it is not the way you would expect. They rarely fail on accuracy. They fail by teaching correct geographical facts while never asking a child to do anything a geographer does, so children leave able to recite where the Amazon is and unable to think about anywhere.
 
 Geographical knowledge includes places, features and processes as well as ways of locating, comparing, investigating and explaining them. Choose the balance from the approved objective and the wider sequence. A lesson that secures important locational or descriptive knowledge can be worthwhile without adding a separate reasoning demand; an explanation objective needs more than naming facts.
@@ -97,7 +95,7 @@ The limit worth holding: awe is not only spectacle, and a lesson does not need a
 
 ## What the page should look like
 
-The design-reviewer reads the book at the end of the lesson and asks whether it reads as the subject. For geography, a page that carries the discipline usually holds at least one of:
+The design reviewer reads the finished design against this file and asks whether it reads as the subject. For geography, a page that carries the discipline usually holds at least one of:
 
 - A map, sketch map, or diagram the child drew or annotated themselves
 - A comparison written out, with the criterion named ("the Amazon is wet all year but the Sahara is dry, so the plants are completely different")

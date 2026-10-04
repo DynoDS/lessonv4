@@ -1301,35 +1301,29 @@
   },
   {
    "id": "SC-C15",
-   "outcome": "unchanged in place",
-   "present": [
+   "outcome": "retired: removed with its file in the subject-files release (topic 8, release 1), his decisions 1 and 3 of 24 September, \"forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future.\" and \"is this a new skill called make subject file skill or something? just remove it completely.\"; unchanged in place until then",
+   "present": [],
+   "absent": [
     {
      "file": "references/authoring-subject-files.md",
      "text": "Rules about success rates, about a concept being a procedure with steps, about fluency preceding reasoning, about reference material coming off before independent work, and about success criteria being either a method or a category set are the ones most likely to collide with a subject taught a different way.",
-     "section": {
-      "heading": "## They add; they never overrule",
-      "occurrence": 0,
-      "intro": false
-     }
+     "everywhere": false,
+     "fileRemoved": true
     }
-   ],
-   "absent": []
+   ]
   },
   {
    "id": "SC-C16",
-   "outcome": "unchanged in place",
-   "present": [
+   "outcome": "retired: removed with its file in the subject-files release (topic 8, release 1), his decisions 1 and 3 of 24 September, \"forget about 'writing a new subject file' guidance. it should just knowe the files it has, nothing around what could be added in future.\" and \"is this a new skill called make subject file skill or something? just remove it completely.\"; unchanged in place until then",
+   "present": [],
+   "absent": [
     {
      "file": "skills/make-subject-file/SKILL.md",
      "text": "Success criteria being either a procedure or a labelled category set, when neither fits \"explain why the Romans invaded\".",
-     "section": {
-      "heading": "## Stage 8: The collisions",
-      "occurrence": 0,
-      "intro": false
-     }
+     "everywhere": false,
+     "fileRemoved": true
     }
-   ],
-   "absent": []
+   ]
   },
   {
    "id": "SC-C17",
@@ -3490,20 +3484,15 @@
   },
   {
    "id": "SC-G02",
-   "outcome": "unchanged in place",
-   "present": [
+   "outcome": "retired in the subject-files release (topic 8, release 1), his decision 6 of 24 September, \"those balanced diet things sound like things I wouldnt want in the pshe subject files\" and \"maybe the subject file could say to look for guidance from eatwell guide thing\": the PSHE food section is one line pointing to the NHS Eatwell Guide; the general rule against an invented count in a criterion (SC-G01) stays where every lesson reads it; unchanged in place until then",
+   "present": [],
+   "absent": [
     {
      "file": "references/subject-pshe.md",
      "text": "**No invented per-meal quotas.** UK portion advice works across the whole day (at least five fruit and vegetables) and deliberately sets no rules for a single meal. A criterion like `Add two fruit or vegetable portions` turns balance into a lunchbox checklist, which is the apple misconception wearing better clothes.",
-     "section": {
-      "heading": "## Food and diet",
-      "occurrence": 0,
-      "intro": false
-     },
-     "paragraph": true
+     "everywhere": true
     }
-   ],
-   "absent": []
+   ]
   },
   {
    "id": "SC-G03",

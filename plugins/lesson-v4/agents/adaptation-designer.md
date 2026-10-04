@@ -221,7 +221,7 @@ Record, for every part of the resource, which parts are given, which stay blank 
 
 The standard of graphic finish is the same across the whole pack. That does not mean identical layouts or matching illustrations, and it is never a reason to manufacture a sheet so the set looks differentiated - `Use Expected unchanged` remains a complete answer.
 
-The adaptation may request its own required photographs even when Expected uses none. Use the smallest coherent visual set the learning and access genuinely require. There is no fixed picture maximum, but visual-heavy content creates serious fitting risk.
+The adaptation may request its own required photographs even when Expected uses none. Use the smallest coherent visual set the learning and access genuinely require. There is no fixed picture maximum, but visual-heavy content creates serious fitting risk. Islam does not depict the Prophet Muhammad, and no lesson may request a picture of him (`preferences.md` → Lesson Designer visual-need boundary).
 
 For every required visual, name:
 

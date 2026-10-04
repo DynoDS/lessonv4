@@ -131,6 +131,12 @@ class EveryLedgerRowIsStillInItsHome(unittest.TestCase):
     def test_every_retired_phrase_stays_gone(self) -> None:
         for row in self.pins:
             for pin in row["absent"]:
+                if pin.get("fileRemoved"):
+                    # The teacher removed the phrase's whole file: it stays
+                    # gone while the file does, and the file coming back fails.
+                    with self.subTest(row=row["id"], file=pin["file"], removed=True):
+                        self.assertFalse((ROOT / pin["file"]).exists(), "a file the teacher removed is back")
+                    continue
                 # "Everywhere" is the instructions and the programs whose messages
                 # the designers follow, as for every later topic. A retired story
                 # may stay in a program's comment, which only a maintainer reads.

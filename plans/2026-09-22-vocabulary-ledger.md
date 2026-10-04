@@ -717,3 +717,7 @@ govern. Each goes with its own topic.
 - `task-contrasts.md` L17 still says a sort is «fine there, named as a
   check». 4.2.283 set out to remove the "name it as a check" excuse
   everywhere, and this copy survived. It belongs to the quick-check topic.
+
+## After the subject-files release (topic 8, release 1, 25 September 2026)
+
+- **VOC-M15** is retired in `vocabulary_ledger_pins.json`: its words lived in the skill, removed by his decisions 1 and 3 on the subject-files list (24 September): the make-subject-file skill and its writing guide are removed completely ("just remove it completely"). The pin now holds the file staying gone (the vocabulary test learned that pin in the same release).

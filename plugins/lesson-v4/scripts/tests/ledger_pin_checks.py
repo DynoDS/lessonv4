@@ -122,7 +122,14 @@ def make_ledger_tests(pins_path: Path, ledger_path: Path, prefix: str, expected_
                     # own file too, which for a retired code phrase is the
                     # program it left.
                     own = ROOT / pin["file"]
+                    if pin.get("fileRemoved"):
+                        # The teacher removed the phrase's whole file: the
+                        # phrase stays gone while the file does, and the file
+                        # coming back fails here.
+                        with self.subTest(row=row["id"], file=pin["file"], removed=True):
+                            self.assertFalse(own.exists(), "a file the teacher removed is back")
                     files = sorted(set(RUNTIME) | set(PROGRAMS) | {own}) if pin.get("everywhere") else [own]
+                    files = [path for path in files if path.exists() or not pin.get("fileRemoved")]
                     for path in files:
                         with self.subTest(row=row["id"], file=str(path.relative_to(ROOT))):
                             self.assertNotIn(pin["text"], flat(path.read_text(encoding="utf-8")))
@@ -164,8 +171,9 @@ def make_ledger_tests(pins_path: Path, ledger_path: Path, prefix: str, expected_
                 lines = (ROOT / home["file"]).read_text(encoding="utf-8").splitlines()
                 start = lines.index(home["heading"])
                 level = len(home["heading"].split(" ")[0])
-                end = next(i for i in range(start + 1, len(lines))
-                           if HEADING.match(lines[i]) and len(HEADING.match(lines[i]).group(1)) <= level)
+                end = next((i for i in range(start + 1, len(lines))
+                            if HEADING.match(lines[i]) and len(HEADING.match(lines[i]).group(1)) <= level),
+                           len(lines))
                 body = "\n".join(lines[start + 1:end]).split("\n\n")
                 paragraphs = [flat(x) for x in body if flat(x) and flat(x) != "---"]
                 with self.subTest(home=home["file"], heading=home["heading"]):

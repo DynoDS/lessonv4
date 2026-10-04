@@ -105,7 +105,7 @@ Do not maintain a second compressed year-by-year mathematics curriculum in this 
 
 ### English
 
-Do not use fixed generic ladders such as evaluation → inference → retrieval → fluency or composition → paragraph → sentence → word. Preserve the actual reading, writing or grammar thinking through a lighter access route when the Tier 1 evidence supports it. Otherwise choose an honest related working-level objective from the supplied text, curriculum, assessment or sequence context. Detailed English progression belongs in a future subject-English file.
+Do not use fixed generic ladders such as evaluation → inference → retrieval → fluency or composition → paragraph → sentence → word. Preserve the actual reading, writing or grammar thinking through a lighter access route when the Tier 1 evidence supports it. Otherwise choose an honest related working-level objective from the supplied text, curriculum, assessment or sequence context.
 
 ### Science
 

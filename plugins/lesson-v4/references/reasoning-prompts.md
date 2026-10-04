@@ -78,7 +78,7 @@ What makes these strong is that each one tests a concept native to the year grou
 The reasoning shapes transfer; the detailed content and standard do not.
 
 - Maths may use variation, counterexamples, systematic search, representation choice and justified method selection.
-- English may compare effects, justify structural choices or reason from textual evidence. Until a subject-English file exists, keep the detailed reading, writing and grammar guidance below active.
+- English may compare effects, justify structural choices or reason from textual evidence.
 - **Reading comprehension.** Depth = multi-point inference with multiple pieces of evidence; comparing author's choices across two texts; justifying a competing interpretation; evaluating effect. Pupils writing their own greater-depth question on the extract for a peer is a strong closing move.
 - **Writing.** Depth = manipulating structure for effect (shift in formality, flashback, sentence-length variation for tension); emulating a studied author's structure; drafting then redrafting for precision; justifying choices. The Year 6 TAF links greater-depth writing to evidence of wide reading drawn on independently — prompt the child to emulate a specific author.
 - **Grammar.** Depth = explaining the effect, not just identifying the feature. "Write three fronted adverbials for the same clause and rank them for impact." "Spot the mistake in this flawed sentence and explain the rule broken." Application in extended writing with justification.

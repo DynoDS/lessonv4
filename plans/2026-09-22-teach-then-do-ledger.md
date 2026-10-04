@@ -1149,3 +1149,9 @@ proposed.
   before practising either), so no change is proposed.
 - **The scaffold note on decision 3** (a new beat kind needs both programs and
   a test): decision 3 no longer proposes a new beat kind.
+
+## After the subject-files release (topic 8, release 1, 25 September 2026)
+
+- **TD-A14** is retired in `teach_then_do_ledger_pins.json`: its words lived in the skill, removed by his decisions 1 and 3 on the subject-files list (24 September): the make-subject-file skill and its writing guide are removed completely ("just remove it completely"). The pin now holds the file staying gone.
+- **TD-K09** moved with the history file's words: the sketch's introducing sentence lost only "(4 September 2026)" (that list's settled item 10); the sketch is unchanged.
+- **TD-A13** moved with the lesson designer's reading list: its subject-file line gained what history's and geography's word-for-word start notes carried (that list's settled item 12), and the paragraph is pinned again whole.

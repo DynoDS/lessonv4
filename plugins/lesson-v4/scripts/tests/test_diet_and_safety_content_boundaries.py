@@ -85,39 +85,46 @@ class DietContentBoundaryTests(unittest.TestCase):
     moralising and then rebuilt the concept wrongly: the task asked children
     to prove one lunch balanced, a success criterion invented `Add two fruit
     or vegetable portions.`, and the three body jobs became the definition of
-    balance. Eatwell frames balance as variety in proportion over a day or
-    week, with no per-meal portion rules.
+    balance. Four food rules went into the PSHE file for it.
+
+    On 24 September 2026 the teacher took them out ("those balanced diet
+    things sound like things I wouldnt want in the pshe subject files") and
+    asked for a pointer instead ("maybe the subject file could say to look for
+    guidance from eatwell guide thing"), then said "yes" to the same line in
+    science, which teaches diet too and never reads the PSHE file. What reaches
+    a diet lesson another way stays where it is: the reviewer's single-lunch
+    example, the food plate's caption and its ban on good and bad foods, and
+    the rule against an invented count in a criterion (below).
     """
 
-    def test_balance_is_judged_over_time_not_per_meal(self) -> None:
-        pshe = flat(PSHE)
-        self.assertIn(
-            "Balance is a property of eating over time, never of one meal.",
-            pshe,
-        )
-        self.assertIn("Eatwell Guide", pshe)
-        self.assertIn("explain why the whole lunch is balanced", pshe)
-        # The task shapes a meal genuinely supports.
-        self.assertIn("plan or improve a meal", pshe)
+    EATWELL = (
+        "A lesson about food, diet or healthy eating follows the NHS Eatwell "
+        "Guide for what a balanced diet is and how it is shown."
+    )
 
-    def test_per_meal_quotas_are_named_as_the_misconception(self) -> None:
-        pshe = flat(PSHE)
-        self.assertIn("No invented per-meal quotas.", pshe)
-        self.assertIn("Add two fruit or vegetable portions", pshe)
-        self.assertIn("the apple misconception wearing better clothes", pshe)
-
-    def test_body_jobs_stay_a_scaffold_not_the_definition(self) -> None:
-        pshe = flat(PSHE)
-        self.assertIn(
-            "teaching scaffold, not the definition of balance", pshe
-        )
-        self.assertIn("replaced the concept with its scaffold", pshe)
-
-    def test_food_stays_neutral_and_processing_stays_in_proportion(self) -> None:
-        pshe = flat(PSHE)
-        self.assertIn("no good or bad food labels", pshe)
-        self.assertIn("not automatically unhealthy", pshe)
-        self.assertIn("said once and in proportion, not run as a theme", pshe)
+    def test_pshe_and_science_point_to_the_eatwell_guide_and_nothing_more(self) -> None:
+        for path in (PSHE, SCIENCE):
+            with self.subTest(file=path.name):
+                self.assertIn("## Food and diet " + self.EATWELL, flat(path))
+        # The rules' own sentences are gone from every subject file, where
+        # they were design rules. The reviewer keeps its single-lunch example,
+        # so the bar is on the subject files, not the whole plugin.
+        for path in sorted((ROOT / "references").glob("subject-*.md")):
+            text = flat(path)
+            for phrase in (
+                "Diet lessons recur in every primary year",
+                "Balance is a property of eating over time, never of one meal.",
+                "explain why the whole lunch is balanced",
+                "No invented per-meal quotas.",
+                "the apple misconception wearing better clothes",
+                "teaching scaffold, not the definition of balance",
+                "replaced the concept with its scaffold",
+                "no good or bad food labels",
+                "not automatically unhealthy",
+                "said once and in proportion, not run as a theme",
+            ):
+                with self.subTest(file=path.name, phrase=phrase):
+                    self.assertNotIn(phrase, text)
 
 
 class CountsAndFootprintTests(unittest.TestCase):
