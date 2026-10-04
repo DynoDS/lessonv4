@@ -1,0 +1,1192 @@
+diff --git a/plugins/lesson-v4/agents/slide-designer.md b/plugins/lesson-v4/agents/slide-designer.md
+index a8f40478..6b86a218 100644
+--- a/plugins/lesson-v4/agents/slide-designer.md
++++ b/plugins/lesson-v4/agents/slide-designer.md
+@@ -596,6 +596,8 @@ You may make no more than three candidate-repair passes after the first check. A
+ 
+ A fault that comes back after a pass is telling you the lever was wrong, not that it needs another turn of the same handle. Compare the reran diagnostic against the one you just answered: when the same slide returns the same measurement, or nearly it, that repair moved nothing and repeating its kind will move nothing either. Go up a level instead - a different template, one fewer item in the zone, or the beat split across consecutive slides carrying the same `designUnitId` - rather than adjusting the composition you already have. Three passes spent trimming one crowded layout is how a deck reaches `EXHAUSTED 3/3` with the fault the first check named still standing, and a measurement that did not move across two passes is the signal to change kind while a pass is still left to do it in. Where the check reports which axis or dimension binds, that is the fact to repair against: a lever on the other axis measures the same number again.
+ 
++When the check prints a `LAYOUT_OPTIONS:` line for a refused slide, it has already drawn that slide's content in every other two-part layout, so the search is done. Take one of the layouts it names rather than adjusting the refused one, because those are known to hold the content; when it says no two-part layout holds the content, another template will not help, so split the beat across slides or regroup it. The line reports what fits, not what reads best: look at the page afterwards as you would any other.
++
+ Do not return `SLIDE_DESIGN_CHECK_FAILED` while an allowed candidate-repair pass remains and at least one unresolved diagnostic is entirely within your repair authority.
+ 
+ When a clear Slide Designer-owned visual fault remains after the third repair pass, return `SLIDE_DESIGN_CHECK_FAILED`. Add one `BUILD_DIAGNOSTIC:` line per unresolved slide using `signal: "VISUAL_SELF_CHECK_FAILED"`, `artifact: "slides"`, `faultClass: "composition"`, the exact slide number and a concise description of the unresolved visual fault. Leave canonical `lesson.json` unchanged.
+diff --git a/plugins/lesson-v4/builder/scripts/check-slide-design.js b/plugins/lesson-v4/builder/scripts/check-slide-design.js
+index 046cbc2e..edcef709 100644
+--- a/plugins/lesson-v4/builder/scripts/check-slide-design.js
++++ b/plugins/lesson-v4/builder/scripts/check-slide-design.js
+@@ -9,6 +9,7 @@ const { spawnSync } = require('node:child_process');
+ const { capacityWarnings } = require('../src/content/capacity');
+ const { friendlyParseError } = require('../src/validate');
+ const { expandTeachLayoutsEach, LAYOUTS } = require('../src/teach-layouts');
++const { layoutOptions } = require('./layout-options');
+ 
+ const BLOCKING_CAPACITY_SIGNALS = new Set([
+   'FIXED_CAPTION_CAPACITY',
+@@ -1780,12 +1781,27 @@ function runSlideDesignCheck(inputPath, options = {}) {
+         scratchOutputPath,
+       };
+     } else if (child.status !== 0) {
++      // A refused two-part slide is tried in the other two-part layouts, once,
++      // so the designer is told which hold it instead of finding out a repair
++      // pass at a time. Not for a settled deck: its composition is closed.
++      let optionLines = [];
++      if (!options.settled) {
++        const refusedSlides = parseBuildDiagnostics(childStdout)
++          .filter((item) => item && item.faultClass !== 'note' && item.location)
++          .map((item) => item.location.slide);
++        optionLines = layoutOptions(lesson, jsonPath, refusedSlides, {
++          buildPath,
++          env: { ...process.env, ...(options.env || {}) },
++        });
++      }
+       outcome = {
+         ok: false,
+         reason: 'SCRATCH_BUILD_FAILED',
+         slideCount,
+         stdout: childStdout,
+-        stderr: childStderr,
++        stderr: optionLines.length
++          ? appendLine(childStderr, `\n${optionLines.join('\n')}`)
++          : childStderr,
+         scratchOutputPath,
+       };
+     } else {
+diff --git a/plugins/lesson-v4/builder/scripts/layout-options.js b/plugins/lesson-v4/builder/scripts/layout-options.js
+new file mode 100644
+index 00000000..9f5dfd22
+--- /dev/null
++++ b/plugins/lesson-v4/builder/scripts/layout-options.js
+@@ -0,0 +1,245 @@
++'use strict';
++
++// When a two-part slide is refused, say which two-part layouts hold it.
++//
++// A slide designer picks a split template from the catalogue and finds out
++// whether the content fits only when the check refuses it. It then spends its
++// repair passes trying other templates one at a time. Year 4 Maths Lesson 16
++// (Roman numerals to L, 22 September 2026) had six slides refused as
++// top-and-bottom splits, spent all three passes on their tables and went to a
++// focused repair; every one of the six lays out cleanly side by side, at
++// larger writing than the repair reached. Year 4 Maths Lesson 21 (3 October
++// 2026) had four slides that no two-part layout holds at all, which the
++// designer could only learn by trying.
++//
++// The engine can try every layout in a few seconds, so the check does, once,
++// for the refused slides only, and prints one line for each: the layouts that
++// build it cleanly, or that none does. It reports what fits; it does not
++// choose. The teacher, shown the engine's own choice against delivered slides
++// (3 October 2026), saw no difference on seven of twelve and preferred the
++// delivered slide on two, so a layout is offered only where the designer's
++// was refused.
++
++const fs = require('node:fs');
++const os = require('node:os');
++const path = require('node:path');
++const { spawnSync } = require('node:child_process');
++
++const SPLITS = [
++  'split-h-50-50', 'split-h-60-40', 'split-h-70-30', 'split-h-75-25', 'split-h-80-20', 'split-h-90-10',
++  'split-v-50-50', 'split-v-60-40', 'split-v-70-30', 'split-v-75-25', 'split-v-80-20', 'split-v-90-10',
++];
++// A deck with many refused slides is a deck to rethink, and every slide tried
++// costs a dozen drawn pages, so the search stops here and says so.
++const MOST_SLIDES = 8;
++const MOST_NAMED = 3;
++const READABLE_PT = 20;
++
++function isTwoPart(slide) {
++  return !!slide && SPLITS.includes(slide.template) &&
++    slide.primary && typeof slide.primary === 'object' &&
++    slide.secondary && typeof slide.secondary === 'object';
++}
++
++// The same side of the slide where the orientation is kept; its counterpart
++// where the split turns from side by side to top and bottom or back.
++function sideFor(template, current) {
++  const horizontal = template.startsWith('split-h-');
++  const first = current === 'right' || current === 'bottom' ? 1 : 0;
++  return (horizontal ? ['left', 'right'] : ['top', 'bottom'])[first];
++}
++
++function pairIds(node, found) {
++  if (Array.isArray(node)) {
++    node.forEach((item) => pairIds(item, found));
++  } else if (node && typeof node === 'object') {
++    if (node.revealPair && typeof node.revealPair.id === 'string') found.add(node.revealPair.id);
++    Object.keys(node).forEach((key) => {
++      if (key !== 'revealPair') pairIds(node[key], found);
++    });
++  }
++  return found;
++}
++
++function renamePairs(node, suffix) {
++  if (Array.isArray(node)) return node.map((item) => renamePairs(item, suffix));
++  if (!node || typeof node !== 'object') return node;
++  const out = {};
++  Object.keys(node).forEach((key) => {
++    out[key] = key === 'revealPair' && node[key] && typeof node[key].id === 'string'
++      ? { ...node[key], id: `${node[key].id}${suffix}` }
++      : renamePairs(node[key], suffix);
++  });
++  return out;
++}
++
++// A question and its answer slide share one layout, so a refused slide is tried
++// together with every slide it is paired with.
++function groupFor(lesson, slideNumber) {
++  const slides = lesson.slides;
++  const ids = pairIds(slides[slideNumber - 1], new Set());
++  const group = [slideNumber];
++  if (ids.size) {
++    slides.forEach((slide, index) => {
++      if (index + 1 === slideNumber) return;
++      const theirs = pairIds(slide, new Set());
++      if ([...theirs].some((id) => ids.has(id))) group.push(index + 1);
++    });
++  }
++  return group.sort((a, b) => a - b);
++}
++
++function parseTrial(output) {
++  const faulty = new Set();
++  const small = new Map();
++  let inSmall = false;
++  for (const line of String(output || '').split(/\r?\n/)) {
++    if (line.startsWith('BUILD_DIAGNOSTIC: ')) {
++      try {
++        const d = JSON.parse(line.slice('BUILD_DIAGNOSTIC: '.length));
++        if (d && d.faultClass !== 'note' && d.location && Number.isFinite(d.location.slide)) {
++          faulty.add(d.location.slide);
++        }
++      } catch {
++        // An unreadable line cannot vouch for a layout, and none is named on it.
++      }
++      continue;
++    }
++    if (line.startsWith('SLIDE_TEXT_BELOW_TARGET:')) { inSmall = true; continue; }
++    const row = inSmall ? /^\s+slide (\d+) at (\d+)pt: "(.*)"\s*$/.exec(line) : null;
++    if (row) {
++      const slide = Number(row[1]);
++      if (!small.has(slide)) small.set(slide, []);
++      small.get(slide).push({ pt: Number(row[2]), text: row[3] });
++    } else if (inSmall && line.trim() !== '') {
++      inSmall = false;
++    }
++  }
++  return { faulty, small };
++}
++
++function names(list) {
++  const shown = list.slice(0, MOST_NAMED).map((entry) => `\`${entry.template}\``);
++  if (shown.length <= 1) return shown.join('');
++  return `${shown.slice(0, -1).join(', ')} or ${shown[shown.length - 1]}`;
++}
++
++function layoutOptions(lesson, jsonPath, refusedSlides, options = {}) {
++  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
++  const wanted = [...new Set(refusedSlides)]
++    .filter((n) => Number.isInteger(n) && isTwoPart(slides[n - 1]))
++    .sort((a, b) => a - b);
++  if (!wanted.length) return [];
++
++  // One search per group: a question and its answer are refused together.
++  const groups = [];
++  const covered = new Set();
++  wanted.forEach((n) => {
++    if (covered.has(n)) return;
++    const group = groupFor(lesson, n);
++    if (!group.every((member) => isTwoPart(slides[member - 1]))) return;
++    group.forEach((member) => covered.add(member));
++    groups.push(group);
++  });
++  if (!groups.length) return [];
++  const searched = groups.slice(0, MOST_SLIDES);
++  const lines = [];
++  if (groups.length > searched.length) {
++    lines.push(
++      `LAYOUT_OPTIONS: ${groups.length} refused two-part slides; only the first ${searched.length} ` +
++      'were tried in other layouts.'
++    );
++  }
++
++  // One trial deck: every searched group in every layout but its own.
++  const trialSlides = [];
++  const trials = [];
++  searched.forEach((group, g) => {
++    const current = slides[group[0] - 1];
++    SPLITS.forEach((template, t) => {
++      if (template === current.template) return;
++      const numbers = [];
++      group.forEach((member) => {
++        const copy = renamePairs(JSON.parse(JSON.stringify(slides[member - 1])), `x${g}y${t}`);
++        copy.template = template;
++        copy.primarySide = sideFor(template, slides[member - 1].primarySide);
++        trialSlides.push(copy);
++        numbers.push(trialSlides.length);
++      });
++      trials.push({ group: g, template, numbers });
++    });
++  });
++
++  const trialPath = path.join(
++    path.dirname(jsonPath),
++    `.${path.basename(jsonPath)}.layout-options-${process.pid}.json`
++  );
++  let scratchDir = null;
++  let output = '';
++  try {
++    // The build draws a design preview only into a slide-design-check scratch
++    // directory, so the trial deck uses one of its own.
++    scratchDir = fs.mkdtempSync(path.join(os.tmpdir(), 'lesson-resources-slide-design-check-'));
++    fs.writeFileSync(trialPath, JSON.stringify({ ...lesson, slides: trialSlides }));
++    const child = spawnSync(
++      process.execPath,
++      [options.buildPath, trialPath, scratchDir, '--design-preview', '--skip-optional-decorations'],
++      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 20 * 1024 * 1024, env: options.env || process.env }
++    );
++    if (child.error) return [];
++    output = `${child.stdout || ''}\n${child.stderr || ''}`;
++  } catch {
++    return [];
++  } finally {
++    try {
++      fs.rmSync(trialPath, { force: true });
++      if (scratchDir) fs.rmSync(scratchDir, { recursive: true, force: true });
++    } catch {
++      // Nothing the search leaves behind changes the check's verdict.
++    }
++  }
++  // The search is a help beside a refusal that already stands, so it speaks
++  // only on evidence. A trial deck that was never drawn reports no faults, and
++  // silence is not a layout that fits: unless the build says it wrote the
++  // pages, and the text fitting pass ran, nothing is named.
++  if (!/^(PARTIAL_PREVIEW|Wrote): /m.test(output)) return [];
++  if (/AUTOFIT_(DEPENDENCY_MISSING|NOT_PERMITTED|PROCESS_FAILED)/.test(output)) return [];
++
++  const { faulty, small } = parseTrial(output);
++  searched.forEach((group, g) => {
++    const mine = trials.filter((trial) => trial.group === g);
++    const built = mine.filter((trial) => trial.numbers.every((n) => !faulty.has(n)));
++    const where = group.length > 1 ? `slides ${group.join(' and ')}` : `slide ${group[0]}`;
++    if (!built.length) {
++      lines.push(
++        `LAYOUT_OPTIONS: ${where}: no two-part layout holds this content at a readable size ` +
++        `(all ${mine.length} others were tried). Changing the template will not mend it: carry the ` +
++        'beat across two slides, or regroup what the slide holds.'
++      );
++      return;
++    }
++    // Writing every layout prints small (a signal chip) says nothing about a
++    // layout; writing only some print small is what tells them apart.
++    const inAll = (text) => built.every((trial) =>
++      trial.numbers.some((n) => (small.get(n) || []).some((box) => box.text === text)));
++    built.forEach((trial) => {
++      trial.smallest = Math.min(READABLE_PT, ...trial.numbers.flatMap((n) =>
++        (small.get(n) || []).filter((box) => !inAll(box.text)).map((box) => box.pt)));
++    });
++    const clean = built.filter((trial) => trial.smallest >= READABLE_PT);
++    const tight = built.filter((trial) => trial.smallest < READABLE_PT)
++      .sort((a, b) => b.smallest - a.smallest);
++    let line = `LAYOUT_OPTIONS: ${where}: `;
++    if (clean.length) {
++      line += `this content builds with all its writing at ${READABLE_PT}pt or more as ${names(clean)}`;
++      if (tight.length) line += `; as ${names(tight)} some of it drops to ${tight[0].smallest}pt`;
++    } else {
++      line += `this content builds as ${names(tight)}, with some writing at ${tight[0].smallest}pt`;
++    }
++    line += '. Take one of these rather than adjusting the refused layout, then look at the page.';
++    lines.push(line);
++  });
++  return lines;
++}
++
++module.exports = { layoutOptions, isTwoPart, groupFor, sideFor, SPLITS };
+diff --git a/plugins/lesson-v4/builder/src/content/blank-surface.js b/plugins/lesson-v4/builder/src/content/blank-surface.js
+index 893aebe9..360dc265 100644
+--- a/plugins/lesson-v4/builder/src/content/blank-surface.js
++++ b/plugins/lesson-v4/builder/src/content/blank-surface.js
+@@ -25,7 +25,23 @@ const blankSurfaceKey = cacheKey;   // (spec) → stable pre-render cache key
+ 
+ // ─── SLIDE-SPECIFIC CONSTANTS ─────────────────────────────────
+ const PAD       = 0.10;   // zone inner padding (inches)
+-const RENDER_PX = 1000;   // longest side of the pre-rendered PNG
++const RENDER_PX = 2000;   // longest side of the pre-rendered PNG
++
++// The start number on a board number line is never under 20pt, and the line is
++// drawn thick enough to see from the back (the teacher, 3 October 2026, of a
++// Your Turn slide whose line was faint and whose start number was too small to
++// read: "maybe thicker line and bigger number. 20 font size is min").
++//
++// The drawing scales with the zone it lands in, and the zone is only known
++// while the slide is being drawn, after the pictures are made. So a number line
++// that carries an end label is made at each of these label sizes (in the
++// drawing's own units), and the slide takes the smallest that prints at 20pt or
++// more at the width it really has: about 20 to 27pt on any slide, never a
++// number that grows with the column. The line's thickness follows the label,
++// so it comes out near 4pt everywhere.
++const BOARD_MIN_PT     = 20;
++const LABEL_UNITS      = [26, 34, 46, 60, 80, 110, 150];
++const STROKE_PER_LABEL = 0.18;
+ // ─── END CONSTANTS ────────────────────────────────────────────
+ 
+ async function preRenderBlankSurfaces(lesson) {
+@@ -44,15 +60,24 @@ async function preRenderBlankSurfaces(lesson) {
+   }
+   walk(lesson);
+ 
+-  const map = {};
+-  for (const [key, spec] of Object.entries(specs)) {
+-    const { svg, aspect } = buildSvg(spec);
++  const render = async (svg, aspect) => {
+     // Render so the LONGER side is RENDER_PX — keeps the surface crisp whatever
+     // its proportions, without a fixed square forcing a wide surface to render small.
+     const resize = aspect >= 1 ? { width: RENDER_PX } : { height: RENDER_PX };
++    return sharp(Buffer.from(svg), { density: 144 }).resize(resize).png().toBuffer();
++  };
++
++  const map = {};
++  for (const [key, spec] of Object.entries(specs)) {
+     try {
+-      const png = await sharp(Buffer.from(svg), { density: 144 }).resize(resize).png().toBuffer();
+-      map[key] = { png, aspect };
++      const plain = buildSvg(spec);
++      map[key] = { png: await render(plain.svg, plain.aspect), aspect: plain.aspect };
++      if (!labelledNumberLine(spec)) continue;
++      map[key].sizes = [];
++      for (const units of LABEL_UNITS) {
++        const built = buildSvg(spec, undefined, { endFontSize: units, stroke: units * STROKE_PER_LABEL });
++        map[key].sizes.push({ units, widthUnits: built.w, aspect: built.aspect, png: await render(built.svg, built.aspect) });
++      }
+     } catch (e) {
+       // skip — placeholder shown at draw time
+     }
+@@ -60,6 +85,32 @@ async function preRenderBlankSurfaces(lesson) {
+   return map;
+ }
+ 
++function labelledNumberLine(spec) {
++  if (!spec || spec.surface === 'bar') return false;
++  const shown = (value) => value != null && String(value) !== '';
++  return shown(spec.start) || shown(spec.end);
++}
++
++// The box a drawing of this shape takes in the zone: as wide as the zone, or as
++// tall, whichever keeps it inside.
++function placedSize(aspect, innerW, innerH) {
++  let w = innerW;
++  let h = w / aspect;
++  if (h > innerH) { h = innerH; w = h * aspect; }
++  return { w, h };
++}
++
++// The smallest label size that prints at the board's floor in this zone, or the
++// largest there is when even that falls short (a zone only a few inches wide).
++function sizeForZone(entry, innerW, innerH) {
++  if (!entry.sizes || !entry.sizes.length) return entry;
++  for (const size of entry.sizes) {
++    const { w } = placedSize(size.aspect, innerW, innerH);
++    if (size.units * (w * 72 / size.widthUnits) >= BOARD_MIN_PT) return size;
++  }
++  return entry.sizes[entry.sizes.length - 1];
++}
++
+ function drawBlankSurface(pptx, slide, zone, data, ctx) {
+   const key = blankSurfaceKey(data);
+ 
+@@ -70,14 +121,12 @@ function drawBlankSurface(pptx, slide, zone, data, ctx) {
+ 
+   if (innerW <= 0.05 || innerH <= 0.05) return;
+ 
+-  const entry = ctx.blankSurfaceImages && ctx.blankSurfaceImages[key];
++  const stored = ctx.blankSurfaceImages && ctx.blankSurfaceImages[key];
++  const entry = stored && stored.png ? sizeForZone(stored, innerW, innerH) : stored;
+   if (entry && entry.png) {
+     // Place by the image's true aspect ratio so it fills the slot with no
+     // deadspace — width-bound or height-bound, whichever keeps it inside.
+-    const aspect = entry.aspect || 1;
+-    let w = innerW;
+-    let h = w / aspect;
+-    if (h > innerH) { h = innerH; w = h * aspect; }
++    const { w, h } = placedSize(entry.aspect || 1, innerW, innerH);
+     const x = innerX + (innerW - w) / 2;
+     const y = innerY + (innerH - h) / 2;
+     slide.addImage({
+@@ -89,4 +138,4 @@ function drawBlankSurface(pptx, slide, zone, data, ctx) {
+   }
+ }
+ 
+-module.exports = { drawBlankSurface, preRenderBlankSurfaces, blankSurfaceKey };
++module.exports = { drawBlankSurface, preRenderBlankSurfaces, blankSurfaceKey, sizeForZone, placedSize, BOARD_MIN_PT };
+diff --git a/plugins/lesson-v4/builder/src/content/stack.js b/plugins/lesson-v4/builder/src/content/stack.js
+index 485a22f5..e59415f5 100644
+--- a/plugins/lesson-v4/builder/src/content/stack.js
++++ b/plugins/lesson-v4/builder/src/content/stack.js
+@@ -84,7 +84,9 @@ function stackLayout(zone, data, ctx) {
+     for (let i = 0; i < heights.length; i += 1) heights[i] = packed.heights[i];
+     offsetY = packed.offsetY;
+   } else {
++    lendSpareToShortItems(items, heights, zone, zoneFor, ctx, 'table');
+     settleByNeed(items, heights, zone, zoneFor, ctx);
++    lendSpareToShortItems(items, heights, zone, zoneFor, ctx, 'text');
+     reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx);
+   }
+ 
+@@ -308,6 +310,151 @@ function panelNeed(item, zone, pt, most, ctx) {
+   return hi + SETTLE_TOLERANCE;
+ }
+ 
++// The share a table needs so that every row holds a line of text, found by
++// asking it: drawn where nobody sees, a table that refuses for want of height
++// says how tall its own box would have to be, and the difference between that
++// and the box it got is the same number in the stack's share. A table that
++// draws in its share keeps the share, so it never gives height away. Null when
++// it refuses for any other reason, so the real draw says why in its own words.
++//
++// The refusal used to be the only place this number appeared: it was printed
++// as a weight for the owner to type, and each repair pass typed it. Year 4
++// Maths Lesson 21 (3 October 2026) had two answer slides refused for 0.11in
++// and 0.00in of table height beside text cards holding room they did not use.
++function tableNeed(item, zone, share, ctx) {
++  if (!item || item.type !== 'table') return null;
++  const { drawContent } = require('./index');
++  const { withoutRecording } = require('../warnings');
++  const PptxGenJS = require('../require-global')('pptxgenjs');
++  const barrier = ctx._cardBarrier;
++  const container = ctx._containerType;
++  const dry = new PptxGenJS();
++  try {
++    withoutRecording(function () {
++      drawContent(dry, dry.addSlide(), {
++        x: zone.x, y: zone.y, w: zone.w, h: share,
++        class: zone.class, noCard: zone.noCard, compactCards: zone.compactCards
++      }, item, ctx);
++    });
++    return share;
++  } catch (err) {
++    if (!err || !Number.isFinite(err.neededZoneHeight) || !Number.isFinite(err.zoneHeight)) return null;
++    const shortfall = err.neededZoneHeight - err.zoneHeight;
++    return shortfall > 0 ? share + shortfall + FIT_MARGIN : null;
++  } finally {
++    ctx._cardBarrier = barrier;
++    ctx._containerType = container;
++  }
++}
++
++// The gentle move. Two kinds of item borrow exactly what they are short by,
++// from text beside them that is holding room its words do not use:
++//
++//   - a table whose rows would fall under a readable line, before the shares
++//     are settled by need, because settleByNeed does not measure tables;
++//   - a line of text whose share is still thinner than its own card once the
++//     shares are settled, which would otherwise be drawn bare and smaller on
++//     the background while every other line on the slide sits on white.
++//     settleByNeed already lifts a line that cannot hold its words at 18pt,
++//     and its answer stands; this catches the line that just holds them.
++//
++// Every lender keeps the height its card hugs at the size it was written, so
++// nothing else on the slide changes size or loses its card. When the lenders
++// cannot cover an item, that item is left as it was, and a stack with nothing
++// short lays out exactly as it did.
++//
++// Year 4 Maths Lesson 21 (3 October 2026): the teacher, shown the answer slide
++// with its instruction floating bare above the working table and the repaired
++// slide with the same line on its card, preferred the card, and was content
++// with the table either way.
++//
++// It does not take from the band a stack leaves empty under a `heightRatio`.
++// That was tried the same day and it let two Year 4 Roman numerals slides
++// through in their first arrangement, a reference table over small criteria
++// with an empty band beneath; the teacher wanted the repaired slide, rebuilt
++// side by side with bigger writing. There the refusal was doing useful work,
++// so it stands.
++const LEND_KEEP = 0.02;
++const CARD_FLOOR = 0.7;
++const PROBE_HEIGHT = 2;
++
++function lendSpareToShortItems(items, heights, zone, zoneFor, ctx, kind) {
++  if (!ctx || items.length < 2) return;
++  const { measureContentExtent } = require('./index');
++  const extentOf = function (item, i, probeH) {
++    try {
++      return measureContentExtent(zoneFor(item, zone.y, probeH || heights[i]), item, ctx);
++    } catch {
++      return null;
++    }
++  };
++  const hugs = function (item) {
++    return item && item.type === 'text' &&
++      String(item.heightMode || '').toLowerCase() !== 'fill';
++  };
++
++  const tables = [];
++  const bareLines = [];
++  const lenders = [];
++  let spare = 0;
++  items.forEach(function (item, i) {
++    if (item && item.type === 'table') {
++      if (kind !== 'table') return;
++      const need = tableNeed(item, zoneFor(item, zone.y, heights[i]), heights[i], ctx);
++      if (need != null && need > heights[i] + SETTLE_TOLERANCE) {
++        tables.push({ i, more: need - heights[i] });
++      }
++      return;
++    }
++    if (!hugs(item)) return;
++    // A line in a share too thin for it measures as nothing there, so its
++    // natural height is asked for in room it could not fail to fit.
++    const thin = heights[i] < CARD_FLOOR;
++    const extent = extentOf(item, i) || (thin ? extentOf(item, i, PROBE_HEIGHT) : null);
++    if (!extent) return;
++    if (extent.h > heights[i]) {
++      // Only a line that the card rule in drawContent would strip: one whose
++      // share is under the card floor in a zone that draws cards at all.
++      if (kind === 'text' && ctx.cardLook && heights[i] < CARD_FLOOR && !zone.noCard && !zone.compactCards && zone.class !== 'F') {
++        // The card floor is enough: at that height the line keeps its card
++        // and the fit pass sets the words inside it, which is what a repair
++        // pass does by hand when it raises the line's weight.
++        const want = Math.min(extent.h + LEND_KEEP, CARD_FLOOR + SETTLE_TOLERANCE);
++        bareLines.push({ i, more: want - heights[i] });
++      }
++      return;
++    }
++    const free = heights[i] - extent.h - LEND_KEEP;
++    if (free <= 0) return;
++    lenders.push({ i, free });
++    spare += free;
++  });
++  if (!lenders.length || (!tables.length && !bareLines.length)) return;
++
++  // All the tables or none: half the tables fitted is still a refused slide.
++  // Lines are taken one at a time, each a slide improved.
++  const granted = [];
++  let owed = 0;
++  const forTables = tables.reduce(function (sum, t) { return sum + t.more; }, 0);
++  if (tables.length && forTables <= spare) {
++    tables.forEach(function (t) { granted.push(t); });
++    owed = forTables;
++  }
++  bareLines.forEach(function (line) {
++    if (owed + line.more > spare) return;
++    granted.push(line);
++    owed += line.more;
++  });
++  if (!granted.length) return;
++
++  lenders.forEach(function (lender) {
++    heights[lender.i] -= owed * lender.free / spare;
++  });
++  granted.forEach(function (taker) {
++    heights[taker.i] += taker.more;
++  });
++}
++
+ // What one item needs at `pt`, and whether it may take more: words and a
+ // criteria panel take; a picture keeps what its card reaches and gives the rest.
+ function itemNeed(item, zone, share, pt, most, ctx) {
+diff --git a/plugins/lesson-v4/builder/test/blank-number-line-shape.test.js b/plugins/lesson-v4/builder/test/blank-number-line-shape.test.js
+new file mode 100644
+index 00000000..396650c1
+--- /dev/null
++++ b/plugins/lesson-v4/builder/test/blank-number-line-shape.test.js
+@@ -0,0 +1,76 @@
++'use strict';
++
++// The draw-your-own number line: one shape on every surface, and a start
++// number the back of the room can read on the board.
++//
++// Year 4 Maths Lesson 21 (Subtract two 2-digit numbers, 3 October 2026) taught
++// backward jumps on a blank number line. The drawing was 2.4 times as wide as
++// it was tall, so at the full width of a sheet it stood 71mm high: four lines
++// and two other tasks needed 434mm of a 267mm page, the page designer squeezed
++// each line beside its sum, and the repairs that followed left four questions
++// where six were designed. On the board the same drawing came out as a short
++// faint line with a start number too small to read.
++//
++// The teacher, shown the line made shallower: "the reshaped one is right", on
++// the sheet and on the board, and of the board, "maybe thicker line and bigger
++// number. 20 font size is min".
++
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const { tightSvg } = require('../../shared/visuals/blank-surface-svg');
++const { sizeForZone, placedSize, BOARD_MIN_PT } = require('../src/content/blank-surface');
++
++const LINE = { surface: 'number-line', start: '', end: 87 };
++const PAGE_WIDTH_MM = 174;
++const PAGE_HEIGHT_MM = 267;
++
++test('a full-width number line on a sheet is shallow enough for four to share a page with other tasks', () => {
++  const { aspect } = tightSvg(LINE);
++  const tall = PAGE_WIDTH_MM / aspect;
++  assert.ok(tall <= 30, `a full-width line is ${tall.toFixed(1)}mm tall`);
++  // Room to draw and label jumps above the line: the teacher approved 27mm.
++  assert.ok(tall >= 22, `a full-width line is only ${tall.toFixed(1)}mm tall, too shallow to draw jumps on`);
++  assert.ok(4 * tall < PAGE_HEIGHT_MM / 2, 'four lines take more than half the page');
++});
++
++test('the shape is the same with and without a start number, so every line on a page matches', () => {
++  const bare = tightSvg({ surface: 'number-line' });
++  const labelled = tightSvg(LINE);
++  assert.ok(Math.abs(bare.h - labelled.h) < 3, `a labelled line is ${labelled.h.toFixed(0)} tall and a bare one ${bare.h.toFixed(0)}`);
++});
++
++// The pictures the board would make for one labelled line, without drawing them.
++function boardSizes() {
++  return [26, 34, 46, 60, 80, 110, 150].map((units) => {
++    const built = tightSvg(LINE, undefined, { endFontSize: units, stroke: units * 0.18 });
++    return { units, widthUnits: built.w, aspect: built.aspect, png: Buffer.from('x') };
++  });
++}
++
++const printedPt = (size, innerW, innerH) => size.units * (placedSize(size.aspect, innerW, innerH).w * 72 / size.widthUnits);
++
++test('the start number on the board is never under 20pt, in a narrow column or a full slide', () => {
++  const entry = { png: Buffer.from('x'), aspect: 6.5, sizes: boardSizes() };
++  // The inside of a 30%, 40%, 50%, 60% and 70% column, and a full-width zone.
++  for (const innerW of [3.6, 4.8, 6.1, 7.5, 8.9, 12.7]) {
++    for (const innerH of [0.9, 1.5, 3]) {
++      const chosen = sizeForZone(entry, innerW, innerH);
++      const pt = printedPt(chosen, innerW, innerH);
++      assert.ok(pt >= BOARD_MIN_PT, `${innerW}in by ${innerH}in: the start number prints at ${pt.toFixed(1)}pt`);
++    }
++  }
++});
++
++test('the start number does not grow with the column: it stays near the floor', () => {
++  const entry = { png: Buffer.from('x'), aspect: 6.5, sizes: boardSizes() };
++  for (const innerW of [4.8, 6.1, 8.9, 12.7]) {
++    const pt = printedPt(sizeForZone(entry, innerW, 3), innerW, 3);
++    assert.ok(pt < 30, `${innerW}in wide: the start number prints at ${pt.toFixed(1)}pt`);
++  }
++});
++
++test('a surface with no number to print is placed as it always was', () => {
++  const plain = { png: Buffer.from('x'), aspect: 4 };
++  assert.equal(sizeForZone(plain, 6, 2), plain);
++});
+diff --git a/plugins/lesson-v4/builder/test/layout-options.test.js b/plugins/lesson-v4/builder/test/layout-options.test.js
+new file mode 100644
+index 00000000..92e87bf0
+--- /dev/null
++++ b/plugins/lesson-v4/builder/test/layout-options.test.js
+@@ -0,0 +1,184 @@
++'use strict';
++
++// A refused two-part slide is told which two-part layouts hold it.
++//
++// Year 4 Maths Lesson 16 (Roman numerals to L, 22 September 2026) had six
++// slides refused as top-and-bottom splits and spent three repair passes and a
++// focused repair on them; each lays out cleanly side by side. Year 4 Maths
++// Lesson 21 (3 October 2026) had four answer slides that no two-part layout
++// holds. Both are things the engine can find in seconds and the slide designer
++// could only find a pass at a time. These tests pin that the check says so,
++// and that it never names a layout it has not actually drawn.
++
++const test = require('node:test');
++const assert = require('node:assert/strict');
++const fs = require('node:fs');
++const os = require('node:os');
++const path = require('node:path');
++const { spawnSync } = require('node:child_process');
++
++const { layoutOptions, groupFor, sideFor } = require('../scripts/layout-options');
++
++const CHECK = path.join(__dirname, '..', 'scripts', 'check-slide-design.js');
++
++const CRITERIA = {
++  type: 'sc-panel',
++  content: {
++    type: 'steps',
++    items: [
++      'Find any pairs: IV, IX or XL.',
++      'For each pair, subtract the smaller value from the larger.',
++      'Add the values of the pairs and the other letters.',
++    ],
++  },
++};
++
++// The Roman numerals My Turn as the run wrote it: a task and a reference table
++// in the top part, the success criteria underneath.
++function topAndBottom() {
++  return {
++    template: 'split-v-60-40',
++    primarySide: 'top',
++    title: 'My Turn - reading',
++    primary: {
++      type: 'stack',
++      heightRatio: 0.75,
++      items: [
++        { type: 'text', value: 'Write each Roman numeral as an ordinary number.\nXXVI\nXLVI', align: 'center', weight: 0.7 },
++        {
++          type: 'table',
++          weight: 1,
++          headers: ['Letter', 'I', 'V', 'X', 'L'],
++          rows: [['Value', '1', '5', '10', '50'], ['Subtraction pairs', 'IV = 4', 'IX = 9', 'XL = 40', '']],
++        },
++      ],
++    },
++    secondary: CRITERIA,
++  };
++}
++
++// Two calculations, each with a finished number line, under a four-row working
++// table: more than one column of any two-part layout holds.
++function tooFull() {
++  return {
++    template: 'split-h-50-50',
++    primarySide: 'left',
++    title: 'Answers',
++    primary: {
++      type: 'stack',
++      items: [
++        { type: 'text', value: 'Work out each subtraction.', weight: 0.8 },
++        { type: 'text', value: 'Use the jumps to help you.', weight: 0.8 },
++        {
++          type: 'table',
++          weight: 1.6,
++          headers: ['Working'],
++          rows: [['76 - 30 = 46; 46 - 2 = 44'], ['76 - 32 = 44'], ['69 - 20 = 49; 49 - 5 = 44'], ['69 - 25 = 44']],
++        },
++        { type: 'text', value: '(1) 76 - 32 =', weight: 0.8 },
++        { type: 'numberline', weight: 1.5, start: 44, end: 76, labels: [44, 46, 76] },
++        { type: 'text', value: '(2) 69 - 25 =', weight: 0.8 },
++        { type: 'numberline', weight: 1.5, start: 44, end: 69, labels: [44, 49, 69] },
++      ],
++    },
++    secondary: CRITERIA,
++  };
++}
++
++function lessonOf(...slides) {
++  return { lessonName: 'Layout Options', subject: 'Maths', lo: 'Check layout options', slides };
++}
++
++function runCheck(lesson) {
++  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-options-'));
++  const lessonPath = path.join(root, 'lesson.json.tmp.layout-options');
++  fs.writeFileSync(lessonPath, JSON.stringify(lesson));
++  const result = spawnSync(process.execPath, [CHECK, lessonPath], { encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 });
++  const left = fs.readdirSync(root);
++  fs.rmSync(root, { recursive: true, force: true });
++  return { output: `${result.stdout || ''}${result.stderr || ''}`, left };
++}
++
++const noAutofit = (output) => /AUTOFIT_(DEPENDENCY_MISSING|NOT_PERMITTED)/.test(output);
++
++test('a slide refused top and bottom is told the side-by-side layouts that hold it', () => {
++  const { output, left } = runCheck(lessonOf(topAndBottom()));
++  if (noAutofit(output)) return;
++
++  assert.match(output, /TABLE_ZONE_TOO_SHORT/, `the fixture is no longer refused:\n${output.slice(-900)}`);
++  const line = output.split(/\r?\n/).find((l) => l.startsWith('LAYOUT_OPTIONS: slide 1:'));
++  assert.ok(line, `a refused two-part slide got no layout line:\n${output.slice(-900)}`);
++  assert.match(line, /`split-h-\d+-\d+`/, `no side-by-side layout was named: ${line}`);
++  assert.doesNotMatch(line, /`split-v-60-40`/, 'the refused layout was offered back');
++  assert.deepEqual(left, ['lesson.json.tmp.layout-options'], 'the trial deck was left beside the lesson');
++});
++
++test('a layout the check names really does build the slide', () => {
++  const { output } = runCheck(lessonOf(topAndBottom()));
++  if (noAutofit(output)) return;
++  const line = output.split(/\r?\n/).find((l) => l.startsWith('LAYOUT_OPTIONS: slide 1:')) || '';
++  const named = /`(split-[hv]-\d+-\d+)`/.exec(line);
++  assert.ok(named, `nothing was named to try: ${line}`);
++
++  const taken = topAndBottom();
++  taken.template = named[1];
++  taken.primarySide = sideFor(named[1], 'top');
++  const again = runCheck(lessonOf(taken)).output;
++  assert.doesNotMatch(
++    again,
++    /could not be laid out|TEXT_OVERLOAD|TABLE_ZONE_TOO_SHORT/,
++    `${named[1]} was offered and does not build the slide:\n${again.slice(-900)}`
++  );
++});
++
++test('a slide no two-part layout holds is told so, not sent round the templates', () => {
++  const { output } = runCheck(lessonOf(tooFull()));
++  if (noAutofit(output)) return;
++
++  const line = output.split(/\r?\n/).find((l) => l.startsWith('LAYOUT_OPTIONS: slide 1:'));
++  assert.ok(line, `a refused two-part slide got no layout line:\n${output.slice(-900)}`);
++  assert.match(line, /no two-part layout holds this content/);
++  assert.doesNotMatch(line, /`split-/, `a layout was named for a slide nothing holds: ${line}`);
++});
++
++test('a deck with nothing refused prints no layout line', () => {
++  const fine = topAndBottom();
++  fine.template = 'split-h-50-50';
++  fine.primarySide = 'left';
++  const { output } = runCheck(lessonOf(fine));
++  if (noAutofit(output)) return;
++  assert.doesNotMatch(output, /LAYOUT_OPTIONS/);
++});
++
++test('a trial that was never drawn names no layout', () => {
++  // A build that prints nothing has reported no faults. That is silence, not a
++  // layout that fits: the first version of this search read it as "all eleven
++  // build" and offered three layouts for slides nothing holds.
++  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'layout-options-'));
++  const silent = path.join(root, 'silent-build.js');
++  fs.writeFileSync(silent, 'process.exit(1);\n');
++  const lessonPath = path.join(root, 'lesson.json');
++  const lesson = lessonOf(tooFull());
++  fs.writeFileSync(lessonPath, JSON.stringify(lesson));
++  const lines = layoutOptions(lesson, lessonPath, [1], { buildPath: silent, env: process.env });
++  fs.rmSync(root, { recursive: true, force: true });
++  assert.deepEqual(lines, []);
++});
++
++test('a question and its answer slide are tried in a layout together', () => {
++  const question = topAndBottom();
++  const answer = topAndBottom();
++  question.primary.items[0].revealPair = { id: 'read-1', state: 'question' };
++  answer.primary.items[0].revealPair = { id: 'read-1', state: 'answer' };
++  const lesson = lessonOf({ template: 'body-full', title: 'Starter', primary: { type: 'text', value: 'Hello.' } }, question, answer);
++  assert.deepEqual(groupFor(lesson, 2), [2, 3]);
++  assert.deepEqual(groupFor(lesson, 3), [2, 3]);
++  assert.deepEqual(groupFor(lesson, 1), [1]);
++});
++
++test('the main part keeps its side when the split turns', () => {
++  assert.equal(sideFor('split-h-50-50', 'top'), 'left');
++  assert.equal(sideFor('split-h-50-50', 'bottom'), 'right');
++  assert.equal(sideFor('split-v-60-40', 'right'), 'bottom');
++  assert.equal(sideFor('split-v-60-40', undefined), 'top');
++});
+diff --git a/plugins/lesson-v4/builder/test/stack-lends-spare-height.test.js b/plugins/lesson-v4/builder/test/stack-lends-spare-height.test.js
+new file mode 100644
+index 00000000..1d13ea19
+--- /dev/null
++++ b/plugins/lesson-v4/builder/test/stack-lends-spare-height.test.js
+@@ -0,0 +1,131 @@
++'use strict';
++
++// A stack lends spare height to the item beside it that is short of it.
++//
++// Year 4 Maths Lesson 21 (Subtract two 2-digit numbers, 3 October 2026) wrote
++// its answer slides as an instruction, a working table, the calculation and a
++// finished number line, each with a guessed weight. Two of those slides were
++// refused for 0.11in and 0.00in of table height while the calculation's card
++// held room it did not use, and the run spent a slide repair on them. The
++// teacher, shown the refused slide drawn anyway beside the repaired one, said
++// the table was fine either way and that he preferred the instruction on its
++// white card, which the guessed weight had cost it.
++//
++// The stack knew both numbers. These tests pin that it now moves them itself,
++// and that it moves nothing else.
++
++const test = require('node:test');
++const assert = require('node:assert/strict');
++
++const { stackLayout } = require('../src/content/stack');
++
++const CTX = { slideIndex: 0, cardLook: true };
++// The left half of a split slide, the zone those answer slides gave the stack.
++const ZONE = { x: 0.2, y: 0.6, w: 6.3, h: 6.65, class: 'C' };
++const CARD_FLOOR = 0.7;
++
++const working = (weight) => ({
++  type: 'table',
++  weight,
++  headers: ['Working'],
++  rows: [['24 = 20 + 4'], ['78 - 20 = 58'], ['58 - 4 = 54'], ['78 - 24 = 54']],
++});
++
++function answerSlide(tableWeight) {
++  return {
++    type: 'stack',
++    items: [
++      { type: 'text', value: 'Partition 24 into tens and ones.', align: 'center', weight: 0.35 },
++      working(tableWeight),
++      { type: 'text', value: '78 - 24 =', align: 'center', weight: 0.8 },
++      { type: 'numberline', weight: 1.5, start: 54, end: 78, labels: [54, 58, 78] },
++    ],
++  };
++}
++
++const sharesByWeight = (data) => {
++  const weights = data.items.map((it) => it.weight || 1);
++  const total = weights.reduce((a, b) => a + b, 0);
++  const room = ZONE.h - 0.10 * (data.items.length - 1);
++  return weights.map((w) => (room * w) / total);
++};
++
++test('a table short of row height borrows it and the slide is not refused', () => {
++  const data = answerSlide(1.6);
++  const guessed = sharesByWeight(data);
++  const laid = stackLayout(ZONE, data, CTX);
++
++  assert.ok(
++    laid[1].zone.h > guessed[1] + 0.05,
++    `the table kept its guessed ${guessed[1].toFixed(2)}in and would be refused`
++  );
++  // What was lent came out of the calculation's card, which still holds it.
++  assert.ok(laid[2].zone.h < guessed[2], 'nothing was taken from the text that had room to spare');
++  assert.ok(laid[2].zone.h >= CARD_FLOOR, `the lender was left ${laid[2].zone.h.toFixed(2)}in, under its card`);
++  // The number line cannot be measured, so it is never lent from.
++  assert.ok(Math.abs(laid[3].zone.h - guessed[3]) < 0.001, 'the number line moved');
++});
++
++test('a line of text thinner than its card is given the card back', () => {
++  const data = answerSlide(1.6);
++  const guessed = sharesByWeight(data);
++  assert.ok(guessed[0] < CARD_FLOOR, 'the fixture no longer starts with a thin line');
++
++  const laid = stackLayout(ZONE, data, CTX);
++  assert.ok(
++    laid[0].zone.h >= CARD_FLOOR,
++    `the instruction is ${laid[0].zone.h.toFixed(2)}in tall and prints bare on the background`
++  );
++});
++
++test('the items stay inside the stack, one under the next, so nothing overlaps or is cut', () => {
++  const data = answerSlide(1.6);
++  const laid = stackLayout(ZONE, data, CTX);
++  const used = laid.reduce((sum, entry) => sum + entry.zone.h, 0) + 0.10 * (laid.length - 1);
++  assert.ok(used <= ZONE.h + 0.001, `the stack now uses ${used.toFixed(3)}in of ${ZONE.h}in`);
++  for (let i = 1; i < laid.length; i += 1) {
++    const above = laid[i - 1].zone;
++    assert.ok(Math.abs(laid[i].zone.y - (above.y + above.h + 0.10)) < 0.001, `item ${i} does not sit under item ${i - 1}`);
++  }
++});
++
++test('a stack with nothing short gives its table and number line their weighted shares', () => {
++  // The same slide with every line given a card's worth of room and the table
++  // given what it needs: nothing is short, so nothing is lent. (Text that hugs
++  // its words still settles to their height, as it always has.)
++  const data = {
++    type: 'stack',
++    items: [
++      { type: 'text', value: 'Partition 24 into tens and ones.', align: 'center', weight: 0.8 },
++      working(2.2),
++      { type: 'text', value: '78 - 24 =', align: 'center', weight: 0.8 },
++      { type: 'numberline', weight: 1.2, start: 54, end: 78, labels: [54, 58, 78] },
++    ],
++  };
++  const guessed = sharesByWeight(data);
++  const laid = stackLayout(ZONE, data, CTX);
++  [1, 3].forEach((i) => {
++    assert.ok(
++      Math.abs(laid[i].zone.h - guessed[i]) < 0.001,
++      `item ${i} moved from ${guessed[i].toFixed(3)}in to ${laid[i].zone.h.toFixed(3)}in with nothing short`
++    );
++  });
++  [0, 2].forEach((i) => {
++    assert.ok(laid[i].zone.h >= CARD_FLOOR, `text ${i} was left ${laid[i].zone.h.toFixed(2)}in, under its card`);
++  });
++});
++
++test('with no text holding spare height, nothing moves and the table is left to refuse', () => {
++  const data = {
++    type: 'stack',
++    items: [
++      working(1),
++      { type: 'numberline', weight: 3, start: 54, end: 78, labels: [54, 58, 78] },
++    ],
++  };
++  const guessed = sharesByWeight(data);
++  const laid = stackLayout(ZONE, data, CTX);
++  laid.forEach((entry, i) => {
++    assert.ok(Math.abs(entry.zone.h - guessed[i]) < 0.001, `item ${i} moved with nothing to lend`);
++  });
++});
+diff --git a/plugins/lesson-v4/builder/test/weight-advice-works.test.js b/plugins/lesson-v4/builder/test/weight-advice-works.test.js
+index 6aa8c166..18bf4880 100644
+--- a/plugins/lesson-v4/builder/test/weight-advice-works.test.js
++++ b/plugins/lesson-v4/builder/test/weight-advice-works.test.js
+@@ -26,9 +26,12 @@ const { spawnSync } = require('node:child_process');
+ 
+ const CHECK = path.join(__dirname, '..', 'scripts', 'check-slide-design.js');
+ 
+-// A reference table sharing a stack with a short line of text: the text is
+-// holding height it does not use, which is exactly when a weight can move.
+-function lessonWithTableWeight(weight) {
++// A reference table sharing a stack with a line of text. `fill` text grows its
++// type into whatever share it has, so it holds no spare height the stack could
++// lend the table, and the weight is the owner's to move. Text that hugs its
++// words lends the table what it is short by with no weight changed at all
++// (3 October 2026), which the last test in this file pins.
++function lessonWithTableWeight(weight, heightMode = 'fill') {
+   return {
+     lessonName: 'Weight Advice',
+     subject: 'Maths',
+@@ -41,7 +44,9 @@ function lessonWithTableWeight(weight) {
+         primary: {
+           type: 'stack',
+           items: [
+-            { type: 'text', value: 'Use the table to help you.', weight: 2.2 },
++            heightMode
++              ? { type: 'text', value: 'Use the table to help you.', weight: 2.2, heightMode }
++              : { type: 'text', value: 'Use the table to help you.', weight: 2.2 },
+             {
+               type: 'table',
+               weight,
+@@ -138,3 +143,49 @@ test('no weight is offered when no weight would reach it', () => {
+     'a weight was advised for an item whose weight cannot change its share'
+   );
+ });
++
++test('a table short of height borrows it from text that is not using it', () => {
++  // The same slide with the line of text hugging its words. The table's guessed
++  // weight leaves its rows under a readable line while the text above sits in
++  // room it does not use, so the stack lends the table what it is short by and
++  // nothing is refused. Year 4 Maths Lesson 21 (3 October 2026) lost a focused
++  // repair to two answer slides in exactly this state, one of them short by
++  // less than a hundredth of an inch.
++  const output = runCheck(lessonWithTableWeight(1, null));
++  if (/AUTOFIT_(DEPENDENCY_MISSING|NOT_PERMITTED)/.test(output)) return;
++
++  assert.doesNotMatch(
++    output,
++    /TABLE_ZONE_TOO_SHORT/,
++    `the text beside this table held spare height and the table was still refused:\n${output.slice(-900)}`
++  );
++  assert.match(output, /SLIDE_DESIGN_CHECK_OK/);
++});
++
++test('a table is still refused when nothing beside it has height to lend', () => {
++  // Twelve rows beside one hugging line: the line's spare is far less than the
++  // table is short by, so nothing moves and the refusal says so.
++  const crowded = lessonWithTableWeight(1, null);
++  crowded.slides[0].primary.items[1].rows = Array.from({ length: 12 }, (_, i) => [`R${i}`, String(i)]);
++
++  const output = runCheck(crowded);
++  if (/AUTOFIT_(DEPENDENCY_MISSING|NOT_PERMITTED)/.test(output)) return;
++
++  assert.match(output, /TABLE_ZONE_TOO_SHORT/);
++});
++
++test('a table does not take the band its own stack leaves empty', () => {
++  // A stack set to three quarters of its zone, with fill text that has nothing
++  // to lend. The empty quarter would cover what the table is short by, and it
++  // is left alone: tried on 3 October 2026, it passed two Year 4 Roman numerals
++  // slides in an arrangement the teacher judged worse than the repaired one, so
++  // this refusal still sends the slide back to be rearranged.
++  const lesson = lessonWithTableWeight(2, 'fill');
++  lesson.slides[0].primary.items[0].weight = 1;
++  lesson.slides[0].primary.heightRatio = 0.75;
++
++  const output = runCheck(lesson);
++  if (/AUTOFIT_(DEPENDENCY_MISSING|NOT_PERMITTED)/.test(output)) return;
++
++  assert.match(output, /TABLE_ZONE_TOO_SHORT/);
++});
+diff --git a/plugins/lesson-v4/references/templates.md b/plugins/lesson-v4/references/templates.md
+index f984271d..2ee835e6 100644
+--- a/plugins/lesson-v4/references/templates.md
++++ b/plugins/lesson-v4/references/templates.md
+@@ -2500,7 +2500,7 @@ Items render in the order given. Each item keeps its own styling; the stack just
+ 
+ **Cards fit their words, then line up.** A stack with `"verticalAlign": "center"` that holds only text cards sizes each card to its own words, at the size it was written at, and centres the group in its zone. Beside a picture or panel in a `row` or a split, the two are centred on each other. Cards never stretch to meet their neighbour, however close in height they are: the group keeps a small, even gap above and below instead. The teacher's rules, 28 and 29 September 2026: "fit the text like it should and then align those cards with the other elements on the page", and never stretch. The Teach layouts' columns of cards work this way, sharing one text size. When the cards do not fit at the size they were written at, they step down together, one text size for cards written alike, and keep a small clear gap above and below. Only a group whose words do not fit its zone at 18pt lays out by its weights, and the fit pass reports it.
+ 
+-Weights are a starting share, not a promise. When a text block or an `sc-panel` of steps cannot hold its words at 18pt in its share, the stack shares its height out by what each item needs instead: at 20pt when everything fits at that size, at 18pt when only that fits, with a photograph keeping the height its card reaches. Nothing moves in a stack where every item already fits its share. So a task slide's case, question and criteria panel do not need their weights tuned pass by pass; when the build still refuses one of them, the stack does not have the height for all of them at 18pt, and the repair is a roomier composition (more width, another side of the slide, or the beat across two slides), not another weight.
++Weights are a starting share, not a promise. When a text block or an `sc-panel` of steps cannot hold its words at 18pt in its share, the stack shares its height out by what each item needs instead: at 20pt when everything fits at that size, at 18pt when only that fits, with a photograph keeping the height its card reaches. A `table` whose share leaves its rows under a readable line borrows what it is short by from text in the same stack that is holding height its words do not use; the text keeps its size and its card. A line of text whose share is thinner than its own card borrows the same way, so a slim weight keeps a label close to what it introduces without stripping its card. Neither borrows from a band the stack leaves empty under a `heightRatio`. Nothing moves in a stack where every item already fits its share. So a task slide's case, question and criteria panel do not need their weights tuned pass by pass; when the build still refuses one of them, the stack does not have the height for all of them at 18pt, and the repair is a roomier composition (more width, another side of the slide, or the beat across two slides), not another weight.
+ 
+ ### `row`
+ 
+diff --git a/plugins/lesson-v4/references/worksheet-helpers/catalogue.md b/plugins/lesson-v4/references/worksheet-helpers/catalogue.md
+index 80cd9c4c..209f2635 100644
+--- a/plugins/lesson-v4/references/worksheet-helpers/catalogue.md
++++ b/plugins/lesson-v4/references/worksheet-helpers/catalogue.md
+@@ -101,7 +101,7 @@ emailed. Never write `imageHref` yourself.
+ **Number and calculation**
+ 
+ - `number-line` - A labelled number line with a `caption` beneath ("Each interval is worth 100."): `jumps` between marks and a `highlight`ed space, or instead `boxes` at ticks, `arrows`, a ruler's `unit` and `object`.
+-- `blank-surface` - A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs rather than fills in.
++- `blank-surface` - A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs.
+ - `bar-model` - The White Rose bar model: a part-whole bar or a two-bar comparison.
+ - `part-whole` - A whole joined to its parts: partitioning, decomposition, a missing addend.
+ - `part-whole-money` - A whole circle with parts beneath it, joined by lines.
+@@ -1461,9 +1461,9 @@ Smallest usable: **70mm wide x 26mm tall**. Spare height: never takes spare heig
+ 
+ #### `blank-surface`
+ 
+-A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs rather than fills in.
++A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs. A number line goes full width under its calculation: it is a sixth as tall as it is wide, 27mm on a full page.
+ 
+-Smallest usable: **100mm wide x 41mm tall**. Spare height: never takes spare height.
++Smallest usable: **100mm wide x 15mm tall**. Spare height: never takes spare height.
+ 
+ ```json
+ {
+diff --git a/plugins/lesson-v4/shared/visuals/blank-surface-svg.js b/plugins/lesson-v4/shared/visuals/blank-surface-svg.js
+index 154accc1..3c8079ca 100644
+--- a/plugins/lesson-v4/shared/visuals/blank-surface-svg.js
++++ b/plugins/lesson-v4/shared/visuals/blank-surface-svg.js
+@@ -44,10 +44,20 @@
+ const FONT   = 'Arial';
+ const CHAR_W = 0.58;       // Arial-bold character-width estimate (× font size)
+ 
+-// Number line: a wide, faint baseline with a tall empty band above for jumps.
++// Number line: a wide, faint baseline with an empty band above for jumps.
++//
++// The band was 300 above and 110 below, which made the surface 2.4 times as
++// wide as it was tall. On a sheet that is 71mm of height at full width, so a
++// page designer wanting four of them had to squeeze each beside its sum, where
++// the start number printed tiny; on the board it came out as a short faint
++// line. Year 4 Maths Lesson 21 (3 October 2026) lost its worksheet to this:
++// four lines and two other tasks needed 434mm of a 267mm page, and the repairs
++// left four questions where six were designed. The teacher, shown the same
++// sheet with the band at 90 and 55 (a full-width line 27mm tall, all six tasks
++// on one side): "the reshaped one is right", on the sheet and on the board.
+ const NL_LINE_W  = 1000;   // length of the baseline
+-const NL_ABOVE_H = 300;    // empty drawing band ABOVE the line (the child's jumps)
+-const NL_BELOW_H = 110;    // band BELOW the line (end labels + a little working room)
++const NL_ABOVE_H = 90;     // empty drawing band ABOVE the line (the child's jumps)
++const NL_BELOW_H = 55;     // band BELOW the line (the end labels sit in it)
+ const NL_STROKE  = 5;      // baseline stroke width
+ const NL_COL     = '#9AA5B1';   // faint soft grey — reads as "draw your own here"
+ 
+@@ -86,8 +96,18 @@ function esc(s) {
+ // `profile` is optional: the stick-in pack passes its own so this prints in
+ // ink. The line stays faint and the bar outline quiet,
+ // in the greys nearest their board colours.
+-function tightSvg(data, profile) {
++//
++// `look` is optional and the board's alone: `endFontSize` and `stroke`, in this
++// drawing's own units, for the number line's end labels and baseline. The board
++// places this drawing at whatever width its zone has, so a label drawn at one
++// size in these units prints at a different point size on every slide; the
++// board asks for the size that lands the label at its readable floor in the
++// zone it actually has (see builder/src/content/blank-surface.js). Paper passes
++// nothing and prints as it always has.
++function tightSvg(data, profile, look) {
+   const C = printsInInk(profile) ? INK : COLOURS;
++  const endFs = look && Number.isFinite(look.endFontSize) && look.endFontSize > 0 ? look.endFontSize : END_FS;
++  const lineStroke = look && Number.isFinite(look.stroke) && look.stroke > 0 ? look.stroke : NL_STROKE;
+   const surface = data && data.surface === 'bar' ? 'bar' : 'number-line';
+ 
+   const parts = [];
+@@ -132,11 +152,11 @@ function tightSvg(data, profile) {
+     // construct in, not a thin strip cropped to the line itself.
+     ext(0, 0, NL_LINE_W, NL_ABOVE_H + NL_BELOW_H);
+ 
+-    drawLine(0, baseY, NL_LINE_W, baseY, C.NL_COL, NL_STROKE);
++    drawLine(0, baseY, NL_LINE_W, baseY, C.NL_COL, lineStroke);
+ 
+-    const labelY = baseY + END_GAP + END_FS * 0.5;
+-    if (start !== '') drawText(0, labelY, start, END_FS, 'start', C.END_COL);
+-    if (end !== '')   drawText(NL_LINE_W, labelY, end, END_FS, 'end', C.END_COL);
++    const labelY = baseY + END_GAP + endFs * 0.5;
++    if (start !== '') drawText(0, labelY, start, endFs, 'start', C.END_COL);
++    if (end !== '')   drawText(NL_LINE_W, labelY, end, endFs, 'end', C.END_COL);
+   } else {
+     let n = Number(data.bars);
+     n = Number.isFinite(n) ? Math.max(1, Math.min(4, Math.round(n))) : 1;
+diff --git a/plugins/lesson-v4/worksheet-html/src/helpers/purposes.js b/plugins/lesson-v4/worksheet-html/src/helpers/purposes.js
+index c62bad3c..aba31a3e 100644
+--- a/plugins/lesson-v4/worksheet-html/src/helpers/purposes.js
++++ b/plugins/lesson-v4/worksheet-html/src/helpers/purposes.js
+@@ -62,7 +62,7 @@ module.exports = {
+   "bar-model":
+     "The White Rose bar model: a part-whole bar or a two-bar comparison. Any whole split into named parts fits it.",
+   "blank-surface":
+-    "A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs rather than fills in.",
++    "A draw-your-own surface (a bare number line, empty bar outlines) for a strategy the child constructs. A number line goes full width under its calculation: it is a sixth as tall as it is wide, 27mm on a full page.",
+   "coordinate-grid":
+     "A numbered first-quadrant grid a child plots on.",
+   "reflection-grid":
