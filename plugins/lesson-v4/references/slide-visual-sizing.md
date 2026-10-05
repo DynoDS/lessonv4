@@ -111,7 +111,7 @@ in it, because an unsourced non-essential picture is dropped silently.
 
 ## Room is shared out by what things can use, not by counting them
 
-**The engine moves unused room to whatever will read better for having it, so compose by what each part is for and let the sizing settle itself.** A success-criteria panel gives a wrapping sticky line more height than a one-line step. A stack takes back what a hugging item does not use. A row narrows a helper that has stopped growing and widens the ones that have not. A template hands the task the height its diagram will not use, so a slide with a small figure prints its question larger rather than leaving a band of nothing under it.
+**The engine moves unused room to whatever will read better for having it, so compose by what each part is for and let the sizing settle itself.** A success-criteria panel gives a wrapping sticky line more height than a one-line step. A stack takes back what a hugging item does not use and gives it to a photograph, a fill card or, with neither, a drawing that will be drawn taller for it (a place value chart, a frame to write in); words, question cards and tables are never stretched to take it. A row narrows a helper that has stopped growing and widens the ones that have not. A template hands the task the height its diagram will not use, so a slide with a small figure prints its question larger rather than leaving a band of nothing under it.
 
 Two things follow for you.
 

@@ -737,6 +737,10 @@ const SLIP_CSS = `
     overflow: hidden;
     position: relative;
   }
+  .slip-halves--free { display: flex; align-items: flex-start; }
+  .slip-halves--free > .slip-col {
+    flex: 0 0 ${contentWidthMm(2)}mm; display: flex; flex-direction: column; gap: ${GAP_MM}mm;
+  }
   /* The same hairline a sheet draws between its two columns. */
   .slip-halves::before {
     content: ""; position: absolute; top: 0; bottom: 0; left: 50%;
@@ -835,14 +839,18 @@ function renderSlipsPage({ nodes, cols, rows, code, title, slipMm, codeBeside = 
 // ... teacher can cut in the middle", and then "slips can be half a page,
 // whether that's vertically or horizontally". This replaces "always half a
 // page wide" (29 September 2026) with "always half a page".
-function renderWideSlipsPage({ left, right, rows, code, title, slipMm }) {
+function renderWideSlipsPage({ left, right, rows, code, title, slipMm, aligned = true }) {
   const cells = [];
   for (let i = 0; i < rows; i += 1) {
     cells.push(
       `<div class="slip slip--code-above"><div class="slip-code">${esc(code || "")}${recordingIcon("books")}</div>` +
-        `<div class="slip-halves" data-worksheet-zone="slip-${i + 1}" ` +
-        `style="grid-template-rows:repeat(${Math.max(left.length, right.length)},auto)">` +
-        `${bodyHtml(left, SLIP_COLS)}${bodyHtml(right, SLIP_COLS)}` +
+        (aligned
+          ? `<div class="slip-halves" data-worksheet-zone="slip-${i + 1}" ` +
+            `style="grid-template-rows:repeat(${Math.max(left.length, right.length)},auto)">` +
+            `${bodyHtml(left, SLIP_COLS)}${bodyHtml(right, SLIP_COLS)}`
+          : `<div class="slip-halves slip-halves--free" data-worksheet-zone="slip-${i + 1}">` +
+            `<div class="slip-col">${bodyHtml(left, SLIP_COLS)}</div>` +
+            `<div class="slip-col">${bodyHtml(right, SLIP_COLS)}</div>`) +
         `</div></div>`
     );
   }
@@ -867,9 +875,13 @@ async function widePlan(laid, heightOf) {
   );
   if (nodes.length < 2) return null;
   let best = null;
-  for (let cut = Math.ceil(nodes.length / 2); cut < nodes.length; cut += 1) {
+  for (let cut = 1; cut < nodes.length; cut += 1) {
     const left = nodes.slice(0, cut);
     const right = nodes.slice(cut);
+    // Never straight after a heading or an instruction: it would sit at the
+    // foot of one column with what it introduces at the top of the other.
+    const last = left[left.length - 1];
+    if (last && (last.helper === "section-label" || last.helper === "instruction")) continue;
     // Row by row, because the two columns share their rows: each row is as
     // tall as the taller of its two questions.
     const rows = Math.max(left.length, right.length);
@@ -879,7 +891,18 @@ async function widePlan(laid, heightOf) {
       const rr = right[r] ? await heightOf([right[r]]) : 0;
       tallMm += Math.max(l, rr);
     }
-    if (!best || tallMm < best.tallMm) best = { left, right, tallMm };
+    // Rows are shared only where that costs little. Two columns of like
+    // questions line up (question 4 level with question 2); a short question
+    // beside a long one would leave a hole under the short one, so those two
+    // columns each run at their own height instead.
+    const leftMm = await heightOf(left);
+    const rightMm = await heightOf(right);
+    const freeMm = Math.max(leftMm, rightMm);
+    // The hole shared rows would leave in the shorter column is what decides.
+    // (Shared rows fill the left column first, so it must be the longer one.)
+    const aligned = left.length >= right.length && tallMm - Math.min(leftMm, rightMm) <= 12;
+    const useMm = aligned ? tallMm : freeMm;
+    if (!best || useMm < best.tallMm) best = { left, right, tallMm: useMm, aligned };
   }
   return best;
 }
@@ -947,7 +970,7 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
         const wideMm = plan.tallMm + (browser ? 1 : 0) + slipPadTopMm(false) + CUT_PAD_MM;
         let wideRows = rowsFor(wideMm);
         while (wideRows >= 2) {
-          const html = renderWideSlipsPage({ left: plan.left, right: plan.right, rows: wideRows, code, title, slipMm: wideMm });
+          const html = renderWideSlipsPage({ left: plan.left, right: plan.right, rows: wideRows, code, title, slipMm: wideMm, aligned: plan.aligned });
           if (!browser) return { html, cols: 1, rows: wideRows, wide: true };
           const { pdf, fitProblems } = await htmlToPdf(html, { browser, inspectFit: true });
           if (!fitProblems.length) return { html, pdf, cols: 1, rows: wideRows, wide: true };

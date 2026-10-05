@@ -259,7 +259,12 @@ function requiredSets(helperName) {
 // spec, not just the helper's name, because the answer depends on what is in it.
 function fits(spec, zoneWidthMm, zoneHeightMm) {
   const { minWidthMm, minHeightMm } = needsContent(spec, zoneWidthMm);
-  const tooNarrow = zoneWidthMm < minWidthMm;
+  // Half a millimetre of give. A helper's narrowest width is a figure someone
+  // chose to the nearest millimetre, and a zone of 89.6mm against a need of
+  // 90mm was refused with "needs 90mm wide, zone is 90mm": a Year 4 Below
+  // sheet lost its only layout to four tenths of a millimetre once the page
+  // lost its trim strip (4 October 2026).
+  const tooNarrow = zoneWidthMm + 0.5 < minWidthMm;
   const tooShort = zoneHeightMm < minHeightMm;
 
   if (!tooNarrow && !tooShort) return { ok: true };

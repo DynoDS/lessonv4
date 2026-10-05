@@ -639,6 +639,7 @@ function reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx) {
   if (!ctx) return;
   const { measureContentExtent } = require('./index');
   const growers = [];
+  const hugged = new Set();
   let released = 0;
 
   items.forEach(function (item, i) {
@@ -657,13 +658,101 @@ function reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx) {
     if (spare > REFLOW_FLOOR) {
       heights[i] = extent.h;
       released += spare;
+      hugged.add(i);
     }
   });
 
-  if (!growers.length || released <= REFLOW_FLOOR) return;
+  if (released <= REFLOW_FLOOR) return;
+  if (!growers.length) {
+    lendToDrawings(items, heights, hugged, released, zone, zoneFor, ctx);
+    return;
+  }
   const share = released / growers.length;
   growers.forEach(function (i) {
     heights[i] += share;
+  });
+}
+
+// ─── spare height nobody claimed goes to a drawing that would use it ───
+//
+// When nothing in the stack is a photograph or a fill card, the height a
+// hugging item handed back used to go to nobody: the items closed up and the
+// difference became a band of background under the last of them. A Year 4
+// column addition Your Turn gave its one-line instruction a third of the
+// column; the line kept 0.79in of it, and the place value chart the class
+// writes in stood in rows 0.41in tall above 1.2in of nothing, half the height
+// of the same chart on the Our Turn two slides before (5 October 2026).
+//
+// So the stack asks each drawing whether it would be drawn taller with the
+// spare, by drawing it where nobody sees at the height it has and at the height
+// on offer, and gives it what it would use. It asks rather than keeping a list,
+// so a chart, a frame to write in and a helper not yet written are all asked
+// the same way, and a drawing held by its width (a number line) says no and
+// nothing moves. Words and cards are not asked: a card stretched past its words
+// is the same empty band with a border round it. A drawing that hugged below
+// its own share is not asked either, having just said it has more than it
+// uses, and one its share refuses stays refused, so this never turns a slide
+// the build stops into one it passes.
+const WORDS_AND_CARDS = new Set([
+  'text', 'bullets', 'steps', 'vocab', 'numbered-questions', 'question-cards',
+  'callout', 'sc-panel', 'table', 'chip-bank', 'sort-board', 'evidence-cards',
+  'matching', 'diamond-nine'
+]);
+
+function isDrawing(item) {
+  if (!item || typeof item !== 'object' || !item.type) return false;
+  if (item.type === 'stack' || item.type === 'row') {
+    return Array.isArray(item.items) && item.items.length > 0 && item.items.every(isDrawing);
+  }
+  return !WORDS_AND_CARDS.has(item.type);
+}
+
+// How tall an item is drawn in a zone, read off a slide nobody sees. Drawn
+// without its card and with no picture store, so what is measured is the
+// drawing itself and nothing is asked of the picture maker. Null when the item
+// refuses the zone or draws nothing that can be measured.
+function drawnHeight(item, zone, ctx) {
+  const { drawContent } = require('./index');
+  const { withoutRecording } = require('../warnings');
+  const PptxGenJS = require('../require-global')('pptxgenjs');
+  const dry = new PptxGenJS();
+  const page = dry.addSlide();
+  const quiet = Object.assign({}, ctx, { cardLook: false, sharedFigures: null });
+  try {
+    withoutRecording(function () {
+      drawContent(dry, page, zone, item, quiet);
+    });
+  } catch {
+    return null;
+  }
+  let top = Infinity;
+  let bottom = -Infinity;
+  (page._slideObjects || []).forEach(function (object) {
+    const at = object && object.options;
+    if (!at || !Number.isFinite(at.y) || !Number.isFinite(at.h)) return;
+    top = Math.min(top, at.y);
+    bottom = Math.max(bottom, at.y + at.h);
+  });
+  return bottom > top ? bottom - top : null;
+}
+
+function lendToDrawings(items, heights, hugged, released, zone, zoneFor, ctx) {
+  const gainWith = function (i, offer) {
+    const now = drawnHeight(items[i], zoneFor(items[i], zone.y, heights[i]), ctx);
+    if (now == null) return 0;
+    const then = drawnHeight(items[i], zoneFor(items[i], zone.y, heights[i] + offer), ctx);
+    return then == null ? 0 : Math.min(offer, then - now);
+  };
+  const takers = [];
+  items.forEach(function (item, i) {
+    if (hugged.has(i) || !isDrawing(item)) return;
+    if (gainWith(i, released) > REFLOW_FLOOR) takers.push(i);
+  });
+  if (!takers.length) return;
+  const share = released / takers.length;
+  takers.forEach(function (i) {
+    const gain = gainWith(i, share);
+    if (gain > 0) heights[i] += gain;
   });
 }
 
