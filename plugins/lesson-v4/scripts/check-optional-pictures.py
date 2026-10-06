@@ -445,9 +445,10 @@ def check_places_left(
     many of those clear places hold a relevant drawing? Not whether one does",
     and nothing anywhere compared the answer with the question.
 
-    This does not demand a picture in every place. "The relevant subjects ran
-    out" is the brief's own stopping rule and a complete answer. It demands only
-    that stopping is a decision somebody wrote down, in the same way refusing is.
+    This does not demand a picture in every place. A place too small to show a
+    drawing, or one where it would sit against a word, is a complete answer. It
+    demands only that stopping is a decision somebody wrote down, in the same way
+    refusing is.
     """
     if not isinstance(measurement, dict):
         return
@@ -460,9 +461,10 @@ def check_places_left(
     failures.append(
         f"{label} took {taken} drawing(s) where the render measured {places} "
         f"separate clear places. Say in `placesLeft` why the other "
-        f"{places - taken} stayed empty. Running out of relevant subjects is a "
-        "complete answer and the brief's own stopping rule; what is not an "
-        "answer is stopping at one without noticing there were more places"
+        f"{places - taken} stayed empty. A place too small to show a drawing, "
+        "or one where it would sit against a word or a helper, is a complete "
+        "answer; what is not an answer is stopping at one without noticing "
+        "there were more places"
     )
 
 
@@ -841,6 +843,235 @@ def hidden_decorations(lesson: object, room: dict[int, dict]) -> list[str]:
     return failures
 
 
+# How much of a drawing may lie over something a child reads before it is on it.
+#
+# Measured on the Christingle decks of 5 October 2026. The line first sat at a
+# quarter, because the two drawings he called "on text" covered 33% and 44% of
+# their frames. The next deck passed that line and he still saw it: "like slide
+# 11, some svgs touching text", from a candle whose frame was 6% over a line of
+# words. Touching is the fault, not covering, so the line is now as near none
+# as the grid's own rounding allows. A frame placed inside a clear rectangle
+# from slide-room.json covers nothing at all, so this costs a careful
+# placement nothing.
+ON_INK_SHARE = 0.03
+
+
+# A card's outline is a line one or two grid cells thick and inches long. Words
+# are never that shape: a line of text is three or more cells tall, and a blank
+# to write on is well under an inch.
+EDGE_RUN_ACROSS = 10
+EDGE_RUN_DOWN = 8
+EDGE_THICKNESS_DOWN = 2
+
+
+def _without_card_edges(grid: list[list[bool]]) -> list[list[bool]]:
+    """The clear grid with card outlines counted as clear.
+
+    The measurement marks a card's outline as occupied, which is right for
+    finding empty rectangles and wrong for judging a drawing: with the outline
+    counted, the check refused the very placement the teacher made by hand, a
+    globe resting across the corner of the success-criteria panel, and the
+    drawings retreated to the margins. His rule (5 October 2026): "it could
+    still sit in cards, on top of cards, on top of multiple cards, as long as
+    it is not touching a text." So an occupied cell that is part of a long thin
+    straight run is an edge, and a drawing may cross it.
+    """
+    rows, columns = len(grid), len(grid[0])
+    result = [row[:] for row in grid]
+
+    # Across: runs exactly one cell tall.
+    for r in range(rows):
+        c = 0
+        while c < columns:
+            if grid[r][c]:
+                c += 1
+                continue
+            start = c
+            while c < columns and not grid[r][c]:
+                c += 1
+            thin = [
+                column
+                for column in range(start, c)
+                if (r == 0 or grid[r - 1][column]) and (r == rows - 1 or grid[r + 1][column])
+            ]
+            # Each thin cell of a long run, so an outline that runs under a
+            # line of words is still an outline where the words stop.
+            if c - start >= EDGE_RUN_ACROSS:
+                for column in thin:
+                    result[r][column] = True
+
+    # Down: runs one or two cells wide.
+    def width_at(r: int, c: int) -> int:
+        left = c
+        while left > 0 and not grid[r][left - 1]:
+            left -= 1
+        right = c
+        while right < columns - 1 and not grid[r][right + 1]:
+            right += 1
+        return right - left + 1
+
+    for c in range(columns):
+        r = 0
+        while r < rows:
+            if grid[r][c]:
+                r += 1
+                continue
+            start = r
+            while r < rows and not grid[r][c]:
+                r += 1
+            thin = [row for row in range(start, r) if width_at(row, c) <= EDGE_THICKNESS_DOWN]
+            if r - start >= EDGE_RUN_DOWN:
+                for row in thin:
+                    result[row][c] = True
+    return result
+
+
+def _room_measurer():
+    """The page-measuring module, or None where its libraries are not installed."""
+    import importlib.util
+
+    script = Path(__file__).resolve().parent / "measure-slide-room.py"
+    try:
+        spec = importlib.util.spec_from_file_location("measure_slide_room", script)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    except Exception:  # noqa: BLE001 - a missing library is a quieter run, not a fault
+        return None
+    return module
+
+
+def drawings_on_ink(lesson: object, room_record: object) -> tuple[list[str], bool]:
+    """Drawings placed over words, figures or photographs, read off the drawn page.
+
+    The decorator looks at its own render and judges whether a drawing landed on
+    something a child reads, and on 5 October 2026 it looked, reported "clear of
+    readable text", and left two drawings across the sentences of slide 14. The
+    teacher: "it put educational svgs on text though which shouldnt happen." The
+    judgement needed a measurement behind it, and the measurement already
+    existed: the page was rendered without its drawings to find the clear space,
+    so the same page says what lies under each frame.
+
+    Returns the failures and whether the pages could be read at all. A drawing
+    layered `low` is left to the hidden-drawing checks, since it sits behind the
+    cards by design.
+    """
+    if not isinstance(room_record, dict):
+        return [], False
+    manifest = room_record.get("renderManifest")
+    if not isinstance(manifest, str) or not Path(manifest).is_file():
+        return [], False
+    measurer = _room_measurer()
+    if measurer is None:
+        return [], False
+    try:
+        pages = dict(measurer.read_manifest(Path(manifest)))
+    except Exception:  # noqa: BLE001
+        return [], False
+
+    failures: list[str] = []
+    looked = False
+    for number, decorations in slide_decorations(lesson).items():
+        page = pages.get(number)
+        if page is None or not Path(page).is_file():
+            continue
+        try:
+            image, Image, ImageChops, ImageFilter = measurer.load_image(Path(page))
+            grid = _without_card_edges(
+                measurer.clear_grid(image, Image, ImageChops, ImageFilter)
+            )
+        except Exception:  # noqa: BLE001
+            continue
+        looked = True
+        rows, columns = len(grid), len(grid[0])
+        for decoration in decorations:
+            if decoration.get("layer") == "low":
+                continue
+            frame = decoration.get("frame")
+            if not isinstance(frame, dict):
+                continue
+            try:
+                x, y = float(frame["x"]), float(frame["y"])
+                w, h = float(frame["width"]), float(frame["height"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            c0 = max(0, int(x * columns + 0.5))
+            c1 = min(columns, int((x + w) * columns + 0.5))
+            r0 = max(0, int(y * rows + 0.5))
+            r1 = min(rows, int((y + h) * rows + 0.5))
+            cells = [(r, c) for r in range(r0, r1) for c in range(c0, c1)]
+            if not cells:
+                continue
+            occupied = sum(1 for r, c in cells if not grid[r][c]) / len(cells)
+            if occupied <= ON_INK_SHARE:
+                continue
+            name = decoration.get("concept") or decoration.get("id") or "a drawing"
+            failures.append(
+                f"slide {number}: the `{name}` drawing touches something a child "
+                f"reads - {round(occupied * 100)}% of its frame is over words, a "
+                "figure or a photograph on the rendered page. Move it clear of "
+                "them. It may stay on a card or across card edges: only words, "
+                "figures and photographs count"
+            )
+    return failures, looked
+
+
+# How many slides one plain decoration may appear on.
+REPEAT_LIMIT = 2
+
+
+def repeated_decorations(lesson: object) -> list[str]:
+    """Plain decorations stamped across the deck.
+
+    Two decks on 5 October 2026 turned three drawings round every slide, and a
+    retest with a pool of eight still placed the same flower and swirl three
+    times each. The teacher both times: "I want to see a variety", "it still
+    reused many". A decoration is not about anything, so nothing is lost by
+    choosing a different one, and the pool is there to choose from.
+
+    A drawing of the slide's own subject was first let off, so the same candle
+    went on four slides and the same gift on three, and he said it again:
+    "still see some repeats". So the limit holds for every drawing. A subject
+    that returns takes a different drawing of it: the library draws a candle in
+    five styles and several poses.
+    """
+    slides = lesson.get("slides") if isinstance(lesson, dict) else None
+    if not isinstance(slides, list):
+        return []
+    where: dict[str, list[int]] = {}
+    names: dict[str, str] = {}
+    for number, slide in enumerate(slides, 1):
+        if not isinstance(slide, dict):
+            continue
+        decorations = slide.get("decorations")
+        if not isinstance(decorations, list):
+            continue
+        for decoration in decorations:
+            if not isinstance(decoration, dict):
+                continue
+            identity = decoration.get("educationalSvgId") or decoration.get("imagePath")
+            if not isinstance(identity, str) or not identity:
+                continue
+            concept = str(decoration.get("concept") or "")
+            where.setdefault(identity, [])
+            if number not in where[identity]:
+                where[identity].append(number)
+            names[identity] = concept or identity
+    failures: list[str] = []
+    for identity, numbers in sorted(where.items()):
+        if len(numbers) <= REPEAT_LIMIT:
+            continue
+        failures.append(
+            f"the `{names[identity]}` drawing is on {len(numbers)} slides "
+            f"({', '.join(str(n) for n in numbers)}). The teacher wants to meet "
+            "different drawings from slide to slide, so keep it on "
+            f"{REPEAT_LIMIT} and give the others a drawing the deck has not used "
+            "yet. A subject that returns takes a different drawing of that "
+            "subject. Search again if the pool has run out: there is no limit "
+            "on searches"
+        )
+    return failures
+
+
 # The built deck itself says what covers a drawing, with no render needed. A
 # Codex geography deck (28 September 2026) had no render route, so no room was
 # measured and the check above never ran: fourteen globes and compasses went
@@ -1021,6 +1252,9 @@ def check(
     # the estimate from a render, used only when no deck was handed over.
     if pptx is not None:
         failures.extend(covered_decorations(pptx))
+    on_ink, _ = drawings_on_ink(lesson, room_record)
+    failures.extend(on_ink)
+    failures.extend(repeated_decorations(lesson))
     reason_counts: dict[str, int] = {}
     seen: dict[int, dict] = {}
 
@@ -1175,6 +1409,69 @@ def shape_line(actual: dict[int, list[str]]) -> str:
     return ",".join(str(len(actual[number])) for number in sorted(actual))
 
 
+def variety_line(lesson: object) -> str:
+    """How many different drawings the deck's optional layer is made of.
+
+    The shape line shows how many drawings each slide took and cannot show what
+    they were, so a deck that turned three sparkles round thirteen slides read
+    `1,0,1,1,1` and looked varied. The teacher saw it at once: "the same 3 or 4,
+    and kind of cycled through them" (5 October 2026). This counts the drawings
+    by what they are, so the same few used over and over is a number the
+    decorator sees before it promotes the deck.
+    """
+    uses: dict[str, int] = {}
+
+    def walk(node: object) -> None:
+        if isinstance(node, list):
+            for item in node:
+                walk(item)
+            return
+        if not isinstance(node, dict):
+            return
+        if node.get("kind") == "educational-svg":
+            identity = node.get("educationalSvgId") or node.get("imagePath")
+            if isinstance(identity, str) and identity:
+                uses[identity] = uses.get(identity, 0) + 1
+        for value in node.values():
+            walk(value)
+
+    walk(lesson.get("slides") if isinstance(lesson, dict) else None)
+    total = sum(uses.values())
+    if not total:
+        return "OPTIONAL_PICTURE_VARIETY: no drawings placed"
+    most = max(uses.values())
+
+    # Size and tilt are counted too, because a deck can vary what it draws and
+    # still stamp every drawing at one size, upright: "they're all the same
+    # size, same orientation" (5 October 2026). Widths are in inches on a
+    # 13.33 inch slide, rounded so two that look alike count as alike.
+    widths: set[float] = set()
+    tilted = 0
+    for decorations in slide_decorations(lesson).values():
+        for decoration in decorations:
+            frame = decoration.get("frame")
+            if isinstance(frame, dict):
+                try:
+                    widths.add(round(float(frame["width"]) * SLIDE_W_INCHES * 2) / 2)
+                except (KeyError, TypeError, ValueError):
+                    pass
+            try:
+                if abs(float(decoration.get("rotation") or 0)) >= 5:
+                    tilted += 1
+            except (TypeError, ValueError):
+                pass
+    sizes = (
+        f"{len(widths)} size(s) from {min(widths):g} to {max(widths):g} inches wide"
+        if widths
+        else "no framed sizes"
+    )
+    return (
+        f"OPTIONAL_PICTURE_VARIETY: {total} drawing(s) placed, {len(uses)} "
+        f"different; the most repeated appears {most} time(s); {sizes}; "
+        f"{tilted} tilted"
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Check the optional-picture pass against the deck it describes."
@@ -1297,6 +1594,7 @@ def main(argv: list[str] | None = None) -> int:
     slides_with = sum(1 for kinds in actual.values() if kinds)
     print(f"OPTIONAL_PICTURE_PASS_OK {len(actual)} slides")
     print(f"OPTIONAL_PICTURE_SHAPE: {shape_line(actual)}")
+    print(variety_line(read_json(Path(args.lesson), "lesson.json")))
     print(
         f"OPTIONAL_PICTURE_TOTALS: {slides_with} slide(s) carry a picture, "
         f"{drawings} drawing(s), {emojis} emoji"

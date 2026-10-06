@@ -142,6 +142,12 @@ function questionBehindItsMaterial(node) {
   if (questionGroupId !== undefined) hoisted.questionGroupId = questionGroupId;
   if (groupPrompt !== undefined) hoisted.groupPrompt = groupPrompt;
   hoisted.stack = items.map((item, i) => (i === at ? inner : item));
+  // The material and its question stay one block, under one divider, which is
+  // what stopped the picture reading as the tail of the question before. The
+  // number itself is printed beside the part that asks (chrome.js,
+  // PLACE_QUESTION_NUMBERS), not beside the picture: a child looks for the
+  // number to find the question (Daniel, 5 October 2026).
+  hoisted.numberAt = at;
   return hoisted;
 }
 
@@ -323,6 +329,16 @@ function makeNumberer() {
       }
 
       if (node.question) {
+        // A hint helps with a question the child has already read, so it can
+        // never be the first thing in that question.
+        if (Array.isArray(node.stack) && node.stack[0] && node.stack[0].hint === true) {
+          throw new WorksheetError(
+            "HINT_BEFORE_ITS_QUESTION",
+            `zone "${zoneId}": a hint ("${String(node.stack[0].text || "").slice(0, 50)}") is the first ` +
+              `thing in its question, where it reads as the question itself. Put it after the ` +
+              `question it helps with.`
+          );
+        }
         // This question's own number is taken BEFORE its children are walked, so
         // a set nested inside it numbers after it rather than in front of it.
         const label = labelForQuestion(node, zoneId);

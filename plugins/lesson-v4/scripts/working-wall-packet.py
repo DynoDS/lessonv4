@@ -91,6 +91,7 @@ CARD_FAMILY_ORDER = (
     "heroCallouts",
     "causeCards",
     "diagramSection",
+    "stepByStep",
     "referenceTable",
     "workedExample",
     "labelledDiagram",
@@ -440,6 +441,10 @@ def offered_families(triggers: dict, families: list[str]) -> list[str]:
         # that puts several drawn figures on one sheet, so a lesson whose
         # pictures are diagrams must be able to see it.
         "diagramSection": triggers["diagramReading"],
+        # A method or a sequence told stage by stage, each stage beside its
+        # own picture: any lesson that models a method, draws, or has
+        # photographs can use it.
+        "stepByStep": bool(triggers["modelled"] or triggers["diagramReading"] or triggers["photoCount"] >= 1),
         "equivalenceGrid": triggers["equivalence"],
         "mnemonicPoster": triggers["mnemonic"],
         "sectionHeading": False,
@@ -938,7 +943,7 @@ def prepare(args: argparse.Namespace) -> int:
 DISPLAY_FAMILIES = {"sectionHeading", "banner"}
 # Families whose build refuses a missing picture itself, so a card of these
 # types that builds has one.
-PICTURE_IS_THE_CARD = {"photoMapOverview", "heroCallouts", "causeCards", "diagramSection"}
+PICTURE_IS_THE_CARD = {"photoMapOverview", "heroCallouts", "causeCards", "diagramSection", "stepByStep"}
 
 
 def card_carries_a_picture(card: dict) -> bool:

@@ -674,6 +674,9 @@ test("a helper's example shows every field the helper reads", () => {
     //
     // `slip` is set by src/slips.js on the copy it prints as a question slip,
     // to leave the answer space off. It is never written into a sheet.
+    // Turns an instruction into a hint printed after its question ("If you're
+    // stuck: ..."). The catalogue describes it beside the example.
+    instruction: ["hint"],
     questions: ["startAt", "showNumbers", "slip"],
     "written-answers": ["phase", "startAt", "showNumbers", "slip"],
     "writing-frame": ["slip"],

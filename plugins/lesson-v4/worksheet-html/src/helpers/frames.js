@@ -489,7 +489,7 @@ function renderWritingFrame(spec) {
       ).join("");
       return `
         <li class="h-wf-starter">
-          <span class="h-wf-text">${esc(starterText(starter))}</span>
+          <span class="h-wf-text">${esc(starterText(starter, spec.slip))}</span>
           ${ruled}
         </li>`;
     })
@@ -531,11 +531,13 @@ function starterLinesCount(starter) {
   return typeof starter === "string" ? 1 : Math.max(1, starter.lines || 1);
 }
 
-function starterText(starter) {
+function starterText(starter, slip) {
   const raw = starterRaw(starter);
   const text = String(raw ?? "");
   // Only a starter whose ONE blank is the trailing one loses it: the lines
-  // under it are that blank.
+  // under it are that blank. A slip rules no lines, so there the blank stays,
+  // or the starter would stop with nowhere shown to carry on.
+  if (slip) return text;
   const stripped = text.replace(TRAILING_BLANK, "");
   return TRAILING_BLANK.test(text) && !STARTER_BLANK.test(stripped) ? stripped : text;
 }
@@ -554,7 +556,7 @@ function measureWritingFrame(spec, widthMm) {
   const stemMm = spec.text ? linesFor(spec.text, innerMm) * LINE_MM + 2 : 0;
 
   const body = (spec.starters || []).reduce((h, starter) => {
-    const textMm = linesFor(starterText(starter), innerMm) * LINE_MM;
+    const textMm = linesFor(starterText(starter, spec.slip), innerMm) * LINE_MM;
     // On a question slip the child writes in their book, so the frame keeps its
     // sentence starters and loses the ruled lines under them.
     return h + textMm + (spec.slip ? 0 : starterLinesCount(starter)) * lineMm + STARTER_GAP_MM;

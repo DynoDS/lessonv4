@@ -102,7 +102,7 @@ These are load-bearing. They come from the headteacher's brief and from what mak
    | One real context with two related fact groups | `heroCallouts` |
    | Three actors with action → reason chains | `causeCards` |
    | Genuine repeated row/column lookup | `referenceTable` |
-   | Ordered method | `workedExample`, `pictureFirst` |
+   | Ordered method | `stepByStep`, or on one picture `workedExample`, `pictureFirst` |
    | One durable visual fact | `stickyKnowledge` |
 
    **When the lesson's pictures are drawings, look at `diagramSection` before `workedExample`.** It is the only family that puts two or three drawn figures on one sheet; every other composing family requires photographs. Two number lines under `Number lines`, or a marked line beside its three-step strategy under `Rounding`, is a section. One figure and a method is still a `workedExample`.

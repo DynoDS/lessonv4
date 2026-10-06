@@ -122,7 +122,7 @@ class HisDecisionsAreBuilt(unittest.TestCase):
         self.assertIn("(including `Say what you mean, and give a second question that leads to the first`, because a "
                       "question naming nothing concrete is answered only by the most confident children)", read_line)
         editor = " ".join(VOICE_EDITOR.read_text(encoding="utf-8").split())
-        self.assertIn("opening the numbered section for the kind of string in hand when one feels off", editor)
+        self.assertIn("with the numbered section for its kind open beside it for the whole pass", editor)
         self.assertIn("the guide has a section for each kind: open it for the kind of string in hand", editor)
         for gone in ("Definitions and scripts are the two most often missed", "§§1 and 3 a spoken script",
                      "§5 a vocabulary definition or explanation"):

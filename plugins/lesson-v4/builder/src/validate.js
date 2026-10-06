@@ -264,7 +264,7 @@ function readPromisedPhotos(lessonDir) {
 }
 
 // The signs (signals.js): a header `signal` beside the slide's `instruction`
-// (or alone in the header where the slide has none), and a `signal` at the
+// (only the tick stands alone in a header that has none), and a `signal` at the
 // start of a text card. Four may be named, each once per
 // place, and a line to remember keeps only its own star.
 function validateSignals(slide, n, errors, warnings) {
@@ -282,6 +282,8 @@ function validateSignals(slide, n, errors, warnings) {
   if (slide.signal !== undefined) {
     if (!TASK_SIGNALS.has(slide.signal)) {
       errors.push(`slide ${n}: signal ${JSON.stringify(slide.signal)} is not a sign the deck draws; use one of ${names}.`);
+    } else if (slide.signal !== 'tick' && !String(slide.instruction || '').trim()) {
+      warnings.push(`slide ${n}: the ${slide.signal} sign is named for a header that has no \`instruction\`, so it is not drawn. Put \`"signal": "${slide.signal}"\` on the card that asks children to do it.`);
     }
   }
   const walk = (node) => {

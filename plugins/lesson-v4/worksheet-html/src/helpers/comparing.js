@@ -438,11 +438,23 @@ function numberSentenceHasHeading(spec) {
   );
 }
 
-function renderTerm(term) {
+// Printed digits and the box for a missing digit, side by side with no sign
+// between them, are ONE number: "3,21" then a box is 3,21_. Drawn a gap apart
+// they read as a number and then a box, and the thousands comma reads as a
+// decimal point (Daniel, 5 October 2026: "why is there a comma in between
+// 3,21?"). A whole missing number (`blank`) always has a sign on each side, so
+// it is never part of this.
+function joinsThePreviousTerm(terms, i) {
+  const digits = (term) => ["value", "cells"].includes(termKind(term));
+  return i > 0 && digits(terms[i]) && digits(terms[i - 1]);
+}
+
+function renderTerm(term, i, terms) {
   const kind = termKind(term);
   if (kind === "operator") {
     return `<span class="h-ns-op">${esc(String(term))}</span>`;
   }
+  const joined = Array.isArray(terms) && joinsThePreviousTerm(terms, i) ? " h-ns-term--joined" : "";
 
   // Under the term, not in it. A caption names what the term is for; a child
   // must never read it as something already written in the space they are
@@ -466,7 +478,7 @@ function renderTerm(term) {
   } else {
     body = `<span class="h-ns-text">${esc(String(term.text))}</span>`;
   }
-  return `<span class="h-ns-term">${body}${caption}</span>`;
+  return `<span class="h-ns-term${joined}">${body}${caption}</span>`;
 }
 
 // A heading spans from its own term to just before the next one that carries a
@@ -1006,6 +1018,9 @@ const css = `
     padding: ${NS_PAD_MM}mm 0;
   }
   .h-ns-term { display: flex; flex-direction: column; align-items: center; }
+  /* Part of the number before it: the row's gap is taken back, so the digits
+     and the missing digit's box touch. */
+  .h-ns-term--joined { margin-left: -${NS_GAP_MM}mm; }
   .h-ns-op {
     align-self: center;
     font-size: var(--type-sectionLabel); font-weight: bold;

@@ -1064,6 +1064,43 @@ function starterColourWarnings(lesson) {
 // exactly as it does everywhere else a child reads it.
 const STICKY_LINE = /^\s*✨/;
 
+// A starter that tells and then asks is an ordinary slide as far as colour
+// goes: the telling is black and the question is blue. The rule above is for a
+// screen of retrieval questions, and it was being read as "a starter is black",
+// so `This team badge can remind someone of their team.` and `What else could
+// the same badge remind someone of?` printed in one colour and the teacher
+// asked where the blue had gone (5 October 2026).
+function starterAskWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  slides.forEach((slideData, index) => {
+    if (!slideData || slideData.headerStyle !== 'starter') return;
+    if (starterQuestionEntries(slideData).length) return;
+    const sentences = [];
+    let blue = false;
+    walkContent(slideData, (node) => {
+      if (nodeIsBlue(node) || carriesFocusSpan(node)) blue = true;
+      if (node.type === 'text' && typeof node.value === 'string') {
+        splitSentences(node.value).forEach((sentence) => sentences.push(sentence));
+      }
+    });
+    if (blue) return;
+    const asks = sentences.filter((sentence) => sentence.endsWith('?'));
+    if (!asks.length || asks.length === sentences.length) return;
+    warnings.push({
+      signal: 'STARTER_QUESTION_NOT_BLUE',
+      slide: index + 1,
+      field: 'text',
+      message:
+        `this starter tells and then asks, and "${asks[0].slice(0, 60)}" is ` +
+        'black like the telling beside it. Give the question `colorRole: ' +
+        '"focus-blue"` on a text object of its own, and leave the telling black. ' +
+        'Only a starter that is a list of questions keeps them black.'
+    });
+  });
+  return warnings;
+}
+
 function stickyEmphasisWarnings(lesson) {
   const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
   const warnings = [];
@@ -1615,6 +1652,7 @@ function runSlideDesignCheck(inputPath, options = {}) {
     .concat(blueStatementWarnings(lesson))
     .concat(taskBlueWarnings(lesson, jsonPath))
     .concat(starterColourWarnings(lesson))
+    .concat(starterAskWarnings(lesson))
     .concat(stickyEmphasisWarnings(lesson))
     .concat(pictures)
     .concat(repeatedLineWarnings(lesson))

@@ -56,7 +56,112 @@ const { pictureColour } = require('../../shared/text/criteria-marks');
 const FOCUS_BLUE = COLOURS.title; // 0070C0 — the same blue the deck uses for the focus/question
 const SUPPLIED_ORANGE = COLOURS.orange; // E46C0A — supplied/given material the child works from
 
+// A taught word is green wherever a child reads it, so the word in a question
+// looks like the word on its vocabulary card (teacher-slide-visual-profile ->
+// Semantic colour). The rule was written down and four decks in a row printed
+// every taught word black outside the word bank (a Year 4 RE deck, 5 October
+// 2026: `Christingle` and `symbol`, twelve times), because marking each one by
+// hand is the kind of job a designer filling thirty boxes skips. So the builder
+// does it: build.js names the words each slide's class has met a card for, and
+// every piece of text that passes through here prints them green.
+//
+// Only words still in their line's own colour change, and only where that
+// colour is black, question blue or purple: a word inside a marked span, an
+// answer, an orange line or a red weak example keeps the colour that already
+// says what it is.
+let taughtWords = null;
+
+function escapeRegExp(word) {
+  return word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function wordForms(word) {
+  const escaped = escapeRegExp(word);
+  if (/[^aeiou]y$/i.test(word)) return `${escaped.slice(0, -1)}(?:y|ies)`;
+  return `${escaped}(?:s|es)?`;
+}
+
+function setTaughtWords(terms) {
+  const parts = [];
+  (Array.isArray(terms) ? terms : []).forEach(function (term) {
+    // A paired card (`greater than / less than`, `continuity and change`) is
+    // two words, each green by itself.
+    String(term || '').split(/\s*\/\s*|\s+and\s+/).forEach(function (part) {
+      const words = part.trim().split(/\s+/).filter(Boolean);
+      if (!words.length || !/[A-Za-z]/.test(part)) return;
+      const last = words.pop();
+      parts.push(words.map(escapeRegExp)
+        .concat(wordForms(last)).join('[ \\u00A0-]+'));
+    });
+  });
+  parts.sort(function (a, b) { return b.length - a.length; });
+  taughtWords = parts.length
+    ? new RegExp('(?<![A-Za-z0-9])(?:' + parts.join('|') + ')(?![A-Za-z0-9])', 'gi')
+    : null;
+}
+
+const TAUGHT_WORD_GROUNDS = [COLOURS.body, COLOURS.title, COLOURS.sticky, COLOURS.worked];
+
+function sameColour(a, b) {
+  return String(a || '').replace('#', '').toUpperCase() === String(b || '').replace('#', '').toUpperCase();
+}
+
+function taughtWordsInGreen(runs, baseColor, bold) {
+  if (!taughtWords) return runs;
+  const base = baseColor || COLOURS.body;
+  if (!TAUGHT_WORD_GROUNDS.some(function (ground) { return sameColour(ground, base); })) return runs;
+  let list = runs;
+  if (typeof runs === 'string') {
+    taughtWords.lastIndex = 0;
+    if (!taughtWords.test(runs)) return runs;
+    // A newline is its own run, as the marker route below emits it.
+    const plain = { color: base, bold: !!bold };
+    list = [];
+    runs.split('\n').forEach(function (line, index, lines) {
+      if (line !== '') list.push({ text: line, options: plain });
+      if (index < lines.length - 1) list.push({ text: '\n', options: plain });
+    });
+  } else if (!Array.isArray(runs)) {
+    return runs;
+  }
+  const out = [];
+  list.forEach(function (run) {
+    const options = (run && run.options) || {};
+    if (!run || typeof run.text !== 'string' || !sameColour(options.color || base, base)) {
+      out.push(run);
+      return;
+    }
+    const pieces = [];
+    let cursor = 0;
+    taughtWords.lastIndex = 0;
+    let match;
+    while ((match = taughtWords.exec(run.text)) !== null) {
+      if (match.index > cursor) pieces.push({ text: run.text.slice(cursor, match.index), green: false });
+      pieces.push({ text: match[0], green: true });
+      cursor = match.index + match[0].length;
+    }
+    if (!pieces.length) {
+      out.push(run);
+      return;
+    }
+    if (cursor < run.text.length) pieces.push({ text: run.text.slice(cursor), green: false });
+    pieces.forEach(function (piece, index) {
+      // A paragraph break belongs to the end of the run, so only the last
+      // piece keeps it.
+      const own = Object.assign({}, options);
+      if (index < pieces.length - 1) delete own.breakLine;
+      if (piece.green) Object.assign(own, { color: COLOURS.green, bold: true });
+      out.push({ text: piece.text, options: own });
+    });
+  });
+  return out;
+}
+
 function splitAnswerRuns(text, bold, baseColor) {
+  return taughtWordsInGreen(splitMarkedRuns(text, bold, baseColor), baseColor, bold);
+}
+
+function splitMarkedRuns(text, bold, baseColor) {
   const str = String(text);
   const label = /^(\([A-Za-z]|\(\d+[A-Za-z]?)\)(\s+|$)/.exec(str);
   if (label) {
@@ -187,4 +292,4 @@ function splitAnswerRuns(text, bold, baseColor) {
   return runs;
 }
 
-module.exports = { splitAnswerRuns };
+module.exports = { splitAnswerRuns, setTaughtWords, taughtWordsInGreen };

@@ -50,6 +50,16 @@ because only that cannot be undone string by string.
     check-voice-edit.py settle --working-dir W
     check-voice-edit.py restore --working-dir W
 
+The Below and Greater Depth sheets are worded later, by the adaptation designer,
+so the editor makes a second, short pass over `adaptation.md` before anything
+reads it. There its lane is one kind of line: a `- Pupil prompt:` line may be
+reworded, every other line is byte-identical, no line comes or goes, and a
+prompt keeps its numbers and its empty boxes.
+
+    check-voice-edit.py adaptation-snapshot --working-dir W
+    check-voice-edit.py adaptation-check --working-dir W
+    check-voice-edit.py adaptation-settle --working-dir W
+
 Standard library only.
 """
 from __future__ import annotations
@@ -70,6 +80,37 @@ VIEW = "voice-edit-view.md"
 DESIGN_BEFORE = "lesson-design.before-voice.json"
 PHOTOS_BEFORE = "photo-requirements.before-voice.json"
 DECISIONS_BEFORE = "design-decisions.before-voice.md"
+ADAPTATION = "adaptation.md"
+ADAPTATION_BEFORE = "adaptation.before-voice.md"
+ADAPTATION_VIEW = "adaptation-voice-view.md"
+PUPIL_PROMPT = "- Pupil prompt:"
+ADAPTATION_LAUNCH = """
+Launch the lesson voice editor with this message:
+
+You are the lesson voice editor. Read your agent instructions at:
+{root}/agents/lesson-voice-editor.md
+
+This launch is your second pass: the adapted sheets.
+
+PLUGIN_ROOT: {root}
+PYTHON: {python}
+WORKING_DIR: {work}
+
+AUTHORITATIVE_INPUTS:
+ADAPTATION_VOICE_VIEW: {work}/adaptation-voice-view.md
+ADAPTATION_DESIGN: {work}/adaptation.md
+LESSON_DESIGN: {work}/lesson-design.json (read only)
+
+OWNED_OUTPUTS:
+- {work}/adaptation.md (the `- Pupil prompt:` lines only)
+- {work}/adaptation-voice-edit.md
+
+SUCCESS_CHECK:
+{check}
+Require: ADAPTATION_VOICE_OK
+
+TERMINAL_STATE: COMPLETE
+"""
 REPORT_LIMIT = 12
 
 # Read by the class, but not the editor's to reword: the word being taught, and
@@ -689,13 +730,113 @@ def settle(working_dir: Path) -> int:
     return 0
 
 
+def _adaptation_lines(path: Path) -> list[str]:
+    with path.open(encoding="utf-8", newline="") as handle:
+        return handle.read().splitlines(keepends=True)
+
+
+def adaptation_snapshot(working_dir: Path) -> int:
+    try:
+        lines = _adaptation_lines(working_dir / ADAPTATION)
+        shutil.copyfile(working_dir / ADAPTATION, working_dir / ADAPTATION_BEFORE)
+    except OSError as exc:
+        print(f"ADAPTATION_VOICE_SNAPSHOT_FAILED: {exc}")
+        return 1
+    view = [
+        "# The adapted sheets, as a child reads them",
+        "",
+        "Each quoted line is one `- Pupil prompt:` line of `adaptation.md`, under its level and question. "
+        "These are the only words in that file you own. A `\\n` inside a prompt is a line break on the "
+        "printed sheet: keep it written that way.",
+        "",
+    ]
+    level, question, count = "", "", 0
+    for line in lines:
+        text = line.strip()
+        if text.startswith("## "):
+            level, question = text[3:], ""
+        elif text.startswith("### "):
+            question = text[4:]
+        elif text.startswith(PUPIL_PROMPT):
+            count += 1
+            view += [f"### {level} - {question}" if question else f"### {level}", f"> {text[len(PUPIL_PROMPT):].strip()}", ""]
+    (working_dir / ADAPTATION_VIEW).write_text("\n".join(view), encoding="utf-8")
+    print(f"ADAPTATION_VOICE_SNAPSHOT_OK: {count} pupil prompts")
+    if not count:
+        print("ADAPTATION_VOICE_SKIP: no pupil prompts to read, so launch nothing")
+        return 0
+    # The launch is printed rather than kept in the playbook: the paths are
+    # already known here, and the playbook has no room for a second copy.
+    root = Path(__file__).resolve().parent.parent.as_posix()
+    work = working_dir.resolve().as_posix()
+    check = f'"{Path(sys.executable).as_posix()}" "{root}/scripts/check-voice-edit.py" adaptation-check --working-dir "{work}"'
+    print(ADAPTATION_LAUNCH.format(root=root, python=Path(sys.executable).as_posix(), work=work, check=check))
+    return 0
+
+
+def adaptation_faults(before: list[str], after: list[str]) -> tuple[bool, dict[int, str]]:
+    """Whether the file changed shape, and the fault on each line outside the lane."""
+    if len(before) != len(after):
+        return True, {}
+    faults: dict[int, str] = {}
+    for index, (old, new) in enumerate(zip(before, after)):
+        if old == new:
+            continue
+        where = f"line {index + 1}"
+        if not (old.strip().startswith(PUPIL_PROMPT) and new.strip().startswith(PUPIL_PROMPT)):
+            faults[index] = f"{where} is not a pupil prompt, and only a pupil prompt may be reworded"
+        elif not new.strip()[len(PUPIL_PROMPT):].strip():
+            faults[index] = f"{where}: the pupil prompt is empty"
+        elif numbers_in(old) != numbers_in(new):
+            faults[index] = f"{where}: the prompt's numbers changed"
+        elif old.count("□") != new.count("□"):
+            faults[index] = f"{where}: an empty box came or went"
+    return False, faults
+
+
+def adaptation_check(working_dir: Path, settle_it: bool) -> int:
+    try:
+        before = _adaptation_lines(working_dir / ADAPTATION_BEFORE)
+        after = _adaptation_lines(working_dir / ADAPTATION)
+    except OSError as exc:
+        print(f"ADAPTATION_VOICE_CHECK_ERROR: {exc}")
+        return 2
+    reshaped, faults = adaptation_faults(before, after)
+    if settle_it and reshaped:
+        shutil.copyfile(working_dir / ADAPTATION_BEFORE, working_dir / ADAPTATION)
+        print("ADAPTATION_VOICE_RESTORED: the adaptation designer's file is back (a line came or went)")
+        return 0
+    if settle_it:
+        for index in faults:
+            after[index] = before[index]
+        with (working_dir / ADAPTATION).open("w", encoding="utf-8", newline="") as handle:
+            handle.write("".join(after))
+    kept = sum(1 for old, new in zip(before, after) if old != new)
+    if settle_it:
+        print(f"ADAPTATION_VOICE_SETTLED: {kept} pupil prompts reworded kept, {len(faults)} lines put back")
+        return 0
+    if reshaped or faults:
+        shown = ["a line came or went"] if reshaped else list(faults.values())[:REPORT_LIMIT]
+        print("ADAPTATION_VOICE_VIOLATION: " + "; ".join(shown))
+        return 1
+    print(f"ADAPTATION_VOICE_OK: {kept} pupil prompts reworded")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("snapshot", "check", "settle", "restore"))
+    parser.add_argument("command", choices=(
+        "snapshot", "check", "settle", "restore",
+        "adaptation-snapshot", "adaptation-check", "adaptation-settle",
+    ))
     parser.add_argument("--working-dir", type=Path, required=True)
     args = parser.parse_args(argv)
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
+    if args.command == "adaptation-snapshot":
+        return adaptation_snapshot(args.working_dir)
+    if args.command in ("adaptation-check", "adaptation-settle"):
+        return adaptation_check(args.working_dir, settle_it=args.command == "adaptation-settle")
     if args.command == "snapshot":
         return snapshot(args.working_dir)
     if args.command == "restore":

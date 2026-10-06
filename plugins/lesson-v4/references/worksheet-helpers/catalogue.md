@@ -106,7 +106,7 @@ emailed. Never write `imageHref` yourself.
 - `part-whole` - A whole joined to its parts: partitioning, decomposition, a missing addend.
 - `part-whole-money` - A whole circle with parts beneath it, joined by lines.
 - `number-sentence` - A number sentence with its terms kept apart: supplied values on their own tiles, operators between them, a box or digit frame where the answer goes.
-- `column-method-grid` - Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row.
+- `column-method-grid` - A written column calculation to complete, in the board's own drawing and column colours: the numbers, a thick line, the answer row, a thick line, a shallow carry row.
 - `short-multiplication-grid` - Column multiplication by a single digit, with a thick-topped answer row and a carry row.
 - `long-multiplication-grid` - The long multiplication shape: one partial product row per digit of the multiplier, then the total.
 - `bus-stop-grid` - Short division: the answer row on top under the roof, the divisor outside the wall to the left.
@@ -180,7 +180,7 @@ Smallest usable: **25mm wide x 11mm tall**. Spare height: never takes spare heig
 
 #### `instruction`
 
-A quiet child-facing direction that needs no question number or answer space.
+A quiet child-facing direction that needs no question number or answer space. With `hint: true` it is a hint for the question just above it: it prints as `If you're stuck: ...` and never comes first in a question.
 
 Smallest usable: **45mm wide x 6mm tall**. Spare height: never takes spare height.
 
@@ -1593,9 +1593,9 @@ Smallest usable: **129mm wide x 20mm tall**. Spare height: never takes spare hei
 
 #### `column-method-grid`
 
-Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row. `showHeadings: true` adds place-value letters above the columns, derived from the numbers' own width.
+A written column calculation to complete, in the board's own drawing and column colours: the numbers, a thick line, the answer row, a thick line, a shallow carry row. `showHeadings: true` adds place-value letters.
 
-Smallest usable: **70mm wide x 56mm tall**. Spare height: never takes spare height.
+Smallest usable: **66mm wide x 58mm tall**. Spare height: never takes spare height.
 
 ```json
 {

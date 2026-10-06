@@ -471,6 +471,80 @@ class SettleKeepsWhatIsInTheLane(unittest.TestCase):
         self.assertIn("VOICE_EDIT_CHECK_ERROR", result.stdout)
 
 
+ADAPTATION = """# Adaptation
+
+## Greater Depth
+
+### Question 1 - Fluency
+- Pupil prompt: Use column addition.\\n3,248 + 135 =
+- Support: The class criteria stay on the board.
+
+## Below
+
+### Question 3b - Reasoning
+- Pupil prompt: What does your small 1 in Tens mean?\\n\\nExplain your answer.
+- Support: The child's completed grid stays above the prompt.
+
+Answers for Below:
+- (3b) The small 1 means one ten.
+"""
+
+
+class TheSecondPassOverTheAdaptedSheets(unittest.TestCase):
+    """The Below and Greater Depth questions are worded after the first pass.
+
+    On 5 October 2026 a Below sheet printed `What does your small 1 in Tens
+    mean?` and nobody but its writer had read it. The second pass may reword a
+    pupil prompt and nothing else in the adaptation designer's file.
+    """
+
+    def setUp(self) -> None:
+        self.dir = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.dir, ignore_errors=True)
+        self.file = self.dir / "adaptation.md"
+        self.file.write_text(ADAPTATION, encoding="utf-8", newline="")
+        self.assertEqual(checker.adaptation_snapshot(self.dir), 0)
+
+    def swap(self, old: str, new: str) -> None:
+        text = self.file.read_text(encoding="utf-8")
+        self.assertIn(old, text)
+        self.file.write_text(text.replace(old, new), encoding="utf-8", newline="")
+
+    def faults(self) -> list[str]:
+        before = checker._adaptation_lines(self.dir / checker.ADAPTATION_BEFORE)
+        reshaped, faults = checker.adaptation_faults(before, checker._adaptation_lines(self.file))
+        return ["reshaped"] if reshaped else list(faults.values())
+
+    def test_the_view_prints_each_prompt_under_its_level_and_question(self) -> None:
+        view = (self.dir / checker.ADAPTATION_VIEW).read_text(encoding="utf-8")
+        self.assertIn("### Below - Question 3b - Reasoning", view)
+        self.assertIn("> What does your small 1 in Tens mean?", view)
+        self.assertNotIn("completed grid", view)
+
+    def test_a_reworded_prompt_passes(self) -> None:
+        self.swap("What does your small 1 in Tens mean?", "What does the small 1 in the tens column stand for?")
+        self.assertEqual(self.faults(), [])
+        self.assertEqual(checker.adaptation_check(self.dir, settle_it=False), 0)
+
+    def test_a_changed_number_a_changed_support_line_and_a_lost_line_are_refused(self) -> None:
+        self.swap("3,248 + 135", "3,248 + 136")
+        self.assertTrue(any("numbers changed" in f for f in self.faults()))
+        self.swap("3,248 + 136", "3,248 + 135")
+        self.swap("stays above the prompt", "is above")
+        self.assertTrue(any("only a pupil prompt" in f for f in self.faults()))
+        self.swap("- (3b) The small 1 means one ten.\n", "")
+        self.assertEqual(self.faults(), ["reshaped"])
+
+    def test_settle_keeps_the_good_prompt_and_puts_the_rest_back(self) -> None:
+        self.swap("What does your small 1 in Tens mean?", "What does the small 1 in the tens column stand for?")
+        self.swap("3,248 + 135", "3,248 + 136")
+        self.assertEqual(checker.adaptation_check(self.dir, settle_it=True), 0)
+        text = self.file.read_text(encoding="utf-8")
+        self.assertIn("stand for?", text)
+        self.assertIn("3,248 + 135", text)
+        self.assertEqual(checker.adaptation_check(self.dir, settle_it=False), 0)
+
+
 class TheCommand(unittest.TestCase):
     def test_snapshot_then_check_passes_an_edit_and_refuses_a_photo_change(self) -> None:
         design, photos = fixtures.valid_content_contract()

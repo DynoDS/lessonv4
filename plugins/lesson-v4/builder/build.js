@@ -29,6 +29,19 @@ const { sanitizeHouseStyle } = require('../shared/text/house-style');
 const { expandTeachLayouts, TeachLayoutError } = require('./src/teach-layouts');
 const { withoutDecorations } = require("../shared/decorations");
 const { withoutFigureMarks } = require('./src/figure-marks');
+const { setTaughtWords } = require('./src/answer-text');
+const { isVocabularySurface: holdsVocabularyCards, forEachVocabularyEntry: eachVocabularyCard } = require('./src/decorations');
+
+function taughtWordsFor(slides, index) {
+  if (holdsVocabularyCards(slides[index])) return [];
+  const words = [];
+  slides.slice(0, index).forEach((earlier) => {
+    eachVocabularyCard(earlier, (entry) => {
+      if (typeof entry.word === 'string' && entry.word.trim()) words.push(entry.word.trim());
+    });
+  });
+  return words;
+}
 const {
   emptyDecorationPlan,
   hasDecorationPlans,
@@ -424,6 +437,9 @@ async function main() {
       ...contextForSlide(i),
       decorationPlan: decorationPlans[i],
     };
+    // The taught words this slide prints green: every word whose card the
+    // class has already met. A card's own slide prints none (src/answer-text.js).
+    setTaughtWords(taughtWordsFor(slides, i));
     try {
       if (!layoutFailedSlides.has(i + 1)) {
         drawSlide(pptx, slide, coreSlideData, ctx);
@@ -456,6 +472,7 @@ async function main() {
       slide.addNotes(String(coreSlideData.speakerNotes));
     }
   });
+  setTaughtWords([]);
 
   // Whether each contained figure actually used the room it was given. Reported
   // after the draw because it is measured on the drawn rectangle, and advisory

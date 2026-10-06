@@ -1733,7 +1733,7 @@
    "present": [
     {
      "file": "references/preferences.md",
-     "text": "**Routine classroom management belongs to the live teacher.** Generated slides, notes and task briefs normally state the learning action only, such as \"Write...\", \"Discuss...\", \"Draw...\" or \"Choose...\", without naming a recording surface or routine participation method. Name a medium, device or response structure only when it is genuinely part of the selected task or required resource. The teacher chooses whether children use books, whiteboards, devices, hands up, cold calling, wait time or another routine in the live classroom.",
+     "text": "**Routine classroom management belongs to the live teacher.** Generated slides, notes and task briefs state the learning action only, such as \"Write...\", \"Discuss...\", \"Draw...\" or \"Choose...\". They never say where children record it (a whiteboard, a mini-whiteboard, a book) and do not name a routine participation method: the teacher chooses books, whiteboards, devices, hands up, cold calling, wait time or another routine in the live classroom, and a board that says `on your whiteboard` has made that choice for a class the designer has never seen (the teacher's ruling, 5 October 2026: \"It should never say whiteboards or books or anything like that. That's up to teacher\"). The design validator refuses the wording on the board, in the script and in the teacher's orientation. What is still named is a thing the lesson itself puts in children's hands (the printed sheet, the cards, the map) and a device or response structure that is genuinely the task. Where every child has to commit an answer before talking, say the action and how much (`Write one word before you talk.`). A board line that only says to write the answer (`Write your answer.`) is left out: the pencil sign on the question says it (`templates.md` \u2192 Signs), and the line costs the board a card.",
      "section": {
       "heading": "## Classroom Norms",
       "occurrence": 0,
@@ -1766,7 +1766,7 @@
    "present": [
     {
      "file": "references/do-beats.md",
-     "text": "Do not ban mini-whiteboards or devices and do not make books or cold calling the default. Normally state the learning action. Name a device, medium or substantive response structure only when it genuinely forms part of the selected activity.",
+     "text": "State the learning action and leave where children record it to the teacher: the wording names no whiteboard, book or cold call (`preferences.md` \u2192 Routine classroom management). Name a device or substantive response structure only when it genuinely forms part of the selected activity.",
      "section": {
       "heading": "# Do Beat Formats — Reference Catalogue",
       "occurrence": 0,
@@ -4781,7 +4781,7 @@
     },
     {
      "file": "references/teaching-sequence-skill-based.md",
-     "text": "The limit: a step the class has already done at this size, in an earlier lesson or today's starter, is named and left alone, and a remote prerequisite (reading a four-digit number in Year 4) is not retaught.",
+     "text": "The limit: a step the class has already done at this size, in an earlier lesson or today's starter, is named and left alone, a remote prerequisite (reading a four-digit number in Year 4) is not retaught, and a sticking point that is the whole method, with no smaller step inside it to practise first, is taught by its own cycle.",
      "section": {
       "heading": "## Cycles, and the beats around them",
       "occurrence": 0,
@@ -4791,7 +4791,7 @@
     },
     {
      "file": "references/teaching-sequence-skill-based.md",
-     "text": "**A step the method needs and the class cannot yet do at today's size gets its own short cycle, before the cycle that needs it.** Rounding 3,998 to the nearest 10 needs 3,990 and 4,000 before a number line can be drawn, and a class that can round 43 may not be able to find those two tens: a deck that goes straight into rounding leaves the step to a teacher who would notice, and a cover teacher does not. The short cycle for it is a My Turn on two cases (`528` and `5,996`: make the ones digit 0 for the ten below, add 10 for the ten above, with `?` at each end of the line) and a Your Turn on four more, about four minutes before any rounding. It is not a lesson inside the lesson: one move, modelled on one or two cases and used once, and its criteria are the first steps of the main method's criteria, word for word, so the panel children meet next already starts with them. Find these steps by working the hardest case children will do alone as a child in this class (`lesson-designer.md` → the walk-through's closing decisions): a step that is neither secure at this size nor taught somewhere today is the one that earns this. The limit: a step the class has already done at this size, in an earlier lesson or today's starter, is named and left alone, and a remote prerequisite (reading a four-digit number in Year 4) is not retaught.",
+     "text": "**A step the method needs and the class cannot yet do at today's size gets its own short cycle, before the cycle that needs it.** Rounding 3,998 to the nearest 10 needs 3,990 and 4,000 before a number line can be drawn, and a class that can round 43 may not be able to find those two tens: a deck that goes straight into rounding leaves the step to a teacher who would notice, and a cover teacher does not. The short cycle for it is a My Turn on two cases (`528` and `5,996`: make the ones digit 0 for the ten below, add 10 for the ten above, with `?` at each end of the line) and a Your Turn on four more, about four minutes before any rounding. It is not a lesson inside the lesson: one move, modelled on one or two cases and used once, and its criteria are the first steps of the main method's criteria, word for word, so the panel children meet next already starts with them. Find these steps by working the hardest case children will do alone as a child in this class (`lesson-designer.md` → the walk-through's closing decisions): a step that is neither secure at this size nor taught somewhere today is the one that earns this. The step the lesson names as its sticking point is taught only when the class has practised it by itself before the model that uses it, because a child who meets it for the first time inside the worked example is learning the new step while holding the rest of the method. Subtracting 63 − 27 by jumping back needs two small things first, how many take 43 back to 40 and how much of the 7 is then left, and a class shown both for the first time inside that subtraction could not follow it. A minute of `43 → 40`, `52 → 50`, `85 → 80`, then `7 = 3 + ?`, before the model is the short cycle there. The limit: a step the class has already done at this size, in an earlier lesson or today's starter, is named and left alone, a remote prerequisite (reading a four-digit number in Year 4) is not retaught, and a sticking point that is the whole method, with no smaller step inside it to practise first, is taught by its own cycle.",
      "section": {
       "heading": "## Cycles, and the beats around them",
       "occurrence": 0,
@@ -6274,7 +6274,7 @@
     },
     {
      "file": "references/subject-history.md",
-     "text": "3. **Every child uses it.** Find one continuity and one change between this classroom and ours, with a partner or on whiteboards.",
+     "text": "3. **Every child uses it.** Find one continuity and one change between this classroom and ours, with a partner.",
      "section": {
       "heading": "## What the lesson feels like to the child",
       "occurrence": 0,

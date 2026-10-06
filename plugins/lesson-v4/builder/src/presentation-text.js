@@ -1,7 +1,7 @@
 'use strict';
 
 const { COLOURS } = require('./styles');
-const { splitAnswerRuns } = require('./answer-text');
+const { splitAnswerRuns, taughtWordsInGreen } = require('./answer-text');
 
 const COLOR_ROLES = new Set([
   'default',
@@ -400,7 +400,10 @@ function presentationRuns(value, bold, baseColor, owner) {
     pushLines(text.slice(cursor), plain);
   }
 
-  return wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(runs, base, bold) : runs);
+  // The marked route above never passes through splitAnswerRuns, so a taught
+  // word outside its emphasis spans is turned green here (answer-text.js).
+  const withTaught = taughtWordsInGreen(runs, base, bold);
+  return wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(withTaught, base, bold) : withTaught);
 }
 
 module.exports = {

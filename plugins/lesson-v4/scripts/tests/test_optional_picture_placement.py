@@ -124,9 +124,72 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.assertIn("reads as a template rather than a decision", self.context)
         self.assertIn("Slides that are genuinely full stay bare", self.context)
 
-    def test_a_number_never_justifies_an_unrelated_drawing(self) -> None:
-        self.assertIn("Never use an unrelated drawing to reach a number", self.context)
+    def test_only_a_context_picture_has_to_be_about_its_subject(self) -> None:
+        """The old line called any unrelated drawing worse than none.
+
+        That contradicted decoration needing no link to the lesson, and both
+        sentences reached the same reader. The rule now belongs to P2 alone.
+        """
+        self.assertNotIn("Never use an unrelated drawing to reach a number", self.context)
+        self.assertIn("A P2 is about the thing beside it or it is not a P2", self.context)
+        self.assertIn("claims no meaning", self.context)
         self.assertIn("Zero is valid only when", self.context)
+
+    def test_the_deck_gathers_a_pool_before_it_places(self) -> None:
+        """Three drawings turned round every slide (5 October 2026).
+
+        Both decks ran one or two searches for the whole deck, so no slide had
+        anything else to choose from. The teacher: "collect and search for as
+        many as it wants, there's no limit".
+        """
+        self.assertIn("Gather the deck's drawings before you place any", self.decorator)
+        self.assertIn("There is no limit on how many searches you run", self.decorator)
+        self.assertIn("Reach for a drawing the deck has not used yet", self.decorator)
+        self.assertIn("does not make plain decoration rare", self.decorator)
+        self.assertIn("What each slide names", self.decorator)
+        self.assertIn("What belongs to the lesson without being named on a slide", self.decorator)
+        self.assertIn("A lesson drawing goes in the `decorations` array like any other", self.decorator)
+
+    def test_a_plain_decoration_may_not_be_stamped_across_the_deck(self) -> None:
+        """A retest still placed the same flower on three slides (5 October 2026)."""
+        import importlib.util
+        import sys
+
+        script = Path(__file__).resolve().parents[1] / "check-optional-pictures.py"
+        spec = importlib.util.spec_from_file_location("check_optional_pictures", script)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+
+        def slide(text, concept, drawing):
+            return {
+                "title": text,
+                "decorations": [
+                    {"kind": "educational-svg", "concept": concept, "educationalSvgId": drawing}
+                ],
+            }
+
+        stamped = {"slides": [slide(f"Slide {n}", "flower", "standard/fl/flower.svg") for n in range(3)]}
+        self.assertEqual(len(module.repeated_decorations(stamped)), 1)
+
+        twice = {"slides": stamped["slides"][:2]}
+        self.assertEqual(module.repeated_decorations(twice), [])
+
+        # A subject that returns takes a different drawing of it: the same
+        # candle went on four slides and he said "still see some repeats".
+        subject = {
+            "slides": [
+                slide("An orange stands for the world", "orange", "standard/or/orange.svg")
+                for _ in range(4)
+            ]
+        }
+        self.assertEqual(len(module.repeated_decorations(subject)), 1)
+        self.assertIn("Vary the sizes, and tilt some", self.decorator)
+        self.assertIn("A drawing belongs on the cards as much as beside them", self.decorator)
+        self.assertLess(module.ON_INK_SHARE, 0.05)
+        self.assertIn("Gather widely before placing anything", self.context)
+        self.assertIn("not once per deck", self.context)
+        self.assertNotIn("when they share a style", self.context)
 
     def test_competing_is_defined_physically_and_per_surface(self) -> None:
         """Strong P1 visuals must not zero the optional layer.
@@ -182,7 +245,7 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         """One slot per slide gives a flat deck however well each slide is judged."""
         self.assertIn("Ask how many, not whether", self.context)
         self.assertIn(
-            "How many of those clear places hold a relevant drawing?", self.decorator
+            "How many of those clear places hold a drawing, and which drawing?", self.decorator
         )
         self.assertIn("never when a count is reached", self.decorator)
 

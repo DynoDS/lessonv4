@@ -102,7 +102,7 @@ class VoiceReachesEveryStringTests(unittest.TestCase):
         self.assertIn("A speaker-note script opens §16H before the first one you write", voice)
         self.assertIn("**Definitions and scripts are the other two**", voice)
         self.assertIn(
-            "opening the numbered section for the kind of string in hand", flat(VOICE_EDITOR)
+            "with the numbered section for its kind open beside it", flat(VOICE_EDITOR)
         )
 
     def test_the_vocabulary_decision_point_carries_the_pointer(self) -> None:

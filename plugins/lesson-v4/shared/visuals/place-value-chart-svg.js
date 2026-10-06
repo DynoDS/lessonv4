@@ -18,7 +18,9 @@
 // on every surface and a chart squeezed into a small slide zone refuses by name
 // rather than printing digits nobody can read.
 //
-//   tightSvg(spec, profile) -> { svg, w, h, aspect, layout, anchor }
+//   tightSvg(spec, profile) -> { svg, w, h, aspect, layout, anchor, anchors }
+//                              `anchors` only for a calculation: the places a
+//                              step can point at, by name (see describeCalculation)
 //   cacheKey(spec, profile) -> string
 //   normalise(spec)         -> the chart, in one vocabulary
 //   minWidthPt(spec, profile) -> the narrowest box the chart can be drawn in
@@ -46,6 +48,14 @@
 //   pair       ONE before-and-after comparison:
 //              { from, to, operation, title, counters: { from, to },
 //                exchanges: [{ from, to, count, label }] }
+//   calculation  ONE written column calculation, the way the teacher sets it out:
+//              { operator, numbers, answer, carry, worked }
+//              The rows are laid out by the drawing, never authored: the numbers
+//              lined up from the ones, the sign in a narrow column beside the
+//              last of them, a thick rule, the answer row, a second thick rule
+//              (the two rules are the "big equals sign"), and a shallow row
+//              UNDER the answer for the small carried digit. `columns` may be
+//              left out, and is then read off the longest number.
 //
 // Older spellings still draw: the sheet's counter chart
 // ({ columns: ["thousands", ...], counts: { thousands: 2 } }) is a chart whose
@@ -170,6 +180,26 @@ const EXCHANGE_H = 3.4;        // the exchange cue band: tall enough that ten co
 const EXCHANGE_GAP = 0.25;
 const EXCHANGE_FONT = 0.67;
 
+// ── the written calculation ─────────────────────────────────────────────────
+// Set out the way it is taught (the teacher, 5 October 2026): the two numbers,
+// a thick rule, the answer, a second thick rule, and what is carried written
+// small UNDER the answer. Until then a column sum was a place value chart with
+// a "+" typed into the row caption, which gave the sign a column wider than a
+// digit's, put the carried digit above the answer because nothing said where it
+// went, and drew every rule the same weight.
+const CALC_OP_W = 0.55;        // the sign's column, in digit columns: it holds one
+                               // character and is never written in
+const CALC_CARRY_H = 1.25;     // the carry row on the board and the wall, in D:
+                               // shallow, because a carried digit is written small
+const CALC_CARRY_OF_ROW = 0.5; // ...and on paper, as a share of a digit row
+const CALC_CARRY_FONT = 0.62;  // the carried digit, as a share of D
+const CALC_HEAVY_W = 0.16;     // the two thick rules, at least three times a cell
+                               // rule so they still read as thick across a room
+const CALC_PAPER_COL_MAX_MM = 15; // a written calculation does not read better
+                               // bigger past the point where a child can write in
+                               // it (the sheet's own ceiling since August 2026)
+const CALC_MAX_NUMBERS = 4;
+
 const COLOURS = {
   grid: '#666666',
   text: '#000000',
@@ -251,6 +281,13 @@ const CANONICAL_COLUMN = {
   hundredth: 'h', hundredths: 'h',
   thousandth: 'th', thousandths: 'th',
   point: '.',
+};
+
+// A column's everyday name, which is how a step names the place it points at
+// ("ones answer", "tens carry").
+const COLUMN_PLACE = {
+  M: 'millions', HTh: 'hundred thousands', TTh: 'ten thousands', Th: 'thousands',
+  H: 'hundreds', T: 'tens', O: 'ones', t: 'tenths', h: 'hundredths', th: 'thousandths',
 };
 
 function canonicalColumn(label) {
@@ -404,7 +441,137 @@ function normaliseExchanges(pair, columns) {
     });
 }
 
+// ─── the written calculation ────────────────────────────────────────────────
+const OPERATORS = { '+': '+', '-': '−', '−': '−', '–': '−', x: '×', X: '×', '×': '×', '*': '×' };
+const WHOLE_COLUMNS = ['O', 'T', 'H', 'Th', 'TTh', 'HTh', 'M'];
+const FRACTION_COLUMNS = ['t', 'h', 'th'];
+const SUPERSCRIPTS = { '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9', '⁰': '0' };
+
+// A column sum written as stacked `rows` with the sign typed into a row's
+// caption is the spelling this replaces. It is refused by name rather than
+// drawn, because drawn it is the wrong picture every time: the row order, the
+// sign's wide column and the even rules are exactly what the teacher sent back.
+function refuseCalculationAsRows(spec) {
+  if (!Array.isArray(spec.rows)) return;
+  const sign = spec.rows.find((r) => isObj(r) && Object.prototype.hasOwnProperty.call(OPERATORS, str(r.label).trim()));
+  if (!sign) return;
+  throw new Error(
+    `PLACE_VALUE_CHART_IS_A_CALCULATION: a row captioned "${str(sign.label).trim()}" is a written column calculation, and rows cannot set one out. ` +
+      'Use the `calculation` field instead of `rows`: "calculation": { "operator": "+", "numbers": ["3426", "237"] } for the blank one the class completes, ' +
+      'adding "answer": "3663" and "carry": { "T": "1" } for the finished one. The drawing lines the digits up and puts the answer and the carried digit in their rows.'
+  );
+}
+
+function splitNumber(value, what) {
+  // A number given cell by cell is one set out in the WRONG columns on purpose
+  // (402 written under the thousands, for the class to catch). It is placed
+  // exactly as typed; every other number is lined up by the drawing.
+  if (Array.isArray(value)) return { whole: '', frac: '', placed: value.map((v) => str(v).trim()) };
+  const s = str(value).replace(/[,\s]/g, '');
+  if (s === '') return { whole: '', frac: '' };
+  if (!/^\d+(\.\d+)?$/.test(s)) {
+    throw new Error(`PLACE_VALUE_CALCULATION_INVALID: ${what} "${str(value)}" is not a number a column calculation can set out digit by digit.`);
+  }
+  const [whole, frac = ''] = s.split('.');
+  return { whole, frac };
+}
+
+function normaliseCalculation(spec) {
+  const c = isObj(spec.calculation) ? spec.calculation : {};
+  const operator = OPERATORS[str(c.operator == null ? '+' : c.operator).trim()];
+  if (!operator) {
+    throw new Error(`PLACE_VALUE_CALCULATION_INVALID: operator "${str(c.operator)}" is not one a column calculation is written with; use "+", "-" or "x".`);
+  }
+  const numbers = asList(c.numbers).map((n, i) => splitNumber(n, `number ${i + 1}`));
+  if (numbers.length < 2 || numbers.length > CALC_MAX_NUMBERS) {
+    throw new Error(`PLACE_VALUE_CALCULATION_INVALID: a column calculation needs its \`numbers\`, between two and ${CALC_MAX_NUMBERS} of them, for example ["3426", "237"] (or ["", ""] with \`columns\` for the empty frame the class sets a calculation out in).`);
+  }
+  const answer = splitNumber(c.answer, 'the answer');
+  const all = numbers.concat(answer);
+
+  let given = Array.isArray(spec.columns) ? spec.columns.map(str) : [];
+  if (given.length === 0) {
+    const whole = Math.max(1, ...all.map((n) => (n.placed ? n.placed.length : n.whole.length)));
+    const frac = Math.max(0, ...all.map((n) => n.frac.length));
+    if (whole > WHOLE_COLUMNS.length || frac > FRACTION_COLUMNS.length) {
+      throw new Error('PLACE_VALUE_CALCULATION_INVALID: these numbers are longer than the place value columns a chart has.');
+    }
+    given = WHOLE_COLUMNS.slice(0, whole).reverse().concat(frac ? ['.'].concat(FRACTION_COLUMNS.slice(0, frac)) : []);
+  }
+  const columns = given.map(canonicalColumn);
+  const written = given.map((w, i) => (columns[i] !== w && /^[a-z]/.test(w) ? w[0].toUpperCase() + w.slice(1) : w));
+  const ones = columns.indexOf('O');
+  if (ones === -1) {
+    throw new Error('PLACE_VALUE_CALCULATION_INVALID: a column calculation is lined up from its ones, so `columns` must include "O" (or leave `columns` out and the drawing works them out).');
+  }
+  const point = columns.indexOf('.');
+
+  // Lined up from the ones, by the drawing, so a three-digit number under a
+  // four-digit one can never be typed one column out.
+  const cellsOf = (n, what) => {
+    if (n.placed) return columns.map((c, i) => (c === '.' ? '' : n.placed[i] || ''));
+    const cells = columns.map(() => '');
+    const refuse = () => {
+      throw new Error(
+        `PLACE_VALUE_CALCULATION_DOES_NOT_FIT: ${what} has more digits than this chart has columns (${given.join(', ')}). ` +
+          'Add the column it needs, or leave `columns` out and the drawing works them out from the numbers and the answer.'
+      );
+    };
+    n.whole.split('').reverse().forEach((d, k) => {
+      const at = ones - k;
+      if (at < 0 || columns[at] === '.') refuse();
+      cells[at] = d;
+    });
+    n.frac.split('').forEach((d, k) => {
+      const at = point === -1 ? -1 : point + 1 + k;
+      if (at < 0 || at >= columns.length) refuse();
+      cells[at] = d;
+    });
+    return cells;
+  };
+
+  const carry = columns.map(() => '');
+  const small = (v) => {
+    const t = str(v).trim().split('').map((ch) => SUPERSCRIPTS[ch] || ch).join('');
+    return t === '0' ? '' : t;
+  };
+  if (Array.isArray(c.carry)) {
+    c.carry.slice(0, columns.length).forEach((v, i) => { if (columns[i] !== '.') carry[i] = small(v); });
+  } else if (isObj(c.carry)) {
+    Object.keys(c.carry).forEach((key) => {
+      const at = columns.indexOf(canonicalColumn(key));
+      if (at === -1 || columns[at] === '.') {
+        throw new Error(`PLACE_VALUE_CALCULATION_INVALID: a digit is carried into "${key}", a column this chart does not have (${given.join(', ')}).`);
+      }
+      carry[at] = small(c.carry[key]);
+    });
+  }
+
+  return {
+    columns,
+    written,
+    title: str(spec.title),
+    instances: 1,
+    form: 'calculation',
+    headings: spec.headings !== false && spec.showHeadings !== false,
+    calculation: {
+      operator,
+      numbers: numbers.map((n, i) => cellsOf(n, `number ${i + 1}`)),
+      answer: cellsOf(answer, 'the answer'),
+      carry,
+      // Addition and multiplication carry a digit under the answer; subtraction
+      // exchanges above the top number and has nothing to write beneath. A
+      // lesson taught before exchanging is met says `carry: false`, so the
+      // class is not shown a row nobody has explained yet.
+      carryRow: operator !== '−' && c.carry !== false,
+      worked: c.worked === true,
+    },
+  };
+}
+
 function normalise(spec = {}) {
+  if (spec.calculation != null) return normaliseCalculation(spec);
+  refuseCalculationAsRows(spec);
   const given = Array.isArray(spec.columns) ? spec.columns.map(str) : [];
   const columns = given.map(canonicalColumn);
   // The sheet's counter chart names its columns in lower case ("thousands"),
@@ -837,6 +1004,153 @@ function describeStacked(chart, profile) {
   };
 }
 
+// ─── layout: the written calculation ────────────────────────────────────────
+
+function calculationUnits(chart) {
+  const dots = chart.columns.filter((c) => c === '.').length;
+  const grid = chart.columns.length - dots + dots * POINT_W;
+  return { grid, total: grid + CALC_OP_W };
+}
+
+function describeCalculation(chart, profile) {
+  const calc = chart.calculation;
+  const cols = chart.columns;
+  const pal = paletteFor(profile);
+  const N = profile.fontPt * DIGIT_OF_FONT;
+  const hi = N * MAX_SCALE;
+  const lo = profile.heightPt ? N * BOARD_MIN_SCALE : profile.minFontPt;
+  const inset = CELL_INSET_OF_N * N;
+  const units = calculationUnits(chart);
+  const writeIn = writeInFor(profile);
+  // Paper a child writes on: square cells, as a written method is ruled in a
+  // maths book, so place value lines up down the page as well as across it.
+  const paper = profile.surface === 'worksheets' || profile.surface === 'stickin';
+
+  let colW = profile.widthPt / units.total;
+  if (!profile.heightPt) colW = Math.min(colW, paper ? CALC_PAPER_COL_MAX_MM * (72 / 25.4) : COL_MAX * hi);
+
+  const digitEm = textWidthEm('8', true);
+  const rowsOf = calc.numbers.length + 1;
+  const rowH = (D) => (paper ? Math.max(colW, ROW_H * D) : ROW_H * D);
+  const carryH = (D) => (!calc.carryRow ? 0 : paper ? rowH(D) * CALC_CARRY_OF_ROW : CALC_CARRY_H * D);
+  const titleH = (D) => (chart.title ? D * TITLE_FONT * 1.3 + TITLE_GAP * D : 0);
+  const headH = (D) => (chart.headings ? HEADER_H * D : 0);
+  const heightIn = (D) => titleH(D) + headH(D) + rowsOf * rowH(D) + carryH(D);
+
+  let D = Math.min(hi, Math.max(1, colW - inset) / digitEm);
+  if (profile.heightPt) {
+    for (let k = 0; k < 40 && heightIn(D) > profile.heightPt && D > lo; k += 1) {
+      D = Math.max(lo, D * Math.min(0.98, profile.heightPt / heightIn(D)));
+    }
+  }
+  if (D < lo) D = lo;
+  if (profile.heightPt && heightIn(D) > profile.heightPt + 0.5) {
+    throw new Error(
+      `PLACE_VALUE_CHART_DOES_NOT_FIT: this column calculation needs at least ${(heightIn(lo) / 72).toFixed(2)}in of height at its smallest readable size ` +
+        `(${calc.numbers.length} numbers, the answer${calc.carryRow ? ' and the carry row' : ''}), but its zone offers ${(profile.heightPt / 72).toFixed(2)}in. ` +
+        'Give it a taller zone, or its own slide.'
+    );
+  }
+  if (!profile.heightPt && colW < Math.min(lo, 0.6 * hi) * 1.2) {
+    throw new Error(
+      `PLACE_VALUE_CHART_TOO_NARROW: at ${(profile.widthPt / 72 * 25.4).toFixed(0)}mm each column of this calculation is ${(colW / 72 * 25.4).toFixed(1)}mm, ` +
+        'too narrow to print a digit readably. Give it more width.'
+    );
+  }
+  const blankAnswer = cols.some((c, i) => c !== '.' && calc.answer[i] === '');
+  if (blankAnswer && writeIn.colPt && colW < writeIn.colPt - 0.01) {
+    throw new Error(
+      `PLACE_VALUE_WRITE_IN_TOO_NARROW: this calculation's answer row is blank for somebody to write in, but each column is only ` +
+        `${(colW / 72).toFixed(3)}in wide, below the ${(writeIn.colPt / 72).toFixed(2)}in one handwritten digit needs. ` +
+        'Height is not the lever: give it more WIDTH - a wider zone, or one calculation on this slide instead of two. ' +
+        'If nobody writes in it, give the `answer`.'
+    );
+  }
+
+  const heading = headingsFor(chart, colW, HEAD_FONT * D, floorPt(profile, 0.5), inset);
+  const opW = CALC_OP_W * colW;
+  const colWs = cols.map((c) => (c === '.' ? colW * POINT_W : colW));
+  const chartW = opW + colWs.reduce((a, b) => a + b, 0);
+  const rule = Math.max(1, GRID_W * D);
+  const heavy = Math.max(3 * rule, CALC_HEAVY_W * D);
+  const cells = [];
+  const texts = [];
+  const lines = [];
+  // The places a step can point at, by name: "sign", and for each column
+  // "ones heading", "ones number 1", "ones number 2", "ones answer", "ones
+  // carry". Each is the box of what is written there (the digit, not its
+  // cell), so an arrow from outside the grid stops just short of the ink. A
+  // step's number circle used to be dropped onto the grid by eye and landed on
+  // the lines between the digits, pointing at nothing (5 October 2026).
+  const points = {};
+  const point = (name, cx, top, h, text, pt) => {
+    const halfW = text === '' ? pt * 0.3 : (textWidthEm(text, true) * pt) / 2;
+    points[name] = { cx, cy: top + h / 2, halfW, halfH: pt * 0.45, written: text !== '' };
+  };
+  // Everything worked out prints in the answer's green, or in the worked
+  // example's purple when the class is watching it be done (or done wrong).
+  const worked = calc.worked ? pal.worked : pal.ring;
+  const given = calc.worked ? pal.worked : pal.text;
+
+  let y = 0;
+  if (chart.title) {
+    const tf = Math.max(floorPt(profile, 0.5), TITLE_FONT * D);
+    texts.push({ role: 'title', text: chart.title, x: chartW / 2, y, h: tf * 1.3, pt: tf, fill: pal.title });
+    y += titleH(D);
+  }
+  if (chart.headings) {
+    const h = headH(D);
+    cells.push({ role: 'label-head', x: 0, y, w: opW, h, fill: pal.labelFill });
+    let x = opW;
+    cols.forEach((c, i) => {
+      cells.push({ role: 'header', column: c, x, y, w: colWs[i], h, fill: columnFills(profile, c)[0] });
+      if (c !== '.') texts.push({ role: 'heading', text: heading.labels[i], x: x + colWs[i] / 2, y, h, pt: heading.font, fill: pal.text });
+      if (COLUMN_PLACE[c]) point(`${COLUMN_PLACE[c]} heading`, x + colWs[i] / 2, y, h, heading.labels[i], heading.font);
+      x += colWs[i];
+    });
+    y += h;
+  }
+
+  const row = (role, digits, h, pt, fill, sign, name) => {
+    cells.push({ role: 'label', x: 0, y, w: opW, h, fill: pal.labelFill });
+    if (sign) {
+      const signPt = Math.min(D, (opW * 0.8) / textWidthEm(sign, true));
+      texts.push({ role: 'operator', text: sign, x: opW / 2, y, h, pt: signPt, fill: given });
+      point('sign', opW / 2, y, h, sign, signPt);
+    }
+    const any = cols.some((c, i) => c !== '.' && digits[i] !== '');
+    let x = opW;
+    cols.forEach((c, i) => {
+      const text = c === '.' ? (any && role !== 'carry' ? '.' : '') : digits[i];
+      const cellRole = role === 'carry' ? 'carry' : text === '' && role === 'answer' ? 'write' : 'digit';
+      cells.push({ role: cellRole, row: role, column: c, x, y, w: colWs[i], h, fill: columnFills(profile, c)[1] });
+      if (text !== '') texts.push({ role: role === 'carry' ? 'carry' : 'digit', row: role, column: c, text, x: x + colWs[i] / 2, y, h, pt, fill });
+      if (COLUMN_PLACE[c]) point(`${COLUMN_PLACE[c]} ${name}`, x + colWs[i] / 2, y, h, text, pt);
+      x += colWs[i];
+    });
+    const top = y;
+    y += h;
+    return { y: top, h };
+  };
+
+  const marks = { numbers: [] };
+  calc.numbers.forEach((digits, i) => {
+    marks.numbers.push(row('number', digits, rowH(D), D, given, i === calc.numbers.length - 1 ? calc.operator : '', `number ${i + 1}`));
+  });
+  const rules = [y];
+  marks.answer = row('answer', calc.answer, rowH(D), D, worked, '', 'answer');
+  rules.push(y);
+  if (calc.carryRow) marks.carry = row('carry', calc.carry, carryH(D), CALC_CARRY_FONT * D, worked, '', 'carry');
+  // The two thick rules, across the whole calculation: the big equals sign.
+  rules.forEach((ry) => lines.push({ role: 'heavy-rule', x1: 0, y1: ry, x2: chartW, y2: ry, sw: heavy, stroke: pal.text }));
+
+  return {
+    form: 'calculation', D, N, colW, colWs, labelW: opW, chartW, w: chartW, h: y, rule, heavy, pal,
+    headings: heading, labelFonts: [], labels: [], cells, texts, circles: [], rings: [], lines, polys: [], bars: [],
+    rows: marks, anchor: 'middle', points,
+  };
+}
+
 // ─── layout: the pair ───────────────────────────────────────────────────────
 
 function describePair(chart, profile) {
@@ -1051,6 +1365,7 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
   // Laid out inside the box less the stroke that bleeds past the drawing's edge.
   const profile = insetProfile(resolveProfile(profileOrSurface, box), 1.5);
   const chart = normalise(spec);
+  if (chart.form === 'calculation') return describeCalculation(chart, profile);
   return chart.form === 'pair' ? describePair(chart, profile) : describeStacked(chart, profile);
 }
 
@@ -1079,7 +1394,16 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const w = L.w + 2 * bleed;
   const h = L.h + 2 * bleed;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${f2(w)}" height="${f2(h)}" viewBox="${f2(-bleed)} ${f2(-bleed)} ${f2(w)} ${f2(h)}">${parts.join('')}</svg>`;
-  return { svg, w, h, aspect: w / h, layout: L, anchor: L.anchor };
+  if (!L.points) return { svg, w, h, aspect: w / h, layout: L, anchor: L.anchor };
+  // Each named place as [x%, y%, half-width%, half-height%, written] of the
+  // drawing; `written` is 1 where something is printed, so an arrow to one
+  // place can keep off the writing in another.
+  const pointAt = {};
+  Object.keys(L.points).forEach((name) => {
+    const p = L.points[name];
+    pointAt[name] = [((p.cx + bleed) / w) * 100, ((p.cy + bleed) / h) * 100, (p.halfW / w) * 100, (p.halfH / h) * 100, p.written ? 1 : 0];
+  });
+  return { svg, w, h, aspect: w / h, layout: L, anchor: L.anchor, anchors: { pointAt } };
 }
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
@@ -1103,6 +1427,13 @@ function minWidthPt(spec = {}, profileOrSurface = 'worksheets') {
   if (chart.form === 'pair') {
     const units = unitsOf({ ...chart, form: 'pair' }).grid;
     return 2 * units * COL_W * profile.minFontPt + PAIR_GAP * profile.minFontPt + 20;
+  }
+  if (chart.form === 'calculation') {
+    // Every digit column at the width one handwritten digit needs where the
+    // answer is written in, and the bleed the layout keeps clear.
+    const blank = chart.columns.some((c, i) => c !== '.' && chart.calculation.answer[i] === '');
+    const colPt = Math.max(COL_W * profile.minFontPt, blank ? writeInFor(profile).colPt : 0);
+    return calculationUnits(chart).total * colPt + 2 * 1.5 + 1;
   }
   const units = unitsOf(chart);
   const writeIn = writeInFor(profile);

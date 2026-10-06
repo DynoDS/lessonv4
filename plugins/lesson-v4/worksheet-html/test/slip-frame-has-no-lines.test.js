@@ -35,3 +35,16 @@ test("and the slip is measured without them", () => {
   const slip = helpers["writing-frame"].measure(frame({ slip: true }), 84);
   assert.ok(slip < sheet, `${slip} should be less than ${sheet}`);
 });
+
+test("a starter that ends on its one blank keeps that blank on a slip", () => {
+  // Off a slip the ruled lines under the starter are the blank, so the blank
+  // is not drawn. A slip has no lines, so without its blank the starter just
+  // stops: a Year 4 RE slip printed "Fruit or sweets remind Christians of"
+  // (5 October 2026) between four starters that all showed where to write.
+  const spec = { starters: [{ text: "Fruit or sweets remind Christians of ___.", lines: 2 }] };
+  const onSlip = helpers["writing-frame"].render({ ...spec, slip: true });
+  const onSheet = helpers["writing-frame"].render(spec);
+  assert.match(onSlip, /Christians of ___\./);
+  assert.doesNotMatch(onSheet, /___/);
+  assert.match(onSheet, /h-wf-line/);
+});

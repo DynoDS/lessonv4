@@ -391,7 +391,7 @@ test('blue is a question or a short task, and a longer instruction is black', ()
   assert.match(PREFERENCES_MD, /a longer instruction about how to go about it stays black/);
   assert.match(
     PLAYBOOK_MD,
-    /Every child-facing question and short task outside the starter carries the blue/
+    /Every child-facing question and short task carries the blue, a starter's list of questions excepted/
   );
   for (const [name, text] of [
     ['profile', TEACHER_PROFILE_MD],
@@ -406,7 +406,7 @@ test('blue is a question or a short task, and a longer instruction is black', ()
     'the playbook must not keep sending instructions to house blue'
   );
   // Starter colour serves the task's internal hierarchy before peer separation.
-  assert.match(TEACHER_PROFILE_MD, /Starter instructions are normally black/);
+  assert.match(TEACHER_PROFILE_MD, /A starter that is a list of questions keeps them black/);
   assert.match(TEACHER_PROFILE_MD, /instruction\/material\/condition hierarchy/);
   assert.match(TEACHER_PROFILE_MD, /alternation is optional only when/);
   assert.match(TEACHER_PROFILE_MD, /Supplied values may use any consistent, legible colour/);
@@ -631,7 +631,7 @@ test("context pictures require an explicit slide opportunity pass without creati
   );
   assert.ok(
     CONTEXT_PICTURES_MD.includes(
-      "Never use an unrelated drawing to reach a number."
+      "A P2 is about the thing beside it or it is not a P2."
     )
   );
   // The deck target used to be one or two pictures across a whole deck, which

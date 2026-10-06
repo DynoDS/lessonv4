@@ -559,7 +559,12 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # Raised by 256 bytes on 29 September 2026, with the teacher's agreement,
         # for the one line that has the run report drafted while the last
         # workers run (see the delivery slice's own raise below).
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 80 * 1024 + 768)
+        # Raised by 512 bytes on 5 October 2026 for the voice editor's second
+        # pass over the Below and Greater Depth questions, which the teacher
+        # asked for after a Below sheet printed a question he could not follow.
+        # The entry is five lines: its launch message is printed by
+        # check-voice-edit.py rather than kept here, because there was no room.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 81 * 1024 + 256)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

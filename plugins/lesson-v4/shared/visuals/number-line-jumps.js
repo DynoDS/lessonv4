@@ -102,7 +102,10 @@ function resolveJumps(spec, line) {
     if (box && label) {
       throw new Error(`NUMBERLINE_JUMPS_INVALID: jumps[${i}] has both a label and a box; a box is the blank a child writes the label in.`);
     }
-    return { fromIndex, toIndex, label, box, lo: Math.min(fromIndex, toIndex), hi: Math.max(fromIndex, toIndex) };
+    // A jump may carry its own colour (six hex digits): a step-by-step wall
+    // sheet draws each jump in the colour of the step that made it.
+    const colour = typeof j.colour === 'string' && /^#?[0-9a-fA-F]{6}$/.test(j.colour.trim()) ? '#' + j.colour.trim().replace(/^#/, '') : null;
+    return { fromIndex, toIndex, label, box, colour, lo: Math.min(fromIndex, toIndex), hi: Math.max(fromIndex, toIndex) };
   });
 
   const byStart = jumps.slice().sort(function (a, b) { return a.lo - b.lo || a.hi - b.hi; });
@@ -114,7 +117,9 @@ function resolveJumps(spec, line) {
     j.tier = tier;
   });
   return jumps.map(function (j) {
-    return { fromIndex: j.fromIndex, toIndex: j.toIndex, label: j.label, box: j.box, tier: j.tier };
+    const out = { fromIndex: j.fromIndex, toIndex: j.toIndex, label: j.label, box: j.box, tier: j.tier };
+    if (j.colour) out.colour = j.colour;
+    return out;
   });
 }
 

@@ -1692,6 +1692,77 @@ def _sentences(text: str) -> list[str]:
     return [part.strip() for part in re.split(r"(?<=[.!?])\s+|\n+", text) if part.strip()]
 
 
+# Where children record an answer is the teacher's choice on the day, so no
+# wording a class sees or a teacher reads names it (`preferences.md` -> Routine
+# classroom management). A Year 4 RE lesson was sent back for quick checks
+# where no child committed an answer, and came back with `on your whiteboard`
+# on three boards, in three scripts and in the teacher's orientation (5 October
+# 2026). The patterns are the recording phrases, not the nouns: a history
+# lesson may still say a Victorian classroom had no interactive whiteboard.
+_RECORDING_SURFACE = re.compile(
+    r"\bmini[- ]?whiteboards?\b"
+    r"|\b(?:on|onto|using)\s+(?:(?:your|their|a|the|mini)\s+)?whiteboards?\b"
+    r"|\b(?:in|into)\s+(?:your|their)\s+(?:\w+\s+)?books?\b",
+    re.IGNORECASE,
+)
+_RECORDS = re.compile(
+    r"\b(?:write|writes|writing|draw|draws|record|records|answer|answers|show|shows|finish|"
+    r"complete|copy|jot|note|commit|commits|put|work)\b",
+    re.IGNORECASE,
+)
+# A board line that only says to write the answer. The pencil sign on the
+# question says it, so the line is a card of the board spent on nothing.
+_BARE_WRITE_LINE = re.compile(
+    r"^write\s+(?:down\s+)?(?:your|the|an)\s+answers?(?:\s+down)?[.!]?$", re.IGNORECASE
+)
+
+
+def _strings_with_paths(value: Any, path: str) -> list[tuple[str, str]]:
+    if isinstance(value, str):
+        return [(path, value)]
+    if isinstance(value, list):
+        return [pair for i, item in enumerate(value) for pair in _strings_with_paths(item, f"{path}[{i}]")]
+    if isinstance(value, dict):
+        return [pair for key, item in value.items() for pair in _strings_with_paths(item, f"{path}.{key}")]
+    return []
+
+
+def validate_recording_is_the_teachers_choice(root: dict[str, Any]) -> None:
+    units: list[tuple[str, Any]] = [("starter", root.get("starter"))]
+    units += [(f"teachingSequence[{i}]", unit) for i, unit in enumerate(root.get("teachingSequence") or [])]
+    units.append(("ending", root.get("ending")))
+    seen: list[tuple[str, str, bool]] = [
+        (path, text, False) for path, text in _strings_with_paths(root.get("teacherOrientation"), "teacherOrientation")
+    ]
+    for path, unit in units:
+        if not isinstance(unit, dict):
+            continue
+        for field in ("content", "pupilInstruction", "taskStructure"):
+            seen += [(p, t, True) for p, t in _strings_with_paths(unit.get(field), f"{path}.{field}")]
+        seen += [(p, t, False) for p, t in _strings_with_paths(unit.get("speakerNotes"), f"{path}.speakerNotes")]
+    for path, text, on_board in seen:
+        for sentence in re.split(r"(?<=[.?!])\s+|\n+", text):
+            sentence = sentence.strip()
+            found = _RECORDING_SURFACE.search(sentence)
+            if found and ("whiteboard" in found.group(0).lower() or _RECORDS.search(sentence)):
+                expect(
+                    False,
+                    f"{path}: `{sentence[:90]}` names where children record their answer "
+                    f"(`{found.group(0)}`). That is the teacher's choice on the day, so say the action "
+                    "and how much (`Write one word before you talk.`) and leave the whiteboard or book "
+                    "out, here and in every other string of this lesson that names one. A resource the "
+                    "lesson hands out (the printed sheet, the cards) is still named",
+                )
+            if on_board and _BARE_WRITE_LINE.match(sentence):
+                expect(
+                    False,
+                    f"{path}: `{sentence}` only tells children to write the answer to the question "
+                    "beside it, which the board's pencil sign already says. Leave the line out. A line "
+                    "that says how much or in what form (`One word is enough.`, `Write one reason.`) "
+                    "is worth its place and stays",
+                )
+
+
 def validate_teach_says_it_once(sequence: list[dict[str, Any]], sticky_by_id: dict[str, Any]) -> None:
     """A Teach slide lands its sentence once. A teeth slide printed `Incisors
     cut; canines help tear.` as its headline and `Incisors cut food and
@@ -4238,6 +4309,8 @@ def run_design_checks(
         validate_explanation_task_is_modelled(structure, sequence)
     with faults.section():
         validate_lesson_fits_the_slot(root)
+    with faults.section():
+        validate_recording_is_the_teachers_choice(root)
 
     if structure != "Skill-based":
         with faults.section():

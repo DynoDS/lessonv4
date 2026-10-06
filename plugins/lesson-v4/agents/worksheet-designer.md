@@ -131,7 +131,13 @@ printed page's test puts any support: before the first question that reads
 from it, after the work when a child only glances at it. The same order holds for any stimulus a question depends on: a child must never
 meet `Is Rowan's claim supported?` on a page that has not yet shown them
 Rowan's claim. Zones fill in reading order, so hand content over in the order
-the dependencies need: stimulus, then the questions that lean on it.
+the dependencies need: stimulus, then the questions that lean on it. A hint
+is the one support that follows its question: a smaller question or nudge for a
+stuck child (a design's `support` such as `What do eight ones and two ones
+make?`) goes straight after the question it helps with, as an `instruction`
+with `"hint": true`, which prints it as `If you're stuck: ...`. Put first it
+takes the question's number and reads as the question, and the build refuses
+it.
 
 **The rest of the page's reading order is the teacher's, and `preferences.md` →
 The printed page carries the decision; you read it before you start, and these

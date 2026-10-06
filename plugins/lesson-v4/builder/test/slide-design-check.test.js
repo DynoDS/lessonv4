@@ -1805,6 +1805,38 @@ test('a starter of task-blue lines is all blue, as one of focus-blue lines is', 
   }
 });
 
+// A starter that tells and then asks is coloured like any other slide. The
+// teacher asked why its question was black (5 October 2026): the starter rule
+// is for a list of questions, and it had been read as "a starter is black".
+test('a starter that tells and then asks has its question in blue', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const starter = (question) => writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [{
+        template: 'body-full',
+        title: 'What can a badge remind us of?',
+        headerStyle: 'starter',
+        body: {
+          type: 'stack',
+          items: [
+            { type: 'text', value: 'This team badge can remind someone of their team.' },
+            { type: 'text', value: 'What else could the same badge remind someone of?', ...question }
+          ]
+        }
+      }]
+    });
+    const black = runSlideDesignCheck(starter({}), { buildPath: fakeBuilder });
+    assert.equal(black.reason, 'SLIDE_DESIGN_PRESENTATION');
+    assert.match(black.stdout, /"signal":"STARTER_QUESTION_NOT_BLUE"/);
+    const blue = runSlideDesignCheck(starter({ colorRole: 'focus-blue' }), { buildPath: fakeBuilder });
+    assert.ok(!/STARTER_QUESTION/.test(blue.stdout));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 // `--settled` turns every wording, title and colour fault into a note. On the
 // slide designer's own check that would let them all through the one gate that
 // sends them back, so only the decorator's check, on a settled deck, and the

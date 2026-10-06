@@ -62,8 +62,19 @@ function checkInstruction(spec) {
   );
 }
 
+// A hint is a smaller question a stuck child can answer on the way to the real
+// one. Printed as an ordinary instruction above the question it took the
+// question's number and read as the question: "(5) What do eight ones and two
+// ones make?" over the claim a child was meant to judge (Daniel, 5 October
+// 2026: "why is there two questions in one?"). So a hint says what it is, is
+// set quieter than the question, and is never printed in question blue.
+const HINT_LEAD = "If you're stuck:";
+
 function renderInstruction(spec) {
   checkInstruction(spec);
+  if (spec.hint === true) {
+    return `<p class="h-instruction h-hint"><span class="h-hint-lead">${esc(HINT_LEAD)}</span> ${esc(String(spec.text))}</p>`;
+  }
   return `<p class="h-instruction">${promptHtml(spec.text, spec.blankWidthMm)}</p>`;
 }
 
@@ -71,6 +82,7 @@ function measureInstruction(spec, widthMm) {
   // Refused at measuring time too, so a sheet is turned back while the designer
   // is still choosing a layout rather than after it has been drawn.
   checkInstruction(spec);
+  if (spec.hint === true) return linesFor(`${HINT_LEAD} ${spec.text}`, widthMm) * LINE_MM;
   return linesFor(spec.text, widthMm, spec.blankWidthMm) * LINE_MM;
 }
 
@@ -673,6 +685,8 @@ const css = `
      underscores. One uniform width everywhere: wide enough for a real written
      word, and never hinting by its length at which word it wants. */
   .h-ask { color: var(--colour-question); }
+  .h-hint { font-style: italic; color: var(--colour-ink); }
+  .h-hint-lead { font-weight: bold; font-style: normal; }
   .h-digit-box {
     display: inline-block;
     box-sizing: border-box;

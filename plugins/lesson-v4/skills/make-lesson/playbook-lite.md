@@ -949,6 +949,12 @@ teacher brief/clarifications, and the frozen initial photo contract. It owns
 block is the only place adaptation pictures are written. Every command below
 reads that path. There is no `adaptation.json`.
 
+**The voice editor's second pass** - when `lesson-voice-editor` exists, before
+`build-provisional` (which fingerprints `adaptation.md`): run `check-voice-edit.py
+adaptation-snapshot --working-dir "[WORKING_DIR]"`, launch `lesson-voice-editor`
+as `lesson_voice_editor_adaptation` with the message it prints, then run the
+script's `adaptation-settle`. It never stops a run.
+
 Run `photo-contract.py build-provisional`. Use exactly:
 
 ```text

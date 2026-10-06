@@ -438,7 +438,7 @@ function makeCompose({
             item && item.helper === "data-table" &&
             i === items.length - 1 &&
             items.slice(0, i).every(introduces);
-          return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}${divided ? " h-stack-item--new-question" : ""}${tableRest ? " h-stack-item--table-rest" : ""}"${space}>${renderContent(item, widthMm)}</div>`;
+          return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}${divided ? " h-stack-item--new-question" : ""}${tableRest ? " h-stack-item--table-rest" : ""}"${content.numberAt === i ? " data-number-here" : ""}${space}>${renderContent(item, widthMm)}</div>`;
         })
         .join("");
       return `<div class="h-stack">${cells}</div>`;

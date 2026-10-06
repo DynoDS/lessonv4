@@ -283,6 +283,50 @@ async function launchBrowser() {
 // `opts.browser` prints through a browser the caller launched (and still
 // owns): only the page is closed here. Without it, one is launched and closed
 // around this single print, which is what every one-page caller wants.
+// A question's number sits beside the line that ASKS.
+//
+// The label is drawn at the top of its question, which is right when the
+// question is one line. When a picture, a sentence of context or a claim comes
+// first, the number sat beside that and the thing to do was further down with
+// nothing marking it: "(6)" beside "There are 1,236 story books..." and the
+// question two lines below (Daniel, 5 October 2026: "do question numbers sit
+// exactly where it's asking them questions, and not next to where it's giving
+// context?"). The block is still one question under one divider; only the
+// label moves, so nothing is measured differently.
+//
+// It runs in the page because only the page knows where a line landed. The
+// place is the sentence the sheet already prints in question blue (`.h-ask`),
+// looked for inside the part the designer flagged when a question follows its
+// material (`data-number-here`), and the flagged part itself when it has no
+// such sentence. A question with neither keeps its number where it was.
+const PLACE_QUESTION_NUMBERS = `(() => {
+  const labels = document.querySelectorAll(".h-numbered > .h-numbered-n, li.h-q > .h-num");
+  for (const label of labels) {
+    const block = label.parentElement;
+    // The nearest block that prints a number of its own: a lone written answer
+    // inside a numbered question prints none, so its sentence is the question's.
+    const owner = (el) => {
+      for (let n = el.parentElement; n; n = n.parentElement) {
+        if (n.matches(".h-numbered") && n.querySelector(":scope > .h-numbered-n")) return n;
+        if (n.matches("li.h-q") && n.querySelector(":scope > .h-num")) return n;
+      }
+      return null;
+    };
+    const own = (el) => el && owner(el) === block;
+    const flagged = Array.from(block.querySelectorAll("[data-number-here]")).find(own);
+    const within = flagged || block;
+    const ask = Array.from(within.querySelectorAll(".h-ask")).find(own);
+    const target = ask || flagged;
+    if (!target) continue;
+    const box = target.getClientRects()[0] || target.getBoundingClientRect();
+    const down = box.top - label.getBoundingClientRect().top;
+    if (down > 2) {
+      label.style.position = "relative";
+      label.style.top = down + "px";
+    }
+  }
+})()`;
+
 async function htmlToPdf(html, opts = {}) {
   const browser = opts.browser || (await launchBrowser());
 
@@ -300,6 +344,8 @@ async function htmlToPdf(html, opts = {}) {
         await document.fonts.ready;
       }
     });
+
+    await page.evaluate(PLACE_QUESTION_NUMBERS);
 
     const fitProblems = opts.inspectFit
       ? await page.evaluate(RENDERED_FIT_PROBE)
@@ -334,4 +380,5 @@ module.exports = {
   candidatePaths,
   downloadedCandidates,
   PINNED_CHROME_VERSION,
+  PLACE_QUESTION_NUMBERS,
 };

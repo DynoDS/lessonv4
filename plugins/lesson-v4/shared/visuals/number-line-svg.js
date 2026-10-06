@@ -633,11 +633,12 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
         const jx2 = x(l.start + j.toIndex * l.interval);
         const h = jumpsGeo.arcHeight(j, jx2 - jx1, JUMP_TIER * E, labelH);
         const g = jumpsGeo.arcGeometry(jx1, jx2, baseY, h, JUMP_HEAD * E);
+        const jumpColour = j.colour || c.jump;
         parts.push(
-          `<polyline points="${g.points.map((p) => `${f2(p.x)},${f2(p.y)}`).join(' ')}" fill="none" stroke="${c.jump}" stroke-width="${f2(Math.max(1.5, JUMP_STROKE * E))}" stroke-linecap="round"/>`
+          `<polyline points="${g.points.map((p) => `${f2(p.x)},${f2(p.y)}`).join(' ')}" fill="none" stroke="${jumpColour}" stroke-width="${f2(Math.max(1.5, JUMP_STROKE * E))}" stroke-linecap="round"/>`
         );
-        parts.push(`<polygon points="${g.head.map((p) => `${f2(p.x)},${f2(p.y)}`).join(' ')}" fill="${c.jump}"/>`);
-        if (j.label) parts.push(text(j.label, g.apex.x, g.apex.y - labelH, jumpPt, c.jump));
+        parts.push(`<polygon points="${g.head.map((p) => `${f2(p.x)},${f2(p.y)}`).join(' ')}" fill="${jumpColour}"/>`);
+        if (j.label) parts.push(text(j.label, g.apex.x, g.apex.y - labelH, jumpPt, jumpColour));
         else if (j.box) {
           const bw = Math.min(Math.max(2.9 * T, widthPt('+000', T, profile.bold)), Math.abs(jx2 - jx1) - LABEL_GUTTER * T);
           parts.push(boxAt(g.apex.x, g.apex.y - labelH - 1, bw, labelH));

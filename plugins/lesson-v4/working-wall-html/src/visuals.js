@@ -343,7 +343,7 @@ function pickVisual(marked, ctx) {
   const entry = ctx.svgImages[keyFn(visual) + calloutKeySuffix(visual)];
   if (!entry) return null;
   if (Buffer.isBuffer(entry)) return { buf: entry, aspect: 1 };
-  return { buf: entry.png, aspect: entry.aspect || 1 };
+  return entry.anchors ? { buf: entry.png, aspect: entry.aspect || 1, anchors: entry.anchors } : { buf: entry.png, aspect: entry.aspect || 1 };
 }
 
 function defaultVisualLabel(visual) {

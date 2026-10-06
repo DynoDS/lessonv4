@@ -23,7 +23,7 @@
 module.exports = {
   // ─── text ───
   instruction:
-    "A quiet child-facing direction that needs no question number or answer space.",
+    "A quiet child-facing direction that needs no question number or answer space. With `hint: true` it is a hint for the question just above it: it prints as `If you're stuck: ...` and never comes first in a question.",
   questions:
     "One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap.",
   "written-answers":
@@ -113,7 +113,7 @@ module.exports = {
   "drawing-space":
     "The boxed surface a child draws on, sized by what it holds: `draw`, `annotate`, or a stated height. Rare as plain working room, because children have books.",
   "column-method-grid":
-    "Ruled boxes for a written column calculation: the numbers stacked, a thick-topped answer row, and a carry row. `showHeadings: true` adds place-value letters above the columns, derived from the numbers' own width.",
+    "A written column calculation to complete, in the board's own drawing and column colours: the numbers, a thick line, the answer row, a thick line, a shallow carry row. `showHeadings: true` adds place-value letters.",
 
   // ─── matching ───
   "match-up":

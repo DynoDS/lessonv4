@@ -105,6 +105,8 @@ const comparisonShared = require('../../shared/visuals/comparison-svg');
 // into an "anatomy poster" reference card: the diagram children met on the board,
 // with its parts called out and labelled in answer-green.
 const { buildLabelDiagramSvg } = require('../../shared/visuals/label-diagram-svg');
+const { stepVisual } = require('./step-colours');
+const { isNoteCallout, noteCalloutsSvg } = require('./note-callouts');
 
 // The base is embedded as a bitmap inside the composite, so it caps how sharp
 // the diagram itself can be however large the composite is rendered. The side
@@ -346,13 +348,46 @@ function resolveCallouts(callouts, anchors) {
 // A step that cannot be placed stops the build, because a number the list
 // promises and the picture never shows is exactly the mismatch this is for.
 const STEP_MARKER_SHARE = 0.11;
+const OUTSIDE_MARKER_SHARE = 0.078;
 function isStepCallout(c) {
   return Boolean(c) && Number.isInteger(c.step) && c.step > 0;
 }
 
+// A drawing whose places are already full of writing (a column sum: every cell
+// holds a digit) names them as things to POINT AT (`anchors.pointAt`, each the
+// box of what is written there). A step circle dropped on such a grid covers a
+// digit or lands on the line between two and points at nothing, which is what
+// the teacher took down on 5 October 2026. So here the circle stands outside
+// the drawing, on the side nearest its place, and an arrow runs from it to stop
+// just short of the ink.
+function pointAtFor(part, anchors) {
+  const places = anchors && anchors.pointAt;
+  return places && part && Array.isArray(places[part]) ? places[part] : null;
+}
+
 function stepMarkersSvg(callouts, anchors, width, height, baseHref) {
   const gap = Math.min(width, height) * 0.01;
+  // A circle outside the grid is a label, not part of the picture, so it is
+  // well under a row of digits tall and its arrow is a thin line: at the size
+  // of a circle drawn on a picture, five of them outweighed the sum itself
+  // ("the circles are too big, some feel close together", 5 October 2026).
+  const standOff = Math.min(width, height) * OUTSIDE_MARKER_SHARE;
+  const named = anchors && anchors.pointAt ? Object.keys(anchors.pointAt) : [];
   const markers = callouts.map((c) => {
+    if (named.length) {
+      const box = pointAtFor(c.part, anchors);
+      if (!box) {
+        throw new Error(
+          `step ${c.step} is pinned to ${c.part ? `"${c.part}"` : 'a spot given by numbers'}, but this drawing's places are named, ` +
+          `so the circle can stand outside it and point. Give \`part\` one of: ${named.join(', ')}.`
+        );
+      }
+      return {
+        step: c.step, r: standOff, outside: true, part: c.part,
+        tx: (box[0] / 100) * width, ty: (box[1] / 100) * height,
+        halfW: (box[2] / 100) * width, halfH: (box[3] / 100) * height,
+      };
+    }
     const anchor = Array.isArray(c.anchor) ? c.anchor : resolveAnchorPart(c.part, anchors);
     if (!anchor) {
       throw new Error(
@@ -366,29 +401,114 @@ function stepMarkersSvg(callouts, anchors, width, height, baseHref) {
   });
   // Two circles that would touch: the later one (left to right) rises clear of
   // the earlier, so neither number is hidden.
-  markers.slice().sort((a, b) => a.cx - b.cx).forEach((m, i, sorted) => {
+  markers.filter((m) => !m.outside).sort((a, b) => a.cx - b.cx).forEach((m, i, sorted) => {
     for (let k = 0; k < i; k += 1) {
       const o = sorted[k];
       const need = m.r + o.r + gap;
       if (Math.abs(m.cx - o.cx) < need && Math.abs(m.cy - o.cy) < need) m.cy = o.cy - need;
     }
   });
-  // A spot above the drawing's top edge grows the canvas upward rather than
-  // being pushed down onto what it sits above.
+  // A circle standing outside sits an arrow's length from the drawing's edge,
+  // on the nearest side that gives its arrow a clear run: level with its place
+  // if it can be, slid along the edge when a straight arrow would cross what is
+  // written in another place (the carried 1 under the tens answer) or the
+  // circle would touch one already standing there.
+  const reach = standOff * 1.7;
+  const apart = (o, m) => o.r + m.r + Math.max(o.r, m.r) * 1.6;
+  const written = named
+    .map((name) => ({ name, box: anchors.pointAt[name] }))
+    .filter((p) => p.box[4] !== 0)
+    .map((p) => ({ name: p.name, cx: (p.box[0] / 100) * width, cy: (p.box[1] / 100) * height, halfW: (p.box[2] / 100) * width, halfH: (p.box[3] / 100) * height }));
+  const crosses = (x1, y1, x2, y2, o, pad) => {
+    // Does the line from (x1, y1) to (x2, y2) pass through the padded box?
+    let t0 = 0;
+    let t1 = 1;
+    const clip = (d, lo, hi, from) => {
+      if (Math.abs(d) < 1e-9) return from >= lo && from <= hi;
+      const a = (lo - from) / d;
+      const b = (hi - from) / d;
+      t0 = Math.max(t0, Math.min(a, b));
+      t1 = Math.min(t1, Math.max(a, b));
+      return t0 <= t1;
+    };
+    return clip(x2 - x1, o.cx - o.halfW - pad, o.cx + o.halfW + pad, x1) && clip(y2 - y1, o.cy - o.halfH - pad, o.cy + o.halfH + pad, y1);
+  };
+  const placed = [];
+  const spotsFor = (m) => {
+    const sides = [['left', m.tx], ['right', width - m.tx], ['top', m.ty], ['bottom', height - m.ty]].sort((p, q) => p[1] - q[1]);
+    const spots = [];
+    sides.forEach(([side]) => {
+      [0, 1, -1, 2, -2, 3, -3].forEach((k) => {
+        const slide = k * m.r * 1.8;
+        spots.push({
+          level: k === 0,
+          cx: side === 'left' ? -reach - m.r : side === 'right' ? width + reach + m.r : m.tx + slide,
+          cy: side === 'top' ? -reach - m.r : side === 'bottom' ? height + reach + m.r : m.ty + slide,
+        });
+      });
+    });
+    return spots;
+  };
+  const roomy = (m, s) => placed.every((o) => Math.hypot(o.cx - s.cx, o.cy - s.cy) >= apart(o, m));
+  const offInk = (m, s) => written.every((o) => o.name === m.part || !crosses(s.cx, s.cy, m.tx, m.ty, o, m.r * 0.35));
+  const stand = (m, spot) => { m.cx = spot.cx; m.cy = spot.cy; placed.push(m); };
+  // Those with a straight, clear run from their nearest side stand first, so a
+  // circle that has to slide moves round them and not the other way about.
+  const waiting = [];
+  markers.filter((m) => m.outside).forEach((m) => {
+    const straight = spotsFor(m)[0];
+    if (offInk(m, straight) && roomy(m, straight)) stand(m, straight);
+    else waiting.push(m);
+  });
+  waiting.forEach((m) => {
+    const spots = spotsFor(m);
+    stand(m, spots.find((s) => roomy(m, s) && offInk(m, s)) || spots.find((s) => roomy(m, s)) || spots[0]);
+  });
+  // A spot beyond the drawing's edge grows the canvas that way rather than
+  // being pushed back onto what it sits beside. The two sides grow together,
+  // so a drawing with circles down one side still sits in the middle of its card.
   const top = Math.max(0, ...markers.map((m) => m.r + gap - m.cy));
   const bottom = Math.max(0, ...markers.map((m) => m.cy + m.r + gap - height));
+  const side = Math.max(0, ...markers.map((m) => Math.max(m.r + gap - m.cx, m.cx + m.r + gap - width)));
+  const fullW = width + 2 * side;
   const fullH = height + top + bottom;
+  const n = (v) => v.toFixed(1);
+  const arrows = markers.filter((m) => m.outside).map((m) => {
+    // From the circle's edge towards the middle of what is written, stopping
+    // where the line meets the writing's box, a little short of it.
+    const dx = m.tx - m.cx;
+    const dy = m.ty - m.cy;
+    const len = Math.hypot(dx, dy) || 1;
+    const ux = dx / len;
+    const uy = dy / len;
+    const clear = m.r * 0.25;
+    const inside = Math.min(
+      Math.abs(ux) > 1e-6 ? (m.halfW + clear) / Math.abs(ux) : Infinity,
+      Math.abs(uy) > 1e-6 ? (m.halfH + clear) / Math.abs(uy) : Infinity
+    );
+    const head = m.r * 0.7;
+    const x1 = m.cx + ux * m.r + side;
+    const y1 = m.cy + uy * m.r + top;
+    const x2 = m.tx - ux * inside + side;
+    const y2 = m.ty - uy * inside + top;
+    const bx = x2 - ux * head;
+    const by = y2 - uy * head;
+    const wing = head * 0.42;
+    return `<line x1="${n(x1)}" y1="${n(y1)}" x2="${n(bx)}" y2="${n(by)}" stroke="${WALL_LABEL_GREEN}" stroke-width="${n(m.r * 0.17)}" stroke-linecap="round"/>` +
+      `<polygon points="${n(x2)},${n(y2)} ${n(bx - uy * wing)},${n(by + ux * wing)} ${n(bx + uy * wing)},${n(by - ux * wing)}" fill="${WALL_LABEL_GREEN}"/>`;
+  });
   const circles = markers.map((m) => {
+    const cx = m.cx + side;
     const cy = m.cy + top;
     const pt = m.r * 1.1;
-    return `<circle cx="${m.cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${m.r.toFixed(1)}" fill="${WALL_LABEL_GREEN}"/>` +
-      `<text x="${m.cx.toFixed(1)}" y="${(cy + pt * DIGIT_HALF_EM).toFixed(1)}" text-anchor="middle" ` +
-      `font-family="${WALL_TITLE_FONT}, Arial Black, Arial, sans-serif" font-size="${pt.toFixed(1)}" font-weight="bold" fill="#FFFFFF">${m.step}</text>`;
+    return `<circle cx="${n(cx)}" cy="${n(cy)}" r="${n(m.r)}" fill="${WALL_LABEL_GREEN}"/>` +
+      `<text x="${n(cx)}" y="${n(cy + pt * DIGIT_HALF_EM)}" text-anchor="middle" ` +
+      `font-family="${WALL_TITLE_FONT}, Arial Black, Arial, sans-serif" font-size="${n(pt)}" font-weight="bold" fill="#FFFFFF">${m.step}</text>`;
   });
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${width}" height="${Math.ceil(fullH)}" viewBox="0 0 ${width} ${Math.ceil(fullH)}">` +
-    `<image href="${baseHref}" xlink:href="${baseHref}" x="0" y="${top.toFixed(1)}" width="${width}" height="${height}"/>` +
-    circles.join('') + `</svg>`;
-  return { svg, width, height: Math.ceil(fullH) };
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${Math.ceil(fullW)}" height="${Math.ceil(fullH)}" viewBox="0 0 ${Math.ceil(fullW)} ${Math.ceil(fullH)}">` +
+    `<image href="${baseHref}" xlink:href="${baseHref}" x="${n(side)}" y="${n(top)}" width="${width}" height="${height}"/>` +
+    arrows.join('') + circles.join('') + `</svg>`;
+  return { svg, width: Math.ceil(fullW), height: Math.ceil(fullH) };
 }
 
 // Render a primitive, then overlay its callouts, returning { png, aspect } in the
@@ -408,10 +528,24 @@ async function renderAnnotated(visual, prim, sharp) {
   let basePng = await sharp(Buffer.from(baseSvg), { density: 144 }).resize(baseResize).png().toBuffer();
   const meta = await sharp(basePng).metadata();
 
+  // A note ringing one place and pointing at it (note-callouts.js). It is the
+  // drawing's only kind of pointer when it has one: step circles or word labels
+  // laid out afterwards would be placed against a canvas the notes had moved.
+  const notes = (visual.callouts || []).filter(isNoteCallout);
+  if (notes.length) {
+    if (notes.length !== visual.callouts.length) {
+      throw new Error('a drawing carries notes or step circles or word labels, one kind only; this one mixes a note with another.');
+    }
+    const noted = noteCalloutsSvg(notes, anchors, meta.width, meta.height, 'data:image/png;base64,' + basePng.toString('base64'), WALL_TITLE_FONT);
+    const png = await sharp(Buffer.from(noted.svg)).resize(noted.width >= noted.height ? { width: ANNOTATED_PX } : { height: ANNOTATED_PX }).png().toBuffer();
+    return { png, aspect: noted.width / noted.height };
+  }
+
   const steps = (visual.callouts || []).filter(isStepCallout);
   if (steps.length) {
     const marked = stepMarkersSvg(steps, anchors, meta.width, meta.height, 'data:image/png;base64,' + basePng.toString('base64'));
     basePng = await sharp(Buffer.from(marked.svg)).png().toBuffer();
+    meta.width = marked.width;
     meta.height = marked.height;
     if (steps.length === visual.callouts.length) {
       const png = await sharp(basePng).resize(meta.width >= meta.height ? { width: ANNOTATED_PX } : { height: ANNOTATED_PX }).png().toBuffer();
@@ -565,6 +699,12 @@ async function preRenderSvgs(spec, specDir) {
         if (part && part.visual) collectVisual(part.visual);
       }
     }
+    if (card && card.type === 'stepByStep' && Array.isArray(card.steps)) {
+      // Every step sits beside its own picture.
+      card.steps.forEach((step, index) => {
+        if (step && step.visual) collectVisual(stepVisual(card, index));
+      });
+    }
     if (card && card.type === 'equivalenceGrid' && Array.isArray(card.rows)) {
       for (const row of card.rows) {
         if (row && row.visual) collectVisual(row.visual);
@@ -647,7 +787,7 @@ async function preRenderSvgs(spec, specDir) {
         if (prim.tightFn) {
           // Shared aspect-true primitive: render at its real proportions and
           // store { png, aspect } so the card places it tight (no square pad).
-          const { svg, aspect } = prim.tightFn(primSpec);
+          const { svg, aspect, anchors } = prim.tightFn(primSpec);
           const resize = aspect >= 1 ? { width: RENDER_OUT_PX } : { height: RENDER_OUT_PX };
           // Density has to rise with the target: sharp rasterises the SVG at its
           // intrinsic size scaled by density and only then resizes, so leaving it
@@ -670,7 +810,9 @@ async function preRenderSvgs(spec, specDir) {
             .resize(resize)
             .png()
             .toBuffer();
-          map[key] = { png, aspect };
+          // The places a drawing names go with its picture, so a sheet that
+          // points a note at one (a stepByStep step) can find it.
+          map[key] = anchors ? { png, aspect, anchors } : { png, aspect };
         } else {
           // The drawing is still authored on the 600-unit canvas; only the raster
           // it is baked into is larger.
@@ -713,6 +855,7 @@ async function preRenderSvgs(spec, specDir) {
 }
 
 module.exports = {
+  stepMarkersSvg,
   clockKey: clockWall.keyFn,
   fractionCircleKey,
   fractionBarKey,

@@ -52,6 +52,17 @@ function drawHeaderPill(slide, text, fontPt, box, align, signal) {
 
 // A sign with no cue beside it: a small pill holding the drawing alone, where
 // the cue's pill would end. An answer slide's tick needs no words.
+// Only the tick stands alone in a header. A pencil, a speech bubble or a
+// magnifier tells a child what to do with the words beside it, so it belongs on
+// the card that asks, or beside the header's own cue. Alone in the header it sat
+// next to the Do badge while the card saying "Write..." carried nothing
+// (Daniel, 5 October 2026: "pencils should be on the card or next to text
+// that's actually asking them to write something"). A slide file that still
+// names one for a header with no cue is drawn without it.
+function standsAloneInTheHeader(signal) {
+  return signal === 'tick';
+}
+
 function drawSignalAlone(slide, signal, box) {
   const iconH = Math.min(0.40, box.h - 0.10);
   const iconW = signalWidth(signal, iconH);
@@ -111,7 +122,7 @@ function drawTitleHeader(slide, data, ctx) {
       color: COLOURS.body, align: textX ? 'left' : (instructionH > HEADER_TITLE.instructionH ? 'center' : 'right'), valign: 'middle',
       margin: 0, fit: FIT
     });
-  } else if (pills && data.signal) {
+  } else if (pills && standsAloneInTheHeader(data.signal)) {
     drawSignalAlone(slide, data.signal, {
       x: HEADER_TITLE.instructionX, y: HEADER_TITLE.instructionY,
       w: HEADER_TITLE.instructionW - badgeRoom, h: HEADER_TITLE.instructionH
@@ -214,7 +225,7 @@ function drawStarterHeader(slide, data, ctx) {
       color: COLOURS.body, align: textX ? 'left' : 'right', valign: 'middle',
       margin: 0, fit: FIT
     });
-  } else if (pills && data.signal) {
+  } else if (pills && standsAloneInTheHeader(data.signal)) {
     drawSignalAlone(slide, data.signal, {
       x: HEADER_STARTER.instructionX, y: HEADER_STARTER.instructionY,
       w: HEADER_STARTER.instructionW, h: HEADER_STARTER.instructionH

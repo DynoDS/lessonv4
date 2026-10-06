@@ -20,7 +20,7 @@ So pick each beat on both axes, and think about the shape across the lesson rath
 
 **Protect answers without destroying meaningful order.** Avoid accidental item-position patterns that let children guess answers when order carries no teaching meaning. Preserve chronology, procedural sequence, deliberate mathematical patterns and any other order that is itself part of the learning.
 
-Do not ban mini-whiteboards or devices and do not make books or cold calling the default. Normally state the learning action. Name a device, medium or substantive response structure only when it genuinely forms part of the selected activity.
+State the learning action and leave where children record it to the teacher: the wording names no whiteboard, book or cold call (`preferences.md` → Routine classroom management). Name a device or substantive response structure only when it genuinely forms part of the selected activity.
 
 Each entry says what it is and what it is best for, and gives its access notes (`SEND access`, or `Demands and supports`); some also carry `The limit`, a `Register` and `Mechanism`, or the `Teacher-owned response routine` they need, and two are marked `Not used`, so the agent can compare on like-for-like fields.
 
@@ -38,7 +38,7 @@ The first of the four is the one most easily dropped, and it is what makes the t
 
 It is a task being set when children are handed something (a printed piece, a source, a set of cards), when they work with a partner or a group, or when the work runs past a minute or two. The `successCriteriaRefs` for the steps the work is judged by belong on the same beat, because that is what the children check themselves against while they write.
 
-**The limit is the quick beat, and keeping it quick is the point.** A question answered on whiteboards and held up is not a task being set: the sentence on the board is the whole instruction, and adding who has what and what to remember turns thirty seconds of thinking into two minutes of admin. Ask which one this beat is before writing anything: children answering where they sit, or children being set to work.
+**The limit is the quick beat, and keeping it quick is the point.** A question every child answers where they sit is not a task being set: the sentence on the board is the whole instruction, and adding who has what and what to remember turns thirty seconds of thinking into two minutes of admin. Ask which one this beat is before writing anything: children answering where they sit, or children being set to work.
 
 Two things stay where they already live, so nobody writes them twice. The teacher's own run of the beat, the bit taken live on the board and what to watch for, stays in `speakerNotes`. What to print, how many of it, and where children sit stays in the lesson's `teacherOrientation`, which is the one place a teacher reads before the lesson rather than during it.
 

@@ -148,20 +148,19 @@ The lesson's opening Date + LO are not a third scenario: they are carried by the
 
 ### Signs: `signal`
 
-A sign is a small drawing children learn once and read before a word: it says what kind of job this is. Put one on the slide's header with a slide-level `"signal"` (it draws at the start of the header instruction's pill, or in a small pill of its own where the slide has no `instruction`), or at the start of a text card with `"signal"` on that `text` item. Any template that has a header takes the slide-level field, `teach-layout` included.
+A sign is a small drawing children learn once and read before a word: it says what kind of job this is. Put it where the words that ask are: at the start of a text card with `"signal"` on that `text` item, or, when the slide's header carries a short `instruction`, at the start of that instruction's pill with a slide-level `"signal"`. A pencil, speech bubble or magnifier never stands alone in the header: with no `instruction` there it has no words to belong to, so the builder leaves it out and the check says to put it on the card that asks (the teacher, 5 October 2026: "pencils should be on the card or next to text that's actually asking them to write something"). The header's right-hand end belongs to the Do badge, and to the tick on answer slides. Any template that has a header takes the slide-level field, `teach-layout` included.
 
 | `signal` | Means | Use it |
 |---|---|---|
-| `pencil` | You write now | whenever children write, and on every sentence starter (`"Finish the sentence: Harry could ___ because ___."`) |
+| `pencil` | You write now | whenever children write, and on every sentence starter (`"Finish the sentence: Harry could ___ because ___."`). When children write their answer to a question, put it on the question's own card: the sign is what tells them to write, so the board needs no line saying so |
 | `talk` | Talk to your partner | whenever children tell a partner |
 | `magnifier` | Look closely | when children look closely at a picture, a source or a map |
 | `tick` | Mark your work | on answer and check slides, where children check what they wrote. The builder draws it there itself (a title ending `Answers` or ` - check`, or the answer slide of a `revealPair`), so leave it unnamed; a sign you do name on such a slide is kept |
 
-A Do beat's badge is drawn by the builder from the lesson design, never named by hand: a sheet at the header's far right on every slide of a beat with a printed activity, and a lightning bolt on a task kept on the board, however long, so the teacher sees at a glance which tasks have a sheet to hand out (slide field `doSign`, `sheet` or `quick`; answer and check slides take none). A question slide and its answer slide may differ in their header cue, sign and badge, so nothing from the question slide's header is copied on to its answers to keep a `revealPair` matching. One sign per place: one on the header, one per text card, never two on a card. A line to remember already carries its star (the builder draws it), so it takes no `signal`, and the check refuses one there. The star and the criteria panel's flipchart are drawn by the builder and are never named by hand. The sign is sized from the card's text, about one line tall.
+A Do beat's badge is drawn by the builder from the lesson design, never named by hand: a sheet at the header's far right on every slide of a beat with a printed activity, and a lightning bolt on a task kept on the board, however long, so the teacher sees at a glance which tasks have a sheet to hand out (slide field `doSign`, `sheet` or `quick`; answer and check slides take none). A question slide and its answer slide may differ in their header cue, sign and badge, so nothing from the question slide's header is copied on to its answers to keep a `revealPair` matching. One sign per place: one beside a header instruction, one per text card, never two on a card, and never the same sign on the header and again on the card under it. A line to remember already carries its star (the builder draws it), so it takes no `signal`, and the check refuses one there. The star and the criteria panel's flipchart are drawn by the builder and are never named by hand. The sign is sized from the card's text, about one line tall.
 
 ```json
 { "template": "body-full", "title": "What should Harry do?",
-  "instruction": "Write your answer in your book.", "signal": "pencil",
   "body": { "type": "text", "value": "Finish the sentence: Harry could ___ because ___.",
             "colorRole": "task-blue", "signal": "pencil" } }
 ```
@@ -1045,6 +1044,28 @@ Leaving `rows` out altogether is a different thing and is unchanged: it draws th
 - `title` — optional. Left out, the title bar reads `operation: result` with the result read straight off the `to` cells ("10 more: 3,472"), so the bar and the chart cannot disagree. Give a string to write it yourself ("24,306 + 10,000 = 34,306"); give `""` for no title bar.
 - `counters` — optional `{ "from": { ... }, "to": { ... } }` populations, using the same column-keyed shape as row counters. The before and after charts each show their own counters, so 100-more is always calculated from its stated starting number rather than from another comparison.
 - `exchanges` — optional array of movement cues. Each cue has `from` and `to` column names, optional `count` (default `10`), and optional `label` (derived when left out). The cue visibly draws ten equal source counters exchanging into one counter in the next column; reverse the column names to show partitioning one larger counter into ten smaller counters. Use an array because a cascade such as 1,990 → 2,000 needs two cues: `[{ "from": "T", "to": "H" }, { "from": "H", "to": "Th" }]`. A single object may be supplied as `exchange` for the one-cue case.
+
+**A written column calculation — the `calculation` field.** Column addition, subtraction or short multiplication set out as the class writes it. Give the numbers and the drawing sets out the rest, the way the teacher teaches it: the numbers lined up from the ones, the sign in a narrow column beside the last number, a thick line, the answer row, a second thick line (he teaches the two thick lines as a big equals sign), and a shallow row **under** the answer where the small carried digit goes.
+
+```json
+{ "type": "place-value-chart",
+  "columns": ["Thousands", "Hundreds", "Tens", "Ones"],
+  "calculation": {
+    "operator": "+",
+    "numbers": ["3426", "237"],
+    "answer": "3663",
+    "carry": { "T": "1" }
+  } }
+```
+
+- `numbers` — two to four numbers, top to bottom, each written whole (`"237"`). The drawing lines them up, so a three-digit number under a four-digit one cannot land a column out. Two exceptions: `["", ""]` with `columns` is the empty frame the class sets its own calculation out in, and a number written as an array of cells, one per column (`["4", "0", "2", ""]`), is placed exactly as typed, which is only for showing a number set out in the wrong columns for the class to catch.
+- `operator` — `"+"`, `"-"` or `"x"`.
+- `answer` — leave it out for the blank calculation the teacher completes live; give it on the reveal and it prints in answer green. A question slide and its answer slide are the same `calculation`, without and then with `answer` and `carry`.
+- `carry` — the small digit, keyed by the column it is written in and added with: ten ones exchanged in 3,426 + 237 is `{ "T": "1" }`. Subtraction has no carry row, because an exchange is written above the top number. `"carry": false` leaves the row out of an addition too, for a lesson taught before exchanging has been met; the two thick lines stay.
+- `worked: true` — the whole calculation in the worked-example purple, for a model the class watches or a mistake they inspect. Leave it off a reveal.
+- `columns` — optional; left out, the headings are read off the longest number. Include a column for every digit of the answer (950 + 70 needs Thousands).
+
+A column calculation written as `rows` with `"label": "+"` is refused by name (`PLACE_VALUE_CHART_IS_A_CALCULATION`). Rows cannot set one out: they put the carried digit wherever the row happened to be typed and draw every line the same weight, which is the picture the teacher sent back on 5 October 2026. The worksheet's `column-method-grid` and a wall card's `calculation` are this same drawing, so the board, the sheet and the wall show one column sum.
 
 `pair` replaces `rows` — a chart with both draws the pair. Everything else about the chart is unchanged, decimal columns included: the `.` column carries the point and never says "same", because it is not a digit.
 

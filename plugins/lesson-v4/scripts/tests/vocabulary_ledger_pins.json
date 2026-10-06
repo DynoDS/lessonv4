@@ -4197,7 +4197,7 @@
    "present": [
     {
      "file": "agents/lesson-voice-editor.md",
-     "text": "Walk the view in order - every script, explanation, definition, question, task instruction, success criterion, sticky fact, model answer and worksheet string it prints",
+     "text": "Walk the view one kind of wording at a time - every script, explanation, definition, question, task instruction, success criterion, sticky fact, model answer and worksheet string it prints",
      "section": {
       "heading": "## What you read",
       "occurrence": 0,
@@ -4880,7 +4880,7 @@
    "present": [
     {
      "file": "references/teacher-slide-visual-profile.md",
-     "text": "- Vocabulary green marks this lesson's taught terms wherever a child reads them: in task text, teaching sentences, sticky knowledge, success criteria and captions alike, every occurrence, so the word looks the same on slide 12 as it did on its vocabulary card and a child recognises it as the word they were taught. Mark each occurrence with the `vocabulary` emphasis role.",
+     "text": "- Vocabulary green marks this lesson's taught terms wherever a child reads them: in task text, teaching sentences, sticky knowledge, success criteria and captions alike, every occurrence, so the word looks the same on slide 12 as it did on its vocabulary card and a child recognises it as the word they were taught. The builder does this itself in every line of text, question, list item and table cell: from the slide after a word's vocabulary card onwards it prints that word green, plurals included, wherever the line is black, question blue or purple, so those need no mark from you. Mark a taught word by hand only where its card comes later or not at all (a prior lesson's term), with the `vocabulary` emphasis role, and in a word bank as `{{word}}`.",
      "section": {
       "heading": "## Semantic colour",
       "occurrence": 0,

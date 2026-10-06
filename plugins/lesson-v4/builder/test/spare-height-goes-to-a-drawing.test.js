@@ -25,7 +25,7 @@ const QUESTIONS = {
 const CHART = {
   type: 'place-value-chart',
   columns: ['Hundreds', 'Tens', 'Ones'],
-  rows: [{ cells: [' ', ' ', ' '] }, { label: '+', cells: [' ', ' ', ' '] }, { cells: ['', '', ''] }]
+  calculation: { operator: '+', numbers: ['', ''] }
 };
 
 const layout = (items) => stackLayout(ZONE, { type: 'stack', items }, CTX);

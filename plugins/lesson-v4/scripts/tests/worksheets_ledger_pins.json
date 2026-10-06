@@ -5740,7 +5740,7 @@
    "present": [
     {
      "file": "references/preferences.md",
-     "text": "Generated slides, notes and task briefs normally state the learning action only, such as \"Write...\", \"Discuss...\", \"Draw...\" or \"Choose...\", without naming a recording surface or routine participation method.",
+     "text": "Generated slides, notes and task briefs state the learning action only, such as \"Write...\", \"Discuss...\", \"Draw...\" or \"Choose...\".",
      "section": {
       "heading": "## Classroom Norms",
       "occurrence": 0,
@@ -5749,7 +5749,7 @@
     },
     {
      "file": "references/preferences.md",
-     "text": "Name a medium, device or response structure only when it is genuinely part of the selected task or required resource.",
+     "text": "What is still named is a thing the lesson itself puts in children's hands (the printed sheet, the cards, the map) and a device or response structure that is genuinely the task.",
      "section": {
       "heading": "## Classroom Norms",
       "occurrence": 0,
@@ -9239,7 +9239,7 @@
     },
     {
      "file": "agents/worksheet-designer.md",
-     "text": "**Support sits with the question it serves, and a stimulus comes before its questions.** A word bank, reference or picture that serves one question lives inside that question's stack, directly beside the element it feeds - never parked in another zone with a pointer line (`Use this word bank for question 2.`) asking the child to commute across the page. When it will not fit beside its question, that is a fit problem with a fit answer (another layout, or the fit-priority route), not a licence to exile the support. The pointer line of rule 12 is for a reference several questions use, and it sits where the printed page's test puts any support: before the first question that reads from it, after the work when a child only glances at it. The same order holds for any stimulus a question depends on: a child must never meet `Is Rowan's claim supported?` on a page that has not yet shown them Rowan's claim. Zones fill in reading order, so hand content over in the order the dependencies need: stimulus, then the questions that lean on it.",
+     "text": "**Support sits with the question it serves, and a stimulus comes before its questions.** A word bank, reference or picture that serves one question lives inside that question's stack, directly beside the element it feeds - never parked in another zone with a pointer line (`Use this word bank for question 2.`) asking the child to commute across the page. When it will not fit beside its question, that is a fit problem with a fit answer (another layout, or the fit-priority route), not a licence to exile the support. The pointer line of rule 12 is for a reference several questions use, and it sits where the printed page's test puts any support: before the first question that reads from it, after the work when a child only glances at it. The same order holds for any stimulus a question depends on: a child must never meet `Is Rowan's claim supported?` on a page that has not yet shown them Rowan's claim. Zones fill in reading order, so hand content over in the order the dependencies need: stimulus, then the questions that lean on it. A hint is the one support that follows its question: a smaller question or nudge for a stuck child (a design's `support` such as `What do eight ones and two ones make?`) goes straight after the question it helps with, as an `instruction` with `\"hint\": true`, which prints it as `If you're stuck: ...`. Put first it takes the question's number and reads as the question, and the build refuses it.",
      "section": {
       "heading": "# Worksheet Designer",
       "occurrence": 0,

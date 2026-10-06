@@ -685,6 +685,16 @@ What changed each time:
 
 These examples show the moves; they are not wording to reuse in another lesson.
 
+**A method's steps are what the child does, in the order they do it, not every mark the pen makes.** A Year 4 column addition lesson (one exchange) went out with:
+
+> Write the numbers with ones under ones. / Write + beside the second number and draw a line underneath. / Add the ones and write just the ones digit below. / If there are ten or more ones, write a small 1 in tens. / Add the tens, including the small 1. / Move left, adding each column and writing its total below.
+
+Every step is one imperative sentence, and the list still was not the one the teacher would put up. The steps he agreed with:
+
+> Line up the digits in the correct columns. / Start with the ones. / Add each column from right to left. / If the total is 10 or more, exchange 10 into the next column. / Check that every column has been added.
+
+What changed. The lesson's taught word, `exchange`, is the step where the child does it; the first list described its notation (`write a small 1`) twice and never said the word. The steps the class already owned from the lesson before became short (`Start with the ones.`), and the setting out they do without thinking (the + sign, the answer line) left, so the detail sits on the one decision that is new today. `Move left, adding each column and writing its total below` named a direction and trailed two `-ing` clauses, where `Add each column from right to left` is the action. And the list ends on a check a child can run. So before keeping a method list, say aloud what the child's hand does from start to finish, then ask three things of the steps: is the word this lesson teaches in the step where it happens; is the fullest step the one that is new today; and could a step be deleted without any child going wrong? The limit: a mark that is itself the new learning stays (in the lesson that first teaches where the exchanged ten is written, that is the step), and this is not a return to three-word cues, because each of the five still names an action and what it acts on.
+
 Criteria are read and used by the child, so they are written in the child's own words. A step can be imperative and specific and still fail by being planning language:
 
 > Judge balance using the pattern across a day or week.

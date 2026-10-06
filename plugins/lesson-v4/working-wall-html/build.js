@@ -27,6 +27,7 @@ const { renderStickyKnowledge, renderVocabDefinition, renderWorkedExample, rende
 const { renderReferenceTable, renderEquivalenceGrid, renderVocabChips } = require("./src/render-grids");
 const { renderPhotoMapOverview, renderHeroCallouts, renderCauseCards } = require("./src/render-overview");
 const { renderDiagramSection } = require("./src/render-section");
+const { renderStepByStep } = require("./src/render-steps");
 const {
   prepareWorkingWallOptionalImages,
   wrapWorkingWallPage,
@@ -49,6 +50,7 @@ const RENDERERS = {
   heroCallouts: renderHeroCallouts,
   causeCards: renderCauseCards,
   diagramSection: renderDiagramSection,
+  stepByStep: renderStepByStep,
 };
 
 function naturalFilename(topic, ext) {

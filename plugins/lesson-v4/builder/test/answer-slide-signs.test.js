@@ -118,6 +118,13 @@ for (const [name, drawer, extra] of [
     assert.ok(pill.w < 1, 'the pill hugs the sign');
   });
 
+  test(`a pencil with no cue is not drawn in the ${name}`, () => {
+    // It sat beside the Do badge while the card that said "Write..." had none.
+    const result = capture(drawer, Object.assign({ signal: 'pencil' }, extra));
+    assert.equal(result.images.length, 0);
+    assert.equal(result.shapes.length, 0);
+  });
+
   test(`no sign and no cue leaves the ${name} bare`, () => {
     const result = capture(drawer, Object.assign({}, extra));
     assert.equal(result.images.length, 0);

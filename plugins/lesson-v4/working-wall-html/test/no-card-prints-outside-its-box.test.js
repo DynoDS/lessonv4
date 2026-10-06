@@ -32,7 +32,7 @@ chrome.htmlToPdf = async () => {
 };
 // Mark every page with the card type that drew it, before build.js takes the
 // renderers.
-for (const name of ["render-panels", "render-grids", "render-display", "render-overview", "render-section"]) {
+for (const name of ["render-panels", "render-grids", "render-display", "render-overview", "render-section", "render-steps"]) {
   const renderers = require(`../src/${name}`);
   for (const [key, render] of Object.entries(renderers)) {
     if (!/^render/.test(key) || typeof render !== "function") continue;
@@ -65,6 +65,23 @@ const SECTION = {
         visual: { type: "numberLine", start: -5, end: 5, interval: 1, labels: "all", jumps: [{ from: -3, to: -2 }, { from: -2, to: -1 }, { from: -1, to: 0 }, { from: 0, to: 1 }] },
         notes: ["−3, −2, −1, 0, 1"],
       },
+    ],
+  }],
+};
+
+// A method told step by step, with its longest card: the column sum whose
+// "Exchange" step wraps its key line and its sentence (5 October 2026).
+const stepSum = (answer, carry) => ({ type: "place-value-chart", columns: ["Hundreds", "Tens", "Ones"], calculation: { operator: "+", numbers: ["247", "135"], ...(answer ? { answer } : {}), ...(carry ? { carry } : {}) } });
+const STEPS = {
+  topic: "Column addition step by step",
+  cards: [{
+    type: "stepByStep", page: { size: "A3", orientation: "portrait" }, title: "How to add in columns", example: "247 + 135",
+    steps: [
+      { heading: "Line up the digits", text: ["Ones under ones.", "Tens under tens."], visual: stepSum() },
+      { heading: "Add the ones", key: "7 + 5 = 12", text: "Write the 2 in the ones.", visual: stepSum("2"), note: ["7 + 5 = 12", "Write 2 ones"], point: "ones answer" },
+      { heading: "Exchange", key: "12 ones = 1 ten and 2 ones", text: "Write a small 1 under the tens.", visual: stepSum("2", { Tens: "1" }), note: ["10 ones", "for 1 ten"], point: "tens carry" },
+      { heading: "Add the tens", key: "4 + 3 + 1 = 8", text: "Add the small 1 too.", visual: stepSum("82", { Tens: "1" }), note: ["4 + 3 + 1 = 8"], point: "tens answer" },
+      { heading: "Add the hundreds", key: "2 + 1 = 3", text: "The answer is 382.", visual: stepSum("382", { Tens: "1" }), note: ["247 + 135", "= 382"], point: "hundreds answer" },
     ],
   }],
 };
@@ -194,8 +211,10 @@ test("no wall card prints outside its box, on every fixture, a diagram section a
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "wall-boxes-"));
   const sectionPath = path.join(root, "section.json");
   fs.writeFileSync(sectionPath, JSON.stringify(SECTION));
+  const stepsPath = path.join(root, "steps.json");
+  fs.writeFileSync(stepsPath, JSON.stringify(STEPS));
   const specs = fs.readdirSync(FIXTURES).filter((name) => name.endsWith(".json")).map((name) => ({ spec: path.join(FIXTURES, name), own: true }))
-    .concat([{ spec: sectionPath, own: true }])
+    .concat([{ spec: sectionPath, own: true }, { spec: stepsPath, own: true }])
     .concat(arrowWalls(root).map((spec) => ({ spec, own: true, arrows: true })))
     .concat(savedWalls().map((spec) => ({ spec, own: false })));
   const browser = await chrome.launchBrowser();

@@ -172,9 +172,13 @@ a smudge. Where the composition leaves a genuinely clear area (a corner the
 cards never reach, the empty half of a light slide) the drawing may take it,
 at the same 50%: a one-inch drawing faded into a two-foot gap reads as a
 smudge, and the teacher would rather see it (8 September 2026). Several can
-share a slide when they share a style and each has its own clear place; there
-is no one-drawing-per-slide rule. What fails is a scatter of unrelated marks,
-which reads as clutter however relevant each one is on its own, and a drawing
+share a slide when each has its own clear place; there is no
+one-drawing-per-slide rule, and they need not match each other. Sharing a
+style was once the condition, and it is how a deck came to be decorated with
+three near-identical sparkles (5 October 2026). Sizes vary across a deck too,
+"not always big, just variety of sizes": small, medium, and now and then one
+about two inches across. What fails is a drawing that
+touches something a child reads, and a drawing
 whose subject can no longer be told at the size and fade it will get: judge a
 candidate as it will be placed, not on the preview sheet at full size, since a
 chopping board seen from above at one inch is a phone.
@@ -277,7 +281,20 @@ cannot say what the search returned, you have not made the choice yet.
   composition can leave a corner, a margin beside a card and a band under the
   content, and three relevant drawings can sit in those three places without any
   of them touching a word. Take each clear area on its own merits and stop when
-  the relevant subjects run out, never when a count is reached.
+  the clear places run out, never when a count is reached. A drawing of
+  something the slide names goes in first, then one that belongs to the lesson
+  without being named there, and plain decoration takes the places still open.
+  That order decides which goes first, never whether plain decoration is seen.
+- A lesson drawing may sit in the `decorations` array, in clear space, like any
+  other framed drawing. It does not need a text item to carry it, and a
+  photograph of the same thing on the slide does not rule it out: the orange
+  drawing in the corner of the slide with the Christingle photograph is what
+  the teacher asked for (5 October 2026).
+- Gather widely before placing anything: what each slide names, what belongs to
+  the lesson, and plain decoration in several families. There is no limit on
+  the searches a deck may run or the drawings it may collect, and one that is
+  gathered and never placed costs nothing. A small pool can only produce a deck
+  that cycles it, however well each slide is then judged.
 - Decide slide by slide rather than against a whole-deck quota. Each slide's
   answer belongs to that slide: what P1 already carries there, whether a
   relevant P2 helps there, and whether the finished slide reads flat enough to
@@ -289,8 +306,11 @@ cannot say what the search returned, you have not made the choice yet.
   rather than a well-judged one.
 - Vary what is used and where it sits. The same drawing slide after slide, or
   the same corner every time, reads as a template rather than a decision and
-  stops being noticed at all. Slides that are genuinely full stay bare, and that
-  contrast is what makes the pictures elsewhere read as chosen.
+  stops being noticed at all. Across a deck the teacher should meet different
+  drawings, so reach for one the deck has not used yet, and search again when
+  the pool runs thin. The exception is a drawing of a slide's own subject, which
+  may return wherever that subject does. Slides that are genuinely full stay
+  bare.
 - Zero is valid only when the explicit opportunity pass found no suitable use or
   every plausible use would compete with P1 or P2, physically and on its own
   slide. A deck-level reason - visual consistency, the strength or number of
@@ -303,8 +323,11 @@ cannot say what the search returned, you have not made the choice yet.
   the drawing count is zero and the emoji count is not, the reason to record is
   what the library search returned for those items, item by item, and not a
   sentence about how visual the deck already is.
-- Never use an unrelated drawing to reach a number. A drawing that does not
-  belong to this lesson's subject is worse on the slide than no drawing at all.
+- A P2 is about the thing beside it or it is not a P2. A drawing of the wrong
+  subject, placed where a child reads it as belonging to a word or question,
+  tells them something false, and is worse there than no drawing. This is a
+  rule about P2 only: a P3 sits in spare space, claims no meaning, and needs no
+  link to the lesson at all.
 
 ### The pass writes a record, one line per slide
 
@@ -323,8 +346,11 @@ count is in `slide-room.json` beside the one you read for question 1. Take one
 drawing where four places were measured and `placesLeft` gives the reason the
 other three stayed empty, in a sentence.
 
-This is not a demand for a picture in every place, and "the relevant subjects ran
-out" is the stopping rule you were given and a complete answer. What it ends is
+This is not a demand for a picture in every place. A place too small for a
+drawing to be told at that size, or one where a drawing would sit against a
+word or a helper, is a complete answer. "The subjects ran out" no longer is,
+because decoration needs no subject, and neither is the same sentence written
+onto every slide, which is one thought about the deck copied out. What it ends is
 stopping without noticing: every other check here polices a slide that refused,
 so a slide that accepted once and left five places empty passed unexamined, and
 that is where the layer was actually being emptied. Across twenty built lessons
@@ -829,7 +855,9 @@ birthday question may make the birthday-cake candle the best choice. A search
 for two words can also return the wrong half of the phrase, so the resolver
 always looks at the drawing before accepting it.
 
-Use the search once with an honest set of alternatives. If the library is
+Search each request once with an honest set of alternatives. That is once per
+request, not once per deck: a deck runs as many searches as it has things worth
+looking for. If the library is
 unavailable, the search has no suitable candidate, preview inspection rejects
 the candidates, or publication fails, apply the surface's existing fallback:
 
