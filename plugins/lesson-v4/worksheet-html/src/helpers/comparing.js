@@ -399,8 +399,10 @@ function termKind(term) {
   return "cells";
 }
 
-function termWidthMm(term) {
+function termWidthMm(term, i, terms) {
   const kind = termKind(term);
+  const digits = digitsBesideABox(terms, i);
+  if (digits) return digits.length * NS_CELL_MM;
   if (kind === "operator") {
     return Math.max(4, textWidthMm(String(term), NS_PT));
   }
@@ -415,7 +417,7 @@ function termWidthMm(term) {
 function numberSentenceRowMm(spec) {
   const terms = numberSentenceTerms(spec);
   return (
-    terms.reduce((w, t) => w + termWidthMm(t), 0) +
+    terms.reduce((w, t, i) => w + termWidthMm(t, i, terms), 0) +
     Math.max(0, terms.length - 1) * NS_GAP_MM
   );
 }
@@ -449,6 +451,23 @@ function joinsThePreviousTerm(terms, i) {
   return i > 0 && digits(terms[i]) && digits(terms[i - 1]);
 }
 
+// The printed digits of a number that has a missing-digit box in it, one digit
+// to a cell: "3,21" beside a box is drawn as 3, 2, 1 and an empty cell in ONE
+// frame. As an orange tile touching a black box they still read as "3,21" and
+// then a separate blank (Daniel, 6 October 2026: "the different colour makes it
+// seem like its just 3,21 then blank ... either each number has its own card,
+// or its all in one card"). Null for any value that is not standing against a
+// box, and for one that is not plain digits.
+function digitsBesideABox(terms, i) {
+  if (!Array.isArray(terms) || i == null || termKind(terms[i]) !== "value") return null;
+  const isBox = (t) => t !== undefined && termKind(t) === "cells";
+  if (!isBox(terms[i - 1]) && !isBox(terms[i + 1])) return null;
+  const text = String(terms[i].value);
+  if (!/^\d[\d,]*$/.test(text)) return null;
+  // Each digit, and whether the thousands comma follows it.
+  return [...text.matchAll(/(\d)(,?)/g)].map((m) => ({ digit: m[1], comma: m[2] === "," }));
+}
+
 function renderTerm(term, i, terms) {
   const kind = termKind(term);
   if (kind === "operator") {
@@ -473,6 +492,11 @@ function renderTerm(term, i, terms) {
     body = `<span class="h-ns-cells">${cells}</span>`;
   } else if (kind === "blank") {
     body = `<span class="h-ns-box" style="width:${termWidthMm(term)}mm"></span>`;
+  } else if (kind === "value" && digitsBesideABox(terms, i)) {
+    const cells = digitsBesideABox(terms, i)
+      .map((d) => `<span class="h-ns-cell h-ns-cell--given${d.comma ? " h-ns-cell--comma" : ""}">${d.digit}</span>`)
+      .join("");
+    body = `<span class="h-ns-cells">${cells}</span>`;
   } else if (kind === "value") {
     body = `<span class="h-ns-tile">${esc(String(term.value))}</span>`;
   } else {
@@ -492,7 +516,7 @@ function headingCells(spec) {
       !isOperator(term) && term.heading != null && term.heading !== ""
         ? String(term.heading)
         : null;
-    const width = termWidthMm(term);
+    const width = termWidthMm(term, i, terms);
     if (heading || cells.length === 0) {
       cells.push({ text: heading || "", widthMm: width });
     } else {
@@ -1019,8 +1043,8 @@ const css = `
   }
   .h-ns-term { display: flex; flex-direction: column; align-items: center; }
   /* Part of the number before it: the row's gap is taken back, so the digits
-     and the missing digit's box touch. */
-  .h-ns-term--joined { margin-left: -${NS_GAP_MM}mm; }
+     and the missing digit's box touch and share the rule between them. */
+  .h-ns-term--joined { margin-left: calc(-${NS_GAP_MM}mm - var(--rule-line)); }
   .h-ns-op {
     align-self: center;
     font-size: var(--type-sectionLabel); font-weight: bold;
@@ -1064,6 +1088,16 @@ const css = `
     margin-left: -${RULE.line}mm;
   }
   .h-ns-cell:first-child { margin-left: 0; }
+  /* A printed digit of the same number as the empty cell beside it: the same
+     cell, with the digit in it in the given orange. */
+  .h-ns-cell--given {
+    display: flex; align-items: center; justify-content: center; position: relative;
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-given); line-height: 1.35;
+  }
+  .h-ns-cell--comma::after {
+    content: ","; position: absolute; right: 0.5mm; bottom: 0.4mm;
+  }
   /* Headings line up with the terms by taking the same widths, so the word
      over a column starts exactly where the column does. */
   .h-ns-heads { display: flex; flex-wrap: nowrap; gap: ${NS_GAP_MM}mm; }

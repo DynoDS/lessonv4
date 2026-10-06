@@ -28,7 +28,7 @@
 // again), and how many slips fit on a page.
 
 const { cssVariables, SPACE } = require("./tokens");
-const { PX_PER_MM } = require("./page");
+const { PX_PER_MM, EDGE_MM } = require("./page");
 const { isRow, isStack } = require("./helpers/compose");
 const { renderContent, measureContent, needsContent, helperCss } = require("./helpers");
 const { esc } = require("./helpers/shared");
@@ -508,9 +508,10 @@ const PAGE_H_MM = 297;
 // "I often trim close to the question ... closer, not too close obviously
 // because of human error of cutting"). 4mm leaves a wobbly cut clear of the
 // words. At the paper's own edge the room stays wide, so the words keep clear
-// of a classroom printer's unprintable strip; nobody trims there.
+// of a classroom printer's unprintable strip; nobody trims there. That room is
+// the sheet's own (EDGE_MM in page.js: 6mm since 6 October 2026, 9mm before).
 const CUT_PAD_MM = 4;
-const EDGE_PAD_MM = 9;
+const EDGE_PAD_MM = EDGE_MM;
 // The page's top edge is the first row's top: the grid starts this far down so
 // that row's words still sit EDGE_PAD_MM from the paper. The foot keeps the old
 // 6mm from the last words to the paper.
@@ -530,7 +531,17 @@ function sidePadsMm(cols) {
   return cols === 1 ? EDGE_PAD_MM * 2 : EDGE_PAD_MM + CUT_PAD_MM;
 }
 
+// A slip that runs across the page (renderWideSlipsPage) is glued across the
+// book's page, so it is no wider than a full sheet's work, 180mm, with what is
+// left over as one strip down the right to trim off. Run to the paper's right
+// edge it stuck out of the book (Daniel, 6 October 2026: "it needs to fit
+// nicely, so thats why I want a certain gap from bottom and right side. That
+// sheet goes all the way to the right"). Its two columns share that width.
+const WIDE_SLIP_MM = 180;
+const WIDE = "wide";
+
 function contentWidthMm(cols) {
+  if (cols === WIDE) return (WIDE_SLIP_MM - 2 * CUT_PAD_MM) / 2;
   return PAGE_W_MM / cols - sidePadsMm(cols);
 }
 
@@ -706,6 +717,8 @@ const SLIP_CSS = `
   .slip-item .h-row { height: auto; }
   .slip--left .slip-code { right: ${CUT_PAD_MM}mm; }
   .slip--code-above .slip-code { top: ${CUT_PAD_MM - 1}mm; }
+  .slip--wide { padding-right: ${PAGE_W_MM - EDGE_PAD_MM - WIDE_SLIP_MM}mm; }
+  .slip--wide .slip-code { right: ${PAGE_W_MM - EDGE_PAD_MM - WIDE_SLIP_MM}mm; }
   .sheet-recording {
     width: 1.35em;
     height: 1.35em;
@@ -730,16 +743,16 @@ const SLIP_CSS = `
   .slip-halves {
     display: grid;
     grid-auto-flow: column;
-    grid-template-columns: repeat(2, ${contentWidthMm(2)}mm);
+    grid-template-columns: repeat(2, ${contentWidthMm(WIDE)}mm);
     column-gap: ${2 * CUT_PAD_MM}mm;
     row-gap: ${GAP_MM}mm;
     align-items: start;
     overflow: hidden;
     position: relative;
   }
-  .slip-halves--free { display: flex; align-items: flex-start; }
+  .slip-halves--free { display: flex; align-items: flex-start; column-gap: ${2 * CUT_PAD_MM}mm; }
   .slip-halves--free > .slip-col {
-    flex: 0 0 ${contentWidthMm(2)}mm; display: flex; flex-direction: column; gap: ${GAP_MM}mm;
+    flex: 0 0 ${contentWidthMm(WIDE)}mm; display: flex; flex-direction: column; gap: ${GAP_MM}mm;
   }
   /* The same hairline a sheet draws between its two columns. */
   .slip-halves::before {
@@ -843,14 +856,14 @@ function renderWideSlipsPage({ left, right, rows, code, title, slipMm, aligned =
   const cells = [];
   for (let i = 0; i < rows; i += 1) {
     cells.push(
-      `<div class="slip slip--code-above"><div class="slip-code">${esc(code || "")}${recordingIcon("books")}</div>` +
+      `<div class="slip slip--code-above slip--wide"><div class="slip-code">${esc(code || "")}${recordingIcon("books")}</div>` +
         (aligned
           ? `<div class="slip-halves" data-worksheet-zone="slip-${i + 1}" ` +
             `style="grid-template-rows:repeat(${Math.max(left.length, right.length)},auto)">` +
-            `${bodyHtml(left, SLIP_COLS)}${bodyHtml(right, SLIP_COLS)}`
+            `${bodyHtml(left, WIDE)}${bodyHtml(right, WIDE)}`
           : `<div class="slip-halves slip-halves--free" data-worksheet-zone="slip-${i + 1}">` +
-            `<div class="slip-col">${bodyHtml(left, SLIP_COLS)}</div>` +
-            `<div class="slip-col">${bodyHtml(right, SLIP_COLS)}</div>`) +
+            `<div class="slip-col">${bodyHtml(left, WIDE)}</div>` +
+            `<div class="slip-col">${bodyHtml(right, WIDE)}</div>`) +
         `</div></div>`
     );
   }
@@ -963,9 +976,10 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
   // Taller than half the page: try it half a page the other way first.
   if (rows < 2) {
     try {
+      // Laid out again for the wide slip's own, slightly narrower, columns.
       const heightOf = (part) =>
-        browser ? measuredContentMm(browser, part, cols) : Promise.resolve(estimatedContentMm(part, cols));
-      const plan = await widePlan(laid, heightOf);
+        browser ? measuredContentMm(browser, part, WIDE) : Promise.resolve(estimatedContentMm(part, WIDE));
+      const plan = await widePlan(slipNodesFor(nodes, WIDE), heightOf);
       if (plan) {
         const wideMm = plan.tallMm + (browser ? 1 : 0) + slipPadTopMm(false) + CUT_PAD_MM;
         let wideRows = rowsFor(wideMm);
@@ -997,6 +1011,7 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
 module.exports = {
   RECORDING_CHOICES,
   recordingIcon,
+  opensWithHeading,
   recordingProblems,
   recordingAdvisories,
   sheetOnlyWording,

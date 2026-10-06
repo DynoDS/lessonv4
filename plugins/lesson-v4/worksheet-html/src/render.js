@@ -13,13 +13,13 @@
 // nobody had subtracted. A rectangle placed at a millimetre offset has neither
 // problem, and it is exactly what the gallery already draws.
 
-const { pageSize, printableArea, DEFAULT_MARGIN_MM, narrowSpareMm, footSpareMm, rightSpareMm } = require("./page");
+const { pageSize, printableArea, DEFAULT_MARGIN_MM, edgeShiftMm, narrowSpareMm, footSpareMm, rightSpareMm } = require("./page");
 const { renderDecorationLayers } = require("./decorations");
 const { cssVariables, SPACE, TYPE } = require("./tokens");
 const { NOTE_LINE_MM, linesFor, esc } = require("./helpers/shared");
 const { LAYOUTS, VARIANTS, flatten } = require("./layouts");
 const { isStack } = require("./helpers/compose");
-const { recordingIcon } = require("./slips");
+const { recordingIcon, opensWithHeading } = require("./slips");
 const {
   renderContent,
   measureContent,
@@ -87,6 +87,21 @@ const GUTTER_MM = 6;
 // is a question a whole-lesson sheet gets to answer, not this file.
 const CODE_HEIGHT_MM = TYPE.note * 0.3528 * 1.35;
 const HEADER_TOP_MM = DEFAULT_MARGIN_MM - CODE_HEIGHT_MM;
+
+// Where the level mark sits now that the work starts 6mm from the top of the
+// paper (EDGE_MM in page.js) and there is no printable margin left above it.
+// It stays on the piece that goes in the book, because it tells the child
+// whether to write in their book or on the sheet (the teacher, 6 October 2026:
+// "I would want the level mark to stay"). Beside the first line when that line
+// is a section heading, which leaves the right-hand end of the line empty;
+// over anything else it takes a line of its own above the work, as a slip's
+// does, and the foot strip gives up that line so the work area is unchanged.
+function codeLineMm(spec, placed) {
+  if (!edgeShiftMm(spec) || !(spec.code || spec.recording)) return 0;
+  const top = placed.filter((p) => p.y === 0);
+  const corner = top.reduce((a, b) => (!a || b.x + b.w > a.x + a.w ? b : a), null);
+  return corner && corner.content && opensWithHeading([corner.content]) ? 0 : CODE_HEIGHT_MM;
+}
 
 function headerMm(spec) {
   // The compact shell uses the existing 15mm printer margin rather than
@@ -750,6 +765,8 @@ function renderSheet(spec, opts = {}) {
   const fillPct = Math.round((naturalMm / area.heightMm) * 100);
 
   const placed = placeTree(measured, 0, 0, area.widthMm);
+  const shiftMm = edgeShiftMm(spec);
+  const codeMm = codeLineMm(spec, placed);
   const zones = placed
     .map((p) => {
       const inner = p.content ? renderContent(p.content, p.w - GUTTER_MM) : "";
@@ -782,7 +799,7 @@ ${cssVariables()}
     /* The heading's band is padding, so the work below it starts under the
        heading rather than behind it, and the area below is exactly the height
        every measurement in this file was taken against. */
-    padding: ${DEFAULT_MARGIN_MM + headerMm(spec)}mm ${DEFAULT_MARGIN_MM + narrowSpareMm(spec) + rightSpareMm(spec)}mm ${DEFAULT_MARGIN_MM + footSpareMm(spec)}mm ${DEFAULT_MARGIN_MM}mm;
+    padding: ${DEFAULT_MARGIN_MM + headerMm(spec) - shiftMm + codeMm}mm ${DEFAULT_MARGIN_MM + narrowSpareMm(spec) + rightSpareMm(spec) + shiftMm}mm ${DEFAULT_MARGIN_MM + footSpareMm(spec) + shiftMm - codeMm}mm ${DEFAULT_MARGIN_MM - shiftMm}mm;
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
@@ -834,7 +851,7 @@ ${cssVariables()}
      the sheet's furniture competing with its work for that. */
   .sheet-code {
     position: absolute;
-    right: ${DEFAULT_MARGIN_MM + narrowSpareMm(spec) + rightSpareMm(spec)}mm; top: ${HEADER_TOP_MM}mm;
+    right: ${DEFAULT_MARGIN_MM + narrowSpareMm(spec) + rightSpareMm(spec) + shiftMm}mm; top: ${shiftMm ? DEFAULT_MARGIN_MM - shiftMm : HEADER_TOP_MM}mm;
     font-size: var(--type-note);
     line-height: 1.35;
     color: var(--colour-quiet);

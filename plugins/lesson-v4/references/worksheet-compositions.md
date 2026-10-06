@@ -63,9 +63,9 @@ check a judgement rather than to be searched.
 
 ## What the numbers mean
 
-Every sheet is A4 with a 15mm margin. The gutter between
-zones (6mm) is already taken off, and the sheet code sits in the top
-margin, taking no room from the zones. So these are the millimetres a helper actually gets, and
+Every sheet is A4, its work starting 6mm from the top and left of the paper. The gutter between
+zones (6mm) is already taken off, and the sheet code sits at the top
+right, taking no room from the zones. So these are the millimetres a helper actually gets, and
 they can be read straight against the **smallest usable** size in the helper
 catalogue.
 

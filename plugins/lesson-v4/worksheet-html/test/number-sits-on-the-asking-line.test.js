@@ -50,6 +50,11 @@ test("printed digits and the box for a missing digit are drawn as one number", (
     terms: [{ value: "3,21" }, { cells: 1 }, "+", { value: "13" }, { cells: 1 }, "="],
   });
   assert.strictEqual((html.match(/h-ns-term--joined/g) || []).length, 2);
+  // And in one frame, a digit to a cell: an orange tile touching a black box
+  // still read as "3,21" and then a blank (the teacher, 6 October 2026).
+  assert.strictEqual((html.match(/h-ns-cell--given/g) || []).length, 5);
+  assert.strictEqual((html.match(/h-ns-cell--comma/g) || []).length, 1);
+  assert.doesNotMatch(html, /h-ns-tile/);
 });
 
 test("a whole missing number keeps its own place", () => {
@@ -58,4 +63,6 @@ test("a whole missing number keeps its own place", () => {
     terms: [{ value: "345" }, "+", { blank: true }, "=", { value: "500" }],
   });
   assert.doesNotMatch(html, /h-ns-term--joined/);
+  // A number with no missing digit in it stays a tile.
+  assert.doesNotMatch(html, /h-ns-cell--given/);
 });

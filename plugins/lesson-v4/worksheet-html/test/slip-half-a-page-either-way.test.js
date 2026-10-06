@@ -39,6 +39,10 @@ test("a slip taller than half the page prints across the page, cut across", asyn
   assert.strictEqual(result.wide, true);
   assert.strictEqual(result.cols, 1);
   assert.ok(result.rows >= 2);
+  // It is glued across a book's page, so its work is no wider than a full
+  // sheet's (180mm) and the rest is one strip down the right to trim off.
+  assert.match(result.html, /\.slip--wide \{ padding-right: (2[1-9]|30)mm; \}/);
+  assert.match(result.html, /grid-template-columns: repeat\(2, 86mm\)/);
   // Two columns filled downwards in two rows, so question 3 starts level with
   // question 1 and question 4 with question 2.
   assert.match(result.html, /data-worksheet-zone="slip-1" style="grid-template-rows:repeat\(2,auto\)"/);

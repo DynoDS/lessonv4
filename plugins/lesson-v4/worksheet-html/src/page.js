@@ -73,6 +73,22 @@ function narrowSpareMm(spec) {
     : 0;
 }
 
+// The work starts 6mm from the paper's top and left edges, which is as near as
+// a classroom printer reliably prints, so those two sides are never trimmed
+// and a sheet is two cuts: the right and the foot. At 15mm each was a sliver
+// to trim off as well. The teacher printed a Year 4 pack at 6mm on the school
+// printer (6 October 2026): "It's much better, and looks like 2 trims is all
+// that is neccessary now." The work area keeps the size every measurement in
+// the engine was taken against: the whole sheet moves up and left, and the
+// 9mm it leaves joins the strips at the right and the foot.
+//
+// A `fullPage` fixture stays where it was printed.
+const EDGE_MM = 6;
+
+function edgeShiftMm(spec) {
+  return spec && spec.fullPage === true ? 0 : DEFAULT_MARGIN_MM - EDGE_MM;
+}
+
 function printableArea(orientation = "portrait", marginMm = DEFAULT_MARGIN_MM) {
   const { widthMm, heightMm } = pageSize(orientation);
   const width = widthMm - marginMm * 2;
@@ -89,6 +105,8 @@ function printableArea(orientation = "portrait", marginMm = DEFAULT_MARGIN_MM) {
 module.exports = {
   PX_PER_MM,
   DEFAULT_MARGIN_MM,
+  EDGE_MM,
+  edgeShiftMm,
   TRIM_STRIP_MM,
   footSpareMm,
   rightSpareMm,

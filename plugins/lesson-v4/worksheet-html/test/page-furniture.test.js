@@ -77,15 +77,25 @@ test("the code sits on the line the work starts from, and costs the page nothing
   // would have to sit inside the work area, and across every saved sheet
   // rebuilt with this engine 8 of 36 pages carry ink in the corner it would
   // occupy. That is a decision about reserving page, not a placement.
+  //
+  // Since 6 October 2026 the work starts 6mm from the top of the paper, so
+  // there is no margin above it to sit in. The code starts on that 6mm line,
+  // on a line of its own unless the first line is a heading, and the work
+  // starts straight under it. A `fullPage` fixture keeps the old place.
   const html = sheet({ code: "GD" });
   const rule = /\.sheet-code \{[^}]*\}/.exec(html)[0];
   const top = Number(/top: ([\d.]+)mm/.exec(rule)[1]);
   const height = TYPE.note * 0.3528 * 1.35;
+  const padTop = Number(/body \{[^}]*padding: ([\d.]+)mm/s.exec(html)[1]);
+  assert.equal(top, 6);
   assert.ok(
-    Math.abs(top + height - 15) < 0.05,
-    `the code's bottom edge is at ${(top + height).toFixed(2)}mm, not on the 15mm line`
+    Math.abs(padTop - 6) < 0.05 || Math.abs(top + height - padTop) < 0.05,
+    `the work starts at ${padTop}mm: neither beside the code nor straight under it`
   );
-  assert.match(rule, /right: 15mm/, "the code is off the right margin the work uses");
+  assert.match(rule, /right: 24mm/, "the code is off the right edge the work uses");
+  const old = sheet({ code: "GD", fullPage: true });
+  const oldTop = Number(/top: ([\d.]+)mm/.exec(/\.sheet-code \{[^}]*\}/.exec(old)[0])[1]);
+  assert.ok(Math.abs(oldTop + height - 15) < 0.05, "a fullPage fixture keeps the code on the 15mm line");
 
   // And it still takes nothing off the page: the band it sits in is the
   // printer margin, the way a Word header is its own layer.
