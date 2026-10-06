@@ -46,7 +46,7 @@ emailed. Never write `imageHref` yourself.
 - `section-label` - The mode-of-work heading a block sits under: Fluency, Practise, Apply.
 - `instruction` - A quiet child-facing direction that needs no question number or answer space.
 - `questions` - One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap.
-- `written-answers` - A question answered in the child's own words, with ruled lines under it.
+- `written-answers` - A question answered in the child's own words, on up to six ruled lines (longer writing goes in their book or a `writing-frame`).
 - `source-text` - A passage, account or extract the child reads and works from.
 - `poem` - A poem the child reads line by line, its stanzas kept apart, with a box after each line (a syllable count) when it needs one.
 - `annotated-text` - A passage in the middle with words underlined, circled, boxed or highlighted in colour, arrows between words and margin notes, or wide margins left for the child to annotate.
@@ -212,7 +212,7 @@ Smallest usable: **60mm wide x 27mm tall**. Spare height: never takes spare heig
 
 #### `written-answers`
 
-A question answered in the child's own words, with ruled lines under it. Say how many written things the prompt demands (`sentences`) and the engine sizes the lines to the zone; `lines` sets an exact count.
+A question answered in the child's own words, on up to six ruled lines (longer writing goes in their book or a `writing-frame`). Give `sentences` and the engine sizes the lines, or `lines` for an exact count.
 
 Smallest usable: **70mm wide x 33mm tall**. Spare height: takes spare height first (it is writing space), and it stops when the content stops gaining.
 

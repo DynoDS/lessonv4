@@ -348,6 +348,28 @@ console.log('Cards: 1');
         self.assertTrue(summary["ok"])
         self.assertTrue(summary["outputs"][0]["path"].endswith("Working Wall - Lesson.pdf"))
 
+    def test_a_wall_with_no_cards_is_not_needed_and_nothing_is_built(self) -> None:
+        # "No card earned a place" is the designer's finished answer. The build
+        # must not run, and the result must not read as a failed wall.
+        (self.working / "working-wall.json").write_text(
+            json.dumps({"topic": "Lesson", "rationaleNote": "None earned.", "cards": []}) + "\n",
+            encoding="utf-8",
+        )
+        self.js_writer(
+            "working-wall-html/build.js",
+            "require('fs').writeFileSync(require('path').join(process.argv[3], 'ran.txt'), 'x');\n",
+        )
+        earlier = self.output / "Working Wall - Lesson.pdf"
+        earlier.write_text("an earlier wall", encoding="utf-8")
+        completed = self.run_script("wall", "--lesson-name", "Lesson")
+        self.assertIn("FIXED_RESOURCE_NOT_NEEDED wall", completed.stdout)
+        summary = json.loads((self.root / "summary.json").read_text(encoding="utf-8"))
+        self.assertTrue(summary["ok"])
+        self.assertTrue(summary["notNeeded"])
+        self.assertEqual(summary["outputs"], [])
+        self.assertFalse((self.output / "ran.txt").exists(), "the build ran")
+        self.assertTrue(earlier.is_file(), "an earlier wall was archived for a build that never ran")
+
     def test_wall_requires_expected_output(self) -> None:
         self.js_writer("working-wall-html/build.js", "console.log('done');\n")
         self.run_script("wall", "--lesson-name", "Lesson", expected=1)

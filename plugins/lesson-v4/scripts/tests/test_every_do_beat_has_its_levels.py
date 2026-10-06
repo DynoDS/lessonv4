@@ -37,8 +37,9 @@ def printed(form="task", per="pair", what="The case to judge and room to answer.
 
 
 class TheLevelsContractTests(unittest.TestCase):
-    def refused(self, levels, kind="do", task=None, script="If you've printed the sheets, give one to each pair now.") -> str:
-        unit = {"kind": kind, "taskStructure": task, "speakerNotes": {"script": script}}
+    def refused(self, levels, kind="do", task=None, info="If printed: the sheet, one between two, as the task is set.",
+                script="Say to children: Prove Sam wrong.") -> str:
+        unit = {"kind": kind, "taskStructure": task, "speakerNotes": {"script": script, "teacherInfo": info}}
         try:
             VALIDATOR.validate_levels(levels, "unit.levels", unit)
         except Exception as exc:  # the validator's ContractError
@@ -81,9 +82,17 @@ class TheLevelsContractTests(unittest.TestCase):
             {"printed": printed("sort"), "boardOnlyBecause": None, "realThings": None}))
 
     def test_a_printed_beat_tells_the_teacher_when_to_hand_it_out(self):
-        self.assertIn("hand the printed", self.refused(
-            {"printed": printed(), "boardOnlyBecause": None, "realThings": None},
-            script="Say to children: Prove Sam wrong."))
+        self.assertIn("speakerNotes.teacherInfo must tell the teacher", self.refused(
+            {"printed": printed(), "boardOnlyBecause": None, "realThings": None}, info=None))
+
+    def test_the_hand_out_line_is_a_teacher_note_and_the_script_need_not_carry_it(self):
+        # The script is spoken to the class. A hand-out sentence there does not
+        # satisfy the check, and its absence there does not fail it.
+        levels = {"printed": printed(), "boardOnlyBecause": None, "realThings": None}
+        self.assertEqual(self.refused(levels, script="Say to children: Prove Sam wrong."), "")
+        self.assertIn("speakerNotes.teacherInfo must tell the teacher", self.refused(
+            levels, info="Watch for children who agree with Sam.",
+            script="Say to children: If you've printed the sheets, give one to each pair now."))
 
 
 class ThePackPrintsWhatTheBeatChoseTests(unittest.TestCase):

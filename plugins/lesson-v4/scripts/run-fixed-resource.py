@@ -453,6 +453,19 @@ def changed_published_pictures(working: Path) -> list[str]:
     return changed
 
 
+def wall_has_no_cards(working: Path) -> bool:
+    """True only for a wall spec that reads cleanly and holds an empty `cards`
+    list. A missing or unreadable spec is left to the build to report."""
+    spec = working / "working-wall.json"
+    if not spec.is_file():
+        return False
+    try:
+        cards = json.loads(spec.read_text(encoding="utf-8")).get("cards")
+    except (OSError, ValueError, AttributeError):
+        return False
+    return isinstance(cards, list) and not cards
+
+
 def run(args) -> int:
     plugin_root = Path(args.plugin_root).resolve()
     working = Path(args.working_dir).resolve()
@@ -489,6 +502,29 @@ def run(args) -> int:
             print(message, file=sys.stderr)
             print(f"FIXED_RESOURCE_FAILED {args.kind}", file=sys.stderr)
             return 1
+    if args.kind == "wall" and wall_has_no_cards(working):
+        # The designer decided no sheet earns the wall, which is a finished
+        # answer and not a build to attempt. Run anyway, the build printed
+        # "nothing to build" and this wrapper reported a failed wall for a
+        # lesson that was never owed one (Year 4 digestion, 6 October 2026).
+        atomic_write_json(
+            Path(args.summary_output),
+            {
+                "schemaVersion": SCHEMA_VERSION,
+                "ok": True,
+                "kind": args.kind,
+                "notNeeded": True,
+                "command": [],
+                "exitCode": None,
+                "stdout": "No cards in working-wall.json - nothing to build.",
+                "stderr": "",
+                "archived": [],
+                "degraded": False,
+                "outputs": [],
+            },
+        )
+        print("FIXED_RESOURCE_NOT_NEEDED wall: working-wall.json holds no cards")
+        return 0
     output.mkdir(parents=True, exist_ok=True)
 
     archived = []

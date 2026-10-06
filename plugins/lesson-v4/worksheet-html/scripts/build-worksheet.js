@@ -400,7 +400,13 @@ async function main() {
       typeof sheet.recordingReason === "string" ? sheet.recordingReason.trim() : "";
     const cost =
       sheet.recording === "books"
-        ? "books, printed as question slips in place of the sheet."
+        ? // Said in full because the reader of this line has overturned it: a
+          // run saw slips with no writing lines, called it "writing space
+          // missing" and had both levels reprinted as sheets (Year 4 science,
+          // 6 October 2026). The slip leaves the answer room out on purpose.
+          "books, printed as question slips in place of the sheet. The child writes in " +
+          "their book, so the slips carry no answer lines: this is the designer's choice " +
+          "and needs no repair."
         : "sheet, a copy per child.";
     console.log(`RECORDING: ${sheetLabel(key)} - ${cost} ${reason || "No reason given."}`);
   }

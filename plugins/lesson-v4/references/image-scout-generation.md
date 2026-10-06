@@ -26,11 +26,15 @@ The per-filename lifetime is at most two ImageGen calls. An interrupted call or 
 
 ## Stage returned media
 
-Save the returned local file or returned media payload under the entry's AI folder in `WORK_ROOT`.
+The host writes every generated image to a file of its own, and the call's result says where. Stage the picture by copying that file into the entry's AI folder in `WORK_ROOT`. On Codex the result's `output_hint` names the file, inside `~/.codex/generated_images/<this session's id>/`.
+
+The same result also carries the picture as text, about a million characters of it. Keep that text out of your output and out of every command: printing it gets it cut short, and Windows refuses any command longer than about 32,000 characters, so a command built round it never runs. Print the result's field names and its `output_hint`, never the result whole. A Year 4 digestion lesson (6 October 2026) lost three finished pictures this way: the first calls printed a cut-off result, the recovery calls put the picture on a command line, and all three files were sitting in the host's folder throughout.
+
+So when a call's result has gone, or named no path, look in the host's generated-images folder for files written since you reserved the call before deciding nothing came back. Several calls made together leave several files there: open each one and match it to its entry by what it shows. A file found there is that call's output and costs no further call.
 
 Immediately call `record-generated`. A staged output remains `generated_unreviewed` until your own batch review below has looked at it. Nothing downstream reviews it for you, so a staged image you never opened reaches the lesson exactly as it came back.
 
-If the call returns neither a readable path nor a savable payload, complete the attempt as rejected with exact fault `imagegen_output_unavailable`. Report that terminal reason. Do not use a second call to recreate missing output.
+If the result names no file and the host's folder holds nothing new, the call returned no image: `interrupt-open` the attempt, which consumes it and leaves the recovery call. Where that was the second call, report the entry `unsatisfied` with reason `attempt_budget_exhausted`. `rejected` is never the record for a call that returned nothing: the ledger refuses it, as the batch review below explains.
 
 ## Batch review
 

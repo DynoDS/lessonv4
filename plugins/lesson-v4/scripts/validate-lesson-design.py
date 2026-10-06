@@ -1200,12 +1200,18 @@ def validate_levels(raw: Any, path: str, unit: dict[str, Any]) -> None:
             expect(form == "sort", f"{path}.printed.form must be sort: this beat's task is a sort, printed from it")
     if printed is not None:
         notes = unit.get("speakerNotes") if isinstance(unit.get("speakerNotes"), dict) else {}
-        script = notes.get("script") if isinstance(notes.get("script"), str) else ""
+        # The script is what the teacher says to the class, so the sentence
+        # about handing sheets out lives in the teacher-only note (Daniel,
+        # 6 October 2026: it "doesn't need to be in the script"). Until then
+        # the check demanded it in the script, and the voice editor, told to
+        # keep teacher directions out of spoken words, had to leave it there.
+        info = notes.get("teacherInfo") if isinstance(notes.get("teacherInfo"), str) else ""
         expect(
-            "print" in script.lower(),
-            f"{path}.printed: the beat's script must tell the teacher when to hand the printed "
-            "sheet out, the way it would be said (`If you've printed the sheets, give one to each "
-            "pair now.`), because a sheet the lesson never mentions is a sheet nobody uses",
+            "print" in info.lower(),
+            f"{path}.printed: the beat's speakerNotes.teacherInfo must tell the teacher that this "
+            "beat has a printed sheet and when it goes out (`If printed: the comparison sheet, one "
+            "between two, as the task is set.`), because a sheet the lesson never mentions is a "
+            "sheet nobody uses. It is a note to the teacher, so it stays out of the script",
         )
     real = levels["realThings"]
     if real is not None:
