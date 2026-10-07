@@ -53,3 +53,43 @@ Not done: timeline labels wrapping under the next date (the timeline is one draw
 ## Boundaries he has set
 
 Nothing is committed, pushed or installed without his word. When he gives a direction, build it and show the result rather than returning with more options. Answer every note he gives, or say plainly which are not done.
+
+## Round 5, the fair measure (7 October 2026): step 1 is done
+
+Released 4.2.315 as Codex has it installed. Five lessons he really ran 4 to 6 October (Year 4 maths Lessons 22, 23, 24; RE Christingle; science digestion), each with the adaptation and pictures its own run accepted, so only the worksheet designer varies. Three goes each on Luna high. Records in `evaluations/worksheet-designer-three-runs-2026-10-04/round5/` (`goes.json`, `builds.json`, `tools/tally.py`, `tools/build_all.py`).
+
+- First-time passes: 5 of 15. Passed in the end: 14 of 15. Three to thirteen minutes a run.
+- Every level made: 11 of 15. Lesson 24 lost Below in all three goes; Christingle lost its pack in one of three.
+- Of the ten first checks that failed, eight were transcription slips (`INSTRUCTION_IS_A_LIST` 2, `NUMBERING_CONFLICT` 2, `QUESTION_GROUP_INVALID`, `ANSWER_KEY_INCOMPLETE`, `SPEC_INVALID`, `PLACE_VALUE_CHART_IS_A_CALCULATION`), one was fit, one was how a returned sheet is written down (`SHEET_DIRECTED_MISSING`).
+- No run of fifteen used `suggest.js` to measure.
+
+Causes of the lost levels, for step 2:
+- Lesson 24 Below (3 of 3, and the real run of 6 October hit the same): the adaptation asks for two landscape pages and in the same breath says the central write-on visual exception is "Not claimed"; the engine allows two pages only with that exception. Every go returned the sheet. Not chance, and not the worksheet designer: the adaptation designer and the engine disagree about when two pages are allowed.
+- Christingle Below (1 of 3): the adaptation priced the sheet at 221mm of 225mm with five stems and twelve lines as one task; that go laid it out at 324mm and never recovered. The other two goes fitted by dropping the word bank, as the real run did. The build of the failed go also found an empty labelled diagram on Expected and Greater Depth.
+
+## Step 2, first cause: the digit square (7 October 2026, working copy, uncommitted)
+
+His ruling: plain practice is one page, and the column sum "could have been made smaller and still be usable". On the real Lesson 24 Below sheet printed at 12mm and at 10mm squares: "both fine". Built: a worksheet column sum prints at 12mm and may shrink to 10mm (was 14 to 15), in `shared/visuals/place-value-chart-svg.js` (`CALC_PAPER_COL_MM`), and the other written methods moved with it (`GRID_CELL_MIN_MM`, `GRID_CELL_MAX_MM` in `worksheet-html/src/helpers/methods.js`). Stick-ins and counter charts unchanged. Catalogue regenerated; four pins updated; worksheet 841, shared 243, stick-in 89 tests green (the full `run_all_checks.py` not run: another session was editing lesson-designer files in the same tree).
+
+Proof (`round5/proof-12mm/`, released 4.2.315 plus only this change): one fresh adaptation for Lesson 24 (Sol), then three worksheet goes (Luna). The adaptation planned Below on one page by itself ("Central write-on visual exception: Not needed"), and all three goes delivered Below, Expected and Greater Depth, one page each. First-time pass 1 of 3 (two fit, one `ANSWER_KEY_INCOMPLETE`). No new guidance was added: the one-page rule already existed. Seen and not fixed: in one go the shared instruction sits in the row beside (1a), pushing the sums right.
+
+Still open in step 2: Christingle Below (a plan priced at 221 of 225mm). Then step 3, the transcription slips.
+
+## His two notes on the proof pages (7 October 2026, working copy, uncommitted)
+
+1. "3 is untidy": the shared instruction sat in the row beside (1a) and squeezed the two grids to different square sizes. Already repaired in the unreleased commit `ba72e27c` (the line goes above the row); the proof had run on released 4.2.315. Rebuilt with the branch engine: instruction above, squares equal.
+2. "when it says answer to write down and then counters, the line is miles away, it should be right next to it". Three engine changes in `worksheet-html/src/helpers/text.js`, each with a test in `test/drawn-boxes.test.js` (844 green):
+   - a gap written into a question (`___ counters`, `7 + ___ = 10`) is its answer place, so no second blank is added at the page edge (`answerInTheWords`, which replaces `answerAfterEquals`);
+   - a question on several lines keeps its blank beside a short last line, as a one-line question already did; a last line that asks for words is left alone;
+   - a unit printed on its own (an `instruction` of one or two lower-case words) is drawn with its answer line (`withItsAnswerLine`).
+   A sentence telling the worksheet designer to write gap and unit together was tried first and did NOT take: two goes of three on Luna still printed the bare word with the sentence read. It was removed and the engine draws the line instead. Proof: `round5/proof-unit/` (three goes, working copy; every level on one page; first-time pass 1 of 3, the other two `NUMBERING_CONFLICT`). One go printed no unit line at all (the answer goes in the grid).
+
+## Round 6 and the blank sign (7 October 2026, afternoon; working copy, uncommitted)
+
+Step 3 first: of 14 failed first checks in round 5 and its proofs, `NUMBERING_CONFLICT` was 4 (a Part written as a bare one-question set with a group id). The engine now makes the wrap itself (`worksheet.js`, test in `nested-numbering.test.js`); several questions under one group id are still refused. `INSTRUCTION_IS_A_LIST` (2) was a three-sentence story written as an instruction, which the agents then moved to `source-text`: left alone, because that refusal protects his success-criteria ruling. Christingle's lost pack was one go splitting one task into five writing frames (1 of 55 packs across all rounds): no change.
+
+Round 6 = the same fifteen on the working copy (Lesson 24 with the fresh adaptation): passed in the end 15 of 15 (was 14), first-time 6 of 15 (was 5), every level 12 of 15 (was 11). Lesson 24 and Christingle whole in all goes; `NUMBERING_CONFLICT` gone. But Lesson 22 lost Below in 3 of 3 (0 of 3 in round 5). Six isolating goes (`round6/isolate/`): released plus the size change 1 of 3 returned, branch HEAD 2 of 3 returned, so not one side's change. Cause: the adaptation asks for an empty column frame with the sign left blank for the child to choose, the `calculation` drawing always printed a sign, and the worksheet catalogue never mentioned `calculation` at all (agents found it by reading source). Round 5's agents had quietly drawn a plain blank chart instead.
+
+Built: `operator: ""` leaves the sign's place empty (`normaliseCalculation`, test in `shared/test/column-calculation-svg.test.js`); the `place-value-chart` purpose now names `calculation`, the empty frame and the blank sign (213 characters, limit 220); and a question whose answer line is printed with its unit further down keeps no second line (`holdsAnswerLine`, `answerBlank` in `worksheet.js` and `text.js`). Full suite green: 5,174. Proof (`round6/sign/`): three Lesson 22 goes on the working copy, Below made in 3 of 3, two of them using the blank sign and passing first time.
+
+Counting Lesson 22 from that proof, every level is now made in all fifteen. Not yet re-measured as one clean fifteen. Still open: first-time passes (6 of 15), the story-as-instruction false alarm, answer-key slips (`ANSWER_KEY_INCOMPLETE`, `ANSWER_KEY_EXTRA`), and whether Sol is needed (step 4). Today used 45 Luna runs and 1 Sol run.

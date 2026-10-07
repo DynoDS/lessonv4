@@ -64,7 +64,7 @@ test("a short multiplication grid's digit cells never grow past writing size", (
   // Given a whole page's width the square cells would scale with it, and a
   // digit box the size of a matchbox is worse for the child, not better.
   const spec = { top: "345", multiplier: "6" };
-  assert.equal(measure("short-multiplication-grid", spec, FULL_MM), 15 * 3.5);
+  assert.equal(measure("short-multiplication-grid", spec, FULL_MM), 12 * 3.5);
 });
 
 // ─── long-multiplication-grid ────────────────────────────────────────────
@@ -152,7 +152,7 @@ test("long division states its working box in its minimum height", () => {
   // Stated without it, the helper is accepted into a zone that fits the bus
   // stop and the box is silently clipped: the page still looks finished.
   const spec = { divisor: "23", dividend: "756" };
-  assert.ok(needs("long-division-grid", spec).minHeightMm >= 28 + 14 * 2);
+  assert.ok(needs("long-division-grid", spec).minHeightMm >= 28 + 10 * 2);
 });
 
 test("long division keeps the bus stop's shape, roof and wall included", () => {

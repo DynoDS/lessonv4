@@ -28,9 +28,11 @@ const WIDEST_ZONE_MM = 261;
 // numbers are repeated rather than imported because a helper file stands on
 // its own, but they are one fact: if one moves, the other must move with it.
 
-const GRID_CELL_MIN_MM = 14; // small enough to fit a narrow column, still big
-                             // enough for a child's handwritten digit
-const GRID_CELL_MAX_MM = 15; // and a ceiling, because square cells otherwise
+const GRID_CELL_MIN_MM = 10; // small enough to fit a narrow column, still big
+                             // enough for a child's handwritten digit (14 and
+                             // 15 until 7 October 2026; see CALC_PAPER_COL_MM
+                             // in the shared place value drawing)
+const GRID_CELL_MAX_MM = 12; // and a ceiling, because square cells otherwise
                              // scale with whatever width they are given: a
                              // written calculation does not read better bigger
                              // past the point where a child can write in it

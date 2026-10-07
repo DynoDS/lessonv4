@@ -50,6 +50,9 @@
 //                exchanges: [{ from, to, count, label }] }
 //   calculation  ONE written column calculation, the way the teacher sets it out:
 //              { operator, numbers, answer, carry, worked }
+//              `numbers: ["", ""]` with `columns` is the empty frame a child
+//              sets a calculation out in, and `operator: ""` leaves the sign's
+//              place blank too, for a problem where they choose the operation.
 //              The rows are laid out by the drawing, never authored: the numbers
 //              lined up from the ones, the sign in a narrow column beside the
 //              last of them, a thick rule, the answer row, a second thick rule
@@ -276,9 +279,14 @@ const CALC_CARRY_OF_ROW = 0.5; // ...and on paper, as a share of a digit row
 const CALC_CARRY_FONT = 0.62;  // the carried digit, as a share of D
 const CALC_HEAVY_W = 0.16;     // the two thick rules, at least three times a cell
                                // rule so they still read as thick across a room
-const CALC_PAPER_COL_MAX_MM = 15; // a written calculation does not read better
-                               // bigger past the point where a child can write in
-                               // it (the sheet's own ceiling since August 2026)
+// A written calculation's squares on paper, in millimetres: [smallest a child
+// writes one digit in, the size it prints at when there is room]. A worksheet's
+// were 14 and 15 until 7 October 2026, when five sums a Below child needed
+// would not fit one page by 13mm and the plan asked for a second (Daniel, on
+// the same sheet printed at 12mm and at 10mm: "both fine"). A maths book's own
+// squares are smaller than either. A stick-in keeps the older size.
+const CALC_PAPER_COL_MM = { worksheets: [10, 12], stickin: [14, 15] };
+const calcPaperColPt = (profile) => (CALC_PAPER_COL_MM[profile.surface] || CALC_PAPER_COL_MM.stickin).map((mm) => (mm * 72) / 25.4);
 const CALC_MAX_NUMBERS = 4;
 
 const COLOURS = {
@@ -559,9 +567,12 @@ function splitNumber(value, what) {
 
 function normaliseCalculation(spec) {
   const c = isObj(spec.calculation) ? spec.calculation : {};
-  const operator = OPERATORS[str(c.operator == null ? '+' : c.operator).trim()];
-  if (!operator) {
-    throw new Error(`PLACE_VALUE_CALCULATION_INVALID: operator "${str(c.operator)}" is not one a column calculation is written with; use "+", "-" or "x".`);
+  // `operator: ""` leaves the sign's place empty, for a problem where choosing
+  // the operation is the child's job. Left out, it is an addition as before.
+  const asked = str(c.operator == null ? '+' : c.operator).trim();
+  const operator = asked === '' ? '' : OPERATORS[asked];
+  if (operator === undefined) {
+    throw new Error(`PLACE_VALUE_CALCULATION_INVALID: operator "${str(c.operator)}" is not one a column calculation is written with; use "+", "-" or "x", or "" to leave the sign for the child to write.`);
   }
   const numbers = asList(c.numbers).map((n, i) => splitNumber(n, `number ${i + 1}`));
   if (numbers.length < 2 || numbers.length > CALC_MAX_NUMBERS) {
@@ -1153,13 +1164,13 @@ function describeCalculation(chart, profile) {
   const lo = profile.heightPt ? N * boardMinScale(profile) : profile.minFontPt;
   const inset = CELL_INSET_OF_N * N;
   const units = calculationUnits(chart);
-  const writeIn = writeInFor(profile);
   // Paper a child writes on: square cells, as a written method is ruled in a
   // maths book, so place value lines up down the page as well as across it.
   const paper = profile.surface === 'worksheets' || profile.surface === 'stickin';
+  const writeIn = paper ? { colPt: calcPaperColPt(profile)[0] } : writeInFor(profile);
 
   let colW = profile.widthPt / units.total;
-  if (!profile.heightPt) colW = Math.min(colW, paper ? CALC_PAPER_COL_MAX_MM * (72 / 25.4) : COL_MAX * hi);
+  if (!profile.heightPt) colW = Math.min(colW, paper ? calcPaperColPt(profile)[1] : COL_MAX * hi);
 
   const digitEm = textWidthEm('8', true);
   const rowsOf = calc.numbers.length + 1;
@@ -1687,7 +1698,9 @@ function minWidthPt(spec = {}, profileOrSurface = 'worksheets') {
     // Every digit column at the width one handwritten digit needs where the
     // answer is written in, and the bleed the layout keeps clear.
     const blank = chart.columns.some((c, i) => c !== '.' && chart.calculation.answer[i] === '');
-    const colPt = Math.max(COL_W * profile.minFontPt, blank ? writeInFor(profile).colPt : 0);
+    const paper = profile.surface === 'worksheets' || profile.surface === 'stickin';
+    const writeInPt = paper ? calcPaperColPt(profile)[0] : writeInFor(profile).colPt;
+    const colPt = Math.max(COL_W * profile.minFontPt, blank ? writeInPt : 0);
     return calculationUnits(chart).total * colPt + 2 * 1.5 + 1;
   }
   const units = unitsOf(chart);

@@ -114,7 +114,7 @@ emailed. Never write `imageHref` yourself.
 - `method-frame` - A taught mental strategy printed as a fill-in method: labelled lines inside a panel, with boxes where the child writes.
 - `number-pyramid` - Each brick is the sum of the two below it.
 - `times-table-grid` - The multiplication-facts grid: headers across and down, products in the body, blanks to find.
-- `place-value-chart` - The slides' chart: place names across the top, a row per number, filled to hand a number over or empty to write in, labelled, with the changed digit highlighted.
+- `place-value-chart` - The slides' chart: place names over a row per number, filled or empty to write in, labelled, a changed digit highlighted; or `calculation`, a column sum's frame (`numbers: ["", ""]` empty, `operator: ""` no sign).
 - `place-value-counter-chart` - Counters with their values on them in place-value columns: what number is shown, or left empty for the child to draw counters.
 - `place-value-mini` - The small place-value picture from a vocabulary card: a digit mapping to its value, one column picked out, ten tens becoming a hundred, or the zeros in a numeral.
 - `counter-group` - The same counters without the chart: one compact group per denomination, under the claim they are evidence for.
@@ -1595,7 +1595,7 @@ Smallest usable: **129mm wide x 20mm tall**. Spare height: never takes spare hei
 
 A written column calculation to complete, in the board's own drawing and column colours: the numbers, a thick line, the answer row, a thick line, a shallow carry row. `showHeadings: true` adds place-value letters.
 
-Smallest usable: **66mm wide x 58mm tall**. Spare height: never takes spare height.
+Smallest usable: **47mm wide x 45mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1611,7 +1611,7 @@ Smallest usable: **66mm wide x 58mm tall**. Spare height: never takes spare heig
 
 Column multiplication by a single digit, with a thick-topped answer row and a carry row.
 
-Smallest usable: **56mm wide x 57mm tall**. Spare height: never takes spare height.
+Smallest usable: **40mm wide x 43mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1626,7 +1626,7 @@ Smallest usable: **56mm wide x 57mm tall**. Spare height: never takes spare heig
 
 The long multiplication shape: one partial product row per digit of the multiplier, then the total.
 
-Smallest usable: **56mm wide x 85mm tall**. Spare height: never takes spare height.
+Smallest usable: **40mm wide x 63mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1641,7 +1641,7 @@ Smallest usable: **56mm wide x 85mm tall**. Spare height: never takes spare heig
 
 Short division: the answer row on top under the roof, the divisor outside the wall to the left.
 
-Smallest usable: **56mm wide x 43mm tall**. Spare height: never takes spare height.
+Smallest usable: **40mm wide x 33mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1656,7 +1656,7 @@ Smallest usable: **56mm wide x 43mm tall**. Spare height: never takes spare heig
 
 The same bus stop with a blank working box beneath, for the child to show the subtract-and-bring-down steps.
 
-Smallest usable: **70mm wide x 70mm tall**. Spare height: takes spare height readily.
+Smallest usable: **50mm wide x 62mm tall**. Spare height: takes spare height readily.
 
 ```json
 {
@@ -1764,7 +1764,7 @@ Smallest usable: **62mm wide x 49mm tall**. Spare height: never takes spare heig
 
 #### `place-value-chart`
 
-The slides' chart: place names across the top, a row per number, filled to hand a number over or empty to write in, labelled, with the changed digit highlighted.
+The slides' chart: place names over a row per number, filled or empty to write in, labelled, a changed digit highlighted; or `calculation`, a column sum's frame (`numbers: ["", ""]` empty, `operator: ""` no sign).
 
 Smallest usable: **79mm wide x 45mm tall**. Spare height: never takes spare height.
 

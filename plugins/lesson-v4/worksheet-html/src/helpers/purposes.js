@@ -172,7 +172,7 @@ module.exports = {
   "counter-group":
     "The same counters without the chart: one compact group per denomination, under the claim they are evidence for. For two cases compared side by side, where two charts would be two pages.",
   "place-value-chart":
-    "The slides' chart: place names across the top, a row per number, filled to hand a number over or empty to write in, labelled, with the changed digit highlighted.",
+    "The slides' chart: place names over a row per number, filled or empty to write in, labelled, a changed digit highlighted; or `calculation`, a column sum's frame (`numbers: [\"\", \"\"]` empty, `operator: \"\"` no sign).",
   "place-value-mini":
     "The small place-value picture from a vocabulary card: a digit mapping to its value, one column picked out, ten tens becoming a hundred, or the zeros in a numeral.",
   "digit-cards":

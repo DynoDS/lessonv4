@@ -282,3 +282,34 @@ test("a source followed by a set of questions keeps the set's own run", () => {
   assert.strictEqual(numbered(zones).a.number, undefined);
   assert.deepStrictEqual(labelsOf(zones), ["1", "2"]);
 });
+
+test("a Part written as a bare one-question set is numbered as the Part it is", () => {
+  // 7 October 2026: four first checks of fourteen that failed were refused for
+  // this alone, each with a message that named the one mechanical repair
+  // ("Wrap the Part in a stack"), and each designer then made exactly that
+  // repair. A set of ONE question carrying a group id has only one reading, so
+  // the engine reads it that way and no go is spent on it.
+  const bare = {
+    a: {
+      stack: [
+        { helper: "questions", question: true, questionGroupId: "g", groupPrompt: "Add.", items: ["3 + 4 ="] },
+        { helper: "questions", question: true, questionGroupId: "g", items: ["5 + 2 ="] },
+      ],
+    },
+  };
+  const wrapped = {
+    a: {
+      stack: [
+        { question: true, questionGroupId: "g", groupPrompt: "Add.", stack: [{ helper: "questions", items: ["3 + 4 ="] }] },
+        { question: true, questionGroupId: "g", stack: [{ helper: "questions", items: ["5 + 2 ="] }] },
+      ],
+    },
+  };
+  assert.deepStrictEqual(numbered(bare), numbered(wrapped));
+  assert.deepStrictEqual(labelsOf(bare), ["1a", "1b"]);
+  // Several questions under one group id could be several Parts or one, so that is still the designer's to say.
+  assert.throws(
+    () => numbered({ a: { stack: [{ helper: "questions", question: true, questionGroupId: "g", items: ["First?", "Second?"] }] } }),
+    (error) => error.signal === "NUMBERING_CONFLICT"
+  );
+});

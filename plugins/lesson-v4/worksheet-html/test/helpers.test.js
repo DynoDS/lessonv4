@@ -271,9 +271,9 @@ test("a row that is too wide is priced item by item, so the total cannot be pinn
   // fits one page was replanned onto two.
   const grid = { helper: "column-method-grid", operator: "+", top: 3462, bottom: 175, showHeadings: true };
   const row = { row: [{ helper: "instruction", text: "Use column addition." }, { number: "1a", stack: [grid] }, { number: "1b", stack: [grid] }] };
-  const verdict = fits({ stack: [{ helper: "section-label", text: "Fluency" }, row] }, 174, 239);
+  const verdict = fits({ stack: [{ helper: "section-label", text: "Fluency" }, row] }, 144, 239);
   assert.equal(verdict.ok, false);
-  const priced = /needs (\d+)mm wide, zone is 174mm \(the width goes on this row, side by side: instruction (\d+)mm \+ a stack of \[1 x column-method-grid\] (\d+)mm \+ a stack of \[1 x column-method-grid\] (\d+)mm, with (\d+)mm between each\)/.exec(verdict.why);
+  const priced = /needs (\d+)mm wide, zone is 144mm \(the width goes on this row, side by side: instruction (\d+)mm \+ a stack of \[1 x column-method-grid\] (\d+)mm \+ a stack of \[1 x column-method-grid\] (\d+)mm, with (\d+)mm between each\)/.exec(verdict.why);
   assert.ok(priced, verdict.why);
   const [total, a, b, c, gap] = priced.slice(1).map(Number);
   assert.ok(Math.abs(total - (a + b + c + 2 * gap)) <= 2, `${verdict.why} does not add up`);
@@ -701,10 +701,14 @@ test("a helper's example shows every field the helper reads", () => {
     //
     // `slip` is set by src/slips.js on the copy it prints as a question slip,
     // to leave the answer space off. It is never written into a sheet.
+    //
+    // `answerBlank` is the numbering walk's too: it writes false on a question
+    // whose answer line is printed with its unit further down the same
+    // question, so one answer has one place to write it.
     // Turns an instruction into a hint printed after its question ("If you're
     // stuck: ..."). The catalogue describes it beside the example.
     instruction: ["hint"],
-    questions: ["startAt", "showNumbers", "slip"],
+    questions: ["startAt", "showNumbers", "slip", "answerBlank"],
     "written-answers": ["phase", "startAt", "showNumbers", "slip"],
     "writing-frame": ["slip"],
     "circle-the-answer": ["phase"],

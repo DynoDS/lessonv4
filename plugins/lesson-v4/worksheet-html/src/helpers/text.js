@@ -75,7 +75,19 @@ function renderInstruction(spec) {
   if (spec.hint === true) {
     return `<p class="h-instruction h-hint"><span class="h-hint-lead">${esc(HINT_LEAD)}</span> ${esc(String(spec.text))}</p>`;
   }
-  return `<p class="h-instruction">${promptHtml(spec.text, spec.blankWidthMm)}</p>`;
+  return `<p class="h-instruction">${promptHtml(withItsAnswerLine(spec.text), spec.blankWidthMm)}</p>`;
+}
+
+// A unit printed on its own ("counters" under a column addition) is the tail of
+// an answer whose line was never drawn. Told to print the unit beside the
+// result, the designer printed the bare word in two goes of three with the rule
+// in front of it (7 October 2026), so the page draws the line itself. One or
+// two lower-case words with no punctuation are never a direction to a child.
+const UNIT_ALONE = /^\p{Ll}[\p{L}²³]*( \p{Ll}[\p{L}²³]*)?$/u;
+
+function withItsAnswerLine(text) {
+  const value = String(text ?? "").trim();
+  return UNIT_ALONE.test(value) ? `___ ${value}` : text;
 }
 
 function measureInstruction(spec, widthMm) {
@@ -83,7 +95,7 @@ function measureInstruction(spec, widthMm) {
   // is still choosing a layout rather than after it has been drawn.
   checkInstruction(spec);
   if (spec.hint === true) return linesFor(`${HINT_LEAD} ${spec.text}`, widthMm) * LINE_MM;
-  return linesFor(spec.text, widthMm, spec.blankWidthMm) * LINE_MM;
+  return linesFor(withItsAnswerLine(spec.text), widthMm, spec.blankWidthMm) * LINE_MM;
 }
 
 // ─── short questions ─────────────────────────────────────────────────────
@@ -308,10 +320,31 @@ function promptIsShort(question, widthMm, picture, showNumbers = true) {
 // equals sign, the blank is drawn there and nowhere else.
 const ENDS_IN_EQUALS = /=[ 	]*$/m;
 
-function answerAfterEquals(text) {
+// The same holds wherever the answer's place is IN the words, and this returns
+// the words with that place in them, or null when the blank is the engine's to
+// add after them.
+//
+// A gap the sheet's author wrote ("___ counters", "7 + ___ = 10") is the
+// answer's place already. The engine added its own blank as well, out at the
+// page edge, so a word problem had two places for one answer and its unit sat
+// beside neither (the teacher, 7 October 2026: "when it says answer to write
+// down and then counters, the line is miles away, it should be right next to
+// it").
+//
+// A question on several lines was never "short", however short its last line,
+// so the blank for "How many counters are there altogether?" under a line of
+// story went to the far edge too. It now follows a short last line exactly as
+// it follows a short question on one line. A last line that asks for words is
+// left alone: a number's worth of room beside "Explain why" helps nobody.
+function answerInTheWords(text, widthMm, picture, showNumbers = true) {
   const value = String(text ?? "");
-  if (!value.includes("\n") || !ENDS_IN_EQUALS.test(value) || /_{2,}/.test(value)) return null;
-  return value.replace(ENDS_IN_EQUALS, "= ___");
+  if (/_{2,}/.test(value)) return value;
+  if (!value.includes("\n")) return null;
+  if (ENDS_IN_EQUALS.test(value)) return value.replace(ENDS_IN_EQUALS, "= ___");
+  const words = value.replace(/\s+$/, "");
+  const lastLine = words.split(/\r\n|\r|\n/).pop();
+  if (!lastLine.trim() || ASKS_FOR_WORDS.test(lastLine)) return null;
+  return promptIsShort(lastLine, widthMm, picture, showNumbers) ? `${words} ___` : null;
 }
 
 function renderQuestions(spec, widthMm = 100) {
@@ -320,15 +353,20 @@ function renderQuestions(spec, widthMm = 100) {
   // the answer blank is left off. A blank inside the prompt stays: it is part
   // of the question the child copies.
   const slip = spec.slip === true;
+  // The answer's line is printed further down the same question with its unit
+  // ("___ books" under the calculation): src/worksheet.js marks the set, and
+  // the question keeps no second line of its own.
+  const elsewhere = spec.answerBlank === false;
   const pictures = selectContextPictures(
     spec.items,
     questionTextWidths(widthMm, false, showNumbers)
   );
   const items = spec.items
-    .map(
-      (q, i) => `
+    .map((q, i) => {
+      const inWords = slip || elsewhere ? null : answerInTheWords(questionText(q), widthMm, pictures && pictures[i], showNumbers);
+      return `
       <li class="h-q${
-        !slip && blankBelow(questionText(q), widthMm, pictures && pictures[i], showNumbers)
+        !slip && !elsewhere && !inWords && blankBelow(questionText(q), widthMm, pictures && pictures[i], showNumbers)
           ? " h-q--blank-below"
           : ""
       }${
@@ -338,10 +376,10 @@ function renderQuestions(spec, widthMm = 100) {
       }">
         ${showNumbers ? `<span class="h-num">${esc(formatQuestionLabel(i + (spec.startAt || 1)))}</span>` : ""}
         ${pictureMarkup(pictures && pictures[i])}
-        <span class="h-text">${promptHtml((!slip && answerAfterEquals(questionText(q))) || questionText(q))}</span>
-        ${slip || answerAfterEquals(questionText(q)) ? "" : '<span class="h-blank"></span>'}
-      </li>`
-    )
+        <span class="h-text">${promptHtml(inWords || questionText(q))}</span>
+        ${slip || elsewhere || inWords ? "" : '<span class="h-blank"></span>'}
+      </li>`;
+    })
     .join("");
   // A slip with nothing but short items ("Smallest", "Largest") runs them
   // across one line: each was only on a line of its own to hold its blank.
@@ -370,11 +408,14 @@ function measureQuestions(spec, widthMm) {
       // the prompt above it then gets the full width back. That second line
       // costs its own height AND the row gap above it - the gap was missed, so
       // every question with a dropped blank was measured 2mm short.
-      const below = blankBelow(questionText(q), widthMm, picture, showNumbers);
+      // An answer placed in the words has no blank of its own to drop.
+      const elsewhere = spec.answerBlank === false;
+      const inWords = elsewhere ? null : answerInTheWords(questionText(q), widthMm, picture, showNumbers);
+      const below = !elsewhere && !inWords && blankBelow(questionText(q), widthMm, picture, showNumbers);
       // An image picture is taller than a text line and stretches its flex
       // row; the row costs whichever is taller, words or picture.
       const textMm =
-        linesFor(questionText(q), below ? belowMm : inlineMm) * LINE_MM;
+        linesFor(inWords || questionText(q), below ? belowMm : inlineMm) * LINE_MM;
       return (
         h +
         Math.max(textMm, pictureHeightMm(picture)) +

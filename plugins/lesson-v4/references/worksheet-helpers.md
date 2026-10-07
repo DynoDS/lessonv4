@@ -383,7 +383,7 @@ reported rather than just the first.
 | `QUESTION_GROUP_INVALID` | A `questionGroupId` holds only one Part. Either it needs its other Parts, or it is an ordinary question and carries no ID. |
 | `QUESTION_GROUP_NONCONTIGUOUS` | A group's Parts are split apart by another question. The Parts of one Question group run consecutively. |
 | `GROUP_PROMPT_MISPLACED` | A `groupPrompt` sits somewhere other than the first Part of a Question group. |
-| `NUMBERING_CONFLICT` | A grouped Part also sets its own `number`/`startAt`, or a `questionGroupId` sits on a helper holding a SET of questions. |
+| `NUMBERING_CONFLICT` | A grouped Part also sets its own `number`/`startAt`, or a `questionGroupId` sits on a helper holding several questions (a set of one is read as the Part it is). |
 | `TWO_PAGE_EXCEPTION_REQUIRED` | A sheet has `pages` without `centralWriteOnVisualException`. Ordinary overflow never earns a second page. |
 | `TWO_PAGE_EXCEPTION_INVALID` | The exception is present but does not describe exactly two pages, or its named visual/reason is missing. |
 | `TWO_PAGE_SPEC_CONFLICT` | A sheet mixes one-page `layout`/`orientation`/`zones` with a `pages` array. |

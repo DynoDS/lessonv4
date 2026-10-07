@@ -161,3 +161,17 @@ test('an ordinary chart names no places to point at', () => {
   const drawn = chart.tightSvg({ columns: ['H', 'T', 'O'], rows: [['2', '4', '7']] }, profileFor('wall', SURFACES.wall));
   assert.equal(drawn.anchors, undefined);
 });
+
+test('the sign can be left blank, for a problem where the child chooses the operation', () => {
+  // 7 October 2026: a Below sheet asked for an empty frame with the sign
+  // position blank ("so the pupil chooses addition from altogether"). The
+  // drawing always printed a sign, so the worksheet designer handed the whole
+  // sheet back in five goes of six and the level was lost.
+  const L = layout({ columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'], calculation: { operator: '', numbers: ['', ''] } });
+  assert.equal(L.texts.filter((t) => t.role === 'operator').length, 0);
+  assert.equal(L.rows.numbers.length, 2);
+  // Left out altogether it is still an addition, as it always was.
+  const plus = layout({ calculation: { numbers: ['324', '253'] } });
+  assert.equal(plus.texts.find((t) => t.role === 'operator').text, '+');
+  assert.throws(() => layout({ calculation: { operator: '?', numbers: ['324', '253'] } }), /PLACE_VALUE_CALCULATION_INVALID/);
+});

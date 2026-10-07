@@ -30,7 +30,7 @@ const { selectContextPictureSet } = require("../shared/context-picture-set");
 const { renderPieceHtml, esc } = require("./src/render-piece-html");
 const { withoutTaughtMarks } = require("../shared/text/criteria-marks");
 const { normaliseCardSet, renderKitPages, renderSheetPages } = require("./src/render-card-set");
-const { normaliseSourceText, renderSourceTextPages } = require("./src/render-source-text");
+const { normaliseSourceText, renderSourceTextPagesMeasured } = require("./src/render-source-text");
 const { figurePages, normaliseTaskSheet, taskSheetPages } = require("./src/render-activity-page");
 
 const GREY = "#999999";
@@ -374,7 +374,41 @@ function buildKits(cardSetItems, classSize, baseDir) {
 // beside the kits rather than in the per-child tiling above because nobody
 // writes on it: it is the thing a pair reads while they both write in their own
 // books, so it is not part of any child's glued-in set.
-function buildSourceTexts(sourceTextItems, classSize) {
+//
+// A full-page copy is sized against the page as the browser draws it, because
+// a size chosen by sums alone ran off the bottom of the page (6 October 2026).
+// Without a browser there is no PDF either, and the sums stand.
+async function measureBodyMm(browser, pageDivHtml, portrait = false) {
+  const page = await browser.newPage();
+  try {
+    await page.setContent(wrapDocument([pageDivHtml], portrait), { waitUntil: "load" });
+    return await page.evaluate(async () => {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const body = document.querySelector(".page").lastElementChild;
+      return (body.getBoundingClientRect().height * 25.4) / 96;
+    });
+  } finally {
+    await page.close();
+  }
+}
+
+async function buildSourceTexts(sourceTextItems, classSize) {
+  let browser = null;
+  if (sourceTextItems.length > 0) {
+    try {
+      browser = await require("../worksheet-html/src/chrome").launchBrowser();
+    } catch (err) {
+      browser = null;
+    }
+  }
+  try {
+    return await layOutSourceTexts(sourceTextItems, classSize, browser && ((html) => measureBodyMm(browser, html)));
+  } finally {
+    if (browser) await browser.close();
+  }
+}
+
+async function layOutSourceTexts(sourceTextItems, classSize, measureMm) {
   const pageDivs = [];
   const summaries = [];
   const dropped = [];
@@ -386,11 +420,11 @@ function buildSourceTexts(sourceTextItems, classSize) {
       dropped.push(item.label || "source-text");
       continue;
     }
-    const laid = renderSourceTextPages(source, {
+    const laid = await renderSourceTextPagesMeasured(source, {
       printableWMm: PRINTABLE_W_MM,
       printableHMm: PRINTABLE_H_MM,
       pageHtml: pageDiv,
-    });
+    }, measureMm);
     if (laid.error) {
       console.warn(`[stick-in] text source "${source.label}": ${laid.error} - this source is NOT in the pack.`);
       dropped.push(source.label);
@@ -425,7 +459,7 @@ async function build(specPath, outDir) {
   const pieceItems = items.filter((item) => item && !["card-set", "source-text", "task-sheet"].includes(item.visual));
   const { moments, dropped } = await renderMoments(pieceItems, baseDir);
   const kitsBuilt = buildKits(cardSetItems, classSize, baseDir);
-  const sourcesBuilt = buildSourceTexts(sourceTextItems, classSize);
+  const sourcesBuilt = await buildSourceTexts(sourceTextItems, classSize);
   const taskSheets = [];
   const sheetDropped = [];
   for (const item of taskSheetItems) {
@@ -574,4 +608,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { build, buildHtml, renderMoments, buildKits, wrapDocument };
+module.exports = { build, buildHtml, renderMoments, buildKits, wrapDocument, measureBodyMm, pageDiv, PRINTABLE_W_MM, PRINTABLE_H_MM };

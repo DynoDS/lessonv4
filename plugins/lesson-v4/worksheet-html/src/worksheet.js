@@ -151,6 +151,30 @@ function questionBehindItsMaterial(node) {
   return hoisted;
 }
 
+// One answer, one place to write it. When a question prints its answer's line
+// with the unit further down ("___ books" under the column frame, or the bare
+// unit the page gives a line to), the question above it keeps no line of its
+// own: it printed both, a full line under "How many books does it have
+// altogether?" and the short one beside "books" (7 October 2026).
+const ANSWER_LINE = /^(_{2,} )?\p{Ll}[\p{L}²³]*( \p{Ll}[\p{L}²³]*)?$/u;
+
+function holdsAnswerLine(node) {
+  if (Array.isArray(node)) return node.some(holdsAnswerLine);
+  if (!node || typeof node !== "object") return false;
+  if (node.helper === "instruction") return ANSWER_LINE.test(String(node.text ?? "").trim());
+  return Object.values(node).some(holdsAnswerLine);
+}
+
+function withoutOwnBlank(node) {
+  if (Array.isArray(node)) return node.map(withoutOwnBlank);
+  if (!node || typeof node !== "object") return node;
+  if (node.helper === "questions" && Array.isArray(node.items) && node.items.length === 1) {
+    return { ...node, answerBlank: false };
+  }
+  if (node.helper) return node;
+  return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, withoutOwnBlank(value)]));
+}
+
 function makeNumberer() {
   let nextMain = 1;
   let activeGroupId = null;
@@ -297,6 +321,26 @@ function makeNumberer() {
       if (!node || typeof node !== "object") return node;
       if (!insideNumberedQuestion) node = questionBehindItsMaterial(node);
 
+      // A Part written as a bare set of ONE question, group id and all, has one
+      // reading: the Part is that question. It used to be refused with the
+      // repair spelled out ("Wrap the Part in a stack"), every designer then
+      // made exactly that repair, and four first checks of fourteen that failed
+      // failed on it alone (7 October 2026). So the wrap is made here. A set of
+      // several questions under one group id is still refused below: whether
+      // those are several Parts or one is the designer's to say.
+      if (
+        !insideNumberedQuestion &&
+        (node.helper === "questions" || node.helper === "written-answers") &&
+        Array.isArray(node.items) &&
+        node.items.length === 1 &&
+        node.showNumbers !== false &&
+        groupIdOf(node) !== null
+      ) {
+        const { question, questionGroupId, groupPrompt, ...inner } = node;
+        node = { question: true, questionGroupId, stack: [inner] };
+        if (groupPrompt !== undefined) node.groupPrompt = groupPrompt;
+      }
+
       if (
         insideNumberedQuestion &&
         (node.helper === "questions" || node.helper === "written-answers") &&
@@ -353,7 +397,8 @@ function makeNumberer() {
         const label = labelForQuestion(node, zoneId);
         labels.push(String(label));
 
-        const { question, questionGroupId, groupPrompt, ...rest } = node;
+        const { question, questionGroupId, groupPrompt, ...given } = node;
+        const rest = holdsAnswerLine(given) ? withoutOwnBlank(given) : given;
         const out = { number: label };
         for (const [key, value] of Object.entries(rest)) {
           out[key] = settle(walk(value, zoneId, true));

@@ -93,7 +93,13 @@ function normaliseSourceText(item, classSize) {
 // it. A reading width keeps lines from running the whole landscape page.
 const PAGE_READING_WIDTH_MM = 230;
 
-function fullPageHtml(source, printableWMm, printableHMm) {
+const MIN_PAGE_PT = 12;
+const MAX_PAGE_PT = 30;
+
+// The size the sums say will fit. It is a first guess and no more: the sums
+// count characters, and at large sizes they run short (see the measured fit
+// below).
+function estimatedPagePt(source, printableWMm, printableHMm) {
   const widthMm = Math.min(PAGE_READING_WIDTH_MM, printableWMm);
   const inner = widthMm - 2 * PAD_MM;
   const instructionMm = source.instruction ? Math.ceil(source.instruction.length / 60) * 9 + 4 : 0;
@@ -109,10 +115,14 @@ function fullPageHtml(source, printableWMm, printableHMm) {
     if (source.attribution) mm += PARA_GAP_MM + printedLines(source.attribution, bodyChars) * ATTRIB_LINE_MM * k;
     return mm <= printableHMm * 0.92;
   };
-  let pt = 12;
-  for (let size = 30; size > 12; size -= 1) {
-    if (fits(size)) { pt = size; break; }
+  for (let size = MAX_PAGE_PT; size > MIN_PAGE_PT; size -= 1) {
+    if (fits(size)) return size;
   }
+  return MIN_PAGE_PT;
+}
+
+function fullPageHtml(source, printableWMm, pt) {
+  const widthMm = Math.min(PAGE_READING_WIDTH_MM, printableWMm);
   const k = pt / 12;
   const body = source.paragraphs
     .map((lines) => `<div style="margin-bottom:${PARA_GAP_MM * k}mm">${lines.map(esc).join("<br>")}</div>`)
@@ -180,7 +190,7 @@ function renderSourceTextPages(source, { printableWMm, printableHMm, pageHtml })
           "piece will not shrink the words or cut the end off",
       };
     }
-    const page = fullPageHtml(source, printableWMm, printableHMm);
+    const page = fullPageHtml(source, printableWMm, estimatedPagePt(source, printableWMm, printableHMm));
     const pages = Array.from({ length: source.copies }, () => pageHtml("", page));
     return { pages, heightMm: printableHMm, perPage: 1, cols: 1, rows: 1 };
   }
@@ -227,9 +237,41 @@ function renderSourceTextPages(source, { printableWMm, printableHMm, pageHtml })
   return { pages, heightMm, perPage, cols, rows };
 }
 
+// The same pages, with the full-page copy sized against the page as a browser
+// really draws it. `measureMm(pageHtml)` returns the drawn height of one page's
+// body in millimetres.
+//
+// The sums above chose 27pt for a Year 4 science text on 6 October 2026, two
+// explanations to choose between: they counted four lines a paragraph where
+// Comic Sans set five, and counted the frame's padding at its 12pt size. The
+// copy drew 209mm tall on a page with 185mm, and the page cut the bottom of
+// the frame off without a word. So the guess is only where the search starts:
+// the words step down a size at a time until the drawn page fits, and a source
+// that does not fit at the smallest size is refused by name like any other.
+async function renderSourceTextPagesMeasured(source, opts, measureMm) {
+  const first = renderSourceTextPages(source, opts);
+  if (first.error || source.layout !== "page" || typeof measureMm !== "function") return first;
+  const { printableWMm, printableHMm, pageHtml } = opts;
+  let drawnMm = Infinity;
+  for (let pt = estimatedPagePt(source, printableWMm, printableHMm); pt >= MIN_PAGE_PT; pt -= 1) {
+    const page = pageHtml("", fullPageHtml(source, printableWMm, pt));
+    drawnMm = await measureMm(page);
+    if (drawnMm <= printableHMm) {
+      return Object.assign({}, first, { pages: Array.from({ length: source.copies }, () => page), pt });
+    }
+  }
+  return {
+    error:
+      `the source draws ${Math.ceil(drawnMm)} mm tall even at its smallest and the page holds ` +
+      `${printableHMm} mm; shorten the extract to the part children actually read, because the ` +
+      "piece will not shrink the words or cut the end off",
+  };
+}
+
 module.exports = {
   normaliseSourceText,
   renderSourceTextPages,
+  renderSourceTextPagesMeasured,
   SOURCE_TEXT_WIDTH_MM,
   A4,
 };
