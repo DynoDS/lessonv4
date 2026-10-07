@@ -95,7 +95,11 @@ class TheContrastsReachBothAgentsTests(unittest.TestCase):
         # Six single-task contrasts and, since the follow-on (16 September
         # 2026), one short-sequence contrast, each with its boundary case.
         self.assertEqual(text.count("### "), 7)
-        self.assertEqual(text.count("**Where the simpler task is right.**"), 7)
+        # Since 6 October 2026 a section of its own after them: saying it back
+        # beside using it, for a lesson that is one story, one process or one
+        # set of meanings. It has its own boundary case.
+        self.assertEqual(text.count("**Where the simpler task is right.**"), 8)
+        self.assertIn("\n## One story, one process, one set of meanings\n", text)
         self.assertIn("A sort can be the stronger task and a sentence the weaker one", text)
         self.assertIn("never asked to match an example's names, order or materials", text)
 
@@ -118,6 +122,60 @@ class TheContrastsReachBothAgentsTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("REFERENCE_READ_OK", result.stdout)
         self.assertIn("### RE and PSHE", result.stdout)
+
+    def test_the_designers_own_loading_list_names_the_say_it_back_section(self):
+        """Round four, 6 October 2026: the RE designer read it because the RE
+        file points at it; the science designer read `The contrasts`, as its
+        loading list said, and never met it. The route is the designer's list,
+        in every subject, not a subject file's pointer."""
+        whole = (ROOT / "agents" / "lesson-designer.md").read_text(encoding="utf-8")
+        loading = whole.split("## Reference Files")[-1]
+        line = next(row for row in loading.splitlines() if row.startswith("- Read `task-contrasts.md`"))
+        self.assertIn("read `task-contrasts.md` → `One story, one process, one set of meanings`", " ".join(line.split()))
+        self.assertIn("in every subject", " ".join(line.split()))
+        self.assertIn("in a read of its own", " ".join(line.split()))
+        self.assertIn("It is a step, not an option", " ".join(line.split()))
+
+    def test_the_five_points_arrive_with_the_field_every_do_carries(self):
+        """Round five, 6 October 2026: a designer met the loading line and did
+        not act on it, and read `use` three times because the scaffold writes
+        the field. So the test's five points live there, and none may go."""
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "read-reference.py"), "--select", "output-template.md::use"],
+            capture_output=True, text=True, encoding="utf-8", cwd=str(ROOT),
+        )
+        self.assertIn("REFERENCE_READ_OK", result.stdout)
+        for point in (
+            "Name the wrong answer first.",
+            "Put it where it can pull.",
+            "Start from a real case.",
+            "never an invented `imagine if`",
+            "Read it from the surface.",
+            "One ask.",
+        ):
+            with self.subTest(point=point):
+                self.assertIn(point, result.stdout)
+
+    def test_the_use_definition_is_under_the_heading_its_pointers_name(self):
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "read-reference.py"), "--select", "output-template.md::use"],
+            capture_output=True, text=True, encoding="utf-8", cwd=str(ROOT),
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("REFERENCE_READ_OK", result.stdout)
+        self.assertIn("`wrong` goes with `new`", result.stdout)
+        self.assertIn("one Do or quick check declared `rehearsal` at most", result.stdout)
+
+    def test_the_say_it_back_section_is_read_whole_in_one_page(self):
+        """Inside `The contrasts` it sat on page 2 of a read that had been one page."""
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "read-reference.py"),
+             "--select", "task-contrasts.md::One story, one process, one set of meanings"],
+            capture_output=True, text=True, encoding="utf-8", cwd=str(ROOT),
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("REFERENCE_READ_OK", result.stdout)
+        self.assertIn("put the wrong answer where it can pull", result.stdout)
 
 
 class TheReviewerProbesTheTaskTests(unittest.TestCase):

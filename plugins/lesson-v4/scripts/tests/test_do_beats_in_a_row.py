@@ -160,9 +160,16 @@ class DoBeatsInARowTests(unittest.TestCase):
             cls.result = run(str(path))
         cls.lines = cls.result.stdout.splitlines()
 
-    def test_it_is_a_look_not_a_verdict(self) -> None:
+    def test_it_never_fails_a_design_itself_and_says_what_has_to_happen(self) -> None:
+        """It closed with `A look, not a verdict` until 6 October 2026, when a
+        designer shown twelve words of its Teach in an answer handed the design
+        in. The design check does the refusing; this says which beats owe an
+        answer and what the answer is."""
         self.assertEqual(self.result.returncode, 0, self.result.stderr)
-        self.assertIn("DO_BEATS_IN_A_ROW: 3 beats. A look, not a verdict", self.result.stdout)
+        self.assertIn("DO_BEATS_IN_A_ROW: 3 beats", self.result.stdout)
+        self.assertNotIn("A look, not a verdict", self.result.stdout)
+        self.assertIn("words of that answer the teaching already said:", self.result.stdout)
+        self.assertIn("none refused. Read each `new` beside the teaching sentence", self.result.stdout)
 
     def test_every_beat_is_listed_in_order_with_how_children_answer(self) -> None:
         marker = next(i for i, line in enumerate(self.lines) if line.startswith("DO_BEATS"))

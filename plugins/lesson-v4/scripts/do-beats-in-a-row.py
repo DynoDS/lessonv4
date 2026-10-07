@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Print a lesson design's Do beats one after another, as the class meets them.
 
-A look, never a verdict: nothing here passes or fails. It exists for the lesson
-designer's completion check "The Do beats read in a row" and for a redesign,
-which both have to read every Do beat together rather than one at a time.
+It exists for the lesson designer's completion check "The Do beats read in a
+row" and for a redesign, which both have to read every Do beat together rather
+than one at a time. It never fails a design itself; the design check
+(`validate-lesson-design.py`) refuses a Do that owes an answer and has not
+given a true one, and this is where the designer sees which ones owe it.
 
 For each Do beat (and the practice) it prints how children answer (the
 format and the first words of what they are told to do), and any run of three
@@ -13,6 +15,13 @@ to its designer twice: first because a Do repeated the case its Teach had just
 taught ("hot, very little rain" in both), then because the repair left all
 three Do beats asking for a written answer. Both were visible in a list like
 this one before any review ran.
+
+It also prints, for each Do, the teaching sentence nearest the answer beside
+the answer, and how many of the answer's words the teaching already said: the
+same count the reviewer's view prints (`beside_teaching.py`). Until 6 October
+2026 this tool closed with `A look, not a verdict`, and a science designer
+shown twelve words of its Teach in a task's answer went on to hand the design
+in. Now a Do with a high count says what it brings or that it is rehearsal.
 
 After the Do beats it prints the whole lesson from a child's seat: every
 stretch where children only listen, with the words the teacher says and
@@ -35,6 +44,9 @@ import json
 import re
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import beside_teaching  # noqa: E402 - the count the reviewer's view also prints
 
 # Words that make a shared run look meaningful when it is only grammar.
 LITTLE = {
@@ -340,6 +352,8 @@ def main(argv: list[str]) -> int:
         if isinstance(item, dict)
     }
 
+    beside = {id(row.pupil): row for row in beside_teaching.read_beside(design)}
+    owing = 0
     last_teach = ""
     count = 0
     for unit in design.get("teachingSequence") or []:
@@ -368,12 +382,45 @@ def main(argv: list[str]) -> int:
             printed = shared(beat_text, sticky.get(ref, ""))
             if printed:
                 print(f"  also in its star fact ({ref}): {'; '.join(printed)}")
+        row = beside.get(id(unit))
+        if row is not None and row.total:
+            print(f"  the teaching said: \"{row.taught_sentence}\"")
+            print(f"  the answer it expects: \"{row.answer}\"")
+            print(f"  words of that answer the teaching already said: {row.repeated} of {row.total}")
+            if row.declares:
+                print(f"  {row.declaration_line()}")
+                if row.wrong:
+                    asked = " ".join(beside_teaching.ask_text(unit).split())
+                    print(f"  the question as children meet it: \"{asked}\"")
+                    print(
+                        "  Read it beside the wrong answer you named: is that an answer the question "
+                        "pulls a child towards, or one only you can see? And could a child who was "
+                        "not listening get it right from the words on the page?"
+                    )
+                fault = row.fault()
+                if fault:
+                    owing += 1
+                    print("  THE DESIGN CHECK WILL REFUSE THIS BEAT AS IT STANDS.")
 
-    print(
-        f"DO_BEATS_IN_A_ROW: {count} beats. A look, not a verdict: a shared phrase is "
-        "fine where the beat uses the idea on a new case, and one answer form is fine "
-        "where the thinking genuinely suits it."
-    )
+    if owing:
+        print(
+            f"DO_BEATS_IN_A_ROW: {count} beats, {owing} to put right before you hand the design "
+            "in. For each one marked above: change the task so the taught idea is used on "
+            "something the class has not been shown, and write that thing in `use.new` in the "
+            "task's own words; or, if saying it back is the beat's job, write why in "
+            "`use.rehearsal`. `validate-lesson-design.py` prints the same faults with the two "
+            "ways each one goes wrong."
+        )
+    else:
+        print(
+            f"DO_BEATS_IN_A_ROW: {count} beats, none refused. Read each `new` beside the "
+            "teaching sentence above it as the reviewer will: is it something the class has not "
+            "been shown, that the taught idea decides? One answer form across every beat is "
+            "fine only where the thinking genuinely suits it."
+        )
+    whole = beside_teaching.whole_lesson_line(list(beside.values()))
+    if whole:
+        print(whole)
     print()
     print("\n".join(child_seat(design)))
     return 0

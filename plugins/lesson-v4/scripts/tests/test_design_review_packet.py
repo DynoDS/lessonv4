@@ -437,6 +437,8 @@ def copy_packet_plugin_root(
 
     for source in (
         ROOT / "scripts" / "validate-lesson-design.py",
+        # The count the validator reads beside each Do (6 October 2026).
+        ROOT / "scripts" / "beside_teaching.py",
         ROOT / "scripts" / "check-photo-cap.py",
     ):
         shutil.copy2(

@@ -64,7 +64,7 @@ A science Do beat makes children use the scientific relationship, not describe w
 - **Which picture shows it?** Three pictures of changes the class has not discussed: children write the letter of the one where water is evaporating, with melting ice as the near miss (`do-beats.md` 5.11).
 - **Which is not?** Three examples and one non-example of the category just taught, with the boundary case where the misconception lives: a whale among the fish, an aluminium can among the steel ones.
 - **Sort by the property.** Materials, animals or changes sorted by the taught property, including one the class has not handled.
-- **Complete the mechanism.** Fill the missing step: the sun heats the puddle, the water ___, the vapour rises (10.2).
+- **Complete the mechanism.** Fill the missing step on a case the Teach did not walk through: it taught the puddle, so the chain to finish is the washing on the line, `the sun heats the wet shirt, the water ___, the shirt is dry`. The same chain on the same case is the Teach said back (10.2).
 - **Label a new diagram.** The same parts on a different plant, tooth or circuit from the one taught, so the label is recognised rather than remembered.
 - **Draw the arrow.** On a picture of a new situation (a steaming kettle, a puddle on a sunny day), children draw where the water goes and write the one taught word beside the arrow.
 - **Which result supports it?** Choose the result that is evidence for the claim, and say what rules the others out (10.8: results children read for themselves, with wrong options a child could believe).

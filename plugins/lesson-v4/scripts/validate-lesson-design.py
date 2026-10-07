@@ -10,6 +10,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import beside_teaching  # noqa: E402 - the count the designer's tool and the reviewer's view also read
+
 TOP_LEVEL_FIELDS = {
     "schemaVersion",
     "lesson",
@@ -239,7 +242,13 @@ UNIT_FIELDS = {
 # design built the normal way cannot reach the pipeline without it. Leaving it
 # optional here keeps a hand-written or older design valid rather than making
 # every saved lesson unreadable for a field added on 18 September 2026.
-UNIT_OPTIONAL_FIELDS = {"taskStructure", "minutes", "levels"}
+# `use` is optional in the schema and compulsory in practice, like `minutes`:
+# the scaffold writes it on every Do and Use the learning, and an unresolved
+# placeholder is refused. A saved design from before 6 October 2026 has no
+# `use` and still reads; it is asked for one only on a beat whose expected
+# answer the teaching just before it had mostly said already
+# (`validate_each_do_says_what_it_brings`).
+UNIT_OPTIONAL_FIELDS = {"taskStructure", "minutes", "levels", "use"}
 
 # Every beat where children do something is planned at the levels it sensibly
 # has (Daniel, 1 October 2026: "all do beats. There should be a decision"):
@@ -1151,6 +1160,71 @@ def bullet_items(text: str) -> list[str]:
 
 SORT_HANDLING_KINDS = {"cards", "sheet"}
 SORT_HANDLING_PER = {"child", "pair", "group"}
+
+
+def validate_use(raw: Any, path: str, kind: str) -> None:
+    """What a Do says about itself: `new`, or `rehearsal`, never both.
+
+    Only the shape is read here. Whether the claim is true is read against
+    the teaching, once the whole sequence is known
+    (`validate_each_do_says_what_it_brings`).
+    """
+    expect(
+        kind in beside_teaching.USE_KINDS,
+        f"{path} belongs on a Do or a Use the learning, where children use what was just "
+        f"taught; a {kind} beat does not carry it",
+    )
+    use = expect_dict(raw, path)
+    fields = {"new", "rehearsal"}
+    # `wrong` is optional in the schema and written by the scaffold, like `use`
+    # itself: a design saved before it existed still reads.
+    expect_exact_keys(use, fields | {"wrong", "practice"}, fields, path)
+    for field in sorted(use):
+        value = use[field]
+        expect(
+            value is None or (isinstance(value, str) and value.strip()),
+            f"{path}.{field} must be a sentence or null",
+        )
+
+
+def validate_each_do_says_what_it_brings(root: dict[str, Any], faults: Any) -> None:
+    """A Do whose answer the teaching just said owes an answer, and a true one.
+
+    On 6 October 2026 a Year 4 science lesson taught `Tiny nutrients pass
+    through the wall of the small intestine into the blood. This is
+    absorption. The blood carries nutrients round the body` and then asked
+    pairs to repair an explanation whose model answer was those three
+    sentences. The designer's own tool had printed the shared words three
+    minutes before the design was handed in, under the line `A look, not a
+    verdict`; the first review sent a neighbouring beat back and named this
+    one as passing; the second review was shown `16 of 17` and approved. Ten
+    minutes of redesign and a second review bought nothing, and of 22 saved
+    reviews that sent a design back, about 14 were for this.
+
+    The count cannot be the verdict. `Why is there sweetcorn in poo?` scores
+    23 of 28 and an arrow in an airport prayer room 10 of 10, and both are the
+    lesson's best beats: a child using a taught idea on a new case says the
+    idea in the Teach's words. So the count only decides who has to answer.
+    What fails is an answer that is missing, or a `new` that names something
+    the task does not contain or the lesson had already said (`food already
+    chewed`, straight after a Teach that said the teeth break food up).
+
+    What this cannot see, and the review has to: a `rehearsal` whose reason
+    is thin, and a `new` that is new and still does not need the taught idea.
+    Both are printed beside the count in the review's view.
+    """
+    said_how = False
+    for row in beside_teaching.read_beside(root):
+        fault = row.fault(guide=not said_how)
+        if fault:
+            said_how = said_how or "Two ways this goes wrong" in fault
+            faults.add(f"teachingSequence {fault}")
+    # One say-it-back Do at most: the teacher's own number (6 October 2026).
+    # A second is refused however its reason is worded, which is what stops a
+    # lesson of honest labels and no use.
+    crowd = beside_teaching.too_much_rehearsal(beside_teaching.read_beside(root))
+    if crowd:
+        faults.add(f"teachingSequence: {crowd}")
 
 
 def validate_levels(raw: Any, path: str, unit: dict[str, Any]) -> None:
@@ -2717,6 +2791,8 @@ def validate_source_unit(
     expect(kind in allowed_kinds, f"{path}.kind invalid for this section/route: {kind}")
     if "levels" in unit:
         validate_levels(unit["levels"], f"{path}.levels", unit)
+    if "use" in unit:
+        validate_use(unit["use"], f"{path}.use", kind)
 
     skill_turn = kind in {"my-turn", "our-turn", "your-turn"}
     if skill_turn:
@@ -4313,6 +4389,7 @@ def run_design_checks(
         validate_teach_says_it_once(sequence, sticky_by_id)
     with faults.section():
         validate_explanation_task_is_modelled(structure, sequence)
+    validate_each_do_says_what_it_brings(root, faults)
     with faults.section():
         validate_lesson_fits_the_slot(root)
     with faults.section():

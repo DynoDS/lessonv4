@@ -37,7 +37,7 @@ The purpose note and governing idea above, and the Cross-Cutting Principles at t
 
 **Avoid.** Long "warm-ups" that become mini-lessons. Silent copying. Questions so hard that they re-teach rather than strengthen. Mixing older material without a sequence purpose or before pupils have enough security to choose productively.
 
-**Sources.** Rosenshine, *Principles of Instruction* (2012); Dunlosky et al., *Improving Students' Learning With Effective Learning Techniques* (2013); EEF Teaching & Learning Toolkit — "homework" and "metacognition".
+**Sources.** Rosenshine, *Principles of Instruction* (2012); Dunlosky et al., *Improving Students' Learning With Effective Learning Techniques* (2013).
 
 ---
 
@@ -155,7 +155,7 @@ These are not exclusive — model *then* critique, or critique *then* practise, 
 
 **Avoid.** "Does everyone understand?" as the only evidence. Relying only on volunteers. Prescribing cold call, no hands, wait time, Everybody Writes, Show Call, books, whiteboards or a fixed sampling routine.
 
-**Sources.** Wiliam, *Embedded Formative Assessment*; Lemov, *Teach Like a Champion 3.0*; Rosenshine (2012); EEF Metacognition & Self-Regulation guidance.
+**Sources.** Wiliam, *Embedded Formative Assessment*; Lemov, *Teach Like a Champion 3.0*; Rosenshine (2012); EEF, *Teacher Feedback to Improve Pupil Learning* (2021), Recommendation 1. Nearly all trialled hinge and diagnostic questions are in maths and science; in RE, history and geography the principle is carried over, not tested.
 
 ---
 

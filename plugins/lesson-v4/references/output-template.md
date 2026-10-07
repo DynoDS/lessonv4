@@ -408,6 +408,8 @@ When the handling needs actual child-facing dialogue, questions or examples, tho
 
 ### Source-unit contract
 
+A `do` and a `use-learning` also carry `use`, what the beat says about itself; read `use`, the next section, before you fill one.
+
 The starter, every teaching-sequence beat and an included Apply/Reflect use exactly this common envelope:
 
 ```json
@@ -684,6 +686,26 @@ For a completed `Prepared example` that children are intentionally meant to see 
 A My Turn completed live on a representation uses `answer-slide`, so the finished representation follows on the next slide. Any other My Turn whose answer is not pupil-visible from the start uses `teacher-only`; a prepared completed model uses `visible-in-unit`.
 
 For every answer whose `kind` is not `none`, the slide-designer composes the structured answer into the source unit's question or task slide speaker notes. Use `Answer to question(s) on this slide:` for `kind: exact` and `Answer/model for this slide:` for `kind: model` or `kind: standard`. For My Turn include the exact question/example plus answer after the marker; for other cases include the answer/model/standard only. `teacher-only` creates notes only. `answer-slide` creates the same speaker-note entry and a separate visible answer slide. `visible-in-unit` creates the same speaker-note entry and shows the prepared model in ordinary black teaching text. Do not mechanically append punctuation to `answer.content`. The lesson-designer does not duplicate the answer/model/standard in `speakerNotes` or in another route-specific content field. `content.modelledExemplar` remains the separate teacher-facing writing exemplar for the existing Question-and-reference writing rule; it is not a second copy of the unit's answer.
+
+### use
+
+Five things decide whether a Do or a quick check is worth asking, and they are settled before `use` is filled:
+
+1. **Name the wrong answer first.** What would a child who understood say, what would a child who did not say, and what is that second child thinking? The two answers differ, and the second is one a real child gives.
+2. **Put it where it can pull.** The wrong idea is in the question itself: a named child says it, it is an option a child would choose, or it is the natural reading of the situation. Left in your notes it pulls nobody.
+3. **Start from a real case.** Something the class could meet that the lesson did not show, or a named child saying what a real child might think; never an invented `imagine if`.
+4. **Read it from the surface.** A child who was not listening should not get it right from the words on the page: a give-away word, the only option that makes sense, a hint that says where to look.
+5. **One ask.** One thing to decide, with its reason where the reason is the evidence, and the reading easier than the thinking.
+
+`task-contrasts.md` → `One story, one process, one set of meanings` shows each of these as a pair from a real lesson; read it before you choose the Do beats.
+
+`use` is what a Do says about itself. The scaffold writes it on every `do` and `use-learning`; one of the two is a sentence and the other `null`:
+
+```json
+"use": { "new": "bits of sweetcorn skin in their poo", "wrong": "It was not chewed enough, so it came out", "rehearsal": null }
+```
+
+`new` is the thing this task puts in front of children that the lesson has not shown them, in the task's own words: the case, the changed condition, the evidence or the claim. `wrong` goes with `new`: the answer a child who has not understood would really give. It is the teacher's test written down (`task-contrasts.md` → `One story, one process, one set of meanings`): if the only wrong answer is one no child in the class would give, the task has an obvious answer and is not a use, however new it is. The check can see that `wrong` is there and is a sentence; whether a child would say it is your judgement and then the reviewer's. `practice` is for a beat where the child says or does something they will have to say or do in life (a refusal said aloud in their own voice, asking for help, a partner voice tried, a map read on a new map): say what each child practises. It is given alone, with the other three `null`, and is not counted as the lesson's say-it-back (the teacher, 6 October 2026: "different because saying it is the point"). A fact, a meaning or a rule said aloud is `rehearsal`, and so is saying what each part means while making the object. `rehearsal` is why saying it back is the job at this point: what has to be secure before the next thing, and where the lesson then uses it. The design check reads each Do's expected answer beside the teaching just before it. Where the teaching already said most of that answer, the beat must have a `use`, and a `new` must name something that is in the task and that the lesson had not already said; `food already chewed` after a Teach that said the teeth break food up is not new. It fails two ways, and both are faults: a task a child gets right by remembering the last slide, which tells the teacher only who was listening; and a freshness bought by swapping a name, or by needing a law, a process or a fact the lesson never taught, which is unfair rather than harder. A lesson holds one Do or quick check declared `rehearsal` at most, and the design check refuses a second. That is the teacher's own number for this one thing (6 October 2026, shown a lesson whose first two tasks each said back what had just been taught: "two is too many, one at most"); it is not a pattern for other limits. Not counted, because they are rehearsal or recall by design: the final task and the good answer to that very question shown before it, a maths My Turn, Our Turn and Your Turn, the starter's recall of earlier lessons, the vocabulary cards, the partner rehearsal inside the final task, and worksheet questions, which carry no `use` and are not read by this check (the teacher, 6 October 2026). The limits: a name, a term, a date or a definition may be recalled, and that recall is the one say-it-back beat when it is a Do.
 
 ### Lesson question
 

@@ -14,7 +14,7 @@ So pick each beat on both axes, and think about the shape across the lesson rath
 
 **Choose whether a placement needs an explanation.** Add a short justification when the reason behind a placement is part of the intended learning or when it will distinguish understanding from guessing. Accurate classification may itself be the intended check (`preferences.md` → `A quick check is a fresh case, not the last slide again`: the cards are cases the Teach did not show); do not turn every quick sort into a written explanation. Consider evidence already gathered in this beat and the lesson.
 
-**The shape across the lesson matters more than any single beat.** Follow `preferences.md` → The Teach → Do → Teach → Do Rhythm for the whole-lesson judgement, including main practice. These bands describe choices, not a compulsory sequence. A short response can establish new knowledge (`preferences.md` → `A quick check is a fresh case, not the last slide again`: a fact, name or definition may be recalled with the answer off the board; an idea needs a fresh case); select meaningful use or reasoning where the objective supports it rather than making the last Do harder by position alone.
+**The shape across the lesson matters more than any single beat.** Follow `preferences.md` → The Teach → Do → Teach → Do Rhythm for the whole-lesson judgement, including main practice. These bands describe choices, not a compulsory sequence. A short response can establish new knowledge (`preferences.md` → `A quick check is a fresh case, not the last slide again`: a name, a term, a date or a definition may be recalled with the answer off the board; a reason, a meaning, a mechanism or an explanation is an idea, and an idea is used on something the class has not been shown, not said back); select meaningful use or reasoning where the objective supports it rather than making the last Do harder by position alone.
 
 **Success evidence depends on the task.** Do not require roughly 80% success through every Do beat or lesson type. For a defined repeatable skill, roughly 80% at release is a planning expectation. A diagnostic question may deliberately reveal widespread misunderstanding, and many incorrect answers can be useful evidence. The live teacher responds to the actual class.
 
@@ -292,7 +292,7 @@ Three or four items on the board. *"Which is the odd one out, and why?"* Multipl
 **SEND access:** entry is low (any answer is admissible if justified); rich for stretch pupils.
 
 ### 5.3 True / False with Justification
-Six short statements. Pupils mark T/F and write a one-line reason (Edutopia retrieval list; Lemov *Hinge Question* family).
+Six short statements. Pupils mark T/F and write a one-line reason (Edutopia retrieval list; the hinge question family, which is Wiliam's).
 **Best for:** recall-heavy chunks where misconceptions are likely.
 **SEND access:** the binary T/F is the entry; the justification is the stretch.
 **The limit:** the user finds true or false "fine, but can be cheap". A statement a child can mark by remembering the slide is surface; it earns its place only when the statement is one a child in the class could genuinely believe (`Tudor families sent children to work because they didn't care about them`) and the reason is written. Prefer a sort, a match or an odd one out when those force the same decision.
@@ -320,7 +320,7 @@ Teacher shows examples and non-examples one at a time; pupils try to work out th
 **SEND access:** the rule emerges from concrete cases — easier than starting from abstract definition.
 
 ### 5.8 Put It in Order
-Four to six short cards (events, stages of a process, steps of a practice), shown scrambled; children number or letter them in order at their seats. *"Put these in the order they happened: the fire starts at the bakery, the wind blows it west, houses are pulled down, the fire stops."* Scramble the display so the order has to be decided, then keep the true order in the answer.
+Four to six short cards (events, stages of a process, steps of a practice), shown scrambled; children number or letter them in order at their seats. *"Put these in the order they happened: the fire starts at the bakery, the wind blows it west, houses are pulled down, the fire stops."* Scramble the display so the order has to be decided, then keep the true order in the answer. It is thinking when a reason decides the order: a card that never happened, a step that looks right and is not, or one question about which card could not be moved. An order the class has just been told, put back, is rehearsal, and the beat says so.
 **Best for:** chronology in history, processes in science and geography, the stages of a religious practice, the steps for getting help in PSHE.
 **SEND access:** reading is on short cards; the response is a number or letter, and a partly filled order (first and last given) shortens it.
 
@@ -336,7 +336,7 @@ Two cases side by side (two places, two periods, two practices, two materials); 
 
 ### 5.11 Which Picture Shows It?
 Three or four pictures, one question: `which one shows water evaporating?`, `which is a physical feature?`, `which one would the Victorians have blamed on the smell?`. Each child writes the letter, then the answer is shown. Every wrong picture is a near miss that holds a real misconception (ice melting beside the puddle drying), so choosing is discriminating, not spotting.
-**Best for:** checking a new category or process straight after the Teach with almost no reading, for EAL and SEND children above all: pictures as the options cut language load more than any other change to a question (Noble and colleagues 2020).
+**Best for:** checking a new category or process straight after the Teach with almost no reading, for EAL and SEND children above all: pictures as the options cut language load (Noble and colleagues 2020 found a gain on the three test items that added pictures to the options).
 **The limit:** a wrong picture no child would pick makes it a guess; pictures the Teach already showed make it finding. The pictures must be clear enough to read at the back of the room.
 **Demands and supports:** one letter to write; the question read aloud.
 
@@ -462,7 +462,7 @@ A short paragraph or diagram with a deliberate error; pupils find it and fix it 
 **SEND access:** offer a stem: "How a Roman… / Why a Viking…"
 
 ### 8.8 Prove Sam Wrong
-A character states a rule that sounds right and is not always true; children find one case that breaks it. *"Sam says all metals are attracted to magnets. Find one that proves him wrong."* *"Sam says every Tudor child worked for money."* The case has to come from what was taught, so the lesson must have supplied it or the idea to find it.
+A character states a rule that sounds right and is not always true; children find one case that breaks it. *"Sam says all metals are attracted to magnets. Find one that proves him wrong."* *"Sam says every Tudor child worked for money."* The case has to come from what was taught, so the lesson must have supplied it or the idea to find it. The rule is one the Teach did not itself put right: if the Teach said `not all metals`, the counterexample is remembered, not found.
 **Best for:** a generalisation children tend to over-stretch, in maths, science, history and geography.
 **SEND access:** one case is the whole answer; offer three cards to choose the counterexample from when finding one unaided is too open.
 

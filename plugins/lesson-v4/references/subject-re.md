@@ -28,15 +28,23 @@ A festival's date marks when a tradition celebrates an event, not a known date o
 
 ## What a Do beat looks like in RE
 
+**Name the wrong answer first, and know which kind of thing was taught** (`task-contrasts.md` → `One story, one process, one set of meanings`). The wrong answers real children give in RE, to build a question around:
+- The belief behind a story or practice: an everyday reason in place of the belief. `Because a baby was born.` `So it looks nice.` `It is God's birthday` (Ofsted's 2024 RE report, from pupils asked to reflect on the Christmas story before they knew what Christians believe about it).
+- An object with a job: the name without the job. `The mihrab is a decoration.`
+- Diversity in a tradition: `All Christians...`, one person's practice taken as everyone's rule (Ofsted's 2021 RE review warns of this). `Catholics are not Christians` and `Christians believe in three gods` come from one teacher educator's list, drawn from experience and mostly secondary (Steele, RE:ONLINE 2026); it is not research.
+- What a pure symbol stands for has no wrong idea, only a gap or a muddle: recall it in a form that works harder than the slide.
+
+A wrong option is something a child thinks, never something put into believers' mouths.
+
 An RE Do beat makes children connect what people do with what they believe, and see who is speaking. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each uses a practice, person or text the Teach did not already explain:
 
 - **Match the practice to the belief.** Practice cards (lighting a candle at Advent, giving at Eid) matched to the belief cards that help explain them. The practice is a new one; the belief is the one taught.
 - **Doing and meaning.** Sort cards into what a person does and what it means to them, so the two stop being one thing.
 - **Whose voice?** Children sort three statements into one person, many people in the tradition, and the tradition's own teaching.
 - **More than one view inside a tradition.** From four responses, children tick the two that could both come from Christians, built so one person can hold more than one meaning (`preferences.md` → What a Lesson Is For, `Needed is not tidy`).
-- **Order the practice.** The stages of a ceremony or a festival day, in order (`do-beats.md` 5.8).
+- **Order the practice.** The stages of a ceremony or a festival day, in order, where the order has a reason children can give: why one stage has to come before another, or which a believer would least want left out. Putting back an order the Teach has just told, with nothing to decide, is recall, and is the lesson's one say-it-back if it is used (`do-beats.md` 5.8).
 - **Which teaching explains it?** Children underline the line in the extract that supports this practice, and tell a partner how.
-- **Fix the claim.** `All Christians celebrate Christmas in the same way`: correct it with what the lesson taught (8.8).
+- **Fix the claim.** `All Christians celebrate Christmas in the same way`: correct it with what the lesson taught. Choose a claim the Teach did not itself put right, so the correction is worked out, not remembered (8.8).
 - **Which beliefs clash?** A short story card with four belief cards beneath: children circle the two that pull against each other in this situation.
 - **Look closely at the object.** A crib scene, an Advent candle or a prayer mat, or its photograph printed large: children find what in it shows what the person believes, and the practice stays observed, never performed (`do-beats.md` §11.4).
 - **Religious, non-religious or either?** Sort reasons someone might give for helping a neighbour.
@@ -49,11 +57,11 @@ A sheet takes the shape its RE needs, and these are shapes that work on real Yea
 
 - **Who understands it best?** Two or three people say what a teaching means; the child decides and finishes `... shows an accurate understanding because...`.
 - **One sentence is wrong.** Jun explains why Makkah matters to Muslims and one of his sentences is incorrect: find it and say why.
-- **True or false, then fix it.** Statements about the story of the widow's mite, with the false ones corrected.
+- **True or false, then fix it.** Statements about the story of the widow's mite, with the false ones corrected. Recall, unless a false statement is one a child really believes.
 - **The practice and its meaning.** A stem for each practice with the meaning left to the child: `Pilgrims wear plain white clothes because...`
 - **Read the data.** A census chart of worldviews, then `What is the largest group? How do you know?`
 - **A caption for a visitor.** One object in a place of worship (the charred cross at Coventry) and what a visitor should know it means.
-- **Retell it in order.** Four pictures from the story and a sentence for each, when knowing the story is what the rest of the lesson needs.
+- **Retell it in order.** Four pictures from the story and a sentence for each, when knowing the story is what the rest of the lesson needs. This is recall, and is claimed as recall.
 
 ## Do not ask children to pretend to worship
 

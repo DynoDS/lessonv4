@@ -12,6 +12,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import beside_teaching  # noqa: E402 - the count the designer's tool and the design check also read
+
 ALLOWED_REVIEW_RESULTS = {
     "APPROVED",
     "REDESIGN REQUIRED",
@@ -314,6 +317,16 @@ ALWAYS_READ_REVIEW_SECTIONS = (
         "actually requires a child to know, beside the simpler task that is "
         "exactly right. It calibrates the two probes; it is not a list of "
         "banned activities.",
+    ),
+    # The other half of the same calibration (6 October 2026): a task a child
+    # passes by remembering the last slide, and the test both faults fail
+    # (name the wrong answer first, then put it where it can pull).
+    (
+        "task-contrasts.md",
+        "One story, one process, one set of meanings",
+        "Read with the contrasts: saying it back beside using it, the wrong "
+        "answer a real child gives, and reading a question from its surface. "
+        "It is what `Each Do` is judged against.",
     ),
 )
 
@@ -1653,130 +1666,14 @@ def build_board_names(design: dict) -> list[str]:
     return lines
 
 
-def _answer_words(text: str) -> list[str]:
-    words = [word.strip("'") for word in re.findall(r"[a-z0-9']+", text.lower())]
-    stems = []
-    for word in words:
-        if not word or len(word) < 3 or word in {"the", "and", "that", "this", "with", "was", "were", "they", "their", "for", "not", "but", "can", "could", "had", "has", "have", "its", "into", "from", "what", "who", "how", "why"}:
-            continue
-        for suffix in ("ies", "es", "s"):
-            if word.endswith(suffix) and len(word) > 4:
-                word = word[: -len(suffix)]
-                break
-        stems.append(word)
-    return stems
-
-
-# The beats where children use what was taught, and the beats that show or
-# tell them something first. An enabling input with its own pupil instruction,
-# a combined stimulus and talk, and an Our Turn are both: the class uses what
-# it met, and what it met is on the board for whatever comes next.
-BESIDE_PUPIL_KINDS = {
-    "do", "practise", "use-learning", "our-turn", "your-turn", "talk",
-    "stimulus-talk", "do-task", "plan-checkpoint",
-}
-BESIDE_SHOWN_KINDS = TEACH_KINDS | {
-    "my-turn", "grounding-input", "stimulus", "make-sense", "observe", "prepare",
-}
-
-
-def _beside_teaching_text(unit: dict, sticky: dict[str, str], *, own_answer: bool = True) -> str:
-    """Everything the class was shown or told on a beat, including a Teach's
-    takeaway, which is the line a Do is most likely to say back, and the
-    result a discovery lesson made visible."""
-    content = unit.get("content") or {}
-    takeaway = content.get("takeaway")
-    if isinstance(takeaway, dict):
-        takeaway = takeaway.get("text") or sticky.get(takeaway.get("ref") or "", "")
-    parts = [
-        content.get(key)
-        for key in (
-            "headline", "explanation", "teachingText", "accurateExplanation",
-            "enablingInput", "modelledOn", "example", "modelledExemplar", "input",
-            "resultOrPattern", "prompt", "question", "materialOnSlide", "activity",
-        )
-    ]
-    parts += [takeaway, " ".join(content.get("keyQuestions") or [])]
-    parts.append((unit.get("speakerNotes") or {}).get("script"))
-    if own_answer:
-        parts.append((unit.get("answer") or {}).get("content"))
-    return " ".join(str(part) for part in parts if part)
-
-
-def _beside_expected_answer(unit: dict) -> str:
-    """The expected answer in whatever shape the design stored it: prose, a
-    structured sort or evidence classification (once printed as `(none
-    written)`), or what the teacher listens for in a talk."""
-    answer = unit.get("answer") or {}
-    if answer.get("content"):
-        return " ".join(str(answer["content"]).split())
-    structure = answer.get("structure")
-    task = unit.get("taskStructure") or {}
-    if isinstance(structure, dict) and structure.get("kind") == "sort":
-        items = {row["id"]: row.get("label", "") for row in task.get("items") or []}
-        groups = {row["id"]: row.get("label", "") for row in task.get("groups") or []}
-        return "; ".join(
-            f"{items.get(p.get('itemRef'), p.get('itemRef'))} under {groups.get(p.get('groupRef'), p.get('groupRef'))}"
-            for p in structure.get("placements") or []
-        )
-    if isinstance(structure, dict) and structure.get("kind") == "evidence-classification":
-        return "; ".join(
-            ", ".join(str(value.get("value")) for value in result.get("values") or [])
-            for result in structure.get("results") or []
-        )
-    listens = (unit.get("content") or {}).get("teacherListensFor") or []
-    return "; ".join(str(line) for line in listens if line)
-
-
-def _beside_pairs(sequence: list[dict]) -> list[tuple[list[dict], dict]]:
-    """Each pupil beat with everything the class met since the last one, in
-    every route. Walking back from a pupil beat collects the beats that showed
-    or told the class something and stops at the previous pupil beat, with two
-    exceptions: a Your Turn looks back through its cycle's Our Turn to the My
-    Turn, because the Our Turn's revealed answer is what it could copy; and an
-    enabling input with its own instruction, or a combined stimulus and talk,
-    is what the next beat saw, so the walk takes it and stops. Such a beat is
-    also paired with itself, never counted against its own answer."""
-    pairs = []
-    for index, unit in enumerate(sequence):
-        kind = unit.get("kind")
-        self_paired = kind == "teach-needed" and unit.get("pupilInstruction")
-        if self_paired:
-            pairs.append(([], unit))
-            continue
-        if kind not in BESIDE_PUPIL_KINDS:
-            continue
-        shown: list[dict] = []
-        for earlier in reversed(sequence[:index]):
-            earlier_kind = earlier.get("kind")
-            if earlier_kind == "our-turn" and kind == "your-turn":
-                shown.append(earlier)
-                continue
-            if earlier_kind == "my-turn" and kind == "your-turn":
-                shown.append(earlier)
-                break
-            # One exploration can show two findings: every Use the learning
-            # is read against the result made visible, not only the first.
-            if kind == "use-learning" and earlier_kind in {"use-learning", "teach-why"}:
-                if earlier_kind == "teach-why":
-                    shown.append(earlier)
-                continue
-            if earlier_kind in {"teach-needed", "stimulus-talk"}:
-                shown.append(earlier)
-                if earlier.get("pupilInstruction") or earlier_kind == "stimulus-talk":
-                    break
-                continue
-            if earlier_kind in BESIDE_PUPIL_KINDS or earlier_kind == "explore":
-                break
-            if earlier_kind in BESIDE_SHOWN_KINDS:
-                shown.append(earlier)
-        if kind == "stimulus-talk":
-            # The activity is its own stimulus: what the class reads on it
-            # counts, beside any grounding input before it.
-            shown.insert(0, {**unit, "answer": None})
-        if shown:
-            pairs.append((list(reversed(shown)), unit))
-    return pairs
+# The count, and the beats it reads, live in `beside_teaching.py` so the
+# designer's tool, the design check and this view show one number.
+_answer_words = beside_teaching.answer_words
+BESIDE_PUPIL_KINDS = beside_teaching.BESIDE_PUPIL_KINDS
+BESIDE_SHOWN_KINDS = beside_teaching.BESIDE_SHOWN_KINDS
+_beside_teaching_text = beside_teaching.beside_teaching_text
+_beside_expected_answer = beside_teaching.beside_expected_answer
+_beside_pairs = beside_teaching.beside_pairs
 
 
 def build_do_beside_teach(design: dict) -> list[str]:
@@ -1791,34 +1688,43 @@ def build_do_beside_teach(design: dict) -> list[str]:
     answer as `(none written)` and ignored the Teach's takeaway, so the same
     restatement as a sort, or as a Your Turn re-sorting the shapes just
     placed, passed unseen.
+
+    Until 6 October 2026 the count closed with `where to look, not the
+    verdict`, and a review shown `16 of 17` beside a task whose answer was its
+    Teach board approved it. Now each Do says what it brings or that it is
+    rehearsal (`beside_teaching.py`), the claim is printed here beside the
+    count and the teaching sentence nearest the answer, and the review gives
+    each one a line.
     """
-    sequence = design.get("teachingSequence") or []
-    sticky = {row.get("id"): row.get("text", "") for row in design.get("stickyKnowledge") or []}
     lines = [
         "## Each Do beside the teaching before it",
         "",
         (
             "For each beat where children use what was just taught, in every "
-            "route, what the class was shown and told just before, the answer "
-            "the design expects, and how many of that answer's words the "
-            "teaching already said. Ask of each: could a child give this answer "
-            "by remembering the last slide, without using the idea on anything "
-            "new? A quick check is a fresh case (`preferences.md` → `A quick "
-            "check is a fresh case, not the last slide again`); the count is "
-            "where to look, not the verdict."
+            "route: the teaching sentence nearest the answer, the answer the "
+            "design expects, how many of that answer's words the teaching "
+            "already said, and what the design says the task brings. A high "
+            "count does not make a beat wrong: a task that uses a taught idea "
+            "on a new case says the idea in the Teach's words. So for every "
+            "Do, decide which it is and write it in `Each Do`: it uses the "
+            "learning on something the class has not been shown; it is "
+            "rehearsal, and rehearsal is the right job at that point; or it "
+            "can be answered by remembering the last slide (`preferences.md` "
+            "→ `A quick check is a fresh case, not the last slide again`). "
+            "The design's own claim is a claim: read `new` against the "
+            "teaching sentence, and `rehearsal` against where the lesson then "
+            "uses the thing rehearsed."
         ),
         "",
     ]
+    rows = beside_teaching.read_beside(design)
+    whole = beside_teaching.whole_lesson_line(rows)
+    if whole:
+        lines.extend([whole, ""])
     count = 0
-    for shown, pupil in _beside_pairs(sequence):
-        answer = _beside_expected_answer(pupil)
-        answer_words = _answer_words(answer)
-        if shown:
-            taught_text = " ".join(_beside_teaching_text(unit, sticky) for unit in shown)
-        else:
-            taught_text = _beside_teaching_text(pupil, sticky, own_answer=False)
-        taught = set(_answer_words(taught_text))
-        repeated = sum(1 for word in answer_words if word in taught)
+    for row in rows:
+        shown, pupil = row.shown, row.pupil
+        answer = row.answer
         content = pupil.get("content") or {}
         asked = (
             pupil.get("pupilInstruction")
@@ -1839,18 +1745,23 @@ def build_do_beside_teach(design: dict) -> list[str]:
             lines.append(f"### {pupil['label']} (after {names})")
         lines.append(f"- Asked: {asked}")
         structure = pupil.get("taskStructure") or {}
-        items = [row.get("label", "") for row in structure.get("items") or [] if row.get("label")]
+        items = [entry.get("label", "") for entry in structure.get("items") or [] if entry.get("label")]
         if items and structure.get("kind") == "option-bank":
             lines.append("- Options: " + " | ".join(items))
         elif items and structure.get("kind") == "sort":
-            groups = [row.get("label", "") for row in structure.get("groups") or []]
+            groups = [entry.get("label", "") for entry in structure.get("groups") or []]
             lines.append("- Cards: " + " | ".join(items) + "; groups: " + " | ".join(groups))
+        if row.total and row.taught_sentence:
+            lines.append(f"- The teaching said: {row.taught_sentence}")
         lines.append(f"- Expected answer: {answer or '(none written)'}")
-        if answer_words:
+        if row.total:
             lines.append(
                 f"- Words of the expected answer the Teach's board or script already said: "
-                f"{repeated} of {len(answer_words)}"
+                f"{row.repeated} of {row.total}"
             )
+        declared = row.declaration_line()
+        if declared:
+            lines.append(f"- {declared}")
         lines.append("")
         count += 1
     if not count:
@@ -3199,6 +3110,53 @@ def compare_photo_transition(
     }
 
 
+EACH_DO_HEADING = "## Each Do"
+EACH_DO_VERDICTS = ("uses", "rehearsal", "says it back", "guessable")
+
+
+def require_every_do_has_its_line(review_path: Path, design: dict) -> None:
+    """Every Do the design sets gets one line in the review, with a verdict.
+
+    On 6 October 2026 a review sent one beat of a science lesson back and
+    listed the beat beside it under `Preserve`. That beat's answer was its
+    Teach board, 16 words of 17, and no later pass looked at it again, because
+    a beat named as passing is protected. A line for each Do is how a review
+    shows it read every one before it names any as sound. This checks that
+    the line is there; whether the verdict is right is the review's own work.
+    """
+    labels = [
+        row.pupil.get("label")
+        for row in beside_teaching.read_beside(design)
+        if row.declares and row.pupil.get("label")
+    ]
+    if not labels:
+        return
+    lines = review_path.read_text(encoding="utf-8").splitlines()
+    starts = [index for index, line in enumerate(lines) if line.strip() == EACH_DO_HEADING]
+    if len(starts) != 1:
+        raise PacketError(
+            f"design-review.md must contain exactly one {EACH_DO_HEADING!r} heading: one line "
+            "for each Do and quick check, saying whether it uses the learning on something "
+            "new, is rehearsal, says it back, or is guessable"
+        )
+    section: list[str] = []
+    for line in lines[starts[0] + 1:]:
+        if line.startswith("## "):
+            break
+        section.append(line)
+    for label in labels:
+        own = [line for line in section if label in line]
+        if not own:
+            raise PacketError(
+                f"design-review.md {EACH_DO_HEADING!r} has no line for `{label}`"
+            )
+        if not any(verdict in line.lower() for line in own for verdict in EACH_DO_VERDICTS):
+            raise PacketError(
+                f"design-review.md {EACH_DO_HEADING!r}: the line for `{label}` gives no verdict "
+                f"(one of: {', '.join(EACH_DO_VERDICTS)})"
+            )
+
+
 def parse_review_result(
     review_path: Path,
 ) -> str:
@@ -3425,6 +3383,10 @@ def verify(args: argparse.Namespace) -> int:
         )
 
     judgements = require_review_judgements(review_path, review_result)
+    require_every_do_has_its_line(
+        review_path,
+        load_json(paths["lessonDesign"], "lesson-design.json"),
+    )
 
     postflight = {
         "schemaVersion": 1,

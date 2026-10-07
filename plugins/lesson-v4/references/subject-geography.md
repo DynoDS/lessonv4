@@ -157,6 +157,9 @@ Most primary teachers have no geography background, so these are held here rathe
 
 Naming one is only half of it. Each misconception you name gets a question attached that a child holding it answers *wrongly*, because that is the only way it surfaces. "Does everyone understand?" catches nothing, and neither does a question the child can get right either way. If the misconception is that all deserts are hot, the question is which of these four photographs shows a desert, with a cold one in the set.
 
+- Rivers start at the sea (Ofsted's 2023 geography report found pupils saying so), and rivers flow because it rained, not because the land slopes
+- Weather and climate taken for the same thing
+- `Above` and `below` used for north and south (Ofsted 2023)
 - Africa treated as a country rather than a continent, and pictured as entirely rural
 - All deserts being hot and sandy
 - The sun moving across the sky

@@ -31,12 +31,21 @@ A personal reflection or a piece about the child's own life names the product. T
 
 ## What a Do beat looks like in PSHE
 
+**Name the wrong answer first.** No researched list of PSHE misconceptions exists for this age; these come from the PSHE Association's guidance and from this plugin's own tasks that worked:
+- Facts and rules: `I will get in trouble if I tell.` A stranger looks scary (children asked to draw one draw a villain).
+- Recognising it: the child looks for a nasty voice, so a friendly push is missed; `maybe later` is taken for a no. Borderline cases find this.
+- Strategies and words: there is no wrong idea. The child knows what to say and cannot yet say it, so the beat is every child saying it.
+
+**Saying it aloud is the skill, not the lesson said back.** A child saying a refusal or a way of asking for help, in their own voice, to a partner, is practising what the lesson is for. Declare that beat as `use.practice` (`output-template.md` → `use`); it is not the lesson's one say-it-back (the teacher, 6 October 2026: "different because saying it is the point"). The edge is what is said. Words or an action the child will have to say or do in life are practice: a refusal, asking a trusted adult for help, a partner voice. A fact, a rule or a list of steps recited to a partner is still rehearsal.
+
+Two questions are unsafe however well they would sort a class (PSHE Association: disclosures are never encouraged in class, and no personal questions): one that invites a child to tell something about their own life or home, and one that has a child judge a named classmate. Ask about a character, in the Association's own form: what is happening to them, who could help, what would you tell them. A `what do you already think?` starter has no wrong answer and is not a check.
+
 A PSHE Do beat has children apply the taught reason or boundary to a situation, always someone else's. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each uses a scenario the Teach did not already settle:
 
 - **Sort the behaviours.** Kind, unkind or not sure, for short scenarios the class has not discussed, with the taught rule deciding the hard one.
 - **Spot the warning sign.** Children underline the phrase in Mia's message that is trying to pressure her, or the detail in the story that is the risk.
 - **Safest next step.** Three things Leo could do; choose the safest and name the rule that makes it so.
-- **Order the steps.** What to do first, next and last when something online worries you (`do-beats.md` 5.8).
+- **Order the steps.** What to do first, next and last, for a situation the Teach did not walk through, with one step that looks helpful and is not. Without those two it is recall of the list just taught (`do-beats.md` 5.8).
 - **What could she say?** Choose, or write, the sentence that keeps the boundary clearly and kindly.
 - **Who could help?** Match the situation to the trusted adult or service that fits it.
 - **Now or later?** Sort consequences into what happens straight away and what builds up over time.
@@ -53,7 +62,7 @@ A sheet takes the shape its PSHE needs, and these are shapes that work on real Y
 - **Advice for someone else.** `Jacob is going to the beach with his family. What four things should he remember to stay safe near the water?` The child applies the taught rules to another person's day.
 - **Whose reason is better?** Two children give a reason for the same choice, one using the taught reason and one not; the child picks and says why.
 - **Sort it.** Physical or mental, now or later, call for help or not, with at least one case the taught rule decides rather than common sense.
-- **Fill the gaps.** A short paragraph with a word bank and a few spare words, when the lesson taught facts children need to hold.
+- **Fill the gaps.** A short paragraph with a word bank and a few spare words, when the lesson taught facts children need to hold. This is recall, and is claimed as recall.
 - **Label around a picture.** The dangers around a bonfire, or the food groups on the Eatwell plate.
 - **A risk table.** The hazard in one column and what makes it safer in the other.
 - **One thing made well.** `Draw a balanced plate for Andeep. Use the word bank to help you.`, or `Suggest three things to add to this meal to make it healthier.`

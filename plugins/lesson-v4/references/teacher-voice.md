@@ -356,6 +356,8 @@ A longer version is better only when the extra wording adds:
 
 # 6. Questions and pupil instructions
 
+This section is for every question a child reads or hears: the starter, a question on a Teach slide or in its script, a quick check, a Do, the final task and its launch, a worksheet question at any level. Whatever its job, it is few words, one ask, asked positively, names the people and things it is about, and does not signal its own answer; the reading is the easy part and the thinking the hard one. The parts below say how.
+
 There is no single required question stem.
 
 All of these can fit:
@@ -456,7 +458,7 @@ The method reminder earns the extra words.
 
 Question wording must preserve the thinking pupils are meant to do.
 
-The commonest leak is a question that presupposes the verdict. `What has Sam got wrong?`, `What is Sam forgetting?`, `What has Sam missed?` all announce that Sam's claim fails before the child has judged it; the verb changes, the leak is the same. The test: could this question be asked, word for word, if the claim were actually right? `Is Sam correct? Explain your answer.` works either way. `What is Sam forgetting?` only works if Sam is wrong, so it has done the judging for the child.
+The commonest leak is a question that presupposes the verdict. `What has Sam got wrong?`, `What is Sam forgetting?`, `What has Sam missed?` all announce that Sam's claim fails before the child has judged it; the verb changes, the leak is the same. The test: could this question be asked, word for word, if the claim were actually right? `Is Sam correct? Explain your answer.` works either way. `What is Sam forgetting?` only works if Sam is wrong, so it has done the judging for the child. `Does that mean the world has grown?` leaks from the other side: the stem signals no. Ask positively too: `Which is not...` and a double negative make the reading harder than the thinking, and in a question the reading is the easy part.
 
 Bad:
 > What has Sam got wrong?
