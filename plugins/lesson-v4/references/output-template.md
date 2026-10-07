@@ -694,7 +694,7 @@ Five things decide whether a Do or a quick check is worth asking, and they are s
 1. **Name the wrong answer first.** What would a child who understood say, what would a child who did not say, and what is that second child thinking? The two answers differ, and the second is one a real child gives.
 2. **Put it where it can pull.** The wrong idea is in the question itself: a named child says it, it is an option a child would choose, or it is the natural reading of the situation. Left in your notes it pulls nobody.
 3. **Start from a real case.** Something the class could meet that the lesson did not show, or a named child saying what a real child might think; never an invented `imagine if`.
-4. **Read it from the surface.** A child who was not listening should not get it right from the words on the page: a give-away word, the only option that makes sense, a hint that says where to look.
+4. **Read it from the surface.** A child who was not listening should not get it right from the words on the page: a give-away word, the only option that makes sense, a hint that says where to look. Where there are options or cards, give the wrong ones the same key words as the right ones, used wrongly, so the words cannot do the choosing.
 5. **One ask.** One thing to decide, with its reason where the reason is the evidence, and the reading easier than the thinking.
 
 `task-contrasts.md` → `One story, one process, one set of meanings` shows each of these as a pair from a real lesson; read it before you choose the Do beats.

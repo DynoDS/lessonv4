@@ -390,17 +390,34 @@ def main(argv: list[str]) -> int:
             if row.declares:
                 print(f"  {row.declaration_line()}")
                 if row.wrong:
-                    asked = " ".join(beside_teaching.ask_text(unit).split())
-                    print(f"  the question as children meet it: \"{asked}\"")
                     print(
-                        "  Read it beside the wrong answer you named: is that an answer the question "
-                        "pulls a child towards, or one only you can see? And could a child who was "
-                        "not listening get it right from the words on the page?"
+                        "  Read the page below beside the wrong answer you named: is that an answer "
+                        "the question pulls a child towards, or one only you can see?"
                     )
                 fault = row.fault()
+                clues = beside_teaching.page_clues(unit)
                 if fault:
                     owing += 1
                     print("  THE DESIGN CHECK WILL REFUSE THIS BEAT AS IT STANDS.")
+                # The page with the teaching covered: all a child who was not
+                # listening has to go on.
+                print("  WITH THE TEACHING COVERED, this is the whole page a child reads:")
+                print(f"    {' '.join(beside_teaching.stem_text(unit).split())}")
+                for option in beside_teaching.task_options(unit):
+                    print(f"    [ ] {option}")
+                structure = unit.get("taskStructure") or {}
+                if structure.get("kind") == "sort":
+                    print("    headings: " + " | ".join(str(g.get("label")) for g in structure.get("groups") or []))
+                    print("    cards: " + " | ".join(str(i.get("label")) for i in structure.get("items") or []))
+                for _refused, sentence in clues:
+                    print(f"  ON THE PAGE: {sentence}" + ("" if sentence.endswith("?") else "."))
+                print(
+                    "  Answer it now from that page alone, as the child who heard none of the lesson. "
+                    "If you reach the expected answer (a matching word, the only option that is an "
+                    "answer at all, a line that says where to look, an instruction that states the "
+                    "repair), the page is doing the thinking: change the page and run this again. "
+                    "If you reach the wrong answer you named, the task is working."
+                )
 
     if owing:
         print(

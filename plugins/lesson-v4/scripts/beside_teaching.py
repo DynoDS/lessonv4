@@ -317,6 +317,103 @@ def _said(word: str, said: set[str]) -> bool:
     return any(len(other) >= 5 and other[:5] == stem for other in said)
 
 
+# A closing line that tells children where to look. `Remember` and `Look at`
+# also open honest instructions (`Remember your capital letters`), so a line
+# found this way is shown to the designer and never refused.
+_HINT_LINE = re.compile(
+    r"^(think about|remember|hint|clue|look for|look at|use the word|don'?t forget|do not forget)\b",
+    re.I,
+)
+# A word shorter than this is grammar or a name's initial, not a key word.
+CLUE_MIN_LETTERS = 4
+
+
+def stem_text(unit: dict) -> str:
+    """What children read before any option or card: the question, the case,
+    the passage and the instruction."""
+    content = unit.get("content") or {}
+    text = " ".join(
+        str(part) for part in (
+            content.get("task"), content.get("discussionQuestion"), content.get("question"),
+            unit.get("pupilInstruction"),
+        ) if part
+    )
+    for option in task_options(unit):
+        text = text.replace(option, " ")
+    return " ".join(text.split())
+
+
+def _key_words(text: str) -> list[str]:
+    return [word for word in _thing_words(text) if len(word) >= CLUE_MIN_LETTERS]
+
+
+def page_clues(unit: dict) -> list[tuple[bool, str]]:
+    """What on the page could do a child's thinking for them, read with the
+    teaching covered. Each finding is (refused, sentence).
+
+    Six rounds of teaching the designer to `read it from the surface` (6 and
+    7 October 2026) were read every time and changed little: a source said
+    `settlements` three times and so did one option of two, a question ended
+    `Think about who still lived in Britain`, three cards went under three
+    headings. The designer agreed with the principle and could not see its
+    own page. So the page is read here and the finding is put in front of it.
+
+    Nothing here is refused. A replay over 435 saved designs (7 October 2026)
+    found the real give-aways (`softer`, `settlements`) and beside them a
+    poetry task whose right stanza is meant to pick up a word of the one
+    before, so the finding is shown and the designer decides.
+    """
+    found: list[tuple[bool, str]] = []
+    options = task_options(unit)
+    stem = stem_text(unit)
+    if len(options) >= 2:
+        in_stem = set(answer_words(stem))
+        right = right_option(unit, options)
+        for index, option in enumerate(options):
+            others = set(answer_words(" ".join(other for at, other in enumerate(options) if at != index)))
+            alone = [
+                word for word in _key_words(option)
+                if _said(word, in_stem) and not _said(word, others)
+            ]
+            if not alone:
+                continue
+            words = ", ".join(f"`{word}`" for word in alone)
+            chosen = (
+                "This is the option children should choose, so a child who was not listening "
+                "can pick it by matching the word"
+                if right and option == right else
+                "If that is the option children should choose, the word chooses it for them"
+            )
+            if right and option != right:
+                continue
+            found.append((False, (
+                f"{words} from the question is in only this option: \"{option}\" {chosen}. "
+                "Unless picking up that word is the skill being taught, put the same key words "
+                "in the wrong options too, used wrongly, or drop that word from the question"
+            )))
+    structure = unit.get("taskStructure") or {}
+    if structure.get("kind") == "sort":
+        groups = structure.get("groups") or []
+        items = structure.get("items") or []
+        placements = ((unit.get("answer") or {}).get("structure") or {}).get("placements") or []
+        per_group: dict[str, int] = {}
+        for placement in placements:
+            per_group[placement.get("groupRef")] = per_group.get(placement.get("groupRef"), 0) + 1
+        if items and len(items) <= len(groups) and all(count == 1 for count in per_group.values()):
+            found.append((False, (
+                f"{len(items)} cards go under {len(groups)} headings, one each, so the last card "
+                "is placed by what is left over and not by thinking"
+            )))
+    sentences = _sentences(stem.replace("\n", ". "))
+    hints = [sentence for sentence in sentences[1:] if _HINT_LINE.match(sentence.strip("'\"‘“ "))]
+    for hint in hints:
+        found.append((False, (
+            f"\"{hint}\" tells children where to look. If the answer is what they find there, "
+            "the line has answered the question; without it, does the question still stand?"
+        )))
+    return found
+
+
 class Beside:
     """One pupil beat read beside the teaching before it."""
 
