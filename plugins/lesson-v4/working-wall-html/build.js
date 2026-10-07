@@ -28,6 +28,8 @@ const { renderReferenceTable, renderEquivalenceGrid, renderVocabChips } = requir
 const { renderPhotoMapOverview, renderHeroCallouts, renderCauseCards } = require("./src/render-overview");
 const { renderDiagramSection } = require("./src/render-section");
 const { renderStepByStep } = require("./src/render-steps");
+const { takePlacements, assertFiguresReadable } = require("./src/figure-size");
+const { cardLabel } = require("./src/visuals");
 const {
   prepareWorkingWallOptionalImages,
   wrapWorkingWallPage,
@@ -309,7 +311,12 @@ async function build(specPath, outDir, options = {}) {
         throw new Error(`Card "${card.type}" is ${card.page.size}; the working wall is A3 only. Set page.size to "A3".`);
       }
 
+      // The size each lesson drawing printed at on this card, against the
+      // wall's floor: words were the only thing any layout check measured, so a
+      // sheet of stamp-sized figures used to pass (src/figure-size.js).
+      takePlacements();
       const result = renderer(card, style, specDir, ctx);
+      assertFiguresReadable(card, takePlacements(), cardLabel(card));
       const innerHtmls = Array.isArray(result) ? result : [result];
       const orientationClass = card.page.orientation === "landscape" ? "landscape" : "portrait";
       return innerHtmls.map((innerHtml) =>

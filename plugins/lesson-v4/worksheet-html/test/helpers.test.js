@@ -265,6 +265,33 @@ test("a zone smaller than the minimum is refused, in millimetres", () => {
   assert.match(verdict.why, /needs 120mm wide, zone is 90mm/);
 });
 
+test("a row that is too wide is priced item by item, so the total cannot be pinned on the wrong thing", () => {
+  // 6 October 2026: "needs 191mm wide" for an instruction and two column grids
+  // was passed upstream as "the pair of grids needs 191mm", and a sheet that
+  // fits one page was replanned onto two.
+  const grid = { helper: "column-method-grid", operator: "+", top: 3462, bottom: 175, showHeadings: true };
+  const row = { row: [{ helper: "instruction", text: "Use column addition." }, { number: "1a", stack: [grid] }, { number: "1b", stack: [grid] }] };
+  const verdict = fits({ stack: [{ helper: "section-label", text: "Fluency" }, row] }, 174, 239);
+  assert.equal(verdict.ok, false);
+  const priced = /needs (\d+)mm wide, zone is 174mm \(the width goes on this row, side by side: instruction (\d+)mm \+ a stack of \[1 x column-method-grid\] (\d+)mm \+ a stack of \[1 x column-method-grid\] (\d+)mm, with (\d+)mm between each\)/.exec(verdict.why);
+  assert.ok(priced, verdict.why);
+  const [total, a, b, c, gap] = priced.slice(1).map(Number);
+  assert.ok(Math.abs(total - (a + b + c + 2 * gap)) <= 2, `${verdict.why} does not add up`);
+
+  // Nothing side by side: the one wide helper is what the total already names.
+  const table = { helper: "recording-table", columns: ["a", "b", "c", "d"], rowLabels: ["x"] };
+  assert.equal(fits(table, 90, 200).why, "needs 120mm wide, zone is 90mm");
+  assert.match(
+    fits({ stack: [{ helper: "section-label", text: "Fluency" }, table] }, 90, 200).why,
+    /zone is 90mm \(the widest thing in it is recording-table at 120mm\)/
+  );
+  // A numbered question's gutter is part of the total, so it is part of the sum.
+  assert.match(
+    fits({ number: 1, stack: [{ helper: "section-label", text: "Fluency" }, table] }, 90, 200).why,
+    /needs 130mm wide, zone is 90mm \(the widest thing in it is recording-table at 120mm and 10mm for the question number beside it\)/
+  );
+});
+
 test("a minimum grows with the content, so a wider table needs a wider zone", () => {
   // The mistake this guards against: a constant per helper cannot know that a
   // four-column table needs more room than a two-column one, which is how a

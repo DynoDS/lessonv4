@@ -450,6 +450,52 @@ class SettleKeepsWhatIsInTheLane(unittest.TestCase):
         curr = {("a",): "Reworded question?", ("b",): "Reworded question?", ("c",): "Other, reworded"}
         self.assertEqual(checker.with_twins([("a",)], base, curr), [("a",), ("b",)])
 
+    # 6 October 2026: a science lesson's shown model answer was reworded and its
+    # copy in the answer key was not, and a slide title stayed in adult words
+    # because a teacher note quoted it. A word-for-word copy follows the words
+    # the class meets; nothing else in a teacher-only string may move.
+    def quoting(self) -> dict:
+        design = copy.deepcopy(self.design)
+        design["teachingSequence"][0]["content"]["focus"] = "Lead with 'Roads open up the forest' and keep it short."
+        self.write(design)
+        self.assertIn("VOICE_EDIT_SNAPSHOT_OK", self.run_in("snapshot").stdout)
+        return design
+
+    def test_carry_brings_a_quoted_copy_up_to_date_and_the_check_passes(self) -> None:
+        edited = self.quoting()
+        edited["teachingSequence"][1]["content"]["headline"] = "A road lets people into the forest"
+        self.write(edited)
+        self.assertIn("VOICE_EDIT_CARRIED: 1 copies", self.run_in("carry").stdout)
+        carried = json.loads((self.work / "lesson-design.json").read_text(encoding="utf-8"))
+        self.assertEqual(carried["teachingSequence"][0]["content"]["focus"],
+                         "Lead with 'A road lets people into the forest' and keep it short.")
+        self.assertIn("VOICE_EDIT_OK", self.run_in("check").stdout)
+        self.assertIn("VOICE_EDIT_CARRIED: 0 copies", self.run_in("carry").stdout)
+
+    def test_a_teacher_only_string_may_not_move_beyond_the_copy(self) -> None:
+        edited = self.quoting()
+        edited["teachingSequence"][1]["content"]["headline"] = "A road lets people into the forest"
+        edited["teachingSequence"][0]["content"]["focus"] = "Open on 'A road lets people into the forest'."
+        self.write(edited)
+        self.assertIn("outside the editor's lane", self.run_in("check").stdout)
+
+    def test_a_copy_goes_back_with_the_string_it_copied(self) -> None:
+        edited = self.quoting()
+        edited["teachingSequence"][1]["content"]["headline"] = "In 1999 a road let people in"
+        self.write(edited)
+        self.run_in("carry")
+        self.assertIn("VOICE_EDIT_SETTLED", self.run_in("settle").stdout)
+        settled = json.loads((self.work / "lesson-design.json").read_text(encoding="utf-8"))
+        self.assertEqual(settled["teachingSequence"][1]["content"]["headline"], "Roads open up the forest")
+        self.assertEqual(settled["teachingSequence"][0]["content"]["focus"],
+                         "Lead with 'Roads open up the forest' and keep it short.")
+
+    def test_a_short_label_is_not_carried_into_prose(self) -> None:
+        pairs = checker.carry_pairs({("a",): "Starter"}, {("a",): "Warm up"}, {("a",)})
+        self.assertEqual(pairs, [])
+        self.assertEqual(checker.carried("Roads open up the forestry", [("Roads open up the forest", "X y z")]),
+                         "Roads open up the forestry")
+
     def test_a_change_of_structure_restores_all_three_files(self) -> None:
         edited = copy.deepcopy(self.design)
         edited["teachingSequence"][1]["content"]["keyQuestions"].append("A new question?")

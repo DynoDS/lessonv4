@@ -1325,3 +1325,57 @@ test("a task line anywhere but a group's first Part is refused", () => {
     );
   }
 });
+
+test("a group's task line goes above the row its first Part sits in, never into it", () => {
+  // Year 4 column addition, 6 October 2026. Two grids to a row need 142mm. With
+  // "Use column addition." spliced into the row as a third column the row asked
+  // for 191mm of a 174mm page, and a sheet that fits one portrait side was sent
+  // back for a new page plan.
+  const { needsContent } = require("../src/helpers");
+  const grid = (top, bottom, extra = {}) => ({
+    question: true,
+    questionGroupId: "g",
+    ...extra,
+    helper: "column-method-grid",
+    operator: "+",
+    top,
+    bottom,
+    showHeadings: true,
+  });
+  const sheets = sheetsOf(
+    groupedSheet({
+      a: {
+        stack: [
+          { helper: "section-label", text: "Fluency" },
+          { row: [grid(483, 142, { groupPrompt: "Use column addition." }), grid(3462, 175)] },
+          { row: [grid(4352, 154), grid(368, 127)] },
+          grid(5426, 138),
+        ],
+      },
+    })
+  );
+  const stack = sheets[0].spec.zones.a.stack;
+  assert.deepEqual(
+    stack.map((n) => (n.row ? "row" : n.helper)),
+    ["section-label", "instruction", "row", "row", "column-method-grid"]
+  );
+  assert.equal(stack[1].text, "Use column addition.");
+  assert.deepEqual(stack[2].row.map((n) => n.number), ["1a", "1b"]);
+  assert.equal(JSON.stringify(stack[2]).includes("Use column addition"), false);
+  // The row is as wide as its two Parts and no wider, so it fits a portrait zone.
+  const rowMm = needsContent(stack[2]).minWidthMm;
+  assert.ok(rowMm <= 174, `the first row needs ${Math.round(rowMm)}mm of a 174mm zone`);
+  assert.equal(Math.round(rowMm), Math.round(needsContent(stack[3]).minWidthMm));
+
+  // A row that is the whole zone, and a first Part that is itself a stack.
+  const wrapped = (top, bottom, extra = {}) => {
+    const { helper, operator, showHeadings, top: t, bottom: b, ...outer } = grid(top, bottom, extra);
+    return { ...outer, stack: [{ helper, operator, showHeadings, top: t, bottom: b }] };
+  };
+  const whole = sheetsOf(
+    groupedSheet({ a: { row: [wrapped(483, 142, { groupPrompt: "Use column addition." }), wrapped(368, 127)] } })
+  )[0].spec.zones.a;
+  assert.equal(whole.stack[0].helper, "instruction");
+  assert.deepEqual(whole.stack[1].row.map((n) => n.number), ["1a", "1b"]);
+  assert.equal(whole.stack[1].row.length, 2);
+});

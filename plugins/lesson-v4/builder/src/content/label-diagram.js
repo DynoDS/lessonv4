@@ -37,6 +37,7 @@ const { FONT, COLOURS, FIT } = require('../styles');
 const { resolveForEmbed, longPathSafe } = require('../images/resolve');
 const { tightSvg: labelDiagramSvg } = require('../../../shared/visuals/label-diagram-svg');
 const { measureContainedAspect } = require('./contained-extent');
+const { warn, recording } = require('../warnings');
 const fs = require('fs');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
@@ -50,6 +51,104 @@ const BLUE         = '#' + COLOURS.prompt;   // house board blue for the anchor 
 // vector lines and labels stay crisp.
 const RENDER_DENSITY = 96;
 // ─── END CONSTANTS ────────────────────────────────────────────
+
+// What a labelled diagram's own labels came to once they were laid out. The
+// words are inside a picture by the time the slide places it, so no text
+// measure and no page reader can see them: on 6 October 2026 a Year 4 deck
+// went out with eight paragraph-long callouts drawn through each other on
+// four slides and every check passed. The drawing now stacks the labels of
+// the poster layout by their own height and reports what it measured
+// (shared/visuals/label-diagram-svg.js), and the slide says two things:
+//   - labels that still land on each other or run off the drawing, which
+//     only a label placed where it was told can do, are a fault, refused by
+//     name the way an undersized picture is;
+//   - labels that stand taller than the picture they label are a cue to
+//     look, never a fault: how many words belong round a picture is a
+//     judgement, and the drawing has already laid them out readably.
+// Kept like the picture floor: cleared between the layout preflight and the
+// real draw.
+const labelFindings = [];
+
+function clearLabelDiagramFindings() {
+  labelFindings.length = 0;
+}
+
+function labelDiagramFindings() {
+  return labelFindings.slice();
+}
+
+const quoted = (name) => `"${name.length > 28 ? name.slice(0, 27).trimEnd() + '...' : name}"`;
+
+// The findings for one drawn diagram, as { signal, message }. Pure, so it is
+// tested without a slide.
+function labelFaultsFor(data, measured) {
+  const out = [];
+  if (!measured) return out;
+  const which = `labelled diagram "${data.imagePath}"`;
+
+  const overlaps = (measured.labelFaults && measured.labelFaults.overlaps) || [];
+  const clipped = (measured.labelFaults && measured.labelFaults.clipped) || [];
+  if (overlaps.length || clipped.length) {
+    const parts = [];
+    if (overlaps.length) {
+      const shown = overlaps.slice(0, 3).map(([a, b]) => `${quoted(a)} on ${quoted(b)}`).join(', ');
+      parts.push(
+        `${overlaps.length} pair(s) of labels are drawn on top of each other (${shown}` +
+        `${overlaps.length > 3 ? ', and more' : ''})`
+      );
+    }
+    if (clipped.length) {
+      parts.push(
+        `${clipped.length} label(s) run off the edge of the drawing ` +
+        `(${clipped.slice(0, 3).map(quoted).join(', ')}${clipped.length > 3 ? ', and more' : ''})`
+      );
+    }
+    out.push({
+      signal: 'LABEL_DIAGRAM_LABELS_COLLIDE',
+      message:
+        `${which}: ${parts.join(', and ')}, so they cannot be read. ` +
+        'Give the diagram `"layout": "sides"`: it stacks every label in the white margins ' +
+        'beside the picture, spaced by its own height, where two labels cannot land on each ' +
+        'other and none is cut off. A label placed with `label_at` goes exactly where it is ' +
+        'told, so on a diagram that keeps `label_at`, move the labels apart instead.',
+    });
+  }
+
+  const tall = measured.outgrown || [];
+  if (tall.length) {
+    const worst = tall.reduce((x, y) => (y.need / y.room > x.need / x.room ? y : x));
+    out.push({
+      signal: 'LABEL_DIAGRAM_LABELS_OUTGROW_PICTURE',
+      cue: true,
+      message:
+        `${which}: the labels down the ${tall.map((side) => side.side).join(' and the ')} of the ` +
+        `picture stand ${(worst.need / worst.room).toFixed(1)} times as tall as the picture ` +
+        `itself (the longest runs to ${worst.rows} rows), so the drawing has grown to hold ` +
+        'them and the picture takes a smaller share of its space. They are laid out and ' +
+        'readable; this is a cue to look, not a fault. A callout is read at a glance beside ' +
+        'its part, so it usually carries the name; a sentence about the part usually reads ' +
+        'better in the lines beside the picture, moved there word for word, and where the ' +
+        'same sentence is already in those lines the callout can keep the name alone.',
+    });
+  }
+  return out;
+}
+
+function checkLabels(data, entry, ctx) {
+  const found = labelFaultsFor(data, entry && entry.measured);
+  if (!found.length || !ctx || !Number.isInteger(ctx.slideIndex)) return;
+  for (const finding of found) {
+    warn(ctx.slideIndex, finding.message);
+    if (!recording()) continue;
+    labelFindings.push({
+      signal: finding.signal,
+      cue: !!finding.cue,
+      slide: ctx.slideIndex + 1,
+      field: `label-diagram:${data.imagePath}`,
+      message: finding.message,
+    });
+  }
+}
 
 const mimeFor = (fmt) => fmt === 'png' ? 'image/png' : fmt === 'svg' ? 'image/svg+xml' : 'image/jpeg';
 
@@ -95,7 +194,7 @@ async function preRenderLabelDiagrams(lesson, lessonDir) {
       // flower) reads best as a POSTER, the `sides` layout. Its defaults live
       // in the shared drawing now, so the working wall draws the same poster
       // the slide shows; the slide passes only its own blue and font.
-      const { svg, aspect } = labelDiagramSvg({
+      const { svg, aspect, outgrown, labelFaults } = labelDiagramSvg({
         ...spec,
         imageHref: `data:${mimeFor(meta.format)};base64,${b64}`,
         imageWidth: meta.width,
@@ -104,7 +203,7 @@ async function preRenderLabelDiagrams(lesson, lessonDir) {
         font: FONT,
       });
       const png = await sharp(Buffer.from(svg), { density: RENDER_DENSITY }).png().toBuffer();
-      map[key] = { png, aspect };
+      map[key] = { png, aspect, measured: { outgrown, labelFaults } };
     } catch (e) {
       // skip: drawLabelDiagram shows the "could not be drawn" marker
     }
@@ -123,6 +222,8 @@ function drawLabelDiagram(pptx, slide, zone, data, ctx) {
   const innerH = Math.max(0, zone.h - 2 * PAD - bandH);
 
   const entry = ctx.labelDiagramImages && ctx.labelDiagramImages[labelDiagramKey(data)];
+
+  checkLabels(data, entry, ctx);
 
   if (innerW > 0.05 && innerH > 0.05) {
     if (entry && entry.png) {
@@ -170,5 +271,8 @@ module.exports = {
   drawLabelDiagram,
   preRenderLabelDiagrams,
   labelDiagramKey,
-  measureLabelDiagram
+  measureLabelDiagram,
+  labelFaultsFor,
+  labelDiagramFindings,
+  clearLabelDiagramFindings
 };

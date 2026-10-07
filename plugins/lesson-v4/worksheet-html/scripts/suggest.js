@@ -68,24 +68,49 @@ if (fileArg) {
   // 105mm tall drew 206mm), and worksheet designers wrote their own scripts
   // against the engine to find the truth (29 September 2026, three runs of
   // five). The numbers are the engine's own, so nothing here is estimated twice.
+  //
+  // Two things it got wrong until 6 October 2026, both found when a page plan
+  // was checked against it. It measured `question: true` wrappers raw, so every
+  // numbered part came back 10mm narrower than the check then found it (the
+  // number's gutter), and a row of two looked 20mm roomier than it was. And it
+  // printed the paper's printable area, 180mm by 267mm, where a sheet's work
+  // gets 174mm by 239mm once the trim strip is off. It now numbers the content
+  // exactly as the build does and prints the zone sizes the check itself uses.
   if (process.argv.includes("--measure")) {
-    const { withPhase, phaseFor } = require("../src/worksheet");
+    const { withPhase, phaseFor, numbered } = require("../src/worksheet");
     const { needsContent, describeContent } = require("../src/helpers");
-    const { printableArea } = require("../src/page");
+    const { contentArea, zoneContentMm } = require("../src/render");
     const { isStack, isRow } = (() => {
       const has = (c, key) => !!c && typeof c === "object" && c[key] !== undefined;
       return { isStack: (c) => has(c, "stack"), isRow: (c) => has(c, "row") };
     })();
+    let entries;
+    try {
+      entries = numbered(items.map((item) => withPhase(item, phaseFor(yearGroup))));
+    } catch (error) {
+      if (error && error.signal) {
+        console.log(`${error.signal}: ${error.message}`);
+        process.exitCode = 1;
+        return;
+      }
+      throw error;
+    }
     const size = (content) => {
-      const need = needsContent(withPhase(content, phaseFor(yearGroup)));
+      const need = needsContent(content);
       return `${Math.round(need.minWidthMm)}mm wide x ${Math.round(need.minHeightMm)}mm tall at least`;
     };
     for (const orientation of ["portrait", "landscape"]) {
-      const area = printableArea(orientation);
-      console.log(`Printable ${orientation} page: ${Math.round(area.widthMm)}mm x ${Math.round(area.heightMm)}mm`);
+      const area = contentArea({ orientation });
+      const whole = zoneContentMm({ w: 1, h: 1 }, area);
+      const half = zoneContentMm({ w: 0.5, h: 1 }, area);
+      console.log(
+        `A ${orientation} sheet's work area: ${Math.round(whole.wMm)}mm wide x ` +
+          `${Math.round(whole.hMm)}mm tall. Two columns side by side get ` +
+          `${Math.round(half.wMm)}mm each.`
+      );
     }
     console.log("");
-    items.forEach((item, index) => {
+    entries.forEach((item, index) => {
       console.log(`Entry ${index + 1}: ${describeContent(item)}: ${size(item)}`);
       const parts = isStack(item) ? item.stack : isRow(item) ? item.row : null;
       if (Array.isArray(parts) && parts.length > 1) {
@@ -97,7 +122,11 @@ if (fileArg) {
     console.log(
       "\nThese are floors for this content as worded, never targets: a zone smaller " +
         "than an entry's floor refuses it, and a zone bigger lets it grow. A stack's " +
-        "height adds its parts and the gaps between them; a row's width does the same across."
+        "height adds its parts and the gaps between them; a row's width does the same across. " +
+        "Anything marked `question: true` is measured with its printed number, which takes " +
+        "10mm of width beside it. The check measures height at the width a zone really " +
+        "gets and can come out a few millimetres taller than these floors, so a plan that " +
+        "lands within about 10mm of the page's height is not yet a plan that fits."
     );
     return;
   }

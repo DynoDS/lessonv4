@@ -46,6 +46,29 @@ function staticSlide(node, root = false) {
   return out;
 }
 
+// Where the two slides of a pair part company, as the fields a designer would
+// look for. The refusal used to say only that they "need the same template,
+// content slot and static slide composition", and three column addition decks
+// running (4, 5 and 6 October 2026) gave their starter's answer slide a
+// different `headerStyle` and had to read this file to find out which field
+// it meant.
+function pairDifferences(question, answer, at = '') {
+  if (JSON.stringify(question) === JSON.stringify(answer)) return [];
+  const plain = (value) => value && typeof value === 'object';
+  if (!plain(question) || !plain(answer) || Array.isArray(question) !== Array.isArray(answer)) {
+    const show = (value) => {
+      if (value === undefined) return 'nothing';
+      const text = JSON.stringify(value);
+      return text.length > 40 ? `${text.slice(0, 40)}...` : text;
+    };
+    return [`${at || 'the slide'} (${show(question)} on the question slide, ${show(answer)} on the answer slide)`];
+  }
+  const keys = [...new Set(Object.keys(question).concat(Object.keys(answer)))].sort();
+  return keys.flatMap((key) =>
+    pairDifferences(question[key], answer[key], Array.isArray(question) ? `${at}[${key}]` : at ? `${at}.${key}` : key)
+  );
+}
+
 function pairedBlocks(data, ctx) {
   const declaration = data.revealPair;
   const id = declaration && declaration.id;
@@ -66,7 +89,17 @@ function pairedBlocks(data, ctx) {
   if (!own || !counterpart || own.slideIndex === counterpart.slideIndex || own.path !== counterpart.path ||
       JSON.stringify(staticSlide(slides[own.slideIndex], true)) !==
         JSON.stringify(staticSlide(slides[counterpart.slideIndex], true))) {
-    throw new Error(`REVEAL_PAIR_LAYOUT: "${id}" needs the same template, content slot and static slide composition.`);
+    let differs = '';
+    if (own && counterpart && own.slideIndex !== counterpart.slideIndex) {
+      const [asks, answers] = state === 'question' ? [own, counterpart] : [counterpart, own];
+      const fields = own.path !== counterpart.path
+        ? [`the paired block's place (${asks.path || 'the slide'} on the question slide, ${answers.path || 'the slide'} on the answer slide)`]
+        : pairDifferences(staticSlide(slides[asks.slideIndex], true), staticSlide(slides[answers.slideIndex], true));
+      if (fields.length) {
+        differs = ` They differ in: ${fields.slice(0, 4).join('; ')}${fields.length > 4 ? `; and ${fields.length - 4} more` : ''}.`;
+      }
+    }
+    throw new Error(`REVEAL_PAIR_LAYOUT: "${id}" needs the same template, content slot and static slide composition.${differs}`);
   }
   return { id, state, peer: counterpart.block, slides, matches };
 }

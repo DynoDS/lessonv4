@@ -514,3 +514,61 @@ test("a shape that squeezes the work is not offered above one that does not", ()
     "ranked by fill alone this shape came no higher, so nothing changed"
   );
 });
+
+test("advice about pictures is given only for content that holds a picture", () => {
+  // The "a wider zone holds a TALLER picture" warning is true of a photograph
+  // and beside the point for a row of column grids, where it was the first
+  // thing a designer read and the row was the answer (6 October 2026).
+  const grid = { helper: "column-method-grid", operator: "+", top: 3462, bottom: 175, showHeadings: true };
+  const tooWide = { row: [{ helper: "instruction", text: "Use column addition." }, grid, grid, grid] };
+  const plain = suggestLayouts([tooWide], { yearGroup: 4, orientation: "portrait" });
+  assert.equal(plain.fits.length, 0);
+  assert.equal(plain.verdict.kind, "too-narrow");
+  const plainText = describeSuggestions(plain);
+  assert.doesNotMatch(plainText, /TALLER picture/);
+  assert.match(plainText, /read what each refusal below says is taking the width/);
+  assert.match(plainText, /the width goes on this row, side by side: instruction \d+mm \+ /);
+
+  const withPicture = suggestLayouts(
+    [{ stack: [tooWide, { helper: "questions", items: ["x"], imagePath: "photo.jpg" }] }],
+    { yearGroup: 4, orientation: "portrait" }
+  );
+  assert.match(describeSuggestions(withPicture), /TALLER picture/);
+});
+
+test("--measure counts the printed question number and prints the page the check uses", () => {
+  // Until 6 October 2026 it measured `question: true` wrappers raw, 10mm
+  // narrower each than the check then found them, under a header giving the
+  // paper's printable area (180 by 267) and not the sheet's work area.
+  const fs = require("node:fs");
+  const os = require("node:os");
+  const path = require("node:path");
+  const { execFileSync } = require("node:child_process");
+  const grid = { helper: "column-method-grid", operator: "+", top: 3462, bottom: 175, showHeadings: true };
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "suggest-measure-"));
+  try {
+    const file = path.join(dir, "content.json");
+    fs.writeFileSync(file, JSON.stringify([{ question: true, stack: [grid] }, { stack: [grid] }]));
+    const out = execFileSync(
+      process.execPath,
+      [path.join(__dirname, "..", "scripts", "suggest.js"), file, "4", "--measure"],
+      { encoding: "utf8" }
+    );
+    const widths = [...out.matchAll(/^Entry \d+: .*?: (\d+)mm wide/gm)].map((m) => Number(m[1]));
+    assert.equal(widths.length, 2, out);
+    assert.equal(widths[0] - widths[1], 10, "a numbered part is its content plus the number's gutter");
+
+    const { contentArea, zoneContentMm } = require("../src/render");
+    for (const orientation of ["portrait", "landscape"]) {
+      const zone = zoneContentMm({ w: 1, h: 1 }, contentArea({ orientation }));
+      assert.ok(
+        out.includes(`A ${orientation} sheet's work area: ${Math.round(zone.wMm)}mm wide x ${Math.round(zone.hMm)}mm tall.`),
+        out
+      );
+    }
+    assert.match(out, /A portrait sheet's work area: 174mm wide x 239mm tall\./);
+    assert.doesNotMatch(out, /267mm/);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});

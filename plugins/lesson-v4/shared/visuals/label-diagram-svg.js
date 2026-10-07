@@ -49,6 +49,10 @@
 //                 'sides' stacks the labels down the left and right margins,
 //                 split by which half of the picture each anchor sits in, so
 //                 several callouts never overlap — the anatomy-poster layout.
+//                 The stack is spaced by what each label measures: names sit
+//                 evenly down the picture, and a side whose labels are too
+//                 tall for that is stacked block under block, the drawing
+//                 growing above and below the picture when it has to.
 //   labelMaxChars when > 0, wraps a label onto word-broken lines of about this
 //                 many characters, so a long phrase reads as a tidy two-line block
 //                 instead of one overrunning line. Default 0 keeps one line.
@@ -67,6 +71,20 @@
 //                 This is how a tall picture (a body, a plant) fits a page it
 //                 would overrun at full width. Anchors stay percentages of the
 //                 PICTURE, so the dots land where diagram-anchor put them.
+//
+// Alongside the SVG the drawing returns what it measured, for a surface to
+// check before it places the picture:
+//   fontSize     the label type, in the drawing's own units (w wide).
+//   restacked    the sides whose labels were too tall to sit evenly, 'left'
+//                and/or 'right'.
+//   outgrown     the restacked sides whose labels stand taller than the picture
+//                itself, each as { side, need, room, rows }: the height the
+//                labels take, the height of the picture, and the rows of the
+//                longest label there.
+//   labelFaults  { overlaps: [[label, label], ...], clipped: [label, ...] }:
+//                printed labels that land on each other, or run off the edge
+//                of the drawing. 'sides' cannot produce either; 'auto' and
+//                `label_at` can, because the label goes where it was told.
 //
 // `width` and `height` must be the picture's real pixel size. The dots and
 // lines are sized from it, with a floor for small pictures, so a made-up small
@@ -139,8 +157,14 @@ function escapeXml(s) {
 
 // Greedy word wrap to roughly maxChars per line, so a phrase-length label sits as
 // a tidy block. A single over-long word is left on its own line rather than split.
+// A line break written into the label is kept as a break, so a name with a note
+// under it keeps the name on a row of its own.
 function wrapLabel(text, maxChars) {
   const t = String(text == null ? '' : text);
+  if (/\n/.test(t)) {
+    const parts = t.split(/\n/).map((part) => part.trim()).filter(Boolean);
+    return parts.length ? parts.flatMap((part) => wrapLabel(part, maxChars)) : [''];
+  }
   if (!maxChars || t.length <= maxChars) return [t];
   const lines = [];
   let cur = '';
@@ -263,6 +287,50 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   // far as the document is concerned the image occupies the whole canvas.
   let MXL = ratioMX;
   let MXR = ratioMX;
+  // How tall each label stands in its margin: its rows of type, or the room
+  // above a write-on rule.
+  const blockHeight = (o) => (o.c.given ? Math.max(0, o.rows.length - 1) * lineHeight + fsize : fsize);
+  // Where the labels of one side sit, as centres measured down from the top of
+  // the picture box. Names are spread evenly from 12% to 88% of the picture,
+  // which keeps each one near its part. That spacing counted the labels and
+  // never measured them, so labels taller than a name drew through each
+  // other: a Year 4 digestion diagram went to the board on 6 October 2026
+  // with a sentence under each organ name, eight blocks of up to seven rows
+  // spaced as if each were one row, and no check noticed because the pile was
+  // inside a picture. When the even spacing would make two neighbours touch,
+  // the side is stacked block under block instead: across the same stretch of
+  // picture while they fit it, and past the top and bottom of the picture,
+  // centred on it, when they do not. A side that never touched is not moved.
+  const stackGap = fsize * 0.6;
+  const stackPlan = (group) => {
+    const n = group.length;
+    const heights = group.map(blockHeight);
+    const even = group.map((o, k) => (n === 1 ? null : H * 0.12 + H * 0.76 * (k / (n - 1))));
+    let touching = false;
+    for (let k = 0; k + 1 < n; k++) {
+      if (even[k + 1] - even[k] < (heights[k] + heights[k + 1]) / 2) touching = true;
+    }
+    if (!touching) return { centres: even, restacked: false, top: 0, bottom: H, rows: 0 };
+    const sum = heights.reduce((a, b) => a + b, 0);
+    const span = H * 0.76 + (heights[0] + heights[n - 1]) / 2;
+    const tight = sum + stackGap * (n - 1);
+    const gap = tight <= span ? (span - sum) / (n - 1) : stackGap;
+    const total = sum + gap * (n - 1);
+    let y = tight <= span ? H * 0.12 - heights[0] / 2 : (H - total) / 2;
+    const top = y;
+    const centres = heights.map((h) => {
+      const centre = y + h / 2;
+      y += h + gap;
+      return centre;
+    });
+    const rows = Math.max(...group.map((o) => (o.c.given ? o.rows.length : 1)));
+    return { centres, restacked: true, top, bottom: top + total, rows };
+  };
+  const byAnchorY = (a, b) => a.c.anchor[1] - b.c.anchor[1];
+  const leftGroup = layout === 'sides' ? list.filter((o) => o.c.anchor[0] < 50).sort(byAnchorY) : [];
+  const rightGroup = layout === 'sides' ? list.filter((o) => o.c.anchor[0] >= 50).sort(byAnchorY) : [];
+  const leftPlan = stackPlan(leftGroup);
+  const rightPlan = stackPlan(rightGroup);
   if (layout === 'sides') {
     const blockHalf = ((maxLines - 1) / 2) * lineHeight + fsize;
     // The side bands exist to hold the labels and to give each leader line a run
@@ -293,6 +361,13 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
     MXR = bandFor(rightW);
     MX = Math.max(MXL, MXR);
     MY = Math.max(ratioMY, Math.round(blockHalf));
+    // A restacked side that is taller than the picture needs the drawing to be
+    // taller too, or its first and last labels are cut off at the edge.
+    for (const plan of [leftPlan, rightPlan]) {
+      if (!plan.restacked) continue;
+      const beyond = Math.max(-plan.top, plan.bottom - H);
+      if (beyond > 0) MY = Math.max(MY, Math.ceil(beyond + fsize * 0.25));
+    }
   }
   const CW = W + MXL + MXR, CH = H + MY * 2;
   const ox = MXL, oy = MY;
@@ -307,15 +382,16 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   //    'auto' keeps the original nearest-margin routing (one anchor per label). ──
   if (layout === 'sides') {
     const top = oy + H * 0.12, bot = oy + H * 0.88;
-    const place = (group, lx) => {
-      group.sort((a, b) => a.ay - b.ay);
+    const place = (group, plan, side, lx) => {
       group.forEach((o, k) => {
+        o.side = side;
         o.lx = lx;
-        o.ly = group.length === 1 ? o.ay : top + (bot - top) * (k / (group.length - 1));
+        if (plan.restacked) o.ly = oy + plan.centres[k];
+        else o.ly = group.length === 1 ? o.ay : top + (bot - top) * (k / (group.length - 1));
       });
     };
-    place(list.filter((o) => o.c.anchor[0] < 50).map((o) => (o.side = 'left', o)), ox - MXL * 0.5);
-    place(list.filter((o) => o.c.anchor[0] >= 50).map((o) => (o.side = 'right', o)), ox + W + MXR * 0.5);
+    place(leftGroup, leftPlan, 'left', ox - MXL * 0.5);
+    place(rightGroup, rightPlan, 'right', ox + W + MXR * 0.5);
   } else {
     for (const o of list) {
       if (o.c.label_at) {
@@ -401,8 +477,38 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
     }
   }
 
+  // What the printed labels came to, measured where they were drawn. A label
+  // that lands on another, or runs off the edge of the drawing, cannot be read,
+  // and a surface that places this picture has no other way to find that out:
+  // the words are inside an image by the time it sees them. The slack is a
+  // tenth of the type size, because the character width is an estimate. Blank
+  // write-on rules are not measured here.
+  const slack = fsize * 0.1;
+  const boxes = list.filter((o) => o.c.given).map((o) => {
+    const w = Math.max(...o.rows.map(rowWidth));
+    const h = blockHeight(o);
+    const name = o.rows.map((row) => row.map((seg) => seg.t).join('').trim()).join(' ');
+    return { name, x0: o.lx - w / 2, x1: o.lx + w / 2, y0: o.ly - h / 2, y1: o.ly + h / 2 };
+  });
+  const overlaps = [];
+  for (let i = 0; i < boxes.length; i++) {
+    for (let j = i + 1; j < boxes.length; j++) {
+      const a = boxes[i], b = boxes[j];
+      const across = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0);
+      const down = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0);
+      if (across > slack && down > slack) overlaps.push([a.name, b.name]);
+    }
+  }
+  const clipped = boxes
+    .filter((b) => b.x0 < -slack || b.y0 < -slack || b.x1 > CW + slack || b.y1 > CH + slack)
+    .map((b) => b.name);
+  const restacked = [leftPlan.restacked && 'left', rightPlan.restacked && 'right'].filter(Boolean);
+  const outgrown = [['left', leftPlan], ['right', rightPlan]]
+    .filter(([, plan]) => plan.restacked && plan.bottom - plan.top > H)
+    .map(([side, plan]) => ({ side, need: Math.round(plan.bottom - plan.top), room: H, rows: plan.rows }));
+
   const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${CW}" height="${CH}" viewBox="0 0 ${CW} ${CH}"><rect width="${CW}" height="${CH}" fill="#FFFFFF"/>${parts.join('')}</svg>`;
-  return { svg, w: CW, h: CH, aspect: CW / CH };
+  return { svg, w: CW, h: CH, aspect: CW / CH, fontSize: fsize, restacked, outgrown, labelFaults: { overlaps, clipped } };
 }
 
 // A labelled diagram from a lesson's spec, with the board's presentation

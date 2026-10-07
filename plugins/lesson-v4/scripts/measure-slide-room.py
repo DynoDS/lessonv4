@@ -320,6 +320,25 @@ def composition_fingerprint(lesson_path: Path) -> str | None:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+# The preview check leaves a copy of the lesson file it built the deck from
+# beside that deck, under this name. It is the only record of what the rendered
+# pages actually show.
+RENDERED_LESSON_NAME = "lesson-source.json"
+
+
+def rendered_lesson(manifest_path: Path) -> Path | None:
+    """The lesson file the rendered deck was built from, when the build kept it."""
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    source = manifest.get("source") if isinstance(manifest, dict) else None
+    if not isinstance(source, str) or not source:
+        return None
+    kept = Path(source).parent / RENDERED_LESSON_NAME
+    return kept if kept.is_file() else None
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -372,10 +391,21 @@ def main(argv: list[str] | None = None) -> int:
     # measurement ends up behind a card. That happened to a Year 4 history deck
     # on 18 September 2026 and nothing noticed, because the measurement carries
     # no record of what it measured.
-    if args.lesson:
-        fingerprint = composition_fingerprint(Path(args.lesson))
-        if fingerprint:
-            record["compositionSha256"] = fingerprint
+    #
+    # The stamp is what the pages were drawn from, not what the caller says
+    # they were drawn from. On 6 October 2026 a decorator whose measurement had
+    # been refused as stale measured an older render again, named the current
+    # lesson.json beside it, and the stale check passed: the stamp was only ever
+    # the caller's word. Where the build kept its lesson file beside the deck,
+    # that file is the answer, and a different `--lesson` is reported rather
+    # than believed, so the check downstream still sees the pages are old.
+    claimed = composition_fingerprint(Path(args.lesson)) if args.lesson else None
+    drawn_from = rendered_lesson(Path(args.render_manifest))
+    drawn = composition_fingerprint(drawn_from) if drawn_from else None
+    mismatch = bool(drawn and claimed and drawn != claimed)
+    fingerprint = drawn or claimed
+    if fingerprint:
+        record["compositionSha256"] = fingerprint
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(
@@ -383,6 +413,14 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     print(f"SLIDE_ROOM_OK: {len(slides)} slides")
+    if mismatch:
+        print(
+            f"SLIDE_ROOM_PAGES_ARE_OLDER: these pages were drawn from a different "
+            f"arrangement of the deck than {args.lesson}, and the measurement is "
+            "stamped with the one they were drawn from. To measure that file, "
+            "build its preview, render it, and measure that render: measuring "
+            "these pages again gives this answer again."
+        )
     print(
         "SLIDE_ROOM_AREAS: "
         + ",".join(str(slide["readableAreas"]) for slide in slides)

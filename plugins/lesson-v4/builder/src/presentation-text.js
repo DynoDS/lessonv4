@@ -340,6 +340,155 @@ function askingSentencesInBlue(runs, base, bold) {
   return out;
 }
 
+// A block that names the method and then sets the sum, printed with the sum in
+// question blue and the method line left black: "Use column addition." tells a
+// child how to go about it, and "247 + 135 =" is the thing they answer. The
+// teacher, of a My Turn that printed both in one colour (6 October 2026): "I'd
+// prefer 'Use column...' black though and question blue." Marking the two by
+// hand was not a way through: one blue block of both lines is refused as two
+// tasks (TASK_BLUE_NOT_A_SHORT_TASK), and the repair that followed took the
+// blue off altogether, so the board does it, as it does a taught word's green.
+//
+// A line counts as the sum when it is a calculation and nothing else, left for
+// the child to finish: it ends at its equals sign, carries a blank, or has its
+// answer behind the reveal mark. "6 + 7 = 13" in a line of teaching is a
+// statement and stays black. The block must also hold a line of words, so a
+// list of sums with no instruction among them stays black like any list of
+// questions, and so does a sum standing alone. Only a black block is touched:
+// one the designer coloured, or gave a role, has already said what it is.
+const SUM_TERM = String.raw`(?:£?\d[\d,.]*(?:p|%)?|_+|\?|□|⬜)`;
+const SUM_LINE = new RegExp(
+  String.raw`^\s*` + SUM_TERM + String.raw`(?:\s*[+\-−×÷]\s*` + SUM_TERM + String.raw`)+\s*=\s*(` +
+  SUM_TERM + String.raw`)?\s*$`
+);
+
+function isSumToWorkOut(line) {
+  const reveal = line.indexOf('||');
+  const asked = reveal === -1 ? line : line.slice(0, reveal);
+  const match = SUM_LINE.exec(asked);
+  if (!match) return false;
+  if (reveal !== -1) return match[1] === undefined;
+  return match[1] === undefined || /[_?□⬜]/.test(asked);
+}
+
+// An answers slide follows its task slide. Asked what colour the sum above a
+// worked answer should be, the teacher said "whatever colour it was on the
+// previous slide" (6 October 2026): a sum that printed blue where the class did
+// the work prints blue again where they check it, though it now stands alone,
+// and a sum that was black stays black. The build hands each answers slide the
+// sums its task printed blue (sumsTheTaskPrintedBlue below), the way it hands
+// every slide its taught words; a sum is matched by its own numbers and signs,
+// so spacing, commas and a revealed answer do not matter. A sum no task slide
+// holds is black, as it always was.
+let SUMS_FOLLOWED = new Set();
+
+function sumKey(line) {
+  const reveal = line.indexOf('||');
+  return (reveal === -1 ? line : line.slice(0, reveal))
+    .replace(/[\s ,]/g, '').replace(/−/g, '-').replace(/=[_?□⬜]*$/, '=');
+}
+
+function setSumsFollowed(sums) {
+  SUMS_FOLLOWED = new Set(Array.isArray(sums) ? sums : []);
+}
+
+const HOUSE_BLUE = /^#?0070c0$/i;
+const UNPRINTED = new Set(['speakerNotes', 'notes', 'decorations']);
+const TITLE_SAYS_ANSWERS = /(?:^|[-:]\s*)answers?$/i;
+
+function showsAnswers(node, top) {
+  if (Array.isArray(node)) return node.some((child) => showsAnswers(child));
+  if (!node || typeof node !== 'object') return false;
+  if (top !== false && TITLE_SAYS_ANSWERS.test(String(node.title || node.heading || '').trim())) return true;
+  if (node.revealPair && node.revealPair.state === 'answer') return true;
+  return Object.keys(node).some((key) => showsAnswers(node[key], false));
+}
+
+// Every sum one slide prints blue: under a line of words in a black block (the
+// rule above), in a block the designer made blue, or inside a `[[ ]]` span.
+function blueSumsOn(slideData) {
+  const found = [];
+  const consider = function (text, owner) {
+    const lines = String(text).split('\n');
+    const sums = lines.map(isSumToWorkOut);
+    const own = [owner.color, owner.colour].find((c) => typeof c === 'string' && c.trim());
+    const role = owner.colorRole;
+    const blue = (own && HOUSE_BLUE.test(own.trim())) || role === 'focus-blue';
+    const black = !own && (role == null || role === '' || role === 'default');
+    const tells = lines.some((line, i) => !sums[i] && /[A-Za-z]{2,}/.test(line));
+    if (blue || (black && tells)) lines.forEach((line, i) => { if (sums[i]) found.push(sumKey(line)); });
+    for (const span of String(text).matchAll(/\[\[([\s\S]*?)\]\]/g)) {
+      if (isSumToWorkOut(span[1])) found.push(sumKey(span[1]));
+    }
+  };
+  const walk = function (node) {
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (!node || typeof node !== 'object') return;
+    Object.keys(node).forEach((key) => {
+      if (UNPRINTED.has(key)) return;
+      const value = node[key];
+      if (typeof value === 'string') consider(value, node);
+      else if (Array.isArray(value)) {
+        value.forEach((entry) => (typeof entry === 'string' ? consider(entry, node) : walk(entry)));
+      } else walk(value);
+    });
+  };
+  walk(slideData);
+  return found;
+}
+
+// The sums an answers slide follows: those its task printed blue. The task is
+// the nearest slide before it that is not itself an answers slide, with any
+// slides straight before that one from the same source unit, since a task can
+// run over two slides. Any other slide follows nothing.
+function sumsTheTaskPrintedBlue(slides, index) {
+  if (!Array.isArray(slides) || !showsAnswers(slides[index])) return [];
+  let at = index - 1;
+  while (at >= 0 && showsAnswers(slides[at])) at -= 1;
+  if (at < 0) return [];
+  const unit = slides[at] && slides[at].designUnitId;
+  const found = [];
+  for (let k = at; k >= 0; k -= 1) {
+    const task = slides[k];
+    if (showsAnswers(task) || (k !== at && (!unit || !task || task.designUnitId !== unit))) break;
+    found.push(...blueSumsOn(task));
+  }
+  return found;
+}
+
+function sumLinesInBlue(runs, text, base, bold) {
+  if (String(base).replace('#', '').toUpperCase() !== COLOURS.body.toUpperCase()) return runs;
+  if (text.startsWith('||')) return runs;
+  const lines = text.split('\n');
+  const isSum = lines.map(isSumToWorkOut);
+  const tells = lines.some((line, i) => !isSum[i] && /[A-Za-z]{2,}/.test(line));
+  const sums = isSum.map((sum, i) => sum && (tells || SUMS_FOLLOWED.has(sumKey(lines[i]))));
+  if (!sums.some(Boolean)) return runs;
+
+  const plain = { color: base, bold: !!bold };
+  const list = typeof runs === 'string' ? [{ text: runs, options: plain }] : runs;
+  if (!Array.isArray(list)) return runs;
+  const out = [];
+  let line = 0;
+  list.forEach((run) => {
+    const options = run.options || plain;
+    const own = String(options.color || '').replace('#', '').toUpperCase() === COLOURS.body.toUpperCase();
+    String(run.text).split('\n').forEach((part, index, parts) => {
+      if (part !== '') {
+        out.push({
+          text: part,
+          options: sums[line] && own ? Object.assign({}, options, { color: COLOURS.title }) : options
+        });
+      }
+      if (index < parts.length - 1) {
+        out.push({ text: '\n', options: plain });
+        line += 1;
+      }
+    });
+  });
+  return out;
+}
+
 function presentationRuns(value, bold, baseColor, owner) {
   const text = String(value == null ? '' : value);
   const data = owner && typeof owner === 'object' && !Array.isArray(owner)
@@ -353,7 +502,7 @@ function presentationRuns(value, bold, baseColor, owner) {
   const base = baseColourForRole(baseColor, data.colorRole);
 
   if (!Array.isArray(data.emphasis) || data.emphasis.length === 0) {
-    const runs = splitAnswerRuns(text, bold, base);
+    const runs = sumLinesInBlue(splitAnswerRuns(text, bold, base), text, base, bold);
     return wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(runs, base, bold) : runs);
   }
 
@@ -402,12 +551,15 @@ function presentationRuns(value, bold, baseColor, owner) {
 
   // The marked route above never passes through splitAnswerRuns, so a taught
   // word outside its emphasis spans is turned green here (answer-text.js).
-  const withTaught = taughtWordsInGreen(runs, base, bold);
+  const withTaught = sumLinesInBlue(taughtWordsInGreen(runs, base, bold), text, base, bold);
   return wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(withTaught, base, bold) : withTaught);
 }
 
 module.exports = {
   keepCalculationsWhole,
+  isSumToWorkOut,
+  setSumsFollowed,
+  sumsTheTaskPrintedBlue,
   COLOR_ROLES,
   EMPHASIS_ROLES,
   baseColourForRole,

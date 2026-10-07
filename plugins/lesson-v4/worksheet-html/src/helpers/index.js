@@ -26,7 +26,7 @@
 const { legibleWidthMm } = require("./shared");
 const { withoutTaughtMarks } = require("../../../shared/text/criteria-marks");
 const { PRIMITIVES } = require("../../../shared/visual-parity");
-const { makeCompose, css: composeCss } = require("./compose");
+const { makeCompose, css: composeCss, GAP_MM, isRow, isStack, itemsOf } = require("./compose");
 
 const FILES = [
   require("./text"),
@@ -254,6 +254,57 @@ function requiredSets(helperName) {
   return (found && found.requires) || [];
 }
 
+// Which row is asking for the width, and what each thing in it asks for.
+//
+// "needs 191mm wide, zone is 174mm" names a total and leaves the reader to
+// guess what it is a total OF. A worksheet designer guessed "the pair of grids
+// needs 191mm" for a row that was an instruction and two grids, the plan's
+// owner believed it, and a sheet that fits one page was replanned onto two
+// (6 October 2026). So a width refusal prices the row item by item, the way a
+// height refusal already prices a stack.
+//
+// It follows the widest part down through stacks and numbered questions until
+// it reaches a row, because a stack is as wide as its widest part and a row is
+// the only thing that adds widths together. Content with no row in it has
+// nothing to break down: the single widest helper is named instead.
+function widestRowLine(spec) {
+  let node = spec;
+  let gutters = 0;
+  for (;;) {
+    if (!node || typeof node !== "object") return "";
+    if (node.number !== undefined) {
+      const { number, ...rest } = node;
+      node = rest;
+      gutters += 1;
+      continue;
+    }
+    if (isStack(node) && !isRow(node)) {
+      const parts = itemsOf(node);
+      if (!parts.length) return "";
+      node = parts.reduce((widest, part) =>
+        needsContent(part).minWidthMm > needsContent(widest).minWidthMm ? part : widest
+      );
+      continue;
+    }
+    break;
+  }
+  const mm = (content) => Math.round(needsContent(content).minWidthMm);
+  const gutterMm = Math.round(
+    needsContent({ ...node, number: 1 }).minWidthMm - needsContent(node).minWidthMm
+  );
+  const numbered = gutters ? ` and ${gutters * gutterMm}mm for the question number beside it` : "";
+  if (!isRow(node)) {
+    return node === spec
+      ? ""
+      : `the widest thing in it is ${describeContent(node)} at ${mm(node)}mm${numbered}`;
+  }
+  const items = itemsOf(node);
+  const gaps = Math.max(0, items.length - 1);
+  const priced = items.map((item) => `${describeContent(item)} ${mm(item)}mm`).join(" + ");
+  const between = gaps ? `, with ${GAP_MM}mm between each` : "";
+  return `the width goes on this row, side by side: ${priced}${between}${numbered}`;
+}
+
 // The fitting rule, and the whole point of zones knowing their millimetres: a
 // zone can answer this before anything is drawn. It takes the whole content
 // spec, not just the helper's name, because the answer depends on what is in it.
@@ -270,8 +321,10 @@ function fits(spec, zoneWidthMm, zoneHeightMm) {
   if (!tooNarrow && !tooShort) return { ok: true };
   const reasons = [];
   if (tooNarrow) {
+    const row = widestRowLine(spec);
     reasons.push(
-      `needs ${Math.round(minWidthMm)}mm wide, zone is ${Math.round(zoneWidthMm)}mm`
+      `needs ${Math.round(minWidthMm)}mm wide, zone is ${Math.round(zoneWidthMm)}mm` +
+        (row ? ` (${row})` : "")
     );
   }
   if (tooShort) {

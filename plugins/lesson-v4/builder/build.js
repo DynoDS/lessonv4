@@ -30,6 +30,7 @@ const { expandTeachLayouts, TeachLayoutError } = require('./src/teach-layouts');
 const { withoutDecorations } = require("../shared/decorations");
 const { withoutFigureMarks } = require('./src/figure-marks');
 const { setTaughtWords } = require('./src/answer-text');
+const { setSumsFollowed, sumsTheTaskPrintedBlue } = require('./src/presentation-text');
 const { isVocabularySurface: holdsVocabularyCards, forEachVocabularyEntry: eachVocabularyCard } = require('./src/decorations');
 
 function taughtWordsFor(slides, index) {
@@ -67,7 +68,7 @@ const { preRenderPictograms } = require('./src/content/pictogram');
 const { preRenderBarModels } = require('./src/content/bar-model');
 const { preRenderBlankSurfaces } = require('./src/content/blank-surface');
 const { preRenderGeographicalDescriptionFrames } = require('./src/content/geographical-description-frame');
-const { preRenderLabelDiagrams } = require('./src/content/label-diagram');
+const { preRenderLabelDiagrams, labelDiagramFindings, clearLabelDiagramFindings } = require('./src/content/label-diagram');
 const { preRenderGridMaps } = require('./src/content/grid-map');
 const { preRenderTranslationShapes } = require('./src/content/translation-shape');
 const { preRenderRainforestLayers } = require('./src/content/rainforest-layers');
@@ -116,6 +117,10 @@ const FLAGGING_SIGNALS = new Set([
   // A list the lesson designer marked too long, drawn under 18pt: a finished
   // slide, which the teacher checks before teaching (marked-criteria.js).
   'CRITERIA_BELOW_READABLE_FLOOR',
+  // Labels of a labelled diagram drawn on each other or off its edge
+  // (content/label-diagram.js). LABEL_DIAGRAM_LABELS_OUTGROW_PICTURE is a cue
+  // to look, so a diagram whose labels are laid out is not listed.
+  'LABEL_DIAGRAM_LABELS_COLLIDE',
   // SUCCESS_CRITERIA_CAPACITY is a cue to look, not a fault (the teacher's
   // rulings of 10 and 23 September 2026), so a panel that fits is not listed.
 ]);
@@ -427,6 +432,7 @@ async function main() {
   clearPictureFloor();
   clearMissingPictures();
   clearCriteriaBelowFloor();
+  clearLabelDiagramFindings();
 
   slides.forEach((slideData, i) => {
     const slide = pptx.addSlide();
@@ -440,6 +446,9 @@ async function main() {
     // The taught words this slide prints green: every word whose card the
     // class has already met. A card's own slide prints none (src/answer-text.js).
     setTaughtWords(taughtWordsFor(slides, i));
+    // The sums an answers slide prints blue because its task slide did
+    // (src/presentation-text.js).
+    setSumsFollowed(sumsTheTaskPrintedBlue(slides, i));
     try {
       if (!layoutFailedSlides.has(i + 1)) {
         drawSlide(pptx, slide, coreSlideData, ctx);
@@ -473,6 +482,7 @@ async function main() {
     }
   });
   setTaughtWords([]);
+  setSumsFollowed([]);
 
   // Whether each contained figure actually used the room it was given. Reported
   // after the draw because it is measured on the drawn rectangle, and advisory
@@ -497,6 +507,19 @@ async function main() {
     diagnostic(
       finding.signal,
       'composition',
+      { slide: finding.slide, path: finding.field },
+      finding.message
+    );
+  }
+
+  // What a labelled diagram's labels came to once drawn. Labels on top of each
+  // other, or off the drawing, are a composition fault the slide-design check
+  // refuses to promote; labels taller than their picture are a note. The
+  // [warn] line was already printed where it happened.
+  for (const finding of labelDiagramFindings()) {
+    diagnostic(
+      finding.signal,
+      finding.cue ? 'note' : 'composition',
       { slide: finding.slide, path: finding.field },
       finding.message
     );

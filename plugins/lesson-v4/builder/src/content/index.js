@@ -360,17 +360,17 @@ function wantsCard(zone, type, data, ctx) {
   if (TRANSPARENT.has(type)) return false;          // container defers to its children
   if (zone.class === 'F') return false;             // one-line instruction bar
   // Too small on the open slide to be a card at all. The height half of that
-  // is about a card the content would burst out of, so a text block that
-  // measures shorter than its zone keeps its card however short the zone is:
-  // a stack item weighted 0.55 landed at 0.645in, lost its card by 0.055in,
-  // and a child saw one instruction floating on the background while every
-  // other line on the slide sat on white.
+  // is about a card the content would burst out of, and text never does: the
+  // fit pass sets its words inside the strip it was given. So a text block
+  // keeps its card however short the zone is. A stack item weighted 0.55
+  // landed at 0.645in, lost its card by 0.055in, and a child saw one
+  // instruction floating on the background while every other line on the
+  // slide sat on white. A question line set a size smaller to fit a thinner
+  // strip then lost it the same way, and the teacher, shown that slide beside
+  // the carded one (6 October 2026): "Card makes it look better though." Such
+  // a card spans its strip, because the words fill it.
   if (!zone.compactCards && zone.w < 1.0) return false;
-  if (!zone.compactCards && !zone.packedCard && zone.h < 0.7) {
-    if (type !== 'text') return false;
-    const extent = measureContentExtent(zone, data, ctx);
-    return !!extent && extent.h <= zone.h;
-  }
+  if (!zone.compactCards && !zone.packedCard && zone.h < 0.7) return type === 'text';
   return true;
 }
 

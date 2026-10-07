@@ -279,6 +279,36 @@ class APictureThatNeverArrivedTests(RepairScopeCase):
         result = self.run_check(before, after)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
+    def diagram(self, callouts):
+        spec = json.loads(json.dumps(BEFORE))
+        spec["slides"][0]["body"]["items"].append(
+            {"type": "label-diagram", "imagePath": "unsplash/funeral.jpg", "fit": "contain",
+             "callouts": callouts})
+        return spec
+
+    def test_a_diagram_with_no_label_on_it_goes_with_its_omitted_picture(self):
+        before = self.diagram([{"anchor": [20, 50]}])
+        result = self.run_check(before, json.loads(json.dumps(BEFORE)), receipts=(self.OMITTED,))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_diagram_keeps_the_labels_children_read(self):
+        # The Year 4 Science deck of 6 October 2026: the lost picture carried
+        # "small intestine", "wall", "blood". Those words are the teaching.
+        before = self.diagram([{"anchor": [20, 50], "label": "small intestine", "given": True}])
+        result = self.run_check(before, json.loads(json.dumps(BEFORE)), receipts=(self.OMITTED,))
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("label-diagram: 1 before the repair, 0 after", result.stdout)
+
+    def test_a_diagram_keeps_the_blank_a_child_labels(self):
+        before = self.diagram([{"anchor": [20, 50], "given": False}])
+        result = self.run_check(before, json.loads(json.dumps(BEFORE)), receipts=(self.OMITTED,))
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_an_unlabelled_diagram_stays_without_a_receipt(self):
+        before = self.diagram([{"anchor": [20, 50]}])
+        result = self.run_check(before, json.loads(json.dumps(BEFORE)))
+        self.assertEqual(result.returncode, 1, result.stdout)
+
 
 class EveryRepairerRunsItTests(unittest.TestCase):
     def test_all_four_owners_snapshot_and_check(self):
@@ -296,6 +326,23 @@ class EveryRepairerRunsItTests(unittest.TestCase):
             ROOT / "skills" / "make-lesson" / "playbook-lite.md"
         ).read_text(encoding="utf-8")
         self.assertIn("Repair scope: REPAIR_SCOPE_OK", playbook)
+
+    def test_an_approved_revision_is_not_held_to_the_old_draft(self):
+        """The marker is for a presentation repair, and the orchestrator is told so.
+
+        A job that delivers the lesson designer's or adaptation designer's
+        approved revision is meant to change words, so compared with the draft
+        from before the revision it can only fail (Year 4 Science lesson 5 and
+        Year 4 Maths lesson 24, 6 October 2026; first diagnosed 22 September).
+        The sentence sits with the route that launches the repair.
+        """
+        playbook = (
+            ROOT / "skills" / "make-lesson" / "playbook-lite.md"
+        ).read_text(encoding="utf-8")
+        route = playbook[playbook.index("## Phase 3.5"):playbook.index("Launch the selected role directly.")]
+        flat = " ".join(route.split())
+        self.assertIn("another owner's approved revision is checked against the revised source", flat)
+        self.assertIn("returns no `Repair scope:` line", flat)
 
 
 class ASheetSentBackTests(RepairScopeCase):
@@ -352,6 +399,116 @@ class ASheetSentBackTests(RepairScopeCase):
         result = self.run_check(before, after)
         self.assertEqual(result.returncode, 1, result.stdout)
         self.assertIn("record(s) of a sheet sent back", result.stdout)
+
+
+class ASheetComesBackTests(RepairScopeCase):
+    """The redesign of a sheet sent back goes in, and its record comes off.
+
+    Year 4 Maths lesson 24 (6 October 2026): the adaptation designer revised
+    the Below page plan, the focused repair put the redesigned sheet in, and
+    the worksheet preflight refused the old record beside it
+    (`RETURNED_INVALID`) while this check refused the record's removal. No
+    edit passed both, and a package with every resource built was marked
+    partial for it. The record now comes off with the sheet back in `sheets`;
+    the sheet that came back has no "before" to compare with, so only the
+    other sheets are compared."""
+
+    EXPECTED = {"zones": [{"stack": [{"helper": "questions", "question": True, "items": ["483 + 142 =", "368 + 127 ="]}]}]}
+    GREATER = {"zones": [{"stack": [{"helper": "written-answers", "question": True, "items": [{"text": "Explain why.", "lines": 3}]}]}]}
+    BELOW = {"zones": [{"stack": [{"helper": "questions", "question": True, "items": ["264 + 172 ="]}]}]}
+
+    def sent_back(self):
+        return {
+            "sheets": {"expected": self.EXPECTED, "greaterDepth": self.GREATER},
+            "answerKey": {
+                "expected": [{"question": 1, "answer": "625"}, {"question": 2, "answer": "495"}],
+                "greaterDepth": [{"question": 1, "answer": "Because."}],
+            },
+            "returned": [{"sheet": "below", "problem": "teaching"}],
+            "notes": ["WORKSHEET_CONTENT_GAP: Below - the page plan does not fit; return to the adaptation designer."],
+        }
+
+    def come_back(self):
+        after = json.loads(json.dumps(self.sent_back()))
+        after["sheets"]["below"] = json.loads(json.dumps(self.BELOW))
+        after["answerKey"]["below"] = [{"question": 1, "answer": "436"}]
+        after["returned"] = []
+        after["notes"] = []
+        return after
+
+    def test_the_record_comes_off_when_the_sheet_is_back(self):
+        result = self.run_check(self.sent_back(), self.come_back())
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("REPAIR_SCOPE_OK", result.stdout)
+
+    def test_the_record_cannot_come_off_while_the_sheet_is_still_out(self):
+        after = self.come_back()
+        del after["sheets"]["below"]
+        del after["answerKey"]["below"]
+        result = self.run_check(self.sent_back(), after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("record(s) of a sheet sent back", result.stdout)
+
+    def test_a_sheet_coming_back_releases_no_other_sheet(self):
+        after = self.come_back()
+        after["sheets"]["expected"]["zones"][0]["stack"][0]["items"].pop(0)
+        result = self.run_check(self.sent_back(), after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("483 + 142 =", result.stdout)
+
+    def test_a_sheet_coming_back_releases_no_other_answer(self):
+        after = self.come_back()
+        after["answerKey"]["greaterDepth"] = []
+        result = self.run_check(self.sent_back(), after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("teacher answer", result.stdout)
+
+    def test_a_record_left_beside_its_sheet_is_for_the_preflight_to_name(self):
+        # Greater Depth is marked sent back and is still in the spec, untouched.
+        # Nothing a child reads changed, so nothing here objects; the worksheet
+        # preflight refuses that state as RETURNED_INVALID.
+        after = self.come_back()
+        after["returned"] = [{"sheet": "greaterDepth", "problem": "teaching"}]
+        result = self.run_check(self.sent_back(), after)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
+class TheBooksOrSheetMarkTests(RepairScopeCase):
+    """Whether a sheet is done in books is the page's mark, not a word on it.
+
+    Year 4 Science lesson 5 (6 October 2026): a repair changed two sheets from
+    `books` to `sheet` with a new reason for the teacher, touched nothing a
+    child reads, and was told three things children read had gone."""
+
+    def sheet(self, recording, reason, lines=3, height=None):
+        row = {"helper": "card-row", "cards": [{"title": "Enamel"}, {"title": "Pulp"}]}
+        if height is not None:
+            row["imageHeightMm"] = height
+        return {"sheets": {"expected": {
+            "recording": recording, "recordingReason": reason,
+            "zones": [{"stack": [row, {"helper": "written-answers", "question": True,
+                                       "items": [{"text": "Explain why.", "lines": lines}]}]}],
+        }}, "answerKey": {"expected": [{"question": 1, "answer": "Because."}]}}
+
+    def test_changing_the_mark_and_its_reason_is_a_repair(self):
+        before = self.sheet("books", "One connected explanation fits a slip.")
+        after = self.sheet("sheet", "The printed sheet holds the ruled lines.")
+        after["sheets"]["expected"]["recordingLookedAgain"] = True
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_the_mark_does_not_release_the_lines_under_a_question(self):
+        before = self.sheet("books", "One connected explanation fits a slip.")
+        after = self.sheet("sheet", "The printed sheet holds the ruled lines.", lines=2)
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("fewer places to write", result.stdout)
+
+    def test_a_resized_picture_viewport_is_layout(self):
+        before = self.sheet("sheet", "Same reason.", height=60)
+        after = self.sheet("sheet", "Same reason.", height=71)
+        result = self.run_check(before, after)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
 if __name__ == "__main__":

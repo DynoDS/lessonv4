@@ -1385,6 +1385,9 @@ Each identifies the resource, location and owner.
 Use the compact focused-repair role for the named owner when present, otherwise
 its full creation role. Give it the exact artefact/location, the required
 change, the protected passing content and the existing build diagnostic.
+A job delivering another owner's approved revision is checked against the
+revised source and returns no `Repair scope:` line: the old draft is no
+baseline.
 
 - `slide-designer`: use `[PLUGIN_ROOT]/agents/slide-designer-focused-repair.md`;
   if that file is missing or unreadable, use `[PLUGIN_ROOT]/agents/slide-designer.md`.

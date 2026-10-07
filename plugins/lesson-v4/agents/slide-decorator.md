@@ -73,7 +73,7 @@ Then render the preview pages exactly as the designer did:
   --manifest "Deck=[PREVIEW_DIR]/render-manifest.json"
 ```
 
-Inspect the overview sheets, opening an individual page only where the overview cannot settle a slide. If no render route can produce page evidence, record `Visual self-read: unavailable` in the completion report and run the pass on the specification and `slide-room.json` alone; a missing render never stops the deck.
+Inspect the overview sheets, opening an individual page only where the overview cannot settle a slide. The pages are drawn when the render prints `RENDER_PAGES_OK`. Nothing could be drawn only when the finished render itself prints `VISUAL_ROUTE_UNVERIFIED`: then record `Visual self-read: unavailable` in the completion report and run the pass on the specification and `slide-room.json` alone, because a missing render never stops the deck. A PowerPoint line from the probe is not that (LibreOffice draws the deck where PowerPoint cannot be reached), and nor is output that stops at `RENDER_PAGES_RUNNING`: drawing takes ten to twenty seconds and is still going, so wait for it to finish. A deck has reached the teacher unseen with every page already drawn beside it.
 
 **If `slide-room.json` is not there, measure the pages you have just rendered.** The file normally arrives from the Slide Designer, but a deck you can see is a deck that can be measured, and an unmeasured pass is where a whole geography deck came back with `full` on twelve slides and not one library search run:
 
@@ -136,7 +136,7 @@ Then check the pass record against the deck and the measurement:
 
 `[PREVIEW_PPTX]` is the deck the confirming `--preview` check just built, so this check sees what hides each drawing even when nothing could render. Require `OPTIONAL_PICTURE_PASS_OK`, and read the `OPTIONAL_PICTURE_VARIETY` line it prints beside it: that is the deck counted by what the drawings are, and a deck placing twenty drawings out of three different ones is the cycle described above, with the pool still open to mend it. Drop `--library-root` only when the resolver returned `EDUCATIONAL_SVG_UNAVAILABLE`, and `--room` only when no measurement exists. On a flagged deck add `--flagged-slides "[FLAGGED_SLIDES]"`: without it the check refuses `slide-flagged`, because nothing else can tell a slide that would not draw from a slide somebody declined. A failure names the slide and what is wrong with its line: a slide declined as full or competing that the render says has clear space is the common one, and the repair is to use that space, not to reword the record.
 
-Render the new preview and look at every slide carrying a drawing. Judge one thing: did anything land on something a child reads.
+Render the new preview with the same three commands as before and look at every slide carrying a drawing. Judge one thing: did anything land on something a child reads.
 
 **Overlap by itself is never the fault.** A drawing deliberately overlapping a card is the layer working as designed; the fault is only ever that something covers a word, a number, a table cell or part of a figure a child reads.
 

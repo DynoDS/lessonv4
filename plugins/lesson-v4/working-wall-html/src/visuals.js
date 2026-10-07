@@ -69,6 +69,7 @@ const {
   calloutKeySuffix,
 } = require("./svg-renderer");
 const { withoutTaughtMarks } = require("../../shared/text/criteria-marks");
+const { markDrawn } = require("./figure-size");
 
 const VISUAL_KEY_FNS = {
   clock: clockKey,
@@ -342,6 +343,8 @@ function pickVisual(marked, ctx) {
   if (!keyFn) return null;
   const entry = ctx.svgImages[keyFn(visual) + calloutKeySuffix(visual)];
   if (!entry) return null;
+  // Marked as a lesson drawing, so the size it prints at is checked.
+  markDrawn(Buffer.isBuffer(entry) ? entry : entry.png, visual);
   if (Buffer.isBuffer(entry)) return { buf: entry, aspect: 1 };
   return entry.anchors ? { buf: entry.png, aspect: entry.aspect || 1, anchors: entry.anchors } : { buf: entry.png, aspect: entry.aspect || 1 };
 }

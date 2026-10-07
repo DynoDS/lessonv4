@@ -423,11 +423,21 @@ function diagnose(items, refused, wrongZoneCount) {
     // and the page total grows. That is why a picture-led sheet that misses on
     // width is usually asking for one picture too many rather than the wrong
     // shape, and why an hour can go into shapes that were never going to work.
+    //
+    // It is advice about pictures, so it prints only where there is one. On a
+    // sheet of column grids it was the first thing the reader met, and it sent
+    // them looking at shapes when the answer was in the row the refusal prices
+    // (6 October 2026).
     lines.push(
-      `Fewer, wider zones is the obvious next move and it is worth one try - but note ` +
-        `that a picture is scaled by its WIDTH and its height follows, so a wider zone ` +
-        `holds a TALLER picture. On a picture-led sheet, widening usually trades a width ` +
-        `refusal for a height one, and the real answer is one picture fewer.`
+      holdsPicture(items)
+        ? `Fewer, wider zones is the obvious next move and it is worth one try - but note ` +
+            `that a picture is scaled by its WIDTH and its height follows, so a wider zone ` +
+            `holds a TALLER picture. On a picture-led sheet, widening usually trades a width ` +
+            `refusal for a height one, and the real answer is one picture fewer.`
+        : `Before trying another shape, read what each refusal below says is taking the ` +
+            `width: it names the row and what each thing in it needs, or the one widest ` +
+            `item. Moving something out of a row, or setting fewer things side by side, ` +
+            `is usually the whole answer.`
     );
   }
 
@@ -455,6 +465,15 @@ function diagnose(items, refused, wrongZoneCount) {
 // it were given the whole sheet - 273mm for a picture whose honest cost is 104mm
 // - which overstates every picture and understates every block of text, so the
 // wrong item gets named as the expensive one.
+// A photograph or drawing file anywhere in the content. `imagePath` is what a
+// designer writes and `imageHref` is what it becomes once read off disk.
+function holdsPicture(node) {
+  if (Array.isArray(node)) return node.some(holdsPicture);
+  if (!node || typeof node !== "object") return false;
+  if (typeof node.imagePath === "string" || typeof node.imageHref === "string") return true;
+  return Object.values(node).some(holdsPicture);
+}
+
 function heaviestItem(items) {
   const { widthMm: pageMm } = printableArea("portrait", DEFAULT_MARGIN_MM);
   let worst = null;

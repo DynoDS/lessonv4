@@ -94,8 +94,22 @@ const DIGIT_OF_FONT = 0.75;   // D at its natural size, as a share of the profil
                               // font: the board's 18pt digit beside its 24pt numerals
 const MAX_SCALE = 1.7;        // how far D may grow past natural; the board's ceiling,
                               // which puts a sheet's digit at about the 14pt it was
-const BOARD_MIN_SCALE = 0.65; // the smallest the board's digits may go, the scale the
-                              // board chart always held as readable from the carpet
+const BOARD_MIN_SCALE = 0.65; // the smallest a chart given a height may go anywhere
+                              // but a slide: the scale the board chart once held
+// On a slide the chart, the counters chart and the written sum are never drawn
+// with digits under 18pt, which is D at its natural size. The teacher, shown
+// the same sum at full slide width getting shorter (6 October 2026), chose the
+// 18pt one as the last that looks right ("I'd say E probably"), and of the 14pt
+// sum on Year 4 Maths Lesson 24 slide 11 he said it "looks awful". Number
+// lines, fraction walls and tables already held 18pt on a slide; the chart had
+// kept 0.65 of it (11.7pt digits, 9pt headings) from the board chart it
+// replaced, and nobody had decided that. Headings keep their share of the
+// digit, so they are 13pt at this size. A zone too short for it is refused by
+// PLACE_VALUE_CHART_DOES_NOT_FIT with the height it needs, as before. The
+// before-and-after pair takes the same floor on a slide (his answer the same
+// evening: "yes same 18pt floor"); its own smaller scales below are for the
+// other surfaces that give it a height.
+const SLIDE_MIN_SCALE = 1.0;
 const COL_W = 1.8;            // one digit column
 const POINT_W = 0.4;          // the decimal point's narrow column, in digit columns
 const LABEL_COLS = 1.55;      // a row label's column, in digit columns. Fixed rather
@@ -125,6 +139,34 @@ const COUNTER_MAX_D = 1.0;    // an unlabelled counter at most as wide as a digi
 const LABELLED_COUNTER_MAX_D = 2.0; // a counter carrying "0.01" needs about a 9mm disc on
                               // paper: the sheet's counter, which it was sized for
 const COUNTER_FILL_SHARE = 0.68;
+// A column of six or more counters goes close together, as one block in the
+// middle of its cell and as large as the cell allows. A column of fewer than
+// six stays spread across its cell, at the size it always had.
+//
+// Counters used to be spread whatever their number: each sat in the middle of
+// an equal share of its cell and was never wider than a digit is tall, so
+// thirteen tens in a wide shallow cell stood five to a row with wide gaps, held
+// small while most of the cell was empty. The teacher (6 October 2026): "the
+// counters are so spread out". Every column was then drawn close together at
+// one size across the chart, and shown that on his wall sheet and his slide he
+// said: "they look better spaced out, maybe only if its a certain amount they
+// start going together". Three hundreds had become a small clump in a big
+// cell. Shown five ways, he chose this one ("E I think"): going together
+// begins at six, which is where three to a row begins. Each column is sized by
+// its own cell, so a chart's counters are not all one size; the arrangement is
+// what it always was (two, three or five to a row, ten as two rows of five).
+//
+// The two cells of a clean exchange leave room for its rings whether or not
+// the rings are drawn, so a marked pair and an unmarked one are the same
+// picture: the ten that go stand a ring's width clear of the cell's edge and of
+// the counters that stay, and the one they become stands a ring's width from
+// its neighbours. A ring's line then runs through no counter.
+//
+// Counters that carry their value ("0.01") are sized by their words and are
+// not changed. Take a surface out of this set to give it back the spread.
+const COUNTER_CLOSE_FROM = 6;
+const COUNTER_PITCH = 1.25;
+const CLOSE_COUNTERS = new Set(['slides', 'worksheets', 'wall', 'stickin']);
 const LABELLED_FILL_SHARE = 0.82;
 const COUNTER_FACE_WIDTH = 0.9; // the share of a disc its value may use across
 // The smallest a counter can be and still be counted.
@@ -138,6 +180,17 @@ const COUNTER_FACE_WIDTH = 0.9; // the share of a disc its value may use across
 // too narrow"). Half the intended board counter, which is also the smallest
 // mark a heading's own 9pt minimum allows.
 const COUNTER_READABLE_PT = 9;
+// A column of counters drawn close together has a higher floor of its own.
+//
+// Closing counters up makes them bigger in the same cell, so the floor above,
+// which was measured on spread counters, let through what it had refused: the
+// two four-column charts of 3 September drew their six counters at 3.4mm, just
+// over it, and built. Shown that slide (6 October 2026) he said: "you're right,
+// they're too cramped". So a close column must reach the size a spread column
+// reaches at 3.2mm in the same cell, which is 3.7mm. The floor is worked out
+// from the two spacings, never typed, so exactly the cells that were refused
+// before the counters were closed up are refused now, and no others.
+const COUNTER_CLOSE_READABLE_PT = COUNTER_READABLE_PT / (COUNTER_PITCH * COUNTER_FILL_SHARE);
 const COUNTER_FACE_MIN_PT = 9; // a counter's value below this is a smudge, not a number
 // The narrowest a column can be and still be written in.
 //
@@ -165,6 +218,34 @@ const PAIR_COUNTER_MIN_SCALE = 0.42;
 const PAIR_COUNTER_COL_W = 2.6;    // a pair column holding counters, at least
 const PAIR_COUNTER_COL_MAX = 3.5;  // ...and at most, in D
 const PAIR_GAP = 4.1;              // between the charts; the arrow lives in it
+// The wall's pair (profile.pairArrow === 'narrow'). On a sheet of its own the
+// gap that held the arrow's words took two fifths of the picture, and the
+// thirteen tens counters beside it printed about 4mm across (the teacher,
+// 6 October 2026: "the arrow that says 10 tens = 1 hundred isn't as important
+// that wide ... The tens are hard to see"). So the arrow keeps only the room
+// an arrow needs, the columns take what it gives up, and the words stand in a
+// band above the charts unless the exchange cue already prints the same words
+// there. The picture is also held to a height (profile.pairMaxHeightPt), the
+// depth a sheet has under its title, so the room goes to wider columns and
+// not to a taller drawing the card would only shrink again. The board, the
+// sheet and the stick-in pack never ask for this and draw exactly as before.
+const PAIR_GAP_NARROW = 2.2;
+// What happened, marked on the counters (profile.pairExchangeMarks). With the
+// arrow short and wordless the wide pair was two charts of dots: "I'd have some
+// indication what happened though, like colours round the 10 and moving to the
+// hundreds with arrows or whatever, otherwise it just looks bland" (the
+// teacher, 6 October 2026). So the ten counters that are exchanged are ringed
+// as one group, the one counter they become is ringed in the other chart, and
+// the arrow between the charts takes the rings' colour and leaves at the
+// group's height, so the three read as one move. The colour is the chart's own
+// "this changed" green, the ring `highlight` draws round a changed digit; a
+// white line under it keeps the ring visible on the green hundreds column.
+// The marks are worked out from the two charts, never declared (as the pair's
+// changed digits are), so they cannot ring counters that did not move.
+const EXCHANGE_MARK_W = 0.13;       // the ring's line, in D, at least 3.5pt
+const EXCHANGE_MARK_MARGIN = 0.28;  // clear space between a counter and its ring, in counters
+const PAIR_COUNTER_COL_MAX_NARROW = 4.5;
+const PAIR_OP_BAND_H = 1.5;
 const PAIR_ARROW_W = 0.33;         // bold on purpose: the arrow IS the change
 const PAIR_ARROW_HEAD = 0.74;
 const PAIR_ARROW_INSET = 0.25;
@@ -649,6 +730,11 @@ function writeInFor(profile) {
 // shrink a chart, so a word there is never below the surface's own floor; the
 // board fits a fixed zone and has always let a chart's parts shrink to shares
 // of its projection floor (a digit to 0.65 of it, a heading to half).
+// The smallest scale a chart given a height may be drawn at: see SLIDE_MIN_SCALE.
+function boardMinScale(profile) {
+  return profile.surface === 'slides' ? SLIDE_MIN_SCALE : BOARD_MIN_SCALE;
+}
+
 function floorPt(profile, boardShare) {
   return profile.heightPt ? profile.minFontPt * boardShare : profile.minFontPt;
 }
@@ -714,10 +800,44 @@ function counterGridCols(count) {
   return 5;
 }
 
-function counterLayout(w, h, count, column, labelled, D) {
+function counterLayout(w, h, count, column, labelled, D, set = {}) {
   const pad = Math.min(0.08 * 72, w * 0.08, h * 0.08);
   const innerW = Math.max(1, w - 2 * pad);
   const innerH = Math.max(1, h - 2 * pad);
+  // `ring` is { kind: 'group' | 'one', margin, line }: the share of a counter a
+  // ring stands off by, and the width of its line.
+  if (set.close && !labelled && count >= COUNTER_CLOSE_FROM) {
+    const cols = counterGridCols(count);
+    const rows = Math.ceil(count / cols);
+    const P = COUNTER_PITCH;
+    let own = Math.min(innerW / (cols * P), innerH / (rows * P));
+    // What the floor is asked of: the size the cell allows, before a ring's
+    // room is taken from it, so a ring never refuses a column by itself.
+    const plain = own;
+    const ring = set.ring;
+    const m = ring ? ring.margin : 0;
+    const line = ring ? ring.line : 0;
+    // The ten are parted from the counters under them when there are any.
+    const parted = Boolean(ring) && ring.kind === 'group' && count > 10;
+    const apart = Boolean(ring) && ring.kind === 'one' && count > 1;
+    if (ring && ring.kind === 'group') {
+      own = Math.min(own,
+        (w - 2 * line) / ((cols - 1) * P + 1 + 2 * m),
+        (h - 2 * line - (parted ? line + 1 : 0)) / ((rows - 1) * P + 1 + 2 * m + (parted ? Math.max(0, m - (P - 1)) : 0)));
+    } else if (apart) {
+      own = Math.min(own,
+        (w - 2 * line - (cols - 1) * (line + 1)) / ((cols - 1) * (1 + m) + 1 + 2 * m),
+        (h - 2 * line - (rows - 1) * (line + 1)) / ((rows - 1) * (1 + m) + 1 + 2 * m));
+    }
+    const d = Math.max(own, 0.1);
+    const step = apart ? d * (1 + m) + line + 1 : d * P;
+    const gap = parted ? Math.max(0, m * d + line + 1 - (P - 1) * d) : 0;
+    return {
+      cols, rows, stepW: step, stepH: step, d, raw: plain, floor: COUNTER_CLOSE_READABLE_PT, fontPt: 0, face: '',
+      x0: (w - step * cols) / 2, y0: (h - step * rows - gap) / 2,
+      rowY: (r) => r * step + (parted && r >= 2 ? gap : 0),
+    };
+  }
   const face = labelled ? counterValue(column) : '';
   const tryCols = (cols) => {
     const rows = Math.ceil(count / cols);
@@ -738,8 +858,16 @@ function counterLayout(w, h, count, column, labelled, D) {
       if (t.fontPt > best.fontPt) best = t;
     }
   }
+  // A spread column whose last counter is ringed keeps a ring's width between
+  // its counters, by drawing them a little smaller where the spacing is tight.
+  if (set.close && !labelled && set.ring && set.ring.kind === 'one' && count > 1) {
+    const clear = (Math.min(best.stepW, best.stepH) - set.ring.line - 1) / (1 + set.ring.margin);
+    if (clear < best.d) best.d = Math.max(clear, 0.1);
+  }
   best.x0 = (w - best.stepW * best.cols) / 2;
   best.y0 = (h - best.stepH * best.rows) / 2;
+  best.rowY = (r) => r * best.stepH;
+  best.floor = COUNTER_READABLE_PT;
   return best;
 }
 
@@ -777,7 +905,7 @@ function isWriteRow(row, columns) {
 function stackedLayout(chart, profile) {
   const N = profile.fontPt * DIGIT_OF_FONT;
   const hi = N * MAX_SCALE;
-  const lo = profile.heightPt ? Math.max(N * BOARD_MIN_SCALE, 0) : Math.max(profile.minFontPt, 0);
+  const lo = profile.heightPt ? Math.max(N * boardMinScale(profile), 0) : Math.max(profile.minFontPt, 0);
   const inset = CELL_INSET_OF_N * N;
   const units = unitsOf(chart);
   const n = chart.instances;
@@ -854,21 +982,25 @@ function describeStacked(chart, profile) {
   const pieces = [];
   let smallest = null;
   let facesTooSmall = null;
+  const close = CLOSE_COUNTERS.has(profile.surface);
   const counterLayouts = chart.rows.map((row) =>
     cols.map((c, i) => {
       if (!row.counters || c === '.') return null;
       const count = countIn(row.counters, c);
       if (count <= 0) return null;
-      const lay = counterLayout(colWs[i], L.band, count, c, row.counterLabels, D);
-      if (!row.counterLabels && (smallest === null || lay.raw < smallest)) smallest = lay.raw;
-      if (row.counterLabels && lay.fontPt < COUNTER_FACE_MIN_PT) facesTooSmall = lay;
-      return lay;
+      return counterLayout(colWs[i], L.band, count, c, row.counterLabels, D, { close });
     })
   );
-  if (smallest !== null && smallest < COUNTER_READABLE_PT) {
+  chart.rows.forEach((row, r) => counterLayouts[r].forEach((lay) => {
+    if (!lay) return;
+    // The cell furthest under its own floor: a close column's is the higher one.
+    if (!row.counterLabels && (smallest === null || lay.raw / lay.floor < smallest.raw / smallest.floor)) smallest = lay;
+    if (row.counterLabels && lay.fontPt < COUNTER_FACE_MIN_PT) facesTooSmall = lay;
+  }));
+  if (smallest !== null && smallest.raw < smallest.floor) {
     throw new Error(
-      `PLACE_VALUE_COUNTERS_TOO_SMALL: this chart's counters come out ${(smallest / 72).toFixed(2)}in across, below the ` +
-        `${(COUNTER_READABLE_PT / 72).toFixed(3)}in a child can count from the carpet, because each column is only ${(colW / 72).toFixed(2)}in wide. ` +
+      `PLACE_VALUE_COUNTERS_TOO_SMALL: this chart's counters come out ${(smallest.raw / 72).toFixed(2)}in across, below the ` +
+        `${(smallest.floor / 72).toFixed(3)}in a child can count from the carpet${smallest.floor > COUNTER_READABLE_PT ? ' when they stand close together' : ''}, because each column is only ${(colW / 72).toFixed(2)}in wide. ` +
         'The counter band already has the height it needs, so a taller zone will not move it: give the chart more WIDTH - a wider zone, ' +
         'one chart on this slide instead of two, or a template that does not spend 40% of the board on a side panel. ' +
         "Fewer counters in a column works too, where the lesson's numbers allow it."
@@ -1018,7 +1150,7 @@ function describeCalculation(chart, profile) {
   const pal = paletteFor(profile);
   const N = profile.fontPt * DIGIT_OF_FONT;
   const hi = N * MAX_SCALE;
-  const lo = profile.heightPt ? N * BOARD_MIN_SCALE : profile.minFontPt;
+  const lo = profile.heightPt ? N * boardMinScale(profile) : profile.minFontPt;
   const inset = CELL_INSET_OF_N * N;
   const units = calculationUnits(chart);
   const writeIn = writeInFor(profile);
@@ -1153,6 +1285,65 @@ function describeCalculation(chart, profile) {
 
 // ─── layout: the pair ───────────────────────────────────────────────────────
 
+// The one clean exchange between two charts of counters, or null.
+//
+// Ten counters leave one column and one arrives in the column to its left
+// (ten tens for a hundred, in addition), or one leaves and ten arrive in the
+// column to its right (a hundred for ten tens, in subtraction), and every
+// other column is as it was. Anything else, two exchanges at once included,
+// is not a picture the rings can tell truthfully, so nothing is marked.
+// Returns which chart ("from" or "to") holds the group of ten and in which
+// column, and the same for the single counter.
+function exchangeBetween(pair, cols) {
+  if (!pair.fromCounters || !pair.toCounters) return null;
+  const places = cols.filter((c) => c !== '.');
+  const change = places.map((c) => countIn(pair.toCounters, c) - countIn(pair.fromCounters, c));
+  const moved = change.map((d, i) => (d === 0 ? -1 : i)).filter((i) => i >= 0);
+  if (moved.length !== 2 || moved[1] !== moved[0] + 1) return null;
+  const [big, small] = [places[moved[0]], places[moved[1]]];
+  const [dBig, dSmall] = [change[moved[0]], change[moved[1]]];
+  if (dBig === 1 && dSmall === -10) return { group: { chart: 'from', column: small }, one: { chart: 'to', column: big } };
+  if (dBig === -1 && dSmall === 10) return { group: { chart: 'to', column: small }, one: { chart: 'from', column: big } };
+  return null;
+}
+
+// Which way a pair with counters too small has to grow.
+//
+// The refusal used to say "more WIDTH" whatever held the counters down. A pair
+// is scaled to fit its zone both ways, so in a short zone it is height that
+// holds it: a Year 4 column addition slide (6 October 2026) stood a full-width
+// pair in half of a column, was told to find width it already had all of, and
+// the fault cleared the moment the pair's share of the height was raised. So
+// the pair is laid out again taller, and again wider, and the lever named is
+// the one that made the counters bigger. Each is tried at up to three times the
+// size, because a little more of the right thing does not always show: a pair
+// in a narrow zone is drawn at its smallest scale, and its counters do not grow
+// until the zone is wide enough to lift it off that. Where no height is set (a
+// sheet, a wall card) width is the only lever there is, as before.
+function pairCounterLever(chart, profile, raw) {
+  const widthOnly = 'Give the pair more WIDTH, or its own slide.';
+  if (profile.leverProbe) return '';
+  if (!profile.heightPt) return widthOnly;
+  const with_ = (change) => {
+    try {
+      describePair(chart, { ...profile, ...change, leverProbe: true });
+      return Infinity;
+    } catch (error) {
+      return Number.isFinite(error.counterRaw) ? error.counterRaw : null;
+    }
+  };
+  const bigger = (size) => size !== null && size > raw * 1.03;
+  const grows = (field) => [1.5, 2, 3].some((times) => bigger(with_({ [field]: profile[field] * times })));
+  const taller = grows('heightPt');
+  const wider = grows('widthPt');
+  if (taller && wider) return 'Give the pair more HEIGHT or more WIDTH (either makes the counters bigger), or its own slide.';
+  if (taller) {
+    return 'Height is the lever here, not width: give the pair a taller zone or a bigger share of its column, or its own slide.';
+  }
+  if (wider) return `${widthOnly} A taller zone will not move it.`;
+  return 'Neither a taller nor a wider zone makes them bigger: put fewer counters in a column, or give the pair its own slide.';
+}
+
 function describePair(chart, profile) {
   const pair = chart.pair;
   const cols = chart.columns;
@@ -1160,7 +1351,11 @@ function describePair(chart, profile) {
   const N = profile.fontPt * DIGIT_OF_FONT;
   const hasCounters = Boolean(pair.fromCounters || pair.toCounters);
   const hi = N * PAIR_MAX_SCALE;
-  const lo = profile.heightPt ? N * (hasCounters ? PAIR_COUNTER_MIN_SCALE : PAIR_BOARD_MIN_SCALE) : profile.minFontPt;
+  // On a slide the pair stops at 18pt digits like the chart ("yes same 18pt
+  // floor", the teacher, 6 October 2026); anywhere else it keeps its own scales.
+  const lo = !profile.heightPt ? profile.minFontPt
+    : profile.surface === 'slides' ? N * SLIDE_MIN_SCALE
+      : N * (hasCounters ? PAIR_COUNTER_MIN_SCALE : PAIR_BOARD_MIN_SCALE);
   const inset = CELL_INSET_OF_N * N;
   const smallFloor = floorPt(profile, 0.5);
   const units = unitsOf({ ...chart, form: 'pair' }).grid;
@@ -1170,7 +1365,13 @@ function describePair(chart, profile) {
 
   const titleFontAt = (D) => Math.max(smallFloor, Math.max(TITLE_FONT * D, Math.min(profile.fontPt, 1.2 * D)));
   const opFontAt = (D) => Math.max(smallFloor, PAIR_OP_FONT * D);
-  const gapAt = (D) => Math.max(PAIR_GAP * D, pair.operation ? widthPt(pair.operation, opFontAt(D)) + 2 * PAIR_ARROW_INSET * D + 4 : 0);
+  const narrowArrow = profile.pairArrow === 'narrow';
+  const exchange = profile.pairExchangeMarks ? exchangeBetween(pair, cols) : null;
+  let groupMidY = null;
+  const opAbove = narrowArrow && Boolean(pair.operation) && !exchanges.some((cue) => cue.label === pair.operation);
+  const gapAt = (D) => (narrowArrow
+    ? PAIR_GAP_NARROW * D
+    : Math.max(PAIR_GAP * D, pair.operation ? widthPt(pair.operation, opFontAt(D)) + 2 * PAIR_ARROW_INSET * D + 4 : 0));
   // Counters need wider columns than digits do: a column one digit wide gave a
   // Year 4 exchange slide counters a tenth of an inch across.
   const colFactor = hasCounters ? PAIR_COUNTER_COL_W : COL_W;
@@ -1179,6 +1380,7 @@ function describePair(chart, profile) {
     let h = 0;
     if (hasTitle) h += Math.max(PAIR_TITLE_H * D, titleFontAt(D) * 1.45) + PAIR_TITLE_GAP * D;
     if (exchanges.length) h += EXCHANGE_H * D + EXCHANGE_GAP * D;
+    if (opAbove) h += PAIR_OP_BAND_H * D;
     h += HEADER_H * D + (hasCounters ? COUNTER_H * D : 0) + ROW_H * D;
     if (anySame) h += SAME_H * D;
     return h;
@@ -1186,7 +1388,11 @@ function describePair(chart, profile) {
 
   let D = hi;
   for (let k = 0; k < 60; k += 1) {
-    const over = Math.max(widthAt(D) / profile.widthPt, profile.heightPt ? heightAt(D) / profile.heightPt : 0);
+    const over = Math.max(
+      widthAt(D) / profile.widthPt,
+      profile.heightPt ? heightAt(D) / profile.heightPt : 0,
+      profile.pairMaxHeightPt ? heightAt(D) / profile.pairMaxHeightPt : 0
+    );
     if (over <= 1.0005 || D <= lo) break;
     D = Math.max(lo, D / Math.max(1.002, over));
   }
@@ -1202,8 +1408,8 @@ function describePair(chart, profile) {
   const gap = gapAt(D);
   // On the board a counter pair takes the width its zone has spare, up to the
   // widest a counter column is useful, so its counters are as big as they can be.
-  const colW = hasCounters && profile.heightPt
-    ? Math.max(colFactor * D, Math.min(PAIR_COUNTER_COL_MAX * D, (profile.widthPt - gap) / (2 * units)))
+  const colW = hasCounters && (profile.heightPt || narrowArrow)
+    ? Math.max(colFactor * D, Math.min((narrowArrow ? PAIR_COUNTER_COL_MAX_NARROW : PAIR_COUNTER_COL_MAX) * D, (profile.widthPt - gap) / (2 * units)))
     : colFactor * D;
   const colWs = cols.map((c) => (c === '.' ? colW * POINT_W : colW));
   const chartW = colWs.reduce((a, b) => a + b, 0);
@@ -1213,6 +1419,7 @@ function describePair(chart, profile) {
   const rule = Math.max(1, GRID_W * D);
   const ringW = Math.max(3, RING_W * D);
   const ringInset = Math.max(ringW / 2 + 1, RING_INSET * D);
+  const markW = Math.max(3.5, EXCHANGE_MARK_W * D);
   const cells = [];
   const texts = [];
   const circles = [];
@@ -1263,8 +1470,25 @@ function describePair(chart, profile) {
     y += eh + EXCHANGE_GAP * D;
   }
 
+  if (opAbove) {
+    const band = PAIR_OP_BAND_H * D;
+    const opPt = Math.max(smallFloor, Math.min(opFontAt(D), (totalW - 0.8 * D) / Math.max(0.1, textWidthEm(pair.operation, true))));
+    texts.push({ role: 'operation', text: pair.operation, x: totalW / 2, y, h: band, pt: opPt, fill: pal.title });
+    y += band;
+  }
+
   const chartY = y;
-  const drawChart = (ox, cells_, pops, picked) => {
+  // The two cells of a clean exchange keep room for its rings whether or not
+  // the marks are asked for, so a marked pair and an unmarked one set their
+  // counters in the same places.
+  const closePair = CLOSE_COUNTERS.has(profile.surface);
+  const exchanged = exchangeBetween(pair, cols);
+  const ringIn = (pops, column) => {
+    const which = pops === pair.fromCounters ? 'from' : 'to';
+    const kind = exchanged && ['group', 'one'].find((k) => exchanged[k].chart === which && exchanged[k].column === column);
+    return kind ? { kind, margin: EXCHANGE_MARK_MARGIN, line: markW } : null;
+  };
+  const drawChart = (ox, cells_, pops, picked, which) => {
     const headerH = HEADER_H * D;
     let x = ox;
     cols.forEach((c, i) => {
@@ -1280,19 +1504,38 @@ function describePair(chart, profile) {
         cells.push({ role: 'band', column: c, x, y: yy, w: colWs[i], h: band, fill: columnFills(profile, c)[1] });
         const count = countIn(pops, c);
         if (count > 0 && c !== '.') {
-          const lay = counterLayout(colWs[i], band, count, c, false, D);
-          if (lay.raw < COUNTER_READABLE_PT) {
-            throw new Error(
+          const mark = exchange && [exchange.group, exchange.one].find((m) => m.chart === which && m.column === c);
+          const lay = counterLayout(colWs[i], band, count, c, false, D, { close: closePair, ring: ringIn(pops, c) });
+          if (lay.raw < lay.floor) {
+            const refusal = new Error(
               `PLACE_VALUE_COUNTERS_TOO_SMALL: this pair's counters come out ${(lay.raw / 72).toFixed(2)}in across, below the ` +
-                `${(COUNTER_READABLE_PT / 72).toFixed(3)}in a child can count from the carpet. Give the pair more WIDTH, or its own slide.`
+                `${(lay.floor / 72).toFixed(3)}in a child can count from the carpet${lay.floor > COUNTER_READABLE_PT ? ' when they stand close together' : ''}. ${pairCounterLever(chart, profile, lay.raw)}`
             );
+            refusal.counterRaw = lay.raw;
+            throw refusal;
           }
           const fill = profile.palette === 'ink' ? pal.cellFill : columnFills(profile, c)[0];
+          if (mark) {
+            // The group is the first ten counters, which the grid sets out as
+            // two full rows of five; the single counter is the last one drawn.
+            const isGroup = mark === exchange.group;
+            const first = isGroup ? 0 : count - 1;
+            const last = isGroup ? Math.min(count, 10) - 1 : count - 1;
+            const margin = EXCHANGE_MARK_MARGIN * lay.d + markW / 2;
+            const left = x + lay.x0 + (first % lay.cols) * lay.stepW + lay.stepW / 2 - lay.d / 2 - margin;
+            const right = x + lay.x0 + ((isGroup ? lay.cols - 1 : last % lay.cols)) * lay.stepW + lay.stepW / 2 + lay.d / 2 + margin;
+            const top = yy + lay.y0 + lay.rowY(Math.floor(first / lay.cols)) + lay.stepH / 2 - lay.d / 2 - margin;
+            const base = yy + lay.y0 + lay.rowY(Math.floor(last / lay.cols)) + lay.stepH / 2 + lay.d / 2 + margin;
+            const box = { x: Math.max(left, x + markW), y: top, w: Math.min(right, x + colWs[i] - markW) - Math.max(left, x + markW), h: base - top, column: c };
+            rings.push({ ...box, role: 'exchange-mark-halo', sw: markW * 1.9, stroke: '#FFFFFF' });
+            rings.push({ ...box, role: isGroup ? 'exchange-group' : 'exchange-one', sw: markW });
+            if (isGroup) groupMidY = top + (base - top) / 2;
+          }
           for (let k = 0; k < count; k += 1) {
             circles.push({
               role: 'counter', column: c,
               cx: x + lay.x0 + (k % lay.cols) * lay.stepW + lay.stepW / 2,
-              cy: yy + lay.y0 + Math.floor(k / lay.cols) * lay.stepH + lay.stepH / 2,
+              cy: yy + lay.y0 + lay.rowY(Math.floor(k / lay.cols)) + lay.stepH / 2,
               r: lay.d / 2, fill, stroke: pal.counterLine, sw: Math.max(0.75, 0.04 * D), face: '', pt: 0,
             });
           }
@@ -1316,17 +1559,29 @@ function describePair(chart, profile) {
   };
 
   // The start chart carries no rings: nothing has happened to it yet.
-  const bottom = drawChart(0, pair.from, pair.fromCounters, new Set());
+  const bottom = drawChart(0, pair.from, pair.fromCounters, new Set(), 'from');
   const rightX = chartW + gap;
-  drawChart(rightX, pair.to, pair.toCounters, pair.changed);
+  drawChart(rightX, pair.to, pair.toCounters, pair.changed, 'to');
 
   // The arrow across the gap at the charts' middle, with the operation above it:
   // the only mark in the picture that says something HAPPENED.
-  const ay = (chartY + bottom) / 2;
-  arrowParts(lines, polys, chartW + PAIR_ARROW_INSET * D, rightX - PAIR_ARROW_INSET * D, ay, Math.max(3, PAIR_ARROW_W * D), PAIR_ARROW_HEAD * D, pal.title);
-  if (pair.operation) {
-    const opPt = Math.max(smallFloor, Math.min(opFontAt(D), (gap - 2 * PAIR_ARROW_INSET * D) / Math.max(0.1, textWidthEm(pair.operation, true))));
-    texts.push({ role: 'operation', text: pair.operation, x: chartW + gap / 2, y: ay - Math.max(3, PAIR_ARROW_W * D) / 2 - 0.2 * D - opPt * 1.2, h: opPt * 1.2, pt: opPt, fill: pal.title });
+  // When an exchange is marked the arrow and its words take the rings' green,
+  // so the group, the arrow and the new counter read as one move. The arrow
+  // leaves level with the ringed group where its words still sit inside the
+  // charts' own height there; where they would rise past the headings it stays
+  // at the middle, green.
+  const marked = groupMidY !== null;
+  const wordsOnArrow = Boolean(pair.operation) && !narrowArrow;
+  const shaft = Math.max(3, PAIR_ARROW_W * D);
+  const opPt = wordsOnArrow
+    ? Math.max(smallFloor, Math.min(opFontAt(D), (gap - 2 * PAIR_ARROW_INSET * D) / Math.max(0.1, textWidthEm(pair.operation, true))))
+    : 0;
+  const wordsTopAt = (arrowY) => arrowY - shaft / 2 - 0.2 * D - opPt * 1.2;
+  const ay = marked && (!wordsOnArrow || wordsTopAt(groupMidY) >= chartY) ? groupMidY : (chartY + bottom) / 2;
+  const arrowColour = marked ? pal.ring : pal.title;
+  arrowParts(lines, polys, chartW + PAIR_ARROW_INSET * D, rightX - PAIR_ARROW_INSET * D, ay, shaft, PAIR_ARROW_HEAD * D, arrowColour);
+  if (wordsOnArrow) {
+    texts.push({ role: 'operation', text: pair.operation, x: chartW + gap / 2, y: wordsTopAt(ay), h: opPt * 1.2, pt: opPt, fill: arrowColour });
   }
 
   let h = bottom;

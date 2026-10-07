@@ -32,7 +32,12 @@ be crowded out of a long run and a diff cannot:
   step or a drawing's printed words, which may say the action instead when the
   taught word only names its result (`Add the digits:` for `Digit sum:`);
 - no person or place is named that the approved lesson never mentioned;
-- the photograph contract is byte-identical.
+- the photograph contract is byte-identical;
+- a string the class never meets may change in one way only: where it holds a
+  word-for-word copy of something the class does meet (the answer key's copy
+  of a shown model, a teacher note quoting a slide's title), `carry` writes
+  the new wording over the copy, so the two still match. Nothing else in it
+  may move, and the editor never writes there by hand.
 
 It is a floor, not the whole lane: a swapped pair of dates or a reversed
 meaning in plain words passes it, and the editor's own instructions own those.
@@ -46,6 +51,7 @@ contract is put back, and a change of structure restores the approved files,
 because only that cannot be undone string by string.
 
     check-voice-edit.py snapshot --working-dir W
+    check-voice-edit.py carry --working-dir W
     check-voice-edit.py check --working-dir W
     check-voice-edit.py settle --working-dir W
     check-voice-edit.py restore --working-dir W
@@ -397,6 +403,55 @@ def is_setting(path: tuple) -> bool:
     return key in SETTING_KEYS or key.endswith(SETTING_SUFFIXES)
 
 
+CARRY_MIN_WORDS = 3
+
+
+def class_paths(base: dict, forms: set[str], packet) -> set[tuple]:
+    """The paths whose approved words the class meets."""
+    return {
+        path for path, value in base.items()
+        if isinstance(value, str) and not is_setting(path) and (
+            plain(value) in forms
+            or (is_drawing_feature(path) and drawing_print(packet, value)
+                and all(text in forms for text in drawing_print(packet, value)))
+        )
+    }
+
+
+def carry_pairs(base: dict, curr: dict, child_facing: set[tuple]) -> list[tuple[str, str]]:
+    """Each reworded string the class meets, as (approved, new), longest first.
+
+    Only whole strings of a few words or more are carried: a one-word label
+    (`Starter`) would match ordinary prose it was never a copy of.
+    """
+    pairs = {
+        (base[p].strip(), curr[p].strip()) for p in child_facing
+        if isinstance(curr.get(p), str) and base[p] != curr[p] and not is_drawing_feature(p)
+        and len(base[p].split()) >= CARRY_MIN_WORDS and curr[p].strip()
+    }
+    return sorted(pairs, key=lambda pair: (-len(pair[0]), pair))
+
+
+def carried(text: str, pairs: list[tuple[str, str]]) -> str:
+    """`text` with every word-for-word copy of a reworded string brought up to date."""
+    out, cursor = [], 0
+    spans: list[tuple[int, int, str]] = []
+    for old, new in pairs:
+        for match in re.finditer(r"(?<![A-Za-z0-9])" + re.escape(old) + r"(?![A-Za-z0-9])", text):
+            if all(match.end() <= start or match.start() >= end for start, end, _n in spans):
+                spans.append((match.start(), match.end(), new))
+    for start, end, new in sorted(spans):
+        out.append(text[cursor:start])
+        out.append(new)
+        cursor = end
+    out.append(text[cursor:])
+    return "".join(out)
+
+
+def may_carry(path: tuple) -> bool:
+    return not (is_setting(path) or path[0] in PROTECTED_TOP_LEVEL or leaf_key(path) in PROTECTED_KEYS)
+
+
 class Fault:
     def __init__(self, scope: str, where: tuple, message: str) -> None:
         self.scope = scope
@@ -423,14 +478,8 @@ def find_faults(baseline: dict, current: dict, packet) -> list[Fault]:
     for path in sorted(set(base) - set(curr), key=show):
         faults.append(Fault(WHOLE, path, f"{show(path)} was removed - the editor rewords, it never removes a piece"))
 
-    child_facing = {
-        path for path, value in base.items()
-        if isinstance(value, str) and not is_setting(path) and (
-            plain(value) in forms
-            or (is_drawing_feature(path) and drawing_print(packet, value)
-                and all(text in forms for text in drawing_print(packet, value)))
-        )
-    }
+    child_facing = class_paths(base, forms, packet)
+    pairs = carry_pairs(base, curr, child_facing)
     frame = packet._load_design_validator().diagram_print_frame
     reworded: list[tuple] = []
     for path in sorted((p for p in set(base) & set(curr) if base[p] != curr[p]), key=show):
@@ -444,6 +493,10 @@ def find_faults(baseline: dict, current: dict, packet) -> list[Fault]:
             faults.append(Fault(STRING, path, f"{where} is the lesson's own record or the taught word itself, never reworded"))
         elif is_setting(path):
             faults.append(Fault(STRING, path, f"{where} is a setting or an id, never wording - outside the editor's lane"))
+        elif path not in child_facing and may_carry(path) and new == carried(old, pairs):
+            # A word-for-word copy of something the class meets, brought up to
+            # date with it by `carry`: the two still say the same thing.
+            continue
         elif path not in child_facing:
             faults.append(Fault(
                 STRING, path,
@@ -657,6 +710,41 @@ def run_check(working_dir: Path) -> int:
     return 0
 
 
+def carry(working_dir: Path) -> int:
+    """Bring each word-for-word copy the class never meets up to date."""
+    try:
+        packet = load_packet()
+        baseline, current, _photos = load_state(working_dir)
+    except (OSError, json.JSONDecodeError, PacketUnavailable) as exc:
+        print(f"VOICE_EDIT_CHECK_ERROR: {exc}")
+        return 2
+    base, curr = _flat(baseline), _flat(current)
+    child_facing = class_paths(base, class_forms(baseline, packet), packet)
+    pairs = carry_pairs(base, curr, child_facing)
+    whole = dict(pairs)
+    moved: list[tuple] = []
+    for path in sorted(base, key=show):
+        old = base[path]
+        if (not isinstance(old, str) or curr.get(path) != old
+                or (path and path[-1] in ("{}", "[]")) or not may_carry(path)):
+            continue
+        if path in child_facing:
+            # Words the class meets are the editor's own to judge, so only an
+            # untouched string identical to one it reworded follows (the same
+            # model in the answer key, the same question in its check).
+            new = whole.get(old.strip(), old)
+        else:
+            new = carried(old, pairs)
+        if new != old:
+            set_at(current, path, new)
+            moved.append(path)
+    if moved:
+        (working_dir / DESIGN).write_text(json.dumps(current, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    names = ", ".join(show(p) for p in moved[:REPORT_LIMIT])
+    print(f"VOICE_EDIT_CARRIED: {len(moved)} copies brought up to date" + (f" ({names})" if names else ""))
+    return 0
+
+
 def set_at(node: object, path: tuple, value: object) -> None:
     for part in path[:-1]:
         node = node[part]  # type: ignore[index]
@@ -665,9 +753,13 @@ def set_at(node: object, path: tuple, value: object) -> None:
 
 def with_twins(put_back: list[tuple], base: dict, curr: dict) -> list[tuple]:
     """Strings the design wrote identically stay identical: a question put back
-    on the board takes its reworded copy in the check back with it."""
+    on the board takes its reworded copy in the check back with it, and so
+    does a teacher-only string that carried a copy of it."""
     changed = [p for p in base if p in curr and base[p] != curr[p] and isinstance(base[p], str)]
-    twins = [q for p in put_back for q in changed if q != p and base[q] == base[p]]
+    twins = [
+        q for p in put_back for q in changed
+        if q != p and (base[q] == base[p] or (len(base[p].split()) >= CARRY_MIN_WORDS and base[p].strip() in base[q]))
+    ]
     return sorted(set(put_back) | set(twins), key=show)
 
 
@@ -826,7 +918,7 @@ def adaptation_check(working_dir: Path, settle_it: bool) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=(
-        "snapshot", "check", "settle", "restore",
+        "snapshot", "carry", "check", "settle", "restore",
         "adaptation-snapshot", "adaptation-check", "adaptation-settle",
     ))
     parser.add_argument("--working-dir", type=Path, required=True)
@@ -849,6 +941,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.command == "settle":
         return settle(args.working_dir)
+    if args.command == "carry":
+        return carry(args.working_dir)
     return run_check(args.working_dir)
 
 

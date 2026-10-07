@@ -257,5 +257,99 @@ class TheGuidanceSaysTheSameThingTests(unittest.TestCase):
         self.assertIn("A card is a container", decorator)
 
 
+class TheStampIsWhatThePagesWereDrawnFromTests(unittest.TestCase):
+    """The measurement used to be stamped with whatever lesson file the caller
+    named. On 6 October 2026 a decorator whose measurement had been refused as
+    stale measured an older render again, named the current lesson.json beside
+    it, and the stale check passed over pages drawn before the deck moved. The
+    preview check now keeps the lesson file it built from beside the deck, and
+    that file is what gets stamped.
+    """
+
+    DRAWN = {"slides": [{"title": "Digestion", "dots": [{"x": 0.2, "y": 0.4}]}]}
+    # The same words with one dot moved: nothing in the deck's text can tell
+    # these two apart, which is what happened on the day.
+    MOVED = {"slides": [{"title": "Digestion", "dots": [{"x": 0.6, "y": 0.4}]}]}
+    DECORATED = {
+        "slides": [
+            {
+                "title": "Digestion",
+                "dots": [{"x": 0.2, "y": 0.4}],
+                "decorations": [{"emoji": "x"}],
+            }
+        ]
+    }
+
+    def stamp(self, named, kept=None):
+        """Measure one drawn page, naming `named` as the lesson and leaving
+        `kept` beside the deck as the file the build says it drew."""
+        Image, _ = _pil()
+        with TemporaryDirectory() as tmp:
+            preview = Path(tmp) / "preview"
+            preview.mkdir()
+            deck = preview / "deck.pptx"
+            deck.write_bytes(b"deck")
+            page = preview / "deck-page-01.png"
+            Image.new("RGB", (PAGE_W, PAGE_H), (255, 255, 255)).save(page)
+            if kept is not None:
+                (preview / "lesson-source.json").write_text(
+                    json.dumps(kept), encoding="utf-8"
+                )
+            manifest = preview / "render-manifest.json"
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "version": 1,
+                        "source": str(deck),
+                        "pages": [{"number": 1, "path": str(page), "sha256": "x"}],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            lesson = Path(tmp) / "lesson.json"
+            lesson.write_text(json.dumps(named), encoding="utf-8")
+            output = Path(tmp) / "slide-room.json"
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--render-manifest",
+                    str(manifest),
+                    "--lesson",
+                    str(lesson),
+                    "--output",
+                    str(output),
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            record = json.loads(output.read_text(encoding="utf-8"))
+            return result.stdout, record.get("compositionSha256")
+
+    def test_an_older_render_cannot_be_stamped_as_the_current_deck(self):
+        _, drawn = self.stamp(self.DRAWN)
+        _, moved = self.stamp(self.MOVED)
+        self.assertNotEqual(drawn, moved)
+        said, stamped = self.stamp(self.MOVED, kept=self.DRAWN)
+        # Stamped with what was drawn, so the stale check downstream still
+        # refuses these pages for the deck as it now stands.
+        self.assertEqual(stamped, drawn)
+        self.assertIn("SLIDE_ROOM_PAGES_ARE_OLDER", said)
+        self.assertIn("SLIDE_ROOM_OK: 1 slides", said)
+
+    def test_adding_drawings_to_the_deck_that_was_rendered_is_not_a_mismatch(self):
+        _, drawn = self.stamp(self.DRAWN)
+        said, stamped = self.stamp(self.DECORATED, kept=self.DRAWN)
+        self.assertEqual(stamped, drawn)
+        self.assertNotIn("SLIDE_ROOM_PAGES_ARE_OLDER", said)
+
+    def test_a_render_with_no_kept_lesson_is_stamped_as_before(self):
+        _, moved = self.stamp(self.MOVED)
+        said, stamped = self.stamp(self.MOVED, kept=None)
+        self.assertEqual(stamped, moved)
+        self.assertNotIn("SLIDE_ROOM_PAGES_ARE_OLDER", said)
+
+
 if __name__ == "__main__":
     unittest.main()

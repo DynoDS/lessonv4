@@ -274,7 +274,16 @@ function makeNumberer() {
 
   // A Part with a task line walks to two items, the line and the Part; inside
   // a stack both take their places in it, anywhere else they become one.
+  //
+  // A row is the exception, and it is handled where a row is walked: the line
+  // goes above the row, never into it. Spliced into the row like any other
+  // list, "Use column addition." became a third column beside the two grids it
+  // introduced, and a pair of grids that needs 142mm was refused as needing
+  // 191mm of a 174mm page. The sheet went back for a new page plan and came out
+  // as two landscape pages where one portrait page held it (Year 4 column
+  // addition, 6 October 2026).
   const SPLICE = Symbol("splice");
+  const isGroupLine = (item) => !!item && item.helper === "instruction" && item.groupPrompt === true;
   const settle = (value) => (value && value[SPLICE] ? { stack: value[SPLICE] } : value);
 
   function numberZones(zones) {
@@ -367,10 +376,21 @@ function makeNumberer() {
         );
       }
       const out = {};
+      const above = [];
       for (const [key, value] of Object.entries(node)) {
+        if (key === "row" && Array.isArray(value)) {
+          out[key] = value.map((child) => {
+            const walked = walk(child, zoneId, insideNumberedQuestion);
+            if (!walked || !walked[SPLICE]) return walked;
+            const parts = walked[SPLICE].filter((item) => !isGroupLine(item));
+            above.push(...walked[SPLICE].filter(isGroupLine));
+            return parts.length === 1 ? parts[0] : { stack: parts };
+          });
+          continue;
+        }
         out[key] = settle(walk(value, zoneId, insideNumberedQuestion));
       }
-      return out;
+      return above.length ? { [SPLICE]: [...above, out] } : out;
     };
 
     // Zone order is the reading order: a, then b, then c - or, for an auto

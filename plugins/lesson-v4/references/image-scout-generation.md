@@ -26,15 +26,15 @@ The per-filename lifetime is at most two ImageGen calls. An interrupted call or 
 
 ## Stage returned media
 
-The host writes every generated image to a file of its own, and the call's result says where. Stage the picture by copying that file into the entry's AI folder in `WORK_ROOT`. On Codex the result's `output_hint` names the file, inside `~/.codex/generated_images/<this session's id>/`.
+The host saves every generated image as a file of its own, and `record-generated` stages it for you: run it for the attempt with `--work-root` set to `WORK_ROOT`, and it copies that file into the entry's AI folder and records it. Where the call's result names the saved file (on Codex, its `output_hint`), add `--host-file` with that path.
 
-The same result also carries the picture as text, about a million characters of it. Keep that text out of your output and out of every command: printing it gets it cut short, and Windows refuses any command longer than about 32,000 characters, so a command built round it never runs. Print the result's field names and its `output_hint`, never the result whole. A Year 4 digestion lesson (6 October 2026) lost three finished pictures this way: the first calls printed a cut-off result, the recovery calls put the picture on a command line, and all three files were sitting in the host's folder throughout.
+The same result also carries the picture as text, about a million characters of it. Keep that text out of your output and out of every command: printed, it is cut short, and Windows refuses a command that long. Print the result's field names and the path, never the result whole. Seven finished pictures in one Year 4 lesson were recorded as never arriving this way while every file sat in the host's folder.
 
-So when a call's result has gone, or named no path, look in the host's generated-images folder for files written since you reserved the call before deciding nothing came back. Several calls made together leave several files there: open each one and match it to its entry by what it shows. A file found there is that call's output and costs no further call.
+The command's answer is your next step. One new file: it is recorded, and costs no further call. Several, because calls were made together: it lists them and records none, since only looking can tell which is which, so open each and name this entry's own with `--host-file`. A host with no such folder: it says so and leaves the attempt open, so stage the file the result names yourself and pass `--staging-path`.
 
-Immediately call `record-generated`. A staged output remains `generated_unreviewed` until your own batch review below has looked at it. Nothing downstream reviews it for you, so a staged image you never opened reaches the lesson exactly as it came back.
+A staged output remains `generated_unreviewed` until your own batch review below has looked at it. Nothing downstream reviews it for you, so a staged image you never opened reaches the lesson exactly as it came back.
 
-If the result names no file and the host's folder holds nothing new, the call returned no image: `interrupt-open` the attempt, which consumes it and leaves the recovery call. Where that was the second call, report the entry `unsatisfied` with reason `attempt_budget_exhausted`. `rejected` is never the record for a call that returned nothing: the ledger refuses it, as the batch review below explains.
+A call returned no image only once it has finished and the command finds no new file. Then `interrupt-open` the attempt, which consumes it and leaves the recovery call. Where that was the second call, report the entry `unsatisfied` with reason `attempt_budget_exhausted`. `rejected` is never the record for a call that returned nothing: the ledger refuses it, as the batch review below explains.
 
 ## Batch review
 

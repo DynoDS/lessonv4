@@ -7,6 +7,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 
 const { capacityWarnings } = require('../src/content/capacity');
+const { isSumToWorkOut } = require('../src/presentation-text');
 const { friendlyParseError } = require('../src/validate');
 const { expandTeachLayoutsEach, LAYOUTS } = require('../src/teach-layouts');
 
@@ -23,6 +24,10 @@ const BLOCKING_CAPACITY_SIGNALS = new Set([
   // closely" (4 September 2026); the repair is the designer's own (a taller
   // zone, a split, `essential: false` for a picture that is only context).
   'PICTURE_BELOW_READABLE_FLOOR',
+  // Labels of a labelled diagram drawn on top of each other or off its edge.
+  // They are inside a picture, so nothing else here can see them; the repair
+  // is one field (`"layout": "sides"`), named in the message.
+  'LABEL_DIAGRAM_LABELS_COLLIDE',
 ]);
 
 function buildDiagnostic(warning) {
@@ -949,6 +954,14 @@ function taskBlueFault(whole, facts) {
   }
   const sentences = taskSentences(whole);
   const tasks = sentences.filter((sentence) => !sentence.endsWith('?'));
+  // A method line with the sum under it is the commonest way to reach the
+  // refusal below, and "a short task is one" sent a Year 4 deck's repair to
+  // take the blue off altogether (Lesson 23, 5 October 2026). The builder
+  // prints such a sum blue by itself, so say that.
+  if (tasks.length > 1 && whole.split(/\r?\n/).some((line) => isSumToWorkOut(line))) {
+    return 'it holds the method line and the sum together; take the role off and leave the block black ' +
+      'with the sum on a line of its own, and the builder prints the sum in blue';
+  }
   if (tasks.length > 1) {
     return `it holds ${tasks.length} sentences that are not questions, and a short task is one`;
   }
@@ -1551,6 +1564,282 @@ function optionalPictureLine(counts) {
   );
 }
 
+// ─── one report, refusals first, each note once ───────────────────
+//
+// A report used to open with the notes and bury the refusals among them. Year 4
+// Maths Lesson 24's first check (6 October 2026) ran to 237 lines and 45,000
+// characters: a line for every box under 20pt on every slide, the same criteria
+// note fifteen times, the same warning again for each slide. Codex cuts a long
+// read in the middle, and that cut took three refusals with it, which then
+// survived a repair pass nobody knew to spend on them.
+//
+// So the refusals come first, in the lines they were always printed in, and a
+// note that says the same thing about several slides is printed once with the
+// slides it is about. Nothing is dropped: every slide a note named is still
+// named.
+const PER_SLIDE_LINE = /^(\s*(?:\[check\] |\[warn\] |note: |[x✗] )?)slide (\d+)([ :(].*)$/;
+
+function onceForItsSlides(lines) {
+  const groups = new Map();
+  const order = [];
+  lines.forEach((line) => {
+    const found = PER_SLIDE_LINE.exec(line);
+    if (!found) {
+      order.push({ line });
+      return;
+    }
+    const key = `${found[1]}\u0000${found[3]}`;
+    let group = groups.get(key);
+    if (!group) {
+      group = { lead: found[1], rest: found[3], slides: [] };
+      groups.set(key, group);
+      order.push({ group });
+    }
+    const slide = Number(found[2]);
+    if (!group.slides.includes(slide)) group.slides.push(slide);
+  });
+  return order.map((entry) => {
+    if (!entry.group) return entry.line;
+    const { lead, rest, slides } = entry.group;
+    return slides.length === 1
+      ? `${lead}slide ${slides[0]}${rest}`
+      : `${lead}slides ${slides.join(', ')}${rest}`;
+  });
+}
+
+function orderReport(stdout, stderr) {
+  const refusals = [];
+  const columns = [];
+  const notes = new Map();
+  const rest = [];
+  const seen = new Set();
+  String(stdout || '').split(/\r?\n/).forEach((line) => {
+    if (line.startsWith('BUILD_DIAGNOSTIC: ')) {
+      let item = null;
+      try {
+        item = JSON.parse(line.slice('BUILD_DIAGNOSTIC: '.length));
+      } catch {
+        item = null;
+      }
+      if (!item || item.faultClass !== 'note') {
+        if (!seen.has(line)) refusals.push({ line, item });
+        seen.add(line);
+        return;
+      }
+      const location = { ...(item.location || {}) };
+      const slide = location.slide;
+      delete location.slide;
+      const key = JSON.stringify([item.signal, item.message, location]);
+      let note = notes.get(key);
+      if (!note) {
+        note = { item, location, slides: [] };
+        notes.set(key, note);
+        rest.push({ note });
+      }
+      if (slide != null && !note.slides.includes(slide)) note.slides.push(slide);
+      return;
+    }
+    const column = /^COLUMN_NEEDS: slide (\d+): (.*)$/.exec(line);
+    if (column) {
+      if (!seen.has(line)) columns.push({ line, slide: Number(column[1]), message: column[2] });
+      seen.add(line);
+      return;
+    }
+    rest.push({ line });
+  });
+
+  // What a whole column needs belongs beside the refusal it explains, in a
+  // line a reader filtering for diagnostics still sees. On a slide nothing
+  // refused it stays a plain line: it is then only a measure that ran close.
+  const refused = new Set(
+    refusals.map((entry) => entry.item && entry.item.location && entry.item.location.slide).filter(Number.isFinite)
+  );
+  const head = refusals.map((entry) => entry.line);
+  const loose = [];
+  columns.forEach((column) => {
+    if (!refused.has(column.slide)) {
+      loose.push(column.line);
+      return;
+    }
+    head.push(`BUILD_DIAGNOSTIC: ${JSON.stringify({
+      signal: 'COLUMN_NEEDS',
+      artifact: 'slides',
+      faultClass: 'composition',
+      location: { slide: column.slide },
+      message: column.message,
+    })}`);
+  });
+
+  const body = [];
+  rest.forEach((entry) => {
+    if (!entry.note) {
+      body.push(entry.line);
+      return;
+    }
+    const { item, location, slides } = entry.note;
+    const where = slides.length > 1 ? { slide: slides[0], slides, ...location } : { slide: slides[0], ...location };
+    if (!slides.length) delete where.slide;
+    body.push(`BUILD_DIAGNOSTIC: ${JSON.stringify({ ...item, location: where })}`);
+  });
+
+  return {
+    stdout: head.concat(loose, onceForItsSlides(body)).join('\n'),
+    stderr: onceForItsSlides(String(stderr || '').split(/\r?\n/)).join('\n'),
+  };
+}
+
+// ─── the helper delivery check runs with the design check ─────────
+//
+// It was a second command the slide designer was told to run after each design
+// check, and a second command is one that gets run last or not at all. On Year
+// 4 Maths Lesson 24 it ran once, after the third and last repair pass; on
+// Lesson 23 it never ran and the fault cost a second repair launch (5 and 6
+// October 2026). When the run's `helper-check.json` sits beside the candidate
+// the delivery check now runs here, and what it finds is part of this report
+// and this verdict. Its own command and marker are unchanged.
+function helperDelivery(jsonPath, options) {
+  if (options.helperVerdictPath === false) return null;
+  const verdictPath = options.helperVerdictPath || path.join(path.dirname(jsonPath), 'helper-check.json');
+  const script = path.join(__dirname, '..', '..', 'scripts', 'check-helper-coverage.py');
+  if (!fs.existsSync(verdictPath) || !fs.existsSync(script)) return null;
+  const env = { ...process.env, ...(options.env || {}) };
+  const queue = env.LESSON_RESOURCES_PYTHON
+    ? [env.LESSON_RESOURCES_PYTHON]
+    : process.platform === 'win32' ? ['python', 'python3'] : ['python3', 'python'];
+  const run = options.spawnSync || spawnSync;
+  let askedFinder = false;
+  for (;;) {
+    let bin = queue.shift();
+    if (bin === undefined) {
+      if (askedFinder) return { unavailable: true };
+      askedFinder = true;
+      let found = null;
+      try {
+        found = (options.findPython || require('../../scripts/find-python').findPython)();
+      } catch {
+        found = null;
+      }
+      if (!found || found.status !== 'PYTHON') return { unavailable: true };
+      bin = found.exe;
+    }
+    const child = run(
+      bin,
+      [script, 'delivery', '--verdict', verdictPath, '--spec', jsonPath, '--surface', 'slides'],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 10 * 1024 * 1024, env }
+    );
+    const out = String((child && child.stdout) || '');
+    const err = String((child && child.stderr) || '');
+    const ok = /^HELPER_DELIVERY_OK (\d+)\s*$/m.exec(out);
+    if (child && child.status === 0 && ok) return { ok: true, count: Number(ok[1]) };
+    if (child && child.status === 1 && /^HELPER_DELIVERY_FAILED\s*$/m.test(err)) {
+      return {
+        ok: false,
+        failures: err.split(/\r?\n/).filter((line) => line.startsWith('- ')).map((line) => line.slice(2)),
+      };
+    }
+    // Anything else is an interpreter that would not start or run it here.
+  }
+}
+
+function withHelperDelivery(outcome, helper) {
+  if (!outcome || !helper) return outcome;
+  if (helper.unavailable) {
+    return {
+      ...outcome,
+      stderr: appendLine(
+        outcome.stderr || '',
+        'Helper delivery was not checked here: no Python would start. Run check-helper-coverage.py delivery yourself.'
+      ),
+    };
+  }
+  if (helper.ok) {
+    return { ...outcome, stdout: appendLine(outcome.stdout || '', `HELPER_DELIVERY_OK ${helper.count}`) };
+  }
+  const lines = helper.failures.map((failure) => {
+    const at = /\/slides\/(\d+)/.exec(failure);
+    return `BUILD_DIAGNOSTIC: ${JSON.stringify({
+      signal: 'HELPER_DELIVERY_FAILED',
+      artifact: 'slides',
+      faultClass: 'composition',
+      location: at ? { slide: Number(at[1]) + 1 } : {},
+      message: at ? `${failure} (/slides/${at[1]} is slide ${Number(at[1]) + 1})` : failure,
+    })}`;
+  });
+  const merged = {
+    ...outcome,
+    ok: false,
+    reason: outcome.ok ? 'HELPER_DELIVERY_FAILED' : outcome.reason,
+    stdout: `${lines.join('\n')}\n${outcome.stdout || ''}`,
+    stderr: appendLine(
+      outcome.stderr || '',
+      `HELPER_DELIVERY_FAILED: ${helper.failures.length} promised helper use(s) are not delivered by this candidate. ` +
+        'Each is listed with the refusals above; bind the helper on the slide named, in the same repair pass.'
+    ),
+  };
+  delete merged.previewDir;
+  delete merged.previewOutputPath;
+  return merged;
+}
+
+// ─── a starter's answer slide takes the starter header ────────────
+//
+// The answers to a starter repeat its header: the date, the learning objective
+// and "Starter", exactly as the question slide shows them (the teacher's
+// ruling, 6 October 2026). Three column addition decks running gave the
+// question slide `headerStyle: "starter"` and its answer slide another style or
+// none, each was refused for it, and each spent its first repair pass putting
+// it right. The answer is the same every time, so it is settled here, in the
+// candidate file itself, and said in one line.
+//
+// The header style and the slide's own `lo`, which is the learning objective
+// line that header prints, and only on a pair whose question slide is a
+// starter. Any other difference between the two slides is still refused.
+function settleStarterAnswerHeaders(lesson) {
+  const slides = lesson && Array.isArray(lesson.slides) ? lesson.slides : [];
+  const pairsOn = (slide, state) =>
+    revealBlocks(slide)
+      .filter((block) => block.revealPair && block.revealPair.state === state)
+      .map((block) => block.revealPair.id);
+  const settled = [];
+  slides.forEach((slide, index) => {
+    if (!slide || typeof slide !== 'object' || slide.headerStyle !== 'starter') return;
+    pairsOn(slide, 'question').forEach((id) => {
+      const answers = slides
+        .map((other, at) => ({ other, at }))
+        .filter(({ other, at }) => at !== index && other && typeof other === 'object' && pairsOn(other, 'answer').includes(id));
+      if (answers.length !== 1) return;
+      const { other, at } = answers[0];
+      ['headerStyle', 'lo'].forEach((field) => {
+        if (JSON.stringify(other[field]) === JSON.stringify(slide[field])) return;
+        settled.push({ question: index + 1, answer: at + 1, field, was: other[field], now: slide[field] });
+        if (slide[field] === undefined) delete other[field];
+        else other[field] = slide[field];
+      });
+    });
+  });
+  return settled;
+}
+
+function starterHeaderLine(item) {
+  const show = (value) => (value === undefined ? 'none' : JSON.stringify(value));
+  return (
+    `STARTER_HEADER_SETTLED: slide ${item.answer} holds the answers to the starter on slide ${item.question}, ` +
+    `so it now carries "${item.field}": ${show(item.now)} as that slide does ` +
+    `(it had ${show(item.was)}). ` +
+    'The candidate file was rewritten to say so and nothing else in it changed. This is not a fault and needs no repair.'
+  );
+}
+
+// The lesson written back the way its file was written: the same indent, the
+// same line endings and the same last line.
+function serialiseLike(source, lesson) {
+  const indent = /^\s*\{\r?\n([ \t]+)"/.exec(source);
+  let text = JSON.stringify(lesson, null, indent ? indent[1] : undefined);
+  if (/\r\n/.test(source)) text = text.replace(/\n/g, '\r\n');
+  const ending = /(\r?\n)+$/.exec(source);
+  return ending ? text + ending[0] : text;
+}
+
 function runSlideDesignCheck(inputPath, options = {}) {
   const jsonPath = path.resolve(inputPath);
   const buildPath = path.resolve(
@@ -1581,6 +1870,24 @@ function runSlideDesignCheck(inputPath, options = {}) {
       stderr: `${friendlyParseError(jsonPath, source, error)}\n`,
       scratchOutputPath: null,
     };
+  }
+
+  // Settled in the candidate file itself, before anything reads it, so the
+  // deck that is built, the lesson copy kept beside its preview and the file
+  // that is promoted all say the same thing. A settled deck is closed and is
+  // left exactly as it is.
+  let starterHeaders = options.settled ? [] : settleStarterAnswerHeaders(lesson);
+  if (starterHeaders.length) {
+    try {
+      fs.writeFileSync(jsonPath, serialiseLike(source, lesson));
+    } catch {
+      // A file that cannot be rewritten is checked as it was written.
+      starterHeaders.forEach((item) => {
+        if (item.was === undefined) delete lesson.slides[item.answer - 1][item.field];
+        else lesson.slides[item.answer - 1][item.field] = item.was;
+      });
+      starterHeaders = [];
+    }
   }
 
   const slideCount = Array.isArray(lesson.slides) ? lesson.slides.length : 0;
@@ -1916,6 +2223,13 @@ function runSlideDesignCheck(inputPath, options = {}) {
                   path.basename(scratchOutputPath)
                 );
                 fs.copyFileSync(scratchOutputPath, previewOutputPath);
+                // Keep the lesson file this deck was built from beside it.
+                // measure-slide-room.py stamps its measurement from this copy,
+                // so pages rendered from an older arrangement cannot be passed
+                // off as the current deck. Its absence only loses that stamp.
+                try {
+                  fs.copyFileSync(jsonPath, path.join(previewDir, 'lesson-source.json'));
+                } catch (_) { /* the preview is still good without it */ }
                 outcome.previewDir = previewDir;
                 outcome.previewOutputPath = previewOutputPath;
               } catch (error) {
@@ -2047,6 +2361,19 @@ function runSlideDesignCheck(inputPath, options = {}) {
     outcome.stderr =
       `\n${cueNotes.length} slide-design note(s), a cue to look and never a fault:\n` +
       `${cueNotes.join('\n')}\n${outcome.stderr || ''}`;
+  }
+  // A settled deck's composition is closed, and the orchestrator runs the
+  // delivery check on it itself.
+  if (outcome && !options.settled && outcome.reason !== 'LESSON_JSON_INVALID') {
+    outcome = withHelperDelivery(outcome, helperDelivery(jsonPath, options));
+  }
+  if (outcome && starterHeaders.length) {
+    outcome.stdout = `${starterHeaders.map(starterHeaderLine).join('\n')}\n${outcome.stdout || ''}`;
+  }
+  if (outcome) {
+    const report = orderReport(outcome.stdout, outcome.stderr);
+    outcome.stdout = report.stdout;
+    outcome.stderr = report.stderr;
   }
   if (outcome) outcome.optionalPictures = optionalPictures;
 
@@ -2183,6 +2510,10 @@ module.exports = {
   ordinaryRevealWarnings,
   buildDiagnostic,
   main,
+  orderReport,
+  settleStarterAnswerHeaders,
+  helperDelivery,
+  withHelperDelivery,
   parseBuildDiagnostics,
   pathIsInside,
   repeatedLineWarnings,

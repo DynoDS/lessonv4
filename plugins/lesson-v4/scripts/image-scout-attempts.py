@@ -19,7 +19,8 @@ Commands:
                    --purpose initial|correction|recovery|retry
                    (--prompt-file PATH | --prompt TEXT)
     record-generated --working-dir DIR --filename unsplash/x.jpg --attempt N
-                     --staging-path PATH
+                     (--staging-path PATH
+                      | --work-root DIR [--host-file PATH] [--host-dir DIR])
     complete       --working-dir DIR --filename unsplash/x.jpg --attempt N
                    --outcome accepted|near_miss|provider_misdirection|rejected
                    [--staging-path P] [--fault-file PATH | --fault TEXT]
@@ -36,6 +37,20 @@ read the exact UTF-8 bytes the worker already wrote to staging, so the ledger an
 the picture were built from the same string. The inline variants remain for short,
 plainly safe values.
 
+`record-generated` with `--work-root` and no `--staging-path` stages the picture
+itself. The host saves every generated image as a file of its own, and the same
+result also carries the picture as about a million characters of text. A worker
+that prints that text has it cut short, and a worker that puts it on a command
+line is refused by Windows, so on 6 October 2026 seven first calls in one lesson
+were recorded as returning nothing while every file sat in the host's folder.
+The command looks there for image files written since the attempt was reserved
+and not already recorded for another picture, copies the one it finds into
+`<work-root>/ai/` and records it. Several calls made together leave several
+files, and which is which can only be told by looking: every candidate is listed,
+nothing is recorded, and the worker opens them and names its own with
+`--host-file`. A host with no such folder is reported plainly and the attempt
+stays open. The command saves; it never judges.
+
 Every command prints one JSON object on stdout. A refusal exits non-zero with
 `{"ok": false, "error": "..."}` and leaves the ledger byte-identical.
 
@@ -47,8 +62,10 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import sys
 import tempfile
+import time
 from pathlib import PurePosixPath
 
 SCHEMA_VERSION = 1
@@ -69,6 +86,11 @@ COMPLETED_OUTCOMES = (
     "rejected",
 )
 PURPOSES = ("initial", "correction", "recovery", "retry")
+
+HOST_IMAGE_SUFFIXES = (".png", ".jpg", ".jpeg", ".webp")
+# A file's time and the reservation's time come from the same clock, but a
+# filesystem may round the file's down.
+HOST_CLOCK_SLACK_SECONDS = 2.0
 
 
 class LedgerError(Exception):
@@ -185,6 +207,185 @@ def write_ledger(path: str, data: dict) -> None:
         if os.path.exists(handle.name):
             os.remove(handle.name)
         raise
+
+
+# --------------------------------------------------------------------------
+# the host's own saved pictures
+# --------------------------------------------------------------------------
+
+def host_images_root(override) -> str:
+    """Where this host saves each generated image (Codex: generated_images)."""
+    if override:
+        return os.path.abspath(override)
+    home = os.environ.get("CODEX_HOME") or os.path.join(
+        os.path.expanduser("~"), ".codex"
+    )
+    return os.path.join(home, "generated_images")
+
+
+def same_file_key(path: str) -> str:
+    return os.path.normcase(os.path.abspath(path))
+
+
+def reserved_time(data: dict, attempt: int, path: str) -> float:
+    """When this attempt was reserved.
+
+    A ledger written before reservations carried a time still answers: nothing
+    can be written after an open attempt's reservation without closing it, so
+    the ledger file's own time is that reservation's time.
+    """
+    for event in data["events"]:
+        if event["event"] == "reserved" and event.get("attempt") == attempt:
+            stamp = event.get("reserved_at")
+            if isinstance(stamp, (int, float)) and not isinstance(stamp, bool):
+                return float(stamp)
+    return os.path.getmtime(path)
+
+
+def claimed_host_files(working_dir: str) -> dict[str, str]:
+    """Host files this lesson has already recorded, and for which picture.
+
+    One generated file is one picture. Without this a file recorded for one
+    entry would be offered again to the next, in this batch or a sibling's.
+    """
+    folder = os.path.join(os.path.abspath(working_dir), "unsplash", LEDGER_DIRNAME)
+    claimed: dict[str, str] = {}
+    if not os.path.isdir(folder):
+        return claimed
+    for name in sorted(os.listdir(folder)):
+        if not name.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(folder, name), encoding="utf-8") as handle:
+                ledger = json.load(handle)
+        except (OSError, ValueError):
+            continue
+        if not isinstance(ledger, dict) or not isinstance(ledger.get("events"), list):
+            continue
+        for event in ledger["events"]:
+            if isinstance(event, dict) and isinstance(event.get("host_file"), str):
+                claimed[same_file_key(event["host_file"])] = str(ledger.get("filename"))
+    return claimed
+
+
+def host_candidates(root: str, since: float, claimed: dict[str, str]) -> list[dict]:
+    """Every unrecorded image the host wrote since the reservation, oldest first."""
+    found = []
+    for folder, _dirs, names in os.walk(root):
+        for name in names:
+            if not name.lower().endswith(HOST_IMAGE_SUFFIXES):
+                continue
+            full = os.path.join(folder, name)
+            try:
+                info = os.stat(full)
+            except OSError:
+                continue
+            if info.st_mtime < since - HOST_CLOCK_SLACK_SECONDS:
+                continue
+            if same_file_key(full) in claimed:
+                continue
+            found.append(
+                {
+                    "host_file": full,
+                    "written_at": time.strftime(
+                        "%Y-%m-%d %H:%M:%S", time.localtime(info.st_mtime)
+                    ),
+                    "bytes": info.st_size,
+                    "_order": info.st_mtime,
+                }
+            )
+    found.sort(key=lambda item: (item["_order"], item["host_file"]))
+    for item in found:
+        del item["_order"]
+    return found
+
+
+def stage_destination(work_root: str, filename: str, attempt: int, source: str) -> str:
+    folder = os.path.join(os.path.abspath(work_root), "ai")
+    stem = PurePosixPath(filename).stem
+    suffix = os.path.splitext(source)[1].lower() or ".png"
+    plain = os.path.join(folder, f"{stem}{suffix}")
+    if not os.path.exists(plain):
+        return plain
+    numbered = os.path.join(folder, f"{stem}-attempt-{attempt}{suffix}")
+    if os.path.exists(numbered):
+        raise LedgerError(
+            f"a staged file for attempt {attempt} already exists and will not be "
+            f"overwritten: {numbered}"
+        )
+    return numbered
+
+
+def copy_unchanged(source: str, destination: str) -> None:
+    partial = destination + ".part"
+    try:
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
+        shutil.copyfile(source, partial)
+        os.replace(partial, destination)
+    except OSError as exc:
+        if os.path.exists(partial):
+            os.remove(partial)
+        raise LedgerError(f"cannot copy the host's file into the work folder: {exc}")
+
+
+def not_recorded(attempt: int, root, candidates: list, note: str) -> dict:
+    return {
+        "generated_unreviewed_attempt": None,
+        "recorded": False,
+        "attempt_state": "open",
+        "attempt": attempt,
+        "host_folder": root,
+        "candidates": candidates,
+        "note": note,
+    }
+
+
+def choose_host_file(args, data: dict, path: str):
+    """Return (host file, None) to stage, or (None, report) when nothing is recorded."""
+    since = reserved_time(data, args.attempt, path)
+    claimed = claimed_host_files(args.working_dir)
+    named = getattr(args, "host_file", None)
+    if named:
+        named = os.path.abspath(named)
+        if not os.path.isfile(named):
+            raise LedgerError(f"--host-file is not a file: {named}")
+        holder = claimed.get(same_file_key(named))
+        if holder:
+            raise LedgerError(
+                f"that file is already recorded as the output for {holder}; one "
+                "generated file is one picture"
+            )
+        if os.path.getmtime(named) < since - HOST_CLOCK_SLACK_SECONDS:
+            raise LedgerError(
+                f"that file was written before attempt {args.attempt} was reserved, "
+                f"so it cannot be this call's output: {named}"
+            )
+        return named, None
+    root = host_images_root(getattr(args, "host_dir", None))
+    if not os.path.isdir(root):
+        return None, not_recorded(
+            args.attempt, None, [],
+            f"This host keeps no generated-images folder (looked for {root}), so "
+            "there is nothing to stage from. The attempt is left open. When the "
+            "call's result names a saved file, pass it as --host-file, or stage it "
+            "yourself and pass --staging-path.",
+        )
+    candidates = host_candidates(root, since, claimed)
+    if not candidates:
+        return None, not_recorded(
+            args.attempt, root, [],
+            "The host wrote no new image since this attempt was reserved. The "
+            "attempt is left open. If the call has finished, it returned no image: "
+            "interrupt-open it.",
+        )
+    if len(candidates) > 1:
+        return None, not_recorded(
+            args.attempt, root, candidates,
+            f"{len(candidates)} new images and nothing here can tell which is this "
+            "picture, so none is recorded. Open each one, then run this command "
+            "again with --host-file naming the one that shows this entry.",
+        )
+    return candidates[0]["host_file"], None
 
 
 # --------------------------------------------------------------------------
@@ -361,6 +562,7 @@ def cmd_reserve(args) -> dict:
             "attempt": attempt,
             "purpose": args.purpose,
             "prompt": prompt,
+            "reserved_at": time.time(),
         }
     )
     write_ledger(path, data)
@@ -368,11 +570,22 @@ def cmd_reserve(args) -> dict:
 
 
 def cmd_record_generated(args) -> dict:
-    staging_path = os.path.abspath(args.staging_path)
-    if not os.path.isfile(staging_path):
+    explicit = getattr(args, "staging_path", None)
+    work_root = getattr(args, "work_root", None)
+    staging_path = None
+    if explicit:
+        if getattr(args, "host_file", None):
+            raise LedgerError("give either --staging-path or --host-file, not both")
+        staging_path = os.path.abspath(explicit)
+        if not os.path.isfile(staging_path):
+            raise LedgerError(
+                f"cannot record generated output because staging_path is not a file: "
+                f"{staging_path}"
+            )
+    elif not work_root:
         raise LedgerError(
-            f"cannot record generated output because staging_path is not a file: "
-            f"{staging_path}"
+            "give --staging-path for a file you staged yourself, or --work-root so "
+            "the host's own saved file is staged for you"
         )
     path = ledger_path(args.working_dir, args.filename)
     data = read_ledger(path, args.filename)
@@ -386,18 +599,24 @@ def cmd_record_generated(args) -> dict:
         raise LedgerError(
             f"attempt {args.attempt} is already {record['state']} - history is immutable"
         )
-    data["events"].append(
-        {
-            "event": "generated_unreviewed",
-            "attempt": args.attempt,
-            "staging_path": staging_path,
-        }
-    )
+    event = {"event": "generated_unreviewed", "attempt": args.attempt}
+    result = {"generated_unreviewed_attempt": args.attempt}
+    if staging_path is None:
+        host_file, report = choose_host_file(args, data, path)
+        if report is not None:
+            return report
+        staging_path = stage_destination(
+            work_root, args.filename, args.attempt, host_file
+        )
+        copy_unchanged(host_file, staging_path)
+        event["host_file"] = host_file
+        result["host_file"] = host_file
+        result["recorded"] = True
+    event["staging_path"] = staging_path
+    result["staging_path"] = staging_path
+    data["events"].append(event)
     write_ledger(path, data)
-    return {
-        "generated_unreviewed_attempt": args.attempt,
-        "staging_path": staging_path,
-    }
+    return result
 
 
 def cmd_complete(args) -> dict:
@@ -548,7 +767,23 @@ def build_parser() -> argparse.ArgumentParser:
 
     generated = common(subparsers.add_parser("record-generated"))
     generated.add_argument("--attempt", required=True, type=int)
-    generated.add_argument("--staging-path", required=True)
+    generated.add_argument(
+        "--staging-path", help="a file you already staged under the work root"
+    )
+    generated.add_argument(
+        "--work-root",
+        help="stage the host's own saved file into <work-root>/ai/ and record it",
+    )
+    generated.add_argument(
+        "--host-file",
+        help="the host's saved file for this call, when the result names it or "
+        "several candidates were offered",
+    )
+    generated.add_argument(
+        "--host-dir",
+        help="the host's generated-images folder, or one session's folder inside it "
+        "(default: CODEX_HOME/generated_images)",
+    )
 
     complete = common(subparsers.add_parser("complete"))
     complete.add_argument("--attempt", required=True, type=int)

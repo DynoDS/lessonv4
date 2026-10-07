@@ -72,11 +72,16 @@ function hash(c) {
   return c.startsWith("#") ? c : `#${c}`;
 }
 
+const { notePlacement } = require("./figure-size");
+
 function pngDataUri(buf) {
   return `data:image/png;base64,${buf.toString("base64")}`;
 }
 
 function imgTag(buf, wMm, hMm, extraStyle = "", altText) {
+  // A lesson drawing's printed size goes on the ledger the build checks
+  // against the wall's floor (figure-size.js).
+  notePlacement(buf, wMm, hMm);
   const alt =
     typeof altText === "string" ? ` alt="${escAttr(altText)}"` : "";
   return `<img src="${pngDataUri(buf)}"${alt} style="display:block;width:${wMm}mm;height:${hMm}mm;${extraStyle}" />`;

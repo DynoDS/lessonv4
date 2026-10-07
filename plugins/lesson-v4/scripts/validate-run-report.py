@@ -8,7 +8,9 @@ is one of the four allowed values and never claims ``COMPLETE`` the evidence
 cannot support, every earned resource is accounted for, every delivered path
 exists, every picture the contract promised and the run did not publish is
 named, and the run's friction record - every obstacle, block and repair round,
-each tagged with the agent it came from - is reported.
+each tagged with the agent it came from - is reported. A repair-scope marker on
+a resource that was built and delivered is a teacher flag and a minor issue: it
+is refused as a blocking fault and as the reason for ``PARTIAL``.
 
     python3 validate-run-report.py \
         --working-dir PATH --output-dir PATH --report PATH
@@ -101,6 +103,34 @@ FRICTION_RECORD_RE = re.compile(
 # most needs: "a repairer came in" and "the fault went away" are different
 # facts, and only the second closes an investigation.
 REPAIR_VERDICT_RE = re.compile(r"\bNOT FIXED\b|\bFIXED\b")
+
+# A repair that came back without REPAIR_SCOPE_OK. The marker says how a repair
+# was checked, never that a resource is missing or broken: the resource's own
+# rebuild is what confirms a repair. A run once listed it under Blocking faults
+# and reported a package PARTIAL with every resource built and delivered (Year
+# 4 Maths lesson 24, 6 October 2026), while a run the same afternoon filed the
+# same marker as a minor issue and closed COMPLETE.
+REPAIR_SCOPE_RE = re.compile(r"REPAIR_SCOPE_FAILED|repair[- ]scope|scope[- ]check", re.IGNORECASE)
+# Any other marker in the same bullet means the bullet is about that fault.
+OTHER_MARKER_RE = re.compile(r"\b(?!REPAIR_SCOPE_)[A-Z][A-Z0-9]+(?:_[A-Z0-9]+)+\b")
+# The words a bullet uses for each resource, most specific first: "stick-in
+# sheets" is not a worksheet.
+RESOURCE_WORDS = [
+    ("stick-in sheets", ("stick-in", "stick in", "printed activit")),
+    ("working wall", ("wall",)),
+    ("slides", ("slide", "deck", "powerpoint")),
+    ("worksheets", ("worksheet", "sheet", "below", "expected", "greater depth", "answer")),
+]
+
+
+def resources_a_bullet_names(bullet: str) -> set[str]:
+    lowered = bullet.lower()
+    found: set[str] = set()
+    for name, words in RESOURCE_WORDS:
+        if any(word in lowered for word in words):
+            found.add(name)
+            lowered = lowered.replace("stick-in sheet", "").replace("stick in sheet", "")
+    return found
 
 
 def read_json(path: Path, label: str, failures: list[str]):
@@ -938,6 +968,71 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                 "where the teacher reads first."
             )
 
+    # A picture a design revision took out of the contract (the content-gap
+    # wave replacing a lost one) is still named in the report as history,
+    # but it does not hold the package back once no built resource names
+    # it: the Nativity run (30 September 2026) was refused COMPLETE for
+    # three such pictures.
+    promised_now = set(promised_filenames(working))
+    retired_out_of_contract = {
+        name for name in obligations["picture"]
+        if name not in promised_now and not named_in_built_specs(working, name)
+        and dropped_by_a_wave(working, name)
+    }
+    missing_live_pictures = (
+        set(obligations["picture"]) - reviewed_retired_pictures(working) - retired_out_of_contract
+    )
+
+    # ── A repair-scope marker on a delivered resource is a flag, not a fault ──
+    blocking_bullets = section_bullets(sections.get("## Blocking faults", ""))
+    earned_excluded = [name for name in earned if name in excluded_names]
+    scope_only_bullets = []
+    for bullet in blocking_bullets:
+        if not REPAIR_SCOPE_RE.search(bullet) or OTHER_MARKER_RE.search(bullet):
+            continue
+        named = resources_a_bullet_names(bullet)
+        # It stays a blocking fault for a resource that did not build: there
+        # the build failure is the fault and this line travels with it.
+        if (named and named <= excluded_names) or (not named and earned_excluded):
+            continue
+        scope_only_bullets.append(bullet)
+    for bullet in scope_only_bullets:
+        failures.append(
+            f"blocking faults: {bullet!r} is a repair-scope marker on a resource "
+            "this report delivers. The resource was rebuilt and passed its own "
+            "check, which is the repair's confirmation, so nothing here is still "
+            "broken. Move the line to Accepted minor issues, and give the teacher "
+            "a flag that names the slide or sheet and says in plain words what "
+            "the repair changed (for example `Below sheet: now two landscape "
+            "pages`), not the marker's name, which tells a teacher nothing they "
+            "can act on. It is a blocking fault only for a resource that did not "
+            "build."
+        )
+    scope_on_record = bool(scope_only_bullets) or any(
+        "REPAIR_SCOPE_FAILED" in sections.get(heading, "")
+        for heading in ("## Outcome", "## Accepted minor issues")
+    )
+    other_blocking = [bullet for bullet in blocking_bullets if bullet not in scope_only_bullets]
+    if (
+        package_status == "PARTIAL"
+        and scope_on_record
+        and not other_blocking
+        and not earned_excluded
+        and not flagged_slides
+        and not kit_missing
+        and not missing_live_pictures
+        and not last_review_wants_redesign(working)
+        and "PAGE_FIT_UNVERIFIED" not in text
+    ):
+        failures.append(
+            "PARTIAL: every earned resource is delivered, and the only fault on "
+            "record is REPAIR_SCOPE_FAILED. That marker says how a repair was "
+            "checked, not that anything is missing or broken, so it is never the "
+            "reason for PARTIAL: report COMPLETE and keep the teacher flag. If "
+            "the package is partial for another reason, name that reason under "
+            "Blocking faults."
+        )
+
     # ── COMPLETE is earned, not declared ─────────────────────────────────
     if package_status == "COMPLETE":
         blocked = section_bullets(sections.get("## Blocking faults", ""))
@@ -964,20 +1059,6 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                 "COMPLETE: the report carries PAGE_FIT_UNVERIFIED; an unverified review "
                 "cannot close as COMPLETE."
             )
-        # A picture a design revision took out of the contract (the content-gap
-        # wave replacing a lost one) is still named in the report as history,
-        # but it does not hold the package back once no built resource names
-        # it: the Nativity run (30 September 2026) was refused COMPLETE for
-        # three such pictures.
-        promised_now = set(promised_filenames(working))
-        retired_out_of_contract = {
-            name for name in obligations["picture"]
-            if name not in promised_now and not named_in_built_specs(working, name)
-            and dropped_by_a_wave(working, name)
-        }
-        missing_live_pictures = (
-            set(obligations["picture"]) - reviewed_retired_pictures(working) - retired_out_of_contract
-        )
         if missing_live_pictures:
             failures.append(
                 "COMPLETE: picture(s) the contract promised were never published: "

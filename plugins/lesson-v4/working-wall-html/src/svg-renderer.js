@@ -223,7 +223,20 @@ const sourcePathwayWall = sharedAtWidth(sourcePathwayShared, 260);
 const numberNetworkWall = sharedAtWidth(numberNetworkShared, 150);
 // The place value family, each the one drawing the board and the sheet place
 // too (13 September 2026), laid out at the width a wide wall visual prints.
-const placeValueChartWall = sharedAtWidth(placeValueChartShared);
+// A before-and-after pair with counters is the exception: two charts of
+// counters and the arrow between them cannot be read at the width one chart
+// is, so it is laid out as the picture of a whole landscape sheet (the 360mm a
+// `full` picture prints across, no deeper than the sheet has under its title),
+// with the arrow narrow and the columns wide (the shared drawing says why).
+// Laid out at the default width it was refused on every card it was tried on
+// (6 October 2026). figure-size.js refuses it on any card that prints it much
+// smaller than it was laid out.
+const COUNTER_PAIR_BOX = {
+  widthMm: 360,
+  overrides: { pairArrow: 'narrow', pairExchangeMarks: true, pairMaxHeightPt: (165 * 72) / 25.4 },
+};
+const isCounterPair = (spec) => Boolean(spec && spec.type === 'place-value-chart' && spec.pair && spec.pair.counters);
+const placeValueChartWall = sharedAtWidth(placeValueChartShared, (spec) => (isCounterPair(spec) ? COUNTER_PAIR_BOX : { widthMm: WALL_VISUAL_WIDTH_MM }));
 const placeValueMiniWall = sharedAtWidth(placeValueMiniShared);
 const baseTenBlocksWall = sharedAtWidth(baseTenBlocksShared);
 const counterGroupWall = sharedAtWidth(counterGroupShared);
@@ -245,6 +258,38 @@ const barChartWall = sharedAtWidth(barChartShared, WALL_CHART_WIDTH_MM);
 const lineGraphWall = sharedAtWidth(lineGraphShared, WALL_CHART_WIDTH_MM);
 
 
+
+// ─── A size refusal, in the wall's terms ────────────────────────────────
+// A shared drawing that will not fit says what to do about it on the board:
+// "give it a full-width zone", "its own slide". Neither exists here. The wall
+// lays a place value chart out at a width fixed by the kind of chart (see
+// COUNTER_PAIR_BOX) and scales the picture into its card afterwards, so no
+// card type, orientation or visualScale changes what the drawing was given. A
+// Year 4 wall designer met the board's advice for a before-and-after pair with
+// counters, tried a section in landscape, the same in portrait and a
+// full-picture card of its own, got the same words three times, and left the
+// counters off the wall (6 October 2026). The pair with counters now has a
+// sheet's width to be drawn in, so it is refused here only when it cannot be
+// read even at that size; the refusal keeps its code and says what works on a
+// wall.
+const PAIR_SIZE_REFUSAL = /^(PLACE_VALUE_CHART_DOES_NOT_FIT|PLACE_VALUE_COUNTERS_TOO_SMALL)/;
+function wallAdviceFor(spec, message) {
+  const text = String(message);
+  const code = PAIR_SIZE_REFUSAL.exec(text);
+  if (!code || !spec || spec.type !== 'place-value-chart' || !spec.pair) return text;
+  if (spec.pair.counters) {
+    return `${code[1]}: the wall already draws this before-and-after pair as the picture of a whole landscape sheet, and its counters still cannot be counted at that size ` +
+      '(too many counters in one column, or too many columns). The card type, the orientation and `visualScale` do not change the size it is drawn at, so the same pair will be refused on any card. ' +
+      'Draw the model as one chart per step instead: a `stepByStep` sheet whose steps each carry an ordinary chart with a `counters` row ' +
+      '(the chart before the change, then the chart after it), with the written `calculation` as the last step and the words from the arrow as the `key` of each step. ' +
+      'Each chart then has a picture to itself, so its counters print large enough to count.';
+  }
+  const fixed =
+    `${code[1]}: the wall draws a place value chart at one fixed size, and this before-and-after pair is too wide for it. ` +
+    'The card type, the orientation and `visualScale` do not change that size, so the same pair will be refused on any card. ';
+  return fixed +
+    'Shorten the `operation` words on the arrow, or use the `rows` form: the starting number above the result, with `highlight` ringing the digit that changed.';
+}
 
 // ─── Step badge (green circle, white digit) ─────────────────────────────
 // Mirrors slide builder's drawSteps badge: a green circle with a white centred
@@ -823,7 +868,7 @@ async function preRenderSvgs(spec, specDir) {
             .toBuffer();
         }
       } catch (e) {
-        throw new Error(`[working-wall] failed to render visual "${primSpec.type}" (${key}): ${e.message}`);
+        throw new Error(`[working-wall] failed to render visual "${primSpec.type}" (${key}): ${wallAdviceFor(primSpec, e.message)}`);
       }
     }
   }

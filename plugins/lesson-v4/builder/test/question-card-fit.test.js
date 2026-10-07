@@ -258,14 +258,19 @@ function drawCounterChart(zone) {
   });
 }
 
+// Half of a 60-40 split's primary: the exact zone each of two charts got. Its
+// six thousands now stand close together (6 October 2026) and would be 3.4mm
+// across, where they were 2.5mm; a close column has its own floor of 3.7mm so
+// that this slide is refused as it always was ("they're too cramped").
+const TOO_NARROW_FOR_COUNTERS = { x: 0.2, y: 1.8, w: 3.52, h: 4.56 };
+
 test('a column too narrow for its counters is refused, not shipped small', () => {
-  // Half of a 60-40 split's primary: the exact zone each of two charts got.
-  assert.throws(() => drawCounterChart({ x: 0.2, y: 1.8, w: 3.52, h: 4.56 }), /PLACE_VALUE_COUNTERS_TOO_SMALL/);
+  assert.throws(() => drawCounterChart(TOO_NARROW_FOR_COUNTERS), /PLACE_VALUE_COUNTERS_TOO_SMALL/);
 });
 
 test('the refusal names width, because height is not the lever', () => {
   try {
-    drawCounterChart({ x: 0.2, y: 1.8, w: 3.52, h: 4.56 });
+    drawCounterChart(TOO_NARROW_FOR_COUNTERS);
     assert.fail('the chart drew counters it should have refused');
   } catch (error) {
     assert.match(error.message, /more WIDTH/);
@@ -338,7 +343,7 @@ test('one chart per slide gives the column the width it needed', () => {
 
 test('blank cells under counters are the counters speaking, not answer space', () => {
   try {
-    drawWriteInChart({ x: 0.2, y: 1.8, w: 3.52, h: 4.56 }, [
+    drawWriteInChart(TOO_NARROW_FOR_COUNTERS, [
       { label: 'A', cells: ['', '', '', ''], counters: { Thousands: 6, Hundreds: 2, Tens: 4, Ones: 1 } },
     ]);
     assert.fail('a counter chart this narrow should still be refused');

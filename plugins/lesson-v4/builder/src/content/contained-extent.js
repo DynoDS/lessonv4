@@ -18,9 +18,15 @@ function measureContainedAspect(zone, aspect, pad = PAD) {
     h = innerH;
     w = h * aspect;
   }
+  // The rect is the picture PLUS its margin, so it starts one margin before
+  // the picture does. It used to start where the picture starts while still
+  // being a margin wider and taller on each side, so the card sat one margin
+  // (0.10") right of and below its cell: a picture held by its width reached
+  // across the whole gap to the card beside it, and the two cards touched
+  // (a Year 4 digestion slide, 6 October 2026).
   return {
-    x: zone.x + pad + (innerW - w) / 2,
-    y: zone.y + pad + (innerH - h) / 2,
+    x: zone.x + (innerW - w) / 2,
+    y: zone.y + (innerH - h) / 2,
     w: w + 2 * pad,
     h: h + 2 * pad,
     clamp: true

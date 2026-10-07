@@ -339,13 +339,15 @@ The slide system supports `label-diagram` objects. The designer may place provis
 Your job is to create the honest labelled-diagram intent:
 
 - use only parts the lesson design actually teaches;
-- set labels exactly as authored upstream;
+- set each callout to the part's name, exactly as authored upstream. A sentence authored about the part is not a second line of its callout: it goes, word for word, in the lines beside the picture, and where those lines or the picture already say it, it is not repeated. A callout is read at a glance while the child looks at the part, and the build stacks whatever it is given, so long callouts shrink the picture rather than fail;
 - use the required photograph already referenced by ID;
 - give each callout a provisional `anchor` when needed;
 - use `given` according to whether the label is printed or left for pupils to supply;
 - choose a layout that leaves readable label space.
 
 For a busy photograph, prefer the `sides` layout so names sit in white margins and leader lines run to the picture. Do not rely on dark text printed directly over a complex photo.
+
+The build reports two things about a diagram's labels. `LABEL_DIAGRAM_LABELS_COLLIDE` is a fault: labels placed with `label_at`, or auto-routed from parts that sit close together, have landed on each other or run off the drawing, and `"layout": "sides"` is the repair. `LABEL_DIAGRAM_LABELS_OUTGROW_PICTURE` is a cue to look, not a fault: the labels stand taller than the picture they label, which usually means a callout is carrying a sentence.
 
 The later anchor pass may move dots or drop a feature not actually visible in the shot. It does not change which parts the lesson intends to teach.
 
@@ -566,7 +568,7 @@ When that exits 0, run exactly:
 
 If the overview command exits 0, inspect every overview PNG it records. If the overview command cannot produce an overview but the render manifest and page PNGs exist, inspect every page PNG from `render-manifest.json` in order.
 
-If route probing or page rendering cannot produce page evidence, record `Visual self-read: unavailable` in the short completion report and continue from the successful deterministic check. A missing visual-render route is not a reason to fail an otherwise checked slide specification.
+The pages are drawn when the render prints `RENDER_PAGES_OK`. Nothing could be drawn only when the finished render itself prints `VISUAL_ROUTE_UNVERIFIED`: then record `Visual self-read: unavailable` in the short completion report and continue from the successful deterministic check, because a missing visual-render route is not a reason to fail an otherwise checked slide specification. A PowerPoint line from the probe is not that (LibreOffice draws the deck where PowerPoint cannot be reached), and nor is output that stops at `RENDER_PAGES_RUNNING`: drawing takes ten to twenty seconds and is still going, so wait for it to finish. A deck has reached the teacher unseen with every page already drawn beside it.
 
 When page evidence exists, inspect the whole deck yourself in the same Slide Designer context. Do not delegate this pass. Apply `[PLUGIN_ROOT]/references/teacher-slide-visual-profile.md` → Final teacher pass.
 

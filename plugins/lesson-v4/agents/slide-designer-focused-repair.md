@@ -81,7 +81,7 @@ or write into than you were handed. The failure prints what to do next.
 
 Change only the affected slide data and unavoidable consequences of that change. Leave unrelated slide objects semantically unchanged.
 
-After a layout repair, recheck the resulting task relationships, not only text survival: a shared prompt still governs the same coherent set, and labels still name genuine tasks. If either state of an ordinary question/answer pair changes layout, repair its counterpart consequentially and verify shared geometry, item identity and static content under the playbook's continuity rule. Inspect the repaired rendered slide or pair using the assignment's render route; if page evidence is unavailable, report that limit rather than claiming a visual check.
+After a layout repair, recheck the resulting task relationships, not only text survival: a shared prompt still governs the same coherent set, and labels still name genuine tasks. If either state of an ordinary question/answer pair changes layout, repair its counterpart consequentially and verify shared geometry, item identity and static content under the playbook's continuity rule. Inspect the repaired rendered slide or pair using the assignment's render route; only when the finished render prints `VISUAL_ROUTE_UNVERIFIED`, report that limit rather than claiming a visual check.
 
 When the repair splits a Teach unit, the split falls where the teaching turns, never at the page boundary (`slide-composition-playbook.md` → `A Teach beat splits where its teaching turns`); a half the check refuses was cut in the wrong place, not short of room.
 

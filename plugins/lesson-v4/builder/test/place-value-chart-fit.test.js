@@ -52,17 +52,21 @@ test('a chart refuses a zone shorter than its smallest readable height', () => {
   );
 });
 
-test('the same chart draws without complaint in a zone tall enough for it', () => {
-  boardLayout({ x: 0.5, y: 0.6, w: 6.0, h: 6.5 }, FIVE_ROWS_WITH_COUNTERS);
+// Since 6 October 2026 a chart on a slide is never drawn with digits under
+// 18pt, and at that size five rows with a counter band each need more height
+// than a slide has. Three of the rows are what a tall zone holds now.
+test('the same chart with three of its rows draws without complaint in a zone tall enough for it', () => {
+  boardLayout({ x: 0.5, y: 0.6, w: 6.0, h: 6.5 }, { ...FIVE_ROWS_WITH_COUNTERS, rows: FIVE_ROWS_WITH_COUNTERS.rows.slice(0, 3) });
 });
 
 test('a chart that fits is placed inside its zone, never above it', () => {
   // The old table could be centred to a negative y; a placed picture is never
   // taller than its box, so it starts at or below the zone's top.
   const data = { ...FIVE_ROWS_WITH_COUNTERS, rows: FIVE_ROWS_WITH_COUNTERS.rows.map((r) => ({ label: r.label, cells: r.cells })) };
-  const rect = measurePlaceValueChart({ x: 0.5, y: 0.9, w: 6.0, h: 2.4 }, data);
+  // 3.6in, not the 2.4in this used: five rows of 18pt digits need 3.13in.
+  const rect = measurePlaceValueChart({ x: 0.5, y: 0.9, w: 6.0, h: 3.6 }, data);
   assert.ok(rect.y >= 0.9 - 1e-9, `the chart starts above its zone (y=${rect.y})`);
-  assert.ok(rect.y + rect.h <= 0.9 + 2.4 + 1e-6, 'the chart runs below its zone');
+  assert.ok(rect.y + rect.h <= 0.9 + 3.6 + 1e-6, 'the chart runs below its zone');
 });
 
 test('verify-geometry refuses a written package carrying a corrupt coordinate', async () => {

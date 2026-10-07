@@ -173,7 +173,13 @@ function build(type, zone, data) {
   // A space too small to hold any picture shows only its caption, as the
   // board's clock and turn diagram always did.
   if (box.w < 0.05 || box.h < 0.05) return { box, inner, band, cap, built: null, key: null };
-  const profile = profileFor('slides', { widthPt: box.w * 72, heightPt: box.h * 72 });
+  // A before-and-after pair of counters has its exchange marked on the board
+  // as it is on the wall (the teacher, 6 October 2026: "I'd want it on slides
+  // for sure"): the counters that go ringed as a group, the counter they
+  // become ringed, the arrow in the rings' green. It adds marks and moves
+  // nothing; a chart with no clean exchange in it draws as it always did.
+  const overrides = type === 'place-value-chart' ? { pairExchangeMarks: true } : undefined;
+  const profile = profileFor('slides', { widthPt: box.w * 72, heightPt: box.h * 72, overrides });
   const built = module.tightSvg(data, profile);
   return { box, inner, band, cap, built, key: module.cacheKey(data, profile) };
 }
@@ -265,4 +271,4 @@ function placedRectFor(type) {
   };
 }
 
-module.exports = { FIGURES, CAPTION, createSharedFigureStore, drawerFor, measurerFor, maxUsefulWidthFor, placedRectFor, captionBandHeight };
+module.exports = { FIGURES, CAPTION, createSharedFigureStore, drawerFor, measurerFor, maxUsefulWidthFor, placedRectFor, captionBandHeight, build };

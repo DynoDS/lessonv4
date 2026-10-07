@@ -165,6 +165,20 @@ PRESENTATION_KEYS = {
     # 2026) and one repair left a stale id in place to pass. The picture a
     # slide carries is still counted, as its picture object.
     "photoRefs",
+    # Whether a sheet is done in books or on the printed page, and the
+    # designer's line to the teacher saying why. The build prints the reason on
+    # no sheet and no answer key, and the mark decides slips or a sheet, which
+    # is the worksheet designer's own page decision. Counted as content, a
+    # repair that changed the mark was told "books: 2 before the repair, 0
+    # after" (Year 4 Science, 6 October 2026). The questions, their lines and
+    # their answers are all still counted where they sit.
+    "recording",
+    "recordingReason",
+    "recordingLookedAgain",
+    # The height of a card-row's picture viewport: geometry, like `widthMm`.
+    # A pure viewport resize read "71" as a new word a child reads
+    # (18 September 2026).
+    "imageHeightMm",
 }
 
 # Sizes a repair may legitimately grow. Counting "4" as content would call a
@@ -764,6 +778,17 @@ CHANGED_WORK = (
 # in `returned`: that is a return, not a lost question. Only a tier the "after"
 # spec both records and no longer holds is released, so taking a sheet out
 # without recording it is caught as it always was.
+#
+# The same sheet comes back when its redesign goes in, and then the record
+# comes off: the worksheet preflight refuses a record beside its own sheet
+# (`RETURNED_INVALID`). This check used to refuse the record's removal whatever
+# the spec held, so the repair that put a redesigned Below sheet in could pass
+# one check or the other and never both (Year 4 Maths lesson 24, 6 October
+# 2026). A record may now come off when that tier's sheet is back in `sheets`.
+# The sheet that came back was not in the "before" spec, so there is nothing
+# here to compare it with: it is left out of the count, and the preflight,
+# which reads the adaptation, is what checks it. Every other sheet is compared
+# as before.
 SENT_BACK_TIERS = ("below", "greaterDepth")
 
 
@@ -774,9 +799,34 @@ def returned_tiers(spec: object) -> set:
     return {e.get("sheet") for e in entries if isinstance(e, dict) and isinstance(e.get("sheet"), str)}
 
 
+def sheets_of(spec: object) -> dict:
+    sheets = spec.get("sheets") if isinstance(spec, dict) else None
+    return sheets if isinstance(sheets, dict) else {}
+
+
 def returns_taken_away(before: object, after: object) -> list[str]:
-    gone = sorted(returned_tiers(before) - returned_tiers(after))
+    back = sheets_of(after)
+    gone = sorted(
+        tier for tier in returned_tiers(before) - returned_tiers(after) if tier not in back
+    )
     return [f"the record of the {tier} sheet sent back" for tier in gone]
+
+
+def without_sheets_come_back(before: object, after: object) -> object:
+    """The "after" spec without a sheet whose redesign has just gone in."""
+    if not isinstance(before, dict) or not isinstance(after, dict):
+        return after
+    before_sheets = sheets_of(before)
+    after_sheets = sheets_of(after)
+    came_off = returned_tiers(before) - returned_tiers(after)
+    back = [t for t in SENT_BACK_TIERS if t in came_off and t in after_sheets and t not in before_sheets]
+    if not back:
+        return after
+    trimmed = dict(after)
+    trimmed["sheets"] = {k: v for k, v in after_sheets.items() if k not in back}
+    if isinstance(after.get("answerKey"), dict):
+        trimmed["answerKey"] = {k: v for k, v in after["answerKey"].items() if k not in back}
+    return trimmed
 
 
 def without_sheets_sent_back(before: object, after: object) -> object:
@@ -804,6 +854,10 @@ BARE_PICTURE_KEYS = PICTURE_POINTER_KEYS | {
 }
 
 
+# Where a labelled diagram keeps what it says about its picture.
+LABEL_KEYS = {"callouts", "labels"}
+
+
 def without_omitted_pictures(spec: object, omitted: set[str]) -> object:
     """The specification with every picture object naming an omitted file taken out.
 
@@ -822,11 +876,34 @@ def without_omitted_pictures(spec: object, omitted: set[str]) -> object:
         return any(isinstance(node.get(key), str) and node[key] in omitted
                    for key in ("imagePath", "imageHref"))
 
+    def unlabelled(marks: object) -> bool:
+        # A diagram's marks with no word on them and nowhere to write one: a
+        # dot's position and nothing else. A label a child reads is a string,
+        # and one a child writes says `given: false`.
+        if isinstance(marks, str):
+            return False
+        if isinstance(marks, list):
+            return all(unlabelled(item) for item in marks)
+        if isinstance(marks, dict):
+            return marks.get("given") is not False and all(
+                unlabelled(value) for value in marks.values()
+            )
+        return True
+
     def bare_picture(node: dict) -> bool:
         # A picture object and nothing else: its keys say what it is, where its
         # file is and how it is drawn. A card, cell or label that carries a
         # picture also carries words, and only its picture is released.
-        return node.get("type") == "image" and set(node) <= BARE_PICTURE_KEYS
+        if node.get("type") == "image":
+            return set(node) <= BARE_PICTURE_KEYS
+        # A labelled diagram is its picture plus its labels, and with no label
+        # on it the picture is all there is. One that carries a word, or a
+        # blank for the child to label, stays counted: those are the task.
+        if node.get("type") == "label-diagram":
+            return set(node) <= BARE_PICTURE_KEYS | LABEL_KEYS and all(
+                unlabelled(node.get(key)) for key in LABEL_KEYS
+            )
+        return False
 
     def strip(node: object) -> object:
         if isinstance(node, list):
@@ -891,11 +968,12 @@ def main(argv: list[str] | None = None) -> int:
             "did not survive the repair:",
             taken_away,
             "A sheet sent back stays sent back until its redesign goes in. Taking "
-            "its record away leaves that tier with no sheet and nothing to say so.",
+            "its record away leaves that tier with no sheet and nothing to say so. "
+            "The record comes off only with the redesigned sheet back in `sheets`.",
         )
         return 1
     before = Census(without_sheets_sent_back(before_spec, after_spec))
-    after = Census(after_spec)
+    after = Census(without_sheets_come_back(before_spec, after_spec))
 
     rejoin_split_sequences(before, after)
 

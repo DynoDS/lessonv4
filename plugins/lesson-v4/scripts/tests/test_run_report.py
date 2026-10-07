@@ -902,6 +902,151 @@ class TestFrictionRecordIsTraceable(RunReportCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
 
+class TestARepairScopeMarkerIsAFlagNotAFault(RunReportCase):
+    """A standing REPAIR_SCOPE_FAILED never holds back a delivered package.
+
+    The marker says how a repair was checked. The resource's own rebuild is
+    what confirms a repair, and a resource that built and passed is delivered.
+    Three reports of 3 and 6 October 2026 are the cases, in their own words:
+    Year 4 Maths lesson 24 listed the marker under Blocking faults and closed
+    PARTIAL with every resource delivered; Year 4 Science lesson 5 filed the
+    same marker as a minor issue and closed COMPLETE; Year 4 Maths lesson 21
+    was PARTIAL because a sheet did not fit, which is a real reason.
+    """
+
+    MATHS_24_BULLET = (
+        "- REPAIR_SCOPE_FAILED: Below repair cleared its returned entry and used an "
+        "exception trace to permit the revised two-page plan; fit and build pass, "
+        "but repair-scope verification is unavailable."
+    )
+    MATHS_24_AS_A_MINOR_ISSUE = (
+        "- Below support sheet is now two landscape pages; its page fit and build "
+        "pass. The repair came back REPAIR_SCOPE_FAILED because it took the sheet's "
+        "returned record off."
+    )
+    SCIENCE_5_MINOR_ISSUE = (
+        "- Authorised content-gap removal and recording-mode correction triggered "
+        "generic REPAIR_SCOPE_FAILED comparisons. Exact intended changes were "
+        "checked and build gates passed. Later writing-line repair achieved "
+        "REPAIR_SCOPE_OK."
+    )
+    MATHS_21_BULLET = (
+        "- Greater Depth distinct sheet: SHEET_DOES_NOT_FIT after its composition "
+        "repair; Expected delivered in its place."
+    )
+    MATHS_21_MINOR_ISSUE = (
+        "- Old-draft scope checker rejects approved source-level Expected removals "
+        "and helper changes. Source owner revision independently approved; final "
+        "numbering-only scope check passed."
+    )
+
+    def test_maths_24_as_written_is_refused_on_both_counts(self):
+        result = self.validate(self.write_report({
+            "outcome": "Package status: PARTIAL",
+            "blocking": self.MATHS_24_BULLET,
+        }))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("repair-scope marker on a resource this report delivers", result.stdout)
+        self.assertIn("Move the line to Accepted minor issues", result.stdout)
+        self.assertIn("names the slide or sheet", result.stdout)
+        self.assertIn("never the reason for PARTIAL", result.stdout)
+
+    def test_maths_24_with_the_line_moved_is_still_not_partial(self):
+        result = self.validate(self.write_report({
+            "outcome": "Package status: PARTIAL",
+            "accepted": self.MATHS_24_AS_A_MINOR_ISSUE,
+        }))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("never the reason for PARTIAL", result.stdout)
+        self.assertNotIn("repair-scope marker on a resource", result.stdout)
+
+    def test_maths_24_corrected_passes(self):
+        result = self.validate(self.write_report({
+            "outcome": "Package status: COMPLETE",
+            "accepted": self.MATHS_24_AS_A_MINOR_ISSUE,
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_science_5_passes_unchanged(self):
+        result = self.validate(self.write_report({
+            "outcome": "Package status: COMPLETE",
+            "accepted": self.SCIENCE_5_MINOR_ISSUE,
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_maths_21_stays_partial(self):
+        result = self.validate(self.write_report({
+            "outcome": "Package status: PARTIAL",
+            "blocking": self.MATHS_21_BULLET,
+            "accepted": self.MATHS_21_MINOR_ISSUE,
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_real_fault_beside_the_marker_keeps_the_package_partial(self):
+        result = self.validate(self.write_report({
+            "outcome": "Package status: PARTIAL",
+            "blocking": self.MATHS_21_BULLET,
+            "accepted": self.MATHS_24_AS_A_MINOR_ISSUE,
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_bullet_about_another_fault_may_mention_the_marker(self):
+        result = self.validate(self.write_report({
+            "outcome": "Package status: PARTIAL",
+            "blocking": (
+                "- Greater Depth sheet: SHEET_DOES_NOT_FIT after its repair, which "
+                "also came back REPAIR_SCOPE_FAILED; Expected delivered in its place."
+            ),
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_the_marker_stays_a_blocking_fault_for_a_deck_that_did_not_build(self):
+        self.slides_out.unlink()
+        result = self.validate(self.write_report({
+            "outcome": "Package status: BLOCKED",
+            "delivered": f"- worksheets: `{self.worksheets_out}`\n- worksheets: `{self.answers_out}`",
+            "excluded": "- slides: NOT DELIVERED - the build failed after the repair.",
+            "blocking": "- REPAIR_SCOPE_FAILED: the slide repair lost a table and the deck did not build.",
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_marker_on_the_delivered_sheets_is_refused_beside_an_excluded_deck(self):
+        self.slides_out.unlink()
+        result = self.validate(self.write_report({
+            "outcome": "Package status: BLOCKED",
+            "delivered": f"- worksheets: `{self.worksheets_out}`\n- worksheets: `{self.answers_out}`",
+            "excluded": "- slides: NOT DELIVERED - the build failed.",
+            "blocking": self.MATHS_24_BULLET,
+        }))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("repair-scope marker on a resource this report delivers", result.stdout)
+        self.assertNotIn("never the reason for PARTIAL", result.stdout)
+
+    def test_partial_for_a_flagged_deck_is_untouched_by_the_marker(self):
+        self.write_json(self.working / "build-results" / "slides.json", {"flaggedSlides": [4]})
+        result = self.validate(self.write_report({
+            "outcome": "Package status: PARTIAL\nSlides to check: 4",
+            "accepted": self.SCIENCE_5_MINOR_ISSUE,
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_the_marker_in_friction_alone_changes_nothing(self):
+        (self.working / "friction.md").write_text(
+            "AGENT: worksheet-designer-focused-repair | FRICTION: REPAIR_SCOPE_FAILED "
+            "counted authorised recording metadata changes - run unharmed\n",
+            encoding="utf-8",
+        )
+        result = self.validate(self.write_report({
+            "outcome": "Package status: PARTIAL",
+            "excluded": "- working wall: NOT DELIVERED - not needed: nothing earns a card.",
+            "friction": (
+                "AGENT: worksheet-designer-focused-repair | FRICTION: REPAIR_SCOPE_FAILED "
+                "counted authorised recording metadata changes - run unharmed"
+            ),
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+
 class TestHelperGapsReachTheTeacher(RunReportCase):
     """A visual no helper drew is news, not housekeeping.
 

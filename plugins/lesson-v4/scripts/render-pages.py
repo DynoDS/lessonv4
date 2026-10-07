@@ -245,10 +245,30 @@ def probe_routes(route_file):
         "powerpointPython": powerpoint_python,
         "probeNotes": probe_notes,
     })
-    if is_windows() and not powerpoint_python and not blocked and probe_notes:
-        # PowerPoint was asked and could not be reached from any interpreter.
-        # Say which, and why, so "no route" is never read as "no PowerPoint"
-        # when the real gap is a missing module in the interpreter used.
+    powerpoint_refused = bool(
+        is_windows() and not powerpoint_python and not blocked and probe_notes)
+    if pptx:
+        # Say which route will draw the slides, as the one line a caller reads.
+        # Inside Codex's sandbox PowerPoint is never reachable (the command runs
+        # as a different Windows user) and LibreOffice draws every deck, so a
+        # refusal there is the ordinary case. It used to print as a failure,
+        # and on 6 October 2026 a decorator was handed that failure line alone
+        # while the LibreOffice render was still running, reported that nothing
+        # could be looked at, and never opened the 17 pages drawn seconds later.
+        # The refusal itself stays in the route file's probeNotes.
+        drawn_by = {"powerpoint": "PowerPoint", "libreoffice": "LibreOffice"}[pptx[0]]
+        line = f"RENDER_ROUTE_OK: slides will be drawn by {drawn_by}."
+        if powerpoint_refused:
+            line += (
+                " PowerPoint could not be reached from here, which is expected"
+                " inside a sandbox and needs no action."
+            )
+        print(line, flush=True)
+    elif powerpoint_refused:
+        # PowerPoint was asked and could not be reached from any interpreter,
+        # and nothing else can draw a deck either. Say which, and why, so "no
+        # route" is never read as "no PowerPoint" when the real gap is a
+        # missing module in the interpreter used.
         print("RENDER_PROBE_POWERPOINT_UNAVAILABLE", file=sys.stderr)
         for note in probe_notes:
             print(f"- {note}", file=sys.stderr)
@@ -527,6 +547,18 @@ def render(source, out_dir, route_file, manifest_file, dpi):
 
     out_dir = Path(out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
+    # Drawing a deck takes ten to twenty seconds, and some hosts hand a
+    # command's output back to the caller before then, finished or not. Say at
+    # once that the work has started and what its last line will be, so a
+    # half-read output cannot be mistaken for a render that produced nothing.
+    # Standard error, and flushed: the page list on standard output stays the
+    # one thing printed there.
+    print(
+        f"RENDER_PAGES_RUNNING: drawing the pages of {src.name}. This can take "
+        "a minute and has finished only when RENDER_PAGES_OK or "
+        "VISUAL_ROUTE_UNVERIFIED is printed. If neither is here yet, the "
+        "command is still running: wait for it.",
+        file=sys.stderr, flush=True)
     tmp_dir = Path(tempfile.mkdtemp(prefix="render-pages-"))
     office_route = None
     try:
@@ -590,7 +622,13 @@ def render(source, out_dir, route_file, manifest_file, dpi):
             ],
         }
         write_json(manifest_file, manifest)
-        print(json.dumps(manifest))
+        print(json.dumps(manifest), flush=True)
+        drawn_by = {"powerpoint": "PowerPoint", "libreoffice": "LibreOffice"}.get(
+            office_route, "the PDF itself")
+        print(
+            f"RENDER_PAGES_OK: {len(page_files)} pages drawn by {drawn_by}; "
+            f"manifest {Path(manifest_file).resolve()}",
+            file=sys.stderr, flush=True)
         return 0
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)

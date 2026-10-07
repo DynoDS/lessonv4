@@ -85,6 +85,10 @@ function stackLayout(zone, data, ctx) {
     offsetY = packed.offsetY;
   } else {
     settleByNeed(items, heights, zone, zoneFor, ctx);
+    // Asked before the spare height is handed round, while the shares are
+    // still the ones the weights and the words settled.
+    const account = columnAccount(items, weights, heights, zone, zoneFor, ctx);
+    if (account) sayColumn(account, weights, heights.slice(), ctx);
     reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx);
   }
 
@@ -529,6 +533,214 @@ function settleAmong(items, heights, zone, zoneFor, ctx, wide) {
   return 'short of room';
 }
 
+// ─── a column that holds a drawn figure says what the whole of it needs ───
+//
+// The sharing above stops at a drawn figure: a place value chart, a column
+// calculation or a labelled diagram keeps the share its weight guessed, and the
+// stack "says nothing" about whether any weights could hold the column. So each
+// refusal named one item, the one that lost this time, and a repair that fed it
+// made a different item lose next time. Year 4 Maths Lesson 24 (6 October 2026)
+// stood a counter pair over a column calculation and its explanation: the check
+// said counters too small, then calculation too short, then explanation too
+// long, across eight checks and a repair launch, and no split of that height
+// held all three. Five of six Codex runs that week ran out of repair passes on
+// a column of this kind.
+//
+// So when a column that holds a figure has an item short of its floor, the
+// stack finds what every item needs at its smallest readable size and says it
+// once: each need, the total, the room, and either weights that fit or that no
+// weights do. A figure is asked the way a criteria panel already is, by drawing
+// it where nobody sees until it stops refusing, so there is no list of helpers
+// and one not yet written is asked the same way. A photograph is not asked: its
+// share is the designer's to change, never a sum's.
+//
+// It only reports. The weights stay as written and the slide is refused or
+// drawn exactly as before.
+const PROBE_LOW = 0.3;
+const COLUMN_SLACK = 0.02;
+const saidColumns = new Set();
+
+function holdsDrawing(item) {
+  if (!item || typeof item !== 'object') return false;
+  if (item.type === 'stack' || item.type === 'row') {
+    return Array.isArray(item.items) && item.items.some(holdsDrawing);
+  }
+  return item.type !== 'image' && isDrawing(item);
+}
+
+// The least height a drawn figure accepts at this width, by drawing it unseen.
+// Infinity when it refuses even the whole column, which is a width fault.
+function figureNeed(item, zone, most, ctx) {
+  const { drawContent } = require('./index');
+  const { withoutRecording } = require('../warnings');
+  const PptxGenJS = require('../require-global')('pptxgenjs');
+  const barrier = ctx._cardBarrier;
+  const container = ctx._containerType;
+  const fits = function (h) {
+    const dry = new PptxGenJS();
+    try {
+      withoutRecording(function () {
+        drawContent(dry, dry.addSlide(), Object.assign({}, zone, { h: h }), item, ctx);
+      });
+      return true;
+    } catch {
+      return false;
+    } finally {
+      ctx._cardBarrier = barrier;
+      ctx._containerType = container;
+    }
+  };
+  if (!fits(most)) return Infinity;
+  // The search starts above the height at which a figure draws nothing at all
+  // and so refuses nothing. One that reaches it has no smallest size of its
+  // own (a labelled diagram scales down for as long as it is asked to).
+  let lo = PROBE_LOW;
+  let hi = most;
+  while (hi - lo > SETTLE_TOLERANCE) {
+    const mid = (lo + hi) / 2;
+    if (fits(mid)) hi = mid; else lo = mid;
+  }
+  return hi - PROBE_LOW <= 2 * SETTLE_TOLERANCE ? null : hi + SETTLE_TOLERANCE;
+}
+
+function nameOf(item) {
+  if (item.type !== 'text') return item.type;
+  const words = visibleText(item.value || item.text || '').replace(/\s+/g, ' ').trim();
+  return 'text "' + (words.length > 28 ? words.slice(0, 28) + '...' : words) + '"';
+}
+
+// What one item of a column needs at the floor, with a name a designer can
+// find it by. Null when any part of it cannot be measured honestly, and then
+// the column says nothing, as it always did. A photograph, or a figure with no
+// smallest size, is counted at the share it holds; inside a row or a column of
+// its own (`share` null) nobody has given it a share, so it cannot be counted.
+function columnNeed(item, zone, share, most, ctx) {
+  if (!item || typeof item !== 'object' || !item.type) return null;
+  if (item.type === 'text') {
+    const need = textNeed(item, zone, FLOOR_PT, ctx, true);
+    return need == null ? null : { need, name: nameOf(item) };
+  }
+  if (item.type === 'image') return share == null ? null : { need: share, name: 'picture', kept: true };
+  if (item.type === 'row') {
+    const items = Array.isArray(item.items) ? item.items : [];
+    if (!items.length || !isPlain(item, PLAIN_ROW)) return null;
+    const widths = require('./row').rowWidths(zone, item, ctx);
+    if (widths.length !== items.length) return null;
+    let tallest = null;
+    const names = [];
+    for (let i = 0; i < items.length; i += 1) {
+      const part = columnNeed(items[i], Object.assign({}, zone, { w: widths[i] }), null, most, ctx);
+      if (!part) return null;
+      names.push(part.name);
+      if (!tallest || part.need > tallest.need) tallest = part;
+    }
+    return { need: tallest.need, name: 'row of ' + names.join(' beside '), tallest: tallest.name };
+  }
+  if (item.type === 'stack') {
+    const items = Array.isArray(item.items) ? item.items : [];
+    if (!items.length || !isPlain(item, PLAIN_COLUMN)) return null;
+    if (item.heightRatio != null && Number(item.heightRatio) !== 1) return null;
+    let total = GAP * (items.length - 1);
+    const names = [];
+    for (const child of items) {
+      const part = columnNeed(child, zone, null, most, ctx);
+      if (!part) return null;
+      names.push(part.name);
+      total += part.need;
+    }
+    return { need: total, name: 'stack of ' + names.join(' over ') };
+  }
+  if (item.type === 'sc-panel' || LATE_JOINERS.has(item.type)) {
+    const need = panelNeed(item, zone, FLOOR_PT, most, ctx);
+    return need == null ? null : { need, name: item.type };
+  }
+  if (!isDrawing(item)) return null;
+  const least = figureNeed(item, zone, most, ctx);
+  // A figure with no smallest size is counted like a photograph: at the share
+  // it holds, which is the designer's to change.
+  if (least != null) return { need: least, name: item.type };
+  return share == null ? null : { need: share, name: item.type, kept: true };
+}
+
+// The whole column's account, or null when nothing is short, when it holds no
+// figure (the words-only line above already speaks for those), or when an item
+// cannot be measured.
+function columnAccount(items, weights, heights, zone, zoneFor, ctx) {
+  if (!ctx || items.length < 2 || !items.some(holdsDrawing)) return null;
+  const room = heights.reduce(function (sum, h) { return sum + h; }, 0);
+  const parts = [];
+  for (let i = 0; i < items.length; i += 1) {
+    let part = null;
+    try {
+      part = columnNeed(items[i], zoneFor(items[i], zone.y, heights[i]), heights[i], room, ctx);
+    } catch {
+      part = null;
+    }
+    if (!part) return null;
+    parts.push(part);
+  }
+  const short = parts.some(function (part, i) { return part.need > heights[i] + SETTLE_TOLERANCE; });
+  if (!short) return null;
+  const total = parts.reduce(function (sum, part) { return sum + part.need; }, 0);
+  const fits = Number.isFinite(total) && total + COLUMN_SLACK * items.length <= room;
+  let fitting = null;
+  if (fits) {
+    // Each item keeps what it needs and the rest is shared in proportion, so
+    // nothing is set down on its limit. A picture keeps the share it has.
+    const kept = parts.reduce(function (sum, part) { return part.kept ? sum + part.need : sum; }, 0);
+    const wanted = total - kept;
+    const left = room - total;
+    const totalWeight = weights.reduce(function (a, b) { return a + b; }, 0);
+    fitting = parts.map(function (part) {
+      const h = part.kept ? part.need : part.need + left * part.need / wanted;
+      return { h, weight: Math.round(h / room * totalWeight * 100) / 100 };
+    });
+  }
+  return { parts, room, total, fitting };
+}
+
+function inches(value) {
+  return value.toFixed(2) + 'in';
+}
+
+function columnSentence(account, weights, heights) {
+  const each = account.parts.map(function (part, i) {
+    const inside = part.tallest ? ' (its tallest part is the ' + part.tallest + ')' : '';
+    return 'item ' + (i + 1) + ', ' + part.name + inside + ', ' +
+      (part.kept ? 'has no smallest size of its own and holds ' + inches(heights[i])
+        : !Number.isFinite(part.need) ? 'is refused at any height (it has ' + inches(heights[i]) + ')'
+          : 'needs ' + inches(part.need) + ' and has ' + inches(heights[i]));
+  }).join('; ');
+  const opening = 'this column has ' + inches(account.room) + ' of height for its ' +
+    account.parts.length + ' items' +
+    (Number.isFinite(account.total)
+      ? ', and at their smallest readable sizes they need ' + inches(account.total) + ' between them: '
+      : ': ') + each + '. ';
+  if (account.fitting) {
+    return opening + 'Weights that fit, in the same order: ' +
+      account.fitting.map(function (f) { return f.weight; }).join(', ') +
+      ' (they are ' + weights.join(', ') + ' now).';
+  }
+  // An item refused at every height is not short of height: it may be short
+  // of width, or refused for something that is nothing to do with its size.
+  const refusedAnyway = account.parts.some(function (part) { return !Number.isFinite(part.need); });
+  return opening + 'No weights fit this column: ' +
+    (refusedAnyway ? 'an item is refused whatever height it is given, so height is not its fault and its own refusal says what is. '
+      : 'move one item to the other side or split the beat. ') +
+    (account.parts.some(function (part) { return part.kept; })
+      ? 'A picture or diagram is counted at the share it holds; giving it less is your decision, not a sum. ' : '') +
+    'Changing the weights will only change which item is refused.';
+}
+
+function sayColumn(account, weights, heights, ctx) {
+  const { recording } = require('../warnings');
+  if (!recording()) return;
+  const line = 'COLUMN_NEEDS: slide ' + (ctx.slideIndex + 1) + ': ' + columnSentence(account, weights, heights);
+  if (saidColumns.has(line)) return;
+  saidColumns.add(line);
+  console.log(line);
+}
+
 // ─── cards that fit their words, then line up ─────────────────────
 //
 // A card is sized to its own text, and the group of cards is then centred on
@@ -691,8 +903,17 @@ function reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx) {
 // nothing moves. Words and cards are not asked: a card stretched past its words
 // is the same empty band with a border round it. A drawing that hugged below
 // its own share is not asked either, having just said it has more than it
-// uses, and one its share refuses stays refused, so this never turns a slide
-// the build stops into one it passes.
+// uses.
+//
+// A drawing its share refuses is asked too, and takes the spare when the spare
+// is what it was short of. It used to stay refused. That held while a chart
+// would draw itself down to 12pt digits in any strip: it was drawn small in its
+// share and then grew into the spare. Once a chart on a slide stopped at 18pt
+// (6 October 2026) the same chart refused its share before the spare was
+// offered, and nine slides of a finished Year 4 column addition deck, whose
+// charts had been drawn at 26pt in room the column had all along, were refused
+// for a share they never ended up with. What it is given is worked out as if it
+// had been drawn in its share, so those slides come out as they did.
 const WORDS_AND_CARDS = new Set([
   'text', 'bullets', 'steps', 'vocab', 'numbered-questions', 'question-cards',
   'callout', 'sc-panel', 'table', 'chip-bank', 'sort-board', 'evidence-cards',
@@ -738,10 +959,19 @@ function drawnHeight(item, zone, ctx) {
 
 function lendToDrawings(items, heights, hugged, released, zone, zoneFor, ctx) {
   const gainWith = function (i, offer) {
-    const now = drawnHeight(items[i], zoneFor(items[i], zone.y, heights[i]), ctx);
-    if (now == null) return 0;
+    let now = drawnHeight(items[i], zoneFor(items[i], zone.y, heights[i]), ctx);
     const then = drawnHeight(items[i], zoneFor(items[i], zone.y, heights[i] + offer), ctx);
-    return then == null ? 0 : Math.min(offer, then - now);
+    if (then == null) return 0;
+    if (now == null) {
+      // Refused in its share and drawn with the spare. The room a drawing
+      // leaves round itself is read off the shortest zone it accepts, and
+      // taken from its share to stand for the height it would have drawn at.
+      const least = figureNeed(items[i], zoneFor(items[i], zone.y, heights[i]), heights[i] + offer, ctx);
+      const atLeast = Number.isFinite(least) ? drawnHeight(items[i], zoneFor(items[i], zone.y, least), ctx) : null;
+      if (atLeast == null) return 0;
+      now = heights[i] - (least - atLeast);
+    }
+    return Math.min(offer, then - now);
   };
   const takers = [];
   items.forEach(function (item, i) {
@@ -832,6 +1062,8 @@ function drawStack(pptx, slide, zone, data, ctx) {
 
 module.exports = {
   textNeed,
+  columnAccount,
+  columnSentence,
   drawStack,
   stackLayout,
   measureStack,

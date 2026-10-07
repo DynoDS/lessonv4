@@ -64,6 +64,10 @@ const ARROW_RUN_MM = 13;
 // own: in the column layout a six-to-one number line printed 14mm tall.
 const WIDE_ASPECT = 2.2;
 const NOTE_BAND_MM = 15;
+// A one-line note at its largest is 17mm in that 15mm band, and the sheets
+// approved with it stay as they are: a note may dip this far into the clear
+// strip above its picture, and no further.
+const NOTE_OVERHANG_MM = 2.5;
 const CARD_BORDER_MM = 1.3;
 const CARD_PAD_MM = 4;
 
@@ -231,11 +235,30 @@ function renderStepByStep(card, style, specDir, ctx = {}) {
   const rowH = Math.min(ROW_MAX_MM, (bodyH - GAP_MM * (count - 1)) / count);
   const anyNote = steps.some((step) => step.note.length);
   const cardW = W * CARD_SHARE;
-  const wide = steps.some((step) => step.figure && (step.figure.aspect || 1) >= WIDE_ASPECT);
-  const noteW = anyNote ? W * NOTE_SHARE * (wide ? 1.3 : 1) : 0;
+  // Each step is laid out by its own picture's shape. Decided once for the
+  // whole sheet, one counter chart a little over two to one sent the column
+  // sum on the same sheet into the wide layout too: its note stood above it
+  // and the arrow ran down through the heading and three digits to reach the
+  // carried one (6 October 2026). A sum's note belongs beside it, where the
+  // arrow stops at the picture's edge.
+  const isWide = (step) => Boolean(step.figure) && (step.figure.aspect || 1) >= WIDE_ASPECT;
+  const anyWideNote = steps.some((step) => isWide(step) && step.note.length);
+  const anySideNote = steps.some((step) => !isWide(step) && step.note.length);
+  const noteWFor = (step) => (anyNote ? W * NOTE_SHARE * (isWide(step) ? 1.3 : 1) : 0);
   const figureX = cardW + FIGURE_GAP_MM;
-  const figureZoneW = W - figureX - (anyNote && !wide ? noteW + ARROW_RUN_MM : 0);
-  const noteBand = wide && anyNote ? NOTE_BAND_MM : 0;
+  const figureZoneWFor = (step) => W - figureX - (anySideNote && !isWide(step) ? noteWFor(step) + ARROW_RUN_MM : 0);
+  // Above a wide picture the note stands in a band of its own, and the band
+  // is as deep as the tallest note on the sheet. At a flat 15mm it held one
+  // line: a two-line note ("1 exchanged" over "hundred") was 28mm tall and
+  // printed over the top of its own picture, across the "Hundreds" heading of
+  // a column sum (6 October 2026).
+  const fittedNotes = steps.map((step, index) => (step.note.length ? fitNote(card, index, step.note, noteWFor(step) - 5) : null));
+  const noteHeightMm = (fitted) => fitted.total * fitted.pt * NOTE_PT.line * MM_PER_PT + 6;
+  // Every wide picture gives up the same band, noted or not, so they stay at
+  // one scale down the page.
+  const wideNoteBand = anyWideNote
+    ? Math.max(NOTE_BAND_MM, ...steps.map((step, index) => (isWide(step) && fittedNotes[index] ? noteHeightMm(fittedNotes[index]) - NOTE_OVERHANG_MM : 0)))
+    : 0;
   const circleD = Math.min(23, rowH * 0.36);
   const textLeft = circleD - 2;
   const innerW = {
@@ -271,6 +294,10 @@ function renderStepByStep(card, style, specDir, ctx = {}) {
     }
 
     // The picture at its own shape, in the column every step's picture shares.
+    const wide = isWide(step);
+    const noteW = noteWFor(step);
+    const figureZoneW = figureZoneWFor(step);
+    const noteBand = wide ? wideNoteBand : 0;
     const aspect = step.figure.aspect || 1;
     let figH = rowH - 2 - noteBand;
     let figW = figH * aspect;
@@ -296,9 +323,8 @@ function renderStepByStep(card, style, specDir, ctx = {}) {
 
     let noteHtml = "";
     if (step.note.length) {
-      const fitted = fitNote(card, index, step.note, noteW - 5);
-      const lineMm = fitted.pt * NOTE_PT.line * MM_PER_PT;
-      const noteH = fitted.total * lineMm + 6;
+      const fitted = fittedNotes[index];
+      const noteH = noteHeightMm(fitted);
       // Beside the picture in its own column, or above a wide one, a little
       // to the right of the place it points at.
       const noteOnLeft = wide && tx + 10 + noteW > W;
