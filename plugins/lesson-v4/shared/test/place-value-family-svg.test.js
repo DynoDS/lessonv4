@@ -100,3 +100,25 @@ test('the pair derives what changed and never rings an unknown', () => {
   const placeholder = chart.normalise({ columns: ['Th', 'H', 'T', 'O'], pair: { from: ['0', '8', '9', '0'], to: ['0', '9', '0', '0'], operation: '+ 10' } });
   assert.equal(placeholder.pair.title, '+ 10: 900', 'a thousands placeholder is written 900, not 0,900');
 });
+
+// On the upright model the two lines leave the bottom of the whole's circle,
+// and its name used to be printed there, struck through by both (7 October 2026).
+test('the upright part-whole model names its whole above the circle, clear of the lines to the parts, at the height it had', () => {
+  const pw = mod('part-whole-model');
+  const spec = { orientation: 'vertical', whole: { value: '10', caption: 'whole' }, parts: [{ value: '6', caption: 'part' }, { value: '4', caption: 'part' }] };
+  for (const surface of ['slides', 'worksheets', 'wall', 'stickin']) {
+    const box = surface === 'slides' ? { widthPt: 300, heightPt: 260 } : { widthPt: 300 };
+    const { svg, layout } = pw.tightSvg(spec, surface, box);
+    const caption = /<text x="[\d.]+" y="([\d.]+)"[^>]*>whole<\/text>/.exec(svg);
+    assert.ok(caption, `${surface}: the whole is named`);
+    const top = layout.whole.cy - layout.whole.d / 2;
+    assert.ok(Number(caption[1]) < top, `${surface}: "whole" sits above its circle`);
+    assert.ok(Number(caption[1]) - Math.max(layout.floor, layout.capFont) * 0.8 >= 0, `${surface}: "whole" is inside the drawing`);
+    const part = /<text x="[\d.]+" y="([\d.]+)"[^>]*>part<\/text>/.exec(svg);
+    assert.ok(Number(part[1]) > layout.parts[0].cy + layout.parts[0].d / 2, `${surface}: a part is still named under its circle`);
+  }
+  // On its side the lines leave to the right, so the name stays under the circle.
+  const flat = pw.tightSvg({ ...spec, orientation: 'horizontal' }, 'worksheets', { widthPt: 300 });
+  const y = Number(/<text x="[\d.]+" y="([\d.]+)"[^>]*>whole<\/text>/.exec(flat.svg)[1]);
+  assert.ok(y > flat.layout.whole.cy + flat.layout.whole.d / 2);
+});

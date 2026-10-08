@@ -578,6 +578,30 @@ class TheDrawnPageSettlesFullAndCompetesTests(CheckRunner):
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_two_drawings_with_places_left_owe_nothing(self):
+        """Owing a sentence for every empty place made filling it the easy
+        answer: a clock deck came back with plain decorations wedged between
+        the clocks (7 October 2026). The question is for a slide that stopped
+        at one."""
+        two = {"title": "t", "content": [
+            {"text": "a", "picture": {"kind": "educational-svg"}},
+            {"text": "b", "picture": {"kind": "educational-svg"}},
+        ]}
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["educational-svg"]},
+        ]}
+        result = self.run_check(record, deck(two), room=[measured(1, 6)])
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_one_drawing_with_one_place_left_owes_nothing(self):
+        record = {"schemaVersion": 1, "slides": [
+            {"slide": 1, "decision": "used", "pictures": ["educational-svg"]},
+        ]}
+        result = self.run_check(
+            record, deck(slide_with("educational-svg")), room=[measured(1, 2)]
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_would_mislead_says_what_would_be_given_away(self):
         """The last free answer. It was half of every refusal across 20 lessons,
         59 of those on slides the render had measured a clear inch-square space

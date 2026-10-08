@@ -135,7 +135,14 @@ def relax(query):
     return ordered
 
 
-def search_commons(query, reserve, thumb_width=800):
+# The saved file is what the slide shows, so it is asked for at board size.
+# At 800 Commons answered with its 960-pixel preview and a 5,477-pixel painting
+# reached the deck at 960x559, too soft to search for detail (7 October 2026).
+# A file narrower than this comes back at its own size.
+BOARD_WIDTH_PX = 1920
+
+
+def search_commons(query, reserve, thumb_width=BOARD_WIDTH_PX):
     """Search Commons, and when a query finds too little, search again with the
     same words minus the ones that only describe how the picture should look.
 
@@ -155,7 +162,7 @@ def search_commons(query, reserve, thumb_width=800):
     return results, run
 
 
-def search_commons_once(query, reserve, thumb_width=800):
+def search_commons_once(query, reserve, thumb_width=BOARD_WIDTH_PX):
     # Ask for far more than will be downloaded. Commons ranks a long, richly
     # described NASA or ESA file above an ordinary ground photograph, so the top
     # three for "Sahara Desert wide landscape" were all satellite imagery while

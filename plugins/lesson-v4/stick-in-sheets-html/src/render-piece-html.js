@@ -9,6 +9,7 @@
 // Each render function returns { html, widthMm, heightMm } for the tiling layer.
 
 const fs = require("fs");
+const { printSized } = require("./print-size");
 const path = require("path");
 
 const {
@@ -23,7 +24,7 @@ const { A4 } = require("./layout-rules");
 // the 5mm page caption). A source copy is refused above it rather than cropped,
 // because a source with its bottom cut off is a different source.
 const PIECE_MAX_H_MM = A4.widthMm - 2 * A4.marginMm - 5;
-const { buildLabelDiagramSvg } = require("../../shared/visuals/label-diagram-svg");
+const { buildLabelDiagramSvg, buildForPaper } = require("../../shared/visuals/label-diagram-svg");
 const { withoutTaughtMarks } = require("../../shared/text/criteria-marks");
 const { PALETTES } = require("../../shared/visuals/surface-profiles");
 const STICKIN_INK = PALETTES.ink.ink;
@@ -218,21 +219,34 @@ async function renderLabelDiagram(item, baseDir, opts = {}) {
   }
   const sharp = require("sharp");
   const meta = await sharp(imgPath).metadata();
-  const mime = meta.format === "png" ? "image/png" : meta.format === "svg" ? "image/svg+xml" : "image/jpeg";
-  const b64 = fs.readFileSync(imgPath).toString("base64");
-  const { svg, aspect } = buildLabelDiagramSvg({
+  const fileMime = meta.format === "png" ? "image/png" : meta.format === "svg" ? "image/svg+xml" : "image/jpeg";
+  const { mime, base64: b64 } = await printSized(imgPath, fileMime);
+  const naturalWidthMm = item.widthMm ?? LABEL_DIAGRAM_WIDTH_MM;
+  const callouts = spec.callouts || [];
+  const drawing = {
     href: `data:${mime};base64,${b64}`,
     width: meta.width,
     height: meta.height,
-    callouts: spec.callouts || [],
+    callouts,
     // The pack is photocopied, so the anchor dots and any answer text print in
     // the stick-in profile's ink rather than the board's blue and green.
     blue: STICKIN_INK,
     answerColour: STICKIN_INK,
-  });
+  };
+  // A piece with lines to write on is a sheet a child labels, so it is laid
+  // out as the worksheet's is: the lines stacked beside the picture, each long
+  // enough for the word in a young child's hand. With the fixed margin every
+  // piece used to get, the Year 1 plant printed 76mm wide with four lines of
+  // 21 to 24mm (7 October 2026). A piece that only shows printed names is
+  // drawn as it always was.
+  const { svg, aspect } = callouts.some((c) => !c.given)
+    ? buildForPaper(
+        { ...drawing, layout: "sides", labelMaxChars: 18, marginYRatio: 0.03 },
+        { widthMm: naturalWidthMm, perLetterMm: 6.5, minMm: 30 }
+      )
+    : buildLabelDiagramSvg(drawing);
 
   const a = aspect;
-  const naturalWidthMm = item.widthMm ?? LABEL_DIAGRAM_WIDTH_MM;
   const reserveTopMm = opts.reserveTopMm || 0;
   const naturalHeightMm = naturalWidthMm / a;
   const widthMm = reserveTopMm > 0
@@ -272,8 +286,8 @@ async function renderSourceCopy(item, baseDir, opts = {}) {
     console.warn(`[stick-in] "${item.label || item.visual}": could not read the picture's size from ${imgPath}, skipping this item.`);
     return null;
   }
-  const mime = meta.format === "png" ? "image/png" : meta.format === "svg" ? "image/svg+xml" : "image/jpeg";
-  const b64 = fs.readFileSync(imgPath).toString("base64");
+  const fileMime = meta.format === "png" ? "image/png" : meta.format === "svg" ? "image/svg+xml" : "image/jpeg";
+  const { mime, base64: b64 } = await printSized(imgPath, fileMime);
   const aspect = meta.width / meta.height;
 
   const caption = String(spec.caption).trim();

@@ -10,7 +10,7 @@ const os = require('os');
 const requireGlobal = require('./src/require-global');
 const PptxGenJS = requireGlobal('pptxgenjs');
 
-const { SLIDE_W, SLIDE_H } = require('./src/layout');
+const { SLIDE_W, SLIDE_H, carryObjectiveToStarters } = require('./src/layout');
 const { FONT, COLOURS, subjectBackground } = require('./src/styles');
 const { drawSlide } = require('./src/templates');
 const { getWarnings, clearWarnings, note } = require('./src/warnings');
@@ -19,6 +19,7 @@ const { slideCheckpointState, checkpointMessage } = require('./src/slide-checkpo
 const { preflightLayouts } = require('./src/layout-preflight');
 const { capacityWarnings } = require('./src/content/capacity');
 const { zoneFillWarnings, clearZoneFill } = require('./src/content/_zone-fill');
+const { figureBoxes, clearFigureBoxes } = require('./src/content/_figure-boxes');
 const { pictureFloorFindings, clearPictureFloor, missingPictureFindings, clearMissingPictures } = require('./src/content/image');
 const { runAutofit, autofitDiagnostics } = require('./src/autofit');
 const { fixParagraphProps } = require('./src/fix-paragraph-props');
@@ -68,7 +69,8 @@ const { preRenderPictograms } = require('./src/content/pictogram');
 const { preRenderBarModels } = require('./src/content/bar-model');
 const { preRenderBlankSurfaces } = require('./src/content/blank-surface');
 const { preRenderGeographicalDescriptionFrames } = require('./src/content/geographical-description-frame');
-const { preRenderLabelDiagrams, labelDiagramFindings, clearLabelDiagramFindings } = require('./src/content/label-diagram');
+const { keepShapesStill } = require('./src/content/shapes-stand-still');
+const { preRenderLabelDiagrams, rasteriseLabelDiagrams, labelDiagramFindings, clearLabelDiagramFindings } = require('./src/content/label-diagram');
 const { preRenderGridMaps } = require('./src/content/grid-map');
 const { preRenderTranslationShapes } = require('./src/content/translation-shape');
 const { preRenderRainforestLayers } = require('./src/content/rainforest-layers');
@@ -121,6 +123,9 @@ const FLAGGING_SIGNALS = new Set([
   // (content/label-diagram.js). LABEL_DIAGRAM_LABELS_OUTGROW_PICTURE is a cue
   // to look, so a diagram whose labels are laid out is not listed.
   'LABEL_DIAGRAM_LABELS_COLLIDE',
+  // A labelled picture left too small to read once its labels have the
+  // board's size (content/label-diagram.js).
+  'LABEL_DIAGRAM_PICTURE_TOO_SMALL',
   // SUCCESS_CRITERIA_CAPACITY is a cue to look, not a fault (the teacher's
   // rulings of 10 and 23 September 2026), so a panel that fits is not listed.
 ]);
@@ -251,6 +256,9 @@ async function main() {
   // question slide and its answers (src/content/reveal-pair.js).
   applyAnswerTicks(raw);
   settlePairedHeaders(raw);
+  // The objective onto each starter, so its header is measured with the words
+  // it will print (src/layout.js).
+  carryObjectiveToStarters(raw);
   const lesson = sanitizeHouseStyle(raw);
   // A taught word's braces come off every figure before anything is drawn
   // or pre-rendered (src/figure-marks.js).
@@ -297,6 +305,7 @@ async function main() {
   pptx.subject = lesson.lo || '';
 
   const today = formatUKDate();
+  keepShapesStill(coreLesson);
   await preResizeAll(coreLesson, lessonDir);
   const imageDims   = await preMeasureAll(coreLesson, lessonDir);
   const angleImages = await preRenderAngles(coreLesson);
@@ -406,6 +415,7 @@ async function main() {
   }
 
   await sharedFigures.rasterise();
+  await rasteriseLabelDiagrams(labelDiagramImages);
 
   const decorationPlans = skipOptionalDecorations
     ? slides.map(() => emptyDecorationPlan())
@@ -429,6 +439,7 @@ async function main() {
   // The preflight already drew every slide once, so anything a figure recorded
   // about its slot is a duplicate of what the real draw is about to record.
   clearZoneFill();
+  clearFigureBoxes();
   clearPictureFloor();
   clearMissingPictures();
   clearCriteriaBelowFloor();
@@ -547,6 +558,18 @@ async function main() {
     outputDir,
     `.${sanitizedName}.building-${process.pid}.pptx`
   );
+
+  // The practice build says where each figure sits, so the decoration check
+  // can keep drawings off a chart's empty middle. Asked for by path, so a
+  // classroom build leaves nothing beside the PowerPoint.
+  if (process.env.LESSON_FIGURE_BOXES_PATH) {
+    try {
+      fs.writeFileSync(
+        process.env.LESSON_FIGURE_BOXES_PATH,
+        JSON.stringify({ schemaVersion: 1, slideInches: { w: SLIDE_W, h: SLIDE_H }, figures: figureBoxes() }, null, 2)
+      );
+    } catch (_) { /* the deck is still good without it */ }
+  }
 
   await pptx.writeFile({ fileName: tempOutputPath });
 

@@ -84,8 +84,42 @@ function starterPrompt(data) {
   return value;
 }
 
+// A learning objective too long for one line takes two.
+//
+// The objective has one line across the starter and was shrunk until it fitted
+// it, so a long one ("To subtract two 4-digit numbers using column subtraction
+// with more than one exchange") printed at 20pt under a 33pt "Date", the
+// smallest words on the slide. Shown that slide with the objective on two lines
+// at 28pt, the teacher chose it, and accepted that the sums underneath come out
+// slightly smaller for it (8 October 2026). So an objective that would drop
+// under 28pt on one line is set on two lines at 28pt, and the Starter label and
+// everything below it move down by the little extra that takes. An objective
+// that fits one line is laid out exactly as before.
+const STARTER_LO_TWO_LINE_PT = 28;
+const STARTER_LO_TWO_LINE = { loY: 0.93, loH: 1.04, shift: 0.18 };
+function starterLoNeedsTwoLines(data) {
+  const lo = data && typeof data.lo === 'string' ? data.lo.trim() : '';
+  if (!lo) return false;
+  const { textBoxWidthIn } = require('./glyph-width');
+  return textBoxWidthIn('LO: ' + lo, STARTER_LO_TWO_LINE_PT, true) > HEADER_STARTER.loW;
+}
+
+// The lesson's objective, written onto each starter slide that did not repeat
+// it, so the layout that measures the header and the header that draws it read
+// the same words. A slide that names its own objective keeps it.
+function carryObjectiveToStarters(lesson) {
+  const lo = lesson && typeof lesson.lo === 'string' ? lesson.lo : '';
+  if (!lo || !Array.isArray(lesson.slides)) return lesson;
+  lesson.slides.forEach((slide) => {
+    if (slide && typeof slide === 'object' && slide.headerStyle === 'starter' && !slide.lo) slide.lo = lo;
+  });
+  return lesson;
+}
+
 function starterHeaderHeight(data) {
-  return HEADER_STARTER_H + (starterPrompt(data) ? STARTER_PROMPT_H : 0);
+  return HEADER_STARTER_H
+    + (starterLoNeedsTwoLines(data) ? STARTER_LO_TWO_LINE.shift : 0)
+    + (starterPrompt(data) ? STARTER_PROMPT_H : 0);
 }
 
 // A header instruction that does not fit on one line takes two.
@@ -158,6 +192,7 @@ module.exports = {
   HEADER_TITLE_H, HEADER_STARTER_H, STARTER_PROMPT_H,
   HEADER_TITLE, HEADER_STARTER,
   starterPrompt, starterHeaderHeight,
+  starterLoNeedsTwoLines, carryObjectiveToStarters, STARTER_LO_TWO_LINE, STARTER_LO_TWO_LINE_PT,
   instructionNeedsTwoLines, titleHeaderHeight, INSTRUCTION_TWO_LINE_H, doSignRoom,
   bodyZone
 };

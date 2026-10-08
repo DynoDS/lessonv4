@@ -1077,6 +1077,27 @@ test("repairable slide-check faults stay inside the original Slide Designer", ()
   assert.ok(!/final.resource review/i.test(SLIDE_FOCUSED_REPAIR_MD), "the focused repair still expects final review findings");
 });
 
+test("the documented table heights are the ones the build enforces", () => {
+  // The sizing guide gave a table 0.2in a row for a month after the reading
+  // floor raised the engine's to 0.38in, and said nothing of what a criteria
+  // panel takes first. In the stress test of 7 October 2026 six lessons of
+  // twenty sized a table zone from it and were refused.
+  const { requiredZoneHeight, ROW_MIN_H } = require("../src/content/table.js");
+  const { PANEL_FRAME_H } = require("../src/success-criteria-panel.js");
+  const line = SLIDE_VISUAL_SIZING_MD.split(/\r?\n/).find((l) => l.startsWith("- `table`:"));
+  assert.ok(line, "slide-visual-sizing.md has no table line");
+  const inches = (n) => n.toFixed(2) + "″";
+  for (const claim of [
+    inches(requiredZoneHeight(0)) + " of height for the header band plus " + inches(ROW_MIN_H) + " for every row",
+    "a one-row table needs a " + inches(requiredZoneHeight(1)) + " zone",
+    "a two-row table " + inches(requiredZoneHeight(2)),
+    "a four-row table " + inches(requiredZoneHeight(4)),
+    "take " + inches(PANEL_FRAME_H) + " first",
+  ]) {
+    assert.ok(line.includes(claim), "slide-visual-sizing.md no longer says: " + claim);
+  }
+});
+
 test("the documented picture reading floor is the one the build enforces", () => {
   // The designer sizes a picture cell from this figure and the build names a
   // cell that falls below it. Two copies of one number is how a check and the

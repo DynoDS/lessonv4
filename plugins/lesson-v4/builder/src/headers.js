@@ -1,7 +1,7 @@
 'use strict';
 
 const { FONT, COLOURS, SIZE_CEILINGS, FIT, CARD } = require('./styles');
-const { HEADER_TITLE, HEADER_STARTER, starterPrompt, instructionNeedsTwoLines, INSTRUCTION_TWO_LINE_H, doSignRoom } = require('./layout');
+const { HEADER_TITLE, HEADER_STARTER, starterPrompt, instructionNeedsTwoLines, INSTRUCTION_TWO_LINE_H, doSignRoom, starterLoNeedsTwoLines, STARTER_LO_TWO_LINE, STARTER_LO_TWO_LINE_PT } = require('./layout');
 const { drawSignal, signalWidth, DO_SIGNS } = require('./signals');
 
 // Card look: a white pill hugging a header text, so the title and the task
@@ -158,6 +158,10 @@ function drawStarterHeader(slide, data, ctx) {
   // deliberately names a narrower objective than the lesson's own keeps it.
   // This is the floor, not an override.
   const lo = data.lo || (ctx && ctx.lesson && ctx.lesson.lo) || '';
+  // A long objective on two lines at 28pt, with everything under it moved down
+  // to make the room (layout.js, starterLoNeedsTwoLines).
+  const loTwoLines = starterLoNeedsTwoLines(data);
+  const below = loTwoLines ? STARTER_LO_TWO_LINE.shift : 0;
   // "Starter" is the opening slide's heading in every lesson, always. Anything
   // the designer wants said there - a retrieval question, a prompt - is a line
   // of its own underneath, so the class still sees which part of the lesson
@@ -176,9 +180,9 @@ function drawStarterHeader(slide, data, ctx) {
 
   if (lo) {
     slide.addText('LO: ' + lo, {
-      x: HEADER_STARTER.loX, y: HEADER_STARTER.loY,
-      w: HEADER_STARTER.loW, h: HEADER_STARTER.loH,
-      fontFace: FONT, fontSize: SIZE_CEILINGS.lo, bold: true,
+      x: HEADER_STARTER.loX, y: loTwoLines ? STARTER_LO_TWO_LINE.loY : HEADER_STARTER.loY,
+      w: HEADER_STARTER.loW, h: loTwoLines ? STARTER_LO_TWO_LINE.loH : HEADER_STARTER.loH,
+      fontFace: FONT, fontSize: loTwoLines ? STARTER_LO_TWO_LINE_PT : SIZE_CEILINGS.lo, bold: true,
       color: COLOURS.lo, align: 'left', valign: 'middle',
       underline: { style: 'sng' }, margin: 0, fit: FIT
     });
@@ -189,7 +193,7 @@ function drawStarterHeader(slide, data, ctx) {
   // The Starter label is a title, so it stays bare like every other title;
   // only the instruction takes a pill.
   slide.addText(heading, {
-    x: HEADER_STARTER.headingX, y: HEADER_STARTER.headingY,
+    x: HEADER_STARTER.headingX, y: HEADER_STARTER.headingY + below,
     w: HEADER_STARTER.headingW, h: HEADER_STARTER.headingH,
     fontFace: FONT, fontSize: SIZE_CEILINGS.heading, bold: true,
     color: COLOURS.title, align: 'left', valign: 'middle',
@@ -200,7 +204,7 @@ function drawStarterHeader(slide, data, ctx) {
   // title size so a class reads it from the back of the room.
   if (prompt) {
     slide.addText(prompt, {
-      x: HEADER_STARTER.promptX, y: HEADER_STARTER.promptY,
+      x: HEADER_STARTER.promptX, y: HEADER_STARTER.promptY + below,
       w: HEADER_STARTER.promptW, h: HEADER_STARTER.promptH,
       fontFace: FONT, fontSize: SIZE_CEILINGS.slideTitle, bold: true,
       color: COLOURS.title, align: 'left', valign: 'middle',
@@ -212,13 +216,13 @@ function drawStarterHeader(slide, data, ctx) {
     let textX = 0;
     if (pills) {
       textX = drawHeaderPill(slide, instruction, SIZE_CEILINGS.instruction, {
-        x: HEADER_STARTER.instructionX, y: HEADER_STARTER.instructionY,
+        x: HEADER_STARTER.instructionX, y: HEADER_STARTER.instructionY + below,
         w: HEADER_STARTER.instructionW, h: HEADER_STARTER.instructionH
       }, 'right', data.signal);
     }
     const right = HEADER_STARTER.instructionX + HEADER_STARTER.instructionW;
     slide.addText(instruction, {
-      x: textX || HEADER_STARTER.instructionX, y: HEADER_STARTER.instructionY,
+      x: textX || HEADER_STARTER.instructionX, y: HEADER_STARTER.instructionY + below,
       w: (right - (pills ? 0.12 : 0)) - (textX || HEADER_STARTER.instructionX),
       h: HEADER_STARTER.instructionH,
       fontFace: FONT, fontSize: SIZE_CEILINGS.instruction, bold: true,
@@ -227,7 +231,7 @@ function drawStarterHeader(slide, data, ctx) {
     });
   } else if (pills && standsAloneInTheHeader(data.signal)) {
     drawSignalAlone(slide, data.signal, {
-      x: HEADER_STARTER.instructionX, y: HEADER_STARTER.instructionY,
+      x: HEADER_STARTER.instructionX, y: HEADER_STARTER.instructionY + below,
       w: HEADER_STARTER.instructionW, h: HEADER_STARTER.instructionH
     });
   }

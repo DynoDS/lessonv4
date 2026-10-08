@@ -428,6 +428,11 @@ def run_search(library_root: Path, queries: list[str]) -> list[str]:
     return []
 
 
+# A slide owes a sentence about its empty places only when it took one drawing
+# and the render measured at least this many.
+PLACES_WORTH_ASKING_ABOUT = 3
+
+
 def check_places_left(
     entry: dict,
     label: str,
@@ -449,11 +454,22 @@ def check_places_left(
     drawing, or one where it would sit against a word, is a complete answer. It
     demands only that stopping is a decision somebody wrote down, in the same way
     refusing is.
+
+    It asks only the slide it was written for: one drawing where three or more
+    places were measured. It first asked every slide with a place left over, and
+    the cheapest way to owe no sentence was to fill the place. On 7 October 2026
+    a deck of clock faces came back with 65 drawings on 24 slides, a ladybird
+    and a balloon wedged between the clocks a child was reading, and the
+    teacher's ruling was that a plain decoration does not belong in among the
+    teaching, so those places are meant to stay empty. A slide with two drawings
+    and four places left has made that decision and owes nobody an account of it.
     """
     if not isinstance(measurement, dict):
         return
     places = measurement.get("readableAreas")
-    if not isinstance(places, int) or places <= taken:
+    if not isinstance(places, int) or places < PLACES_WORTH_ASKING_ABOUT:
+        return
+    if taken > 1:
         return
     note = entry.get("placesLeft")
     if isinstance(note, str) and note.strip():
@@ -462,9 +478,10 @@ def check_places_left(
         f"{label} took {taken} drawing(s) where the render measured {places} "
         f"separate clear places. Say in `placesLeft` why the other "
         f"{places - taken} stayed empty. A place too small to show a drawing, "
-        "or one where it would sit against a word or a helper, is a complete "
-        "answer; what is not an answer is stopping at one without noticing "
-        "there were more places"
+        "one where it would sit against a word or a helper, or one in among "
+        "the teaching that this lesson had no drawing of its own for, is a "
+        "complete answer; what is not an answer is stopping at one without "
+        "noticing there were more places"
     )
 
 
@@ -970,6 +987,7 @@ def drawings_on_ink(lesson: object, room_record: object) -> tuple[list[str], boo
 
     failures: list[str] = []
     looked = False
+    figures = _figures_by_slide(room_record)
     for number, decorations in slide_decorations(lesson).items():
         page = pages.get(number)
         if page is None or not Path(page).is_file():
@@ -983,6 +1001,23 @@ def drawings_on_ink(lesson: object, room_record: object) -> tuple[list[str], boo
             continue
         looked = True
         rows, columns = len(grid), len(grid[0])
+        # The ink check cannot see a figure's empty parts. It forgives pale
+        # fills and thin lines so that a drawing may sit on a card, and the
+        # inside of an empty bar chart is thin lines on white: a ladybird passed
+        # it on the line where the teacher draws a bar, a cloud passed it inside
+        # the L-shape whose sides the class was finding, and one decorator took
+        # seven such drawings off by eye after this check had allowed them
+        # (7 October 2026). The teacher: "I dont think they should be over
+        # helpers like this". The measurement carries where the builder drew
+        # each figure, and no drawing goes on one, whatever it is of. Beside a
+        # figure is still the decorator's judgement.
+        on_figure: dict[tuple[int, int], str] = {}
+        for figure in figures.get(number) or []:
+            if not isinstance(figure, dict):
+                continue
+            kind = str(figure.get("type") or "figure").replace("-", " ")
+            for cell in measurer.figure_cells(image, Image, ImageChops, figure):
+                on_figure.setdefault(cell, kind)
         for decoration in decorations:
             if decoration.get("layer") == "low":
                 continue
@@ -1001,10 +1036,21 @@ def drawings_on_ink(lesson: object, room_record: object) -> tuple[list[str], boo
             cells = [(r, c) for r in range(r0, r1) for c in range(c0, c1)]
             if not cells:
                 continue
+            name = decoration.get("concept") or decoration.get("id") or "a drawing"
+            kinds = [on_figure[cell] for cell in cells if cell in on_figure]
+            if len(kinds) / len(cells) > ON_FIGURE_SHARE:
+                failures.append(
+                    f"slide {number}: the `{name}` drawing sits on the "
+                    f"{kinds[0]} - {round(len(kinds) / len(cells) * 100)}% of "
+                    "its frame is on it. The empty part of a chart, a shape or "
+                    "a table is where the teaching happens, so no drawing goes "
+                    "there, whatever it is of. Move it off the figure: the "
+                    "blank card round it is still open"
+                )
+                continue
             occupied = sum(1 for r, c in cells if not grid[r][c]) / len(cells)
             if occupied <= ON_INK_SHARE:
                 continue
-            name = decoration.get("concept") or decoration.get("id") or "a drawing"
             failures.append(
                 f"slide {number}: the `{name}` drawing touches something a child "
                 f"reads - {round(occupied * 100)}% of its frame is over words, a "
@@ -1013,6 +1059,227 @@ def drawings_on_ink(lesson: object, room_record: object) -> tuple[list[str], boo
                 "figures and photographs count"
             )
     return failures, looked
+
+
+# How much of a drawing may lie on a figure before it is on it. A drawing
+# resting across a figure's outer edge is beside it.
+ON_FIGURE_SHARE = 0.1
+
+
+def _figures_by_slide(room_record: object) -> dict[int, list[dict]]:
+    slides = room_record.get("slides") if isinstance(room_record, dict) else None
+    return {
+        entry["slide"]: entry["figures"]
+        for entry in (slides if isinstance(slides, list) else [])
+        if isinstance(entry, dict)
+        and isinstance(entry.get("slide"), int)
+        and isinstance(entry.get("figures"), list)
+    }
+
+
+# The signs a slide uses to tell children what to do, by the words a drawing of
+# one is filed under.
+SIGN_LOOKALIKES = {
+    "the pencil sign, which tells children to write": re.compile(
+        r"\b(pencils?)\b", re.IGNORECASE
+    ),
+    "the tick sign, which marks an answers slide": re.compile(
+        r"\b(ticks?|check ?marks?|checkmarks?)\b", re.IGNORECASE
+    ),
+    "the lightning bolt, which marks a task done on the board": re.compile(
+        r"\b(lightning|thunderbolts?)\b", re.IGNORECASE
+    ),
+    "the sheet sign, which marks a task done on the worksheet": re.compile(
+        r"\b(worksheets?|sheets? of paper|paper sheets?|notepaper)\b", re.IGNORECASE
+    ),
+}
+
+
+def sign_lookalikes(lesson: object) -> list[str]:
+    """Decorations that look like one of the signs children act on.
+
+    A pencil on a slide means "write now", and children learn that once. A
+    decorative pencil a few inches from the real one is the same picture meaning
+    nothing, and the teacher called it "annoying because theres already a pencil
+    icon to get children to write" (8 October 2026). He ruled it out across the
+    whole deck, not only on slides that carry the sign, because a sign works
+    only while it always means the same thing.
+    """
+    failures: list[str] = []
+    for number, decorations in slide_decorations(lesson).items():
+        for decoration in decorations:
+            words = " ".join(
+                str(decoration.get(key) or "").replace("-", " ").replace("_", " ").replace("/", " ")
+                for key in ("concept", "educationalSvgId", "id")
+            )
+            for sign, pattern in SIGN_LOOKALIKES.items():
+                if not pattern.search(words):
+                    continue
+                name = decoration.get("concept") or decoration.get("id") or "a drawing"
+                failures.append(
+                    f"slide {number}: the `{name}` drawing looks like {sign}. "
+                    "A child cannot tell a decoration from the sign, so choose "
+                    "a different drawing for this place"
+                )
+                break
+    return failures
+
+
+def _only_grows(before: object, after: object) -> bool | None:
+    """Whether `after` is `before` with more written in and nothing taken away.
+
+    None means the two are identical. A string grows when every character of the
+    earlier one is still there in order ("4" to "64", "Tens:" to
+    "Tens: {{13 - 7 = 6}}"), which is what an answer appearing looks like and
+    what a different question never does.
+    """
+    if before == after:
+        return None
+    if isinstance(before, dict) and isinstance(after, dict):
+        if set(before) - set(after):
+            return False
+        grew = any(key not in before for key in after)
+        for key, value in before.items():
+            step = _only_grows(value, after[key])
+            if step is False:
+                return False
+            grew = grew or step is True
+        return True if grew else None
+    if isinstance(before, list) and isinstance(after, list):
+        if len(before) != len(after):
+            return False
+        grew = False
+        for old, new in zip(before, after):
+            step = _only_grows(old, new)
+            if step is False:
+                return False
+            grew = grew or step is True
+        return True if grew else None
+    if before is None or before == "":
+        return True
+    if isinstance(before, str) and isinstance(after, str):
+        letters = iter(after)
+        return all(letter in letters for letter in before)
+    return False
+
+
+# The title of an answers slide, as `check-slide-design.js` reads it.
+ANSWER_TITLE = re.compile(r"\banswers?\b", re.IGNORECASE)
+
+
+def _answers_its_question(before: dict, after: dict) -> bool:
+    """Whether `after` is the answers slide of the task slide before it.
+
+    The teacher makes an answers slide by duplicating the question slide and
+    swapping the answers in, "so that there's not a massive visual jump", and
+    the deck is built the same way: same part of the lesson, same template. An
+    answers slide the designer laid out afresh on another template is a new
+    page, and its clear places are somewhere else.
+    """
+    if not ANSWER_TITLE.search(str(after.get("title") or "")):
+        return False
+    if ANSWER_TITLE.search(str(before.get("title") or "")):
+        return False
+    unit = before.get("designUnitId")
+    return (
+        isinstance(unit, str)
+        and unit == after.get("designUnitId")
+        and before.get("template") == after.get("template")
+    )
+
+
+def reveal_runs(lesson: object) -> list[list[int]]:
+    """Runs of slides that are one page clicked through.
+
+    Two things make the next slide the same page. It is the answers slide of the
+    question before it. Or, read from the slides themselves with drawings and
+    teacher notes left out, nothing on it has moved or gone and the only change
+    is more written in: a column subtraction answered a digit a click is four
+    such slides. A second page of questions, or the same story told on with new
+    sentences, is neither, because words there are replaced. The two join up, so
+    a question and its four answer clicks are one run of five.
+    """
+    slides = lesson.get("slides") if isinstance(lesson, dict) else None
+    if not isinstance(slides, list):
+        return []
+
+    def page(slide: object) -> object:
+        if not isinstance(slide, dict):
+            return None
+        return {
+            key: value for key, value in slide.items()
+            if key not in ("decorations", "speakerNotes")
+        }
+
+    runs: list[list[int]] = []
+    current: list[int] = []
+    for number in range(1, len(slides)):
+        before, after = page(slides[number - 1]), page(slides[number])
+        same_page = (
+            before is not None
+            and after is not None
+            and (
+                _only_grows(before, after) is True
+                or _answers_its_question(before, after)
+            )
+        )
+        if same_page:
+            if not current:
+                current = [number]
+            current.append(number + 1)
+        elif current:
+            runs.append(current)
+            current = []
+    if current:
+        runs.append(current)
+    return runs
+
+
+def drawings_that_move_in_a_run(lesson: object) -> list[str]:
+    """A page clicked through keeps its drawings exactly where they were.
+
+    On 7 October 2026 a Year 4 deck answered a column subtraction a digit a
+    click, and each click also swapped the drawing beside the working: a medal,
+    two balloons, a man with his thumb up, a set of pencils. The one new green
+    digit is the thing a child is meant to see, and the drawing moved more than
+    it did. The teacher's ruling: the same drawing, unchanged, on every click,
+    and the same for a question slide and its answers slide.
+    """
+    slides = lesson.get("slides") if isinstance(lesson, dict) else None
+    if not isinstance(slides, list):
+        return []
+
+    def placed(number: int) -> list[str]:
+        slide = slides[number - 1]
+        decorations = slide.get("decorations") if isinstance(slide, dict) else None
+        entries = decorations if isinstance(decorations, list) else []
+        return sorted(
+            json.dumps(
+                {k: v for k, v in entry.items() if k not in ("id", "context")},
+                sort_keys=True,
+                ensure_ascii=False,
+            )
+            for entry in entries
+            if isinstance(entry, dict)
+        )
+
+    failures: list[str] = []
+    for run in reveal_runs(lesson):
+        first = placed(run[0])
+        changed = [number for number in run[1:] if placed(number) != first]
+        if not changed:
+            continue
+        failures.append(
+            f"slides {run[0]} to {run[-1]} are one page clicked through, a "
+            "question and its answers, and the drawings change on slide(s) "
+            f"{', '.join(str(n) for n in changed)}. The answer is the one "
+            "thing a child should see move, so give every slide of the run the "
+            f"same drawings in the same frames as slide {run[0]}. Choose "
+            "places that are clear on every slide of the run, starting from "
+            f"slide {run[-1]}, which has the most written on it; a place that "
+            "is clear on only some of them takes no drawing"
+        )
+    return failures
 
 
 # How many slides one plain decoration may appear on.
@@ -1037,9 +1304,15 @@ def repeated_decorations(lesson: object) -> list[str]:
     slides = lesson.get("slides") if isinstance(lesson, dict) else None
     if not isinstance(slides, list):
         return []
+    # A page clicked through is one page, so its drawing is seen once however
+    # many clicks it stays for. Each run is counted at its first slide.
+    first_of_run = {
+        number: run[0] for run in reveal_runs(lesson) for number in run
+    }
     where: dict[str, list[int]] = {}
     names: dict[str, str] = {}
     for number, slide in enumerate(slides, 1):
+        number = first_of_run.get(number, number)
         if not isinstance(slide, dict):
             continue
         decorations = slide.get("decorations")
@@ -1254,7 +1527,9 @@ def check(
         failures.extend(covered_decorations(pptx))
     on_ink, _ = drawings_on_ink(lesson, room_record)
     failures.extend(on_ink)
+    failures.extend(sign_lookalikes(lesson))
     failures.extend(repeated_decorations(lesson))
+    failures.extend(drawings_that_move_in_a_run(lesson))
     reason_counts: dict[str, int] = {}
     seen: dict[int, dict] = {}
 

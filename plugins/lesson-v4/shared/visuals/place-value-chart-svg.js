@@ -106,8 +106,8 @@ const BOARD_MIN_SCALE = 0.65; // the smallest a chart given a height may go anyw
 // sum on Year 4 Maths Lesson 24 slide 11 he said it "looks awful". Number
 // lines, fraction walls and tables already held 18pt on a slide; the chart had
 // kept 0.65 of it (11.7pt digits, 9pt headings) from the board chart it
-// replaced, and nobody had decided that. Headings keep their share of the
-// digit, so they are 13pt at this size. A zone too short for it is refused by
+// replaced, and nobody had decided that. Headings have the same 18pt floor of
+// their own (headingsFor). A zone too short for it is refused by
 // PLACE_VALUE_CHART_DOES_NOT_FIT with the height it needs, as before. The
 // before-and-after pair takes the same floor on a slide (his answer the same
 // evening: "yes same 18pt floor"); its own smaller scales below are for the
@@ -123,6 +123,8 @@ const HEADER_H = 1.52;
 const ROW_H = 2.2;
 const COUNTER_H = 4.8;        // the counter band above a row of digits
 const HEAD_FONT = 0.72;       // a heading, as a share of D
+const SLIDE_HEAD_FONT = 0.9;  // ...and the most it grows to on a slide, where a wide
+                              // column has room for it: just under the digit
 const LABEL_FONT = 0.78;      // a row label
 const TITLE_FONT = 0.87;
 const TITLE_GAP = 0.3;
@@ -766,17 +768,44 @@ function columnFills(profile, column) {
 // whiteboard) is the fallback rather than a smaller full word. All the headings
 // change together or none does: "Th | Hundreds | T | O" is a chart that cannot
 // decide what it is.
-function headingsFor(chart, colW, startPt, floor, inset) {
+//
+// On a slide a heading is never under the projection floor, the same 18pt the
+// digits stop at. It had been allowed half of that, and it kept the whole word
+// squeezed small in preference to the short name at a size the room reads:
+// "Thousands" at 11pt over three starter sums, and "HTh" at 14pt in three
+// six-column sums across one slide (stress test, 7 October 2026). Nothing saw
+// either, because by the time a slide is checked the words are inside a picture.
+// The teacher's rulings on those pages (8 October 2026): the short name whenever
+// the word will not fit at a proper size, never a second line, never under
+// 18pt, and a slide split in two rather than a smaller heading. So the word is
+// used where it fits at 18pt, the short name otherwise, either grows into a
+// wide column up to just under the digit, and a column too narrow for even the
+// short name at 18pt is refused with the width it needs. Paper and the wall are
+// drawn as they were.
+function headingsFor(chart, colW, D, profile, inset) {
+  const onSlide = profile.surface === 'slides';
+  const floor = onSlide ? profile.minFontPt : floorPt(profile, 0.5);
+  const startPt = onSlide ? Math.max(floor, SLIDE_HEAD_FONT * D) : HEAD_FONT * D;
   const fit = (labels) => {
     const widest = labels.reduce((m, l, i) => (chart.columns[i] === '.' ? m : Math.max(m, textWidthEm(l, true))), 0);
-    if (widest <= 0) return { font: startPt, fits: true };
+    if (widest <= 0) return { font: startPt, fits: true, widest: 0 };
     const byWidth = Math.max(0.1, colW - inset) / widest;
     const font = Math.max(floor, Math.min(startPt, byWidth));
-    return { font, fits: widest * font <= colW - inset + 0.01 };
+    return { font, fits: widest * font <= colW - inset + 0.01, widest, byWidth };
   };
   const written = fit(chart.written);
   if (written.fits) return { labels: chart.written, font: written.font };
   const short = fit(chart.columns);
+  if (onSlide && !short.fits) {
+    const longest = chart.columns.reduce((m, l, i) => (chart.columns[i] !== '.' && textWidthEm(l, true) > textWidthEm(m, true) ? l : m), '');
+    throw new Error(
+      `PLACE_VALUE_HEADINGS_TOO_SMALL: this chart's column headings ("${longest}") would print at ${short.byWidth.toFixed(1)}pt, below the ` +
+        `${floor}pt the class reads from the board, because each column is only ${(colW / 72).toFixed(2)}in wide and the heading needs ` +
+        `${((short.widest * floor + inset) / 72).toFixed(2)}in. Height is not the lever, so a taller zone will not move it: give the chart more WIDTH - ` +
+        'fewer charts side by side on this slide (two across instead of three, or one above another), a wider zone, ' +
+        'or a template that does not spend 40% of the board on a side panel. Where the sums will not all fit at that width, put them on two slides.'
+    );
+  }
   return { labels: chart.columns, font: short.font };
 }
 
@@ -980,9 +1009,8 @@ function describeStacked(chart, profile) {
   const { D, N, colW, units, inset } = L;
   const pal = paletteFor(profile);
   const cols = chart.columns;
-  const headFloor = floorPt(profile, 0.5);
   const labelFloor = floorPt(profile, 10 / 18);
-  const heading = headingsFor(chart, colW, HEAD_FONT * D, headFloor, inset);
+  const heading = headingsFor(chart, colW, D, profile, inset);
   const labelW = units.label * colW;
   const colWs = cols.map((c) => (c === '.' ? colW * POINT_W : colW));
   const gridW = colWs.reduce((a, b) => a + b, 0);
@@ -1210,7 +1238,8 @@ function describeCalculation(chart, profile) {
     );
   }
 
-  const heading = headingsFor(chart, colW, HEAD_FONT * D, floorPt(profile, 0.5), inset);
+  // A sum drawn without its heading row has no heading to size or to refuse.
+  const heading = chart.headings ? headingsFor(chart, colW, D, profile, inset) : { labels: chart.columns, font: 0 };
   const opW = CALC_OP_W * colW;
   const colWs = cols.map((c) => (c === '.' ? colW * POINT_W : colW));
   const chartW = opW + colWs.reduce((a, b) => a + b, 0);
@@ -1425,8 +1454,7 @@ function describePair(chart, profile) {
   const colWs = cols.map((c) => (c === '.' ? colW * POINT_W : colW));
   const chartW = colWs.reduce((a, b) => a + b, 0);
   const totalW = 2 * chartW + gap;
-  const headFloor = floorPt(profile, 0.5);
-  const heading = headingsFor(chart, colW, HEAD_FONT * D, headFloor, inset);
+  const heading = headingsFor(chart, colW, D, profile, inset);
   const rule = Math.max(1, GRID_W * D);
   const ringW = Math.max(3, RING_W * D);
   const ringInset = Math.max(ringW / 2 + 1, RING_INSET * D);

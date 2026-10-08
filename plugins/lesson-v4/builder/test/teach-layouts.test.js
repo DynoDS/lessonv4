@@ -380,6 +380,95 @@ test('a Teach beat whose design has no script is not asked for one', (t) => {
   assert.doesNotMatch(result.stdout || '', /TEACH_SLIDE_WITHOUT_ITS_SCRIPT/);
 });
 
+// ─── the child's quick task on a Teach slide ──────────────────────────────
+//
+// Three lessons of the twenty-lesson test (7 October 2026) gave children a
+// quick job on a Teach slide and printed it black with no sign, because these
+// layouts had no place for one. The teacher's rulings the next day: the job is
+// blue with its sign, advice on how to go about it stays black on the same
+// card, and two sentences that are both the job are both blue.
+
+const TEACH_WITH_TASK = [{ kind: 'teach', sourceUnitId: 'lesson-section/teaching-sequence/unit-001',
+  pupilInstruction: 'Write the two multiplications we need to do for 4,125 × 43. Don\'t work them out.',
+  speakerNotes: { script: 'Say to children: look.' } }];
+
+function taskCard(slide) {
+  const [expanded] = expandTeachLayouts({ slides: [slide] }).slides;
+  return texts(expanded).find((node) => node.teachTask === true);
+}
+
+test('a Teach slide\'s task is its own blue card with the sign it names', () => {
+  const card = taskCard(teachSlide('lead-picture-lines', { question: undefined,
+    task: { value: 'Write one word: yes or no.', signal: 'pencil' } }));
+  assert.equal(card.value, 'Write one word: yes or no.');
+  assert.equal(card.colorRole, 'task-blue');
+  assert.equal(card.signal, 'pencil');
+  assert.equal(card.adviceAfterBreaks, undefined);
+});
+
+test('the task may be the column\'s only card, where the lead has done the telling', () => {
+  const card = taskCard(teachSlide('lead-picture-lines', { lines: undefined, task: 'Point to the tens digit.' }));
+  assert.equal(card.value, 'Point to the tens digit.');
+  assert.equal(card.signal, undefined);
+});
+
+test('advice shares the task\'s card and prints black under the blue job', () => {
+  const { presentationRuns } = require('../src/presentation-text');
+  const { COLOURS } = require('../src/styles');
+  const card = taskCard(teachSlide('lead-picture-lines', { question: undefined, task: {
+    value: 'Write the two multiplications we need to do for <<4,125 × 43>>.',
+    advice: 'Don\'t work them out.', signal: 'pencil' } }));
+  const runs = presentationRuns(card.value, true, COLOURS.body, card);
+  const colourOf = (words) => runs.find((run) => run.text.includes(words)).options.color;
+  const same = (a, b) => String(a).replace('#', '').toUpperCase() === String(b).replace('#', '').toUpperCase();
+  assert.ok(same(colourOf('Write the two'), COLOURS.title), 'the job is blue');
+  assert.ok(same(colourOf('work them out'), COLOURS.body), 'the advice is black');
+  assert.ok(!same(colourOf('4,125'), COLOURS.title) && !same(colourOf('4,125'), COLOURS.body),
+    'a supplied number keeps its own colour');
+});
+
+test('a task takes no sizing, no other colour and no sign the deck keeps for answers', () => {
+  refuses(teachSlide('lead-picture-lines', { task: { value: 'Write it.', fontSize: 40 } }), /fontSize cannot be set on the task/);
+  refuses(teachSlide('lead-picture-lines', { task: { value: 'Write it.', signal: 'tick' } }), /pencil, talk, magnifier/);
+  refuses(teachSlide('picture-with-statement', { task: 'Write it.' }), /nowhere to put "task".*lead-picture-lines/);
+});
+
+test('a Teach unit\'s instruction left in an explanation line is refused', (t) => {
+  const dir = tmpDir(t, 'teach-layouts-task-black-');
+  const specPath = writeLesson(dir, [teachSlide('lead-picture-lines', {
+    designUnitId: 'lesson-section/teaching-sequence/unit-001',
+    lines: ['Write the two multiplications we need to do for <<4,125 × 43>>.\n\nDon\'t work them out.'] })]);
+  designFor(dir, TEACH_WITH_TASK);
+  const result = runSlideDesignCheck(specPath);
+  assert.equal(result.ok, false);
+  assert.match(result.stdout, /TEACH_TASK_OUTSIDE_ITS_SLOT/);
+});
+
+test('the same instruction in the task place passes, two sentences and all', (t) => {
+  const dir = tmpDir(t, 'teach-layouts-task-blue-');
+  const specPath = writeLesson(dir, [
+    teachSlide('lead-picture-lines', { designUnitId: 'lesson-section/teaching-sequence/unit-001', question: undefined,
+      task: { value: 'Write the two multiplications we need to do for <<4,125 × 43>>.',
+        advice: 'Don\'t work them out.', signal: 'pencil' } }),
+    teachSlide('four-cards', { designUnitId: 'lesson-section/teaching-sequence/unit-002', sticky: undefined,
+      task: { value: 'Decide who has eaten more.\nWrite Chidi, Ali or the same.', signal: 'pencil' } })
+  ]);
+  designFor(dir, TEACH_WITH_TASK.concat([{ kind: 'teach', sourceUnitId: 'lesson-section/teaching-sequence/unit-002',
+    pupilInstruction: 'Decide who has eaten more. Write Chidi, Ali or the same.',
+    speakerNotes: { script: 'Say to children: look.' } }]));
+  const result = runSlideDesignCheck(specPath);
+  assert.doesNotMatch(result.stdout || '', /TEACH_TASK_OUTSIDE_ITS_SLOT|TASK_BLUE_NOT_A_SHORT_TASK|BLUE_WITHOUT_A_QUESTION|TEACH_LAYOUT/);
+});
+
+test('a Teach slide with no instruction in its design is not asked for a task', (t) => {
+  const dir = tmpDir(t, 'teach-layouts-task-none-');
+  const specPath = writeLesson(dir, [teachSlide('lead-picture-lines', {
+    designUnitId: 'lesson-section/teaching-sequence/unit-001' })]);
+  designFor(dir, TEACH_WITH_SCRIPT);
+  const result = runSlideDesignCheck(specPath);
+  assert.doesNotMatch(result.stdout || '', /TEACH_TASK_OUTSIDE_ITS_SLOT/);
+});
+
 // ─── the catalogue the designer reads is the catalogue that exists ─────────
 
 test('templates.md lists every layout the builder has, and no other', () => {

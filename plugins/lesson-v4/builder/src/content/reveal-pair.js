@@ -1,6 +1,7 @@
 'use strict';
 
 const { itemText } = require('../content-picture');
+const { PICTURES } = require('../../../shared/visual-parity');
 
 function blocksIn(node, found, path = '', slideIndex = -1) {
   if (!node || typeof node !== 'object') return;
@@ -10,8 +11,22 @@ function blocksIn(node, found, path = '', slideIndex = -1) {
   }
   if (node.revealPair) found.push({ block: node, path, slideIndex });
   Object.keys(node).forEach((key) => {
-    if (key !== 'revealPair') blocksIn(node[key], found, `${path}.${key}`, slideIndex);
+    if (key === 'revealPair') return;
+    blocksIn(key === 'items' ? itemsAsDrawn(node) : node[key], found, `${path}.${key}`, slideIndex);
   });
+}
+
+// A numbered row draws a copy of each item with its (1), (2), (3) added
+// (content/row.js). The half of a pair being drawn arrives numbered, so its
+// counterpart is read numbered too and the two are sized as the words a child
+// will see. A row whose numbering is itself refused says so when it is drawn.
+function itemsAsDrawn(node) {
+  if (node.type !== 'row' || !Array.isArray(node.items)) return node.items;
+  try {
+    return require('../question-labels').numberRowItems(node);
+  } catch {
+    return node.items;
+  }
 }
 
 // What a question slide and its answer slide may differ in besides the paired
@@ -25,12 +40,62 @@ function blocksIn(node, found, path = '', slideIndex = -1) {
 // `settlePairedHeaders` keeps the two headers the same height.
 const PAIR_HEADER_FURNITURE = ['title', 'heading', 'speakerNotes', 'notes', 'instruction', 'signal', 'doSign', 'pairedHeaderTwoLine'];
 
+// An answers slide is the question slide duplicated with the answers swapped
+// in, and a drawing is one of the things they are swapped into: the bars
+// shaded, the chart filled in, the bar chart with its bars drawn. The pair
+// used to compare a drawing field by field, so a bar shaded on the answers was
+// "a difference" and the pair was refused, while an exact answer left unpaired
+// was refused too. Eight of twenty lessons (7 October 2026) either showed the
+// answer in the sum beside a drawing left blank or dropped the green mark to
+// get through. The teacher, asked what the rule was for: "so that there's not
+// a massive visual jump. I make the questions slide, then duplicate it and
+// swap them for answers. Whether that's text boxes, same visual like chart,
+// fraction bar". So a drawing is held to its kind and its place in the
+// layout, and what it shows is the designer's. `table` is here with the
+// drawings because answers are swapped into its cells the same way.
+const DRAWINGS = new Set(['table']);
+PICTURES.forEach((picture) => {
+  [].concat(picture.slides || []).forEach((key) => { if (typeof key === 'string') DRAWINGS.add(key); });
+});
+const DRAWING_FRAME = ['type', 'weight', 'heightRatio', 'heightMode'];
+
+function isDrawing(node) {
+  return !!node && typeof node === 'object' && !Array.isArray(node) && DRAWINGS.has(node.type);
+}
+
+// Every drawing on a slide as what it shows, without where it sits, so the
+// same drawing moved into a stack still reads as the same drawing.
+function drawingsShown(node, found = []) {
+  if (Array.isArray(node)) {
+    node.forEach((item) => drawingsShown(item, found));
+  } else if (isDrawing(node)) {
+    const shown = {};
+    Object.keys(node).sort().forEach((key) => {
+      if (key === 'type' || !DRAWING_FRAME.includes(key)) shown[key] = node[key];
+    });
+    found.push(JSON.stringify(shown));
+  } else if (node && typeof node === 'object') {
+    Object.keys(node).forEach((key) => {
+      if (!['speakerNotes', 'notes', 'decorations'].includes(key)) drawingsShown(node[key], found);
+    });
+  }
+  return found;
+}
+
 function staticSlide(node, root = false) {
   if (Array.isArray(node)) return node.map((item) => staticSlide(item));
   if (!node || typeof node !== 'object') return node;
+  if (!root && isDrawing(node)) {
+    const frame = {};
+    DRAWING_FRAME.forEach((key) => { if (key in node) frame[key] = node[key]; });
+    return frame;
+  }
   const out = {};
   Object.keys(node).sort().forEach((key) => {
     if (root && PAIR_HEADER_FURNITURE.includes(key)) return;
+    // The pencil beside an instruction in the body is the same pencil as the
+    // header's: it says "write", and on the answers nobody is writing.
+    if (!root && key === 'signal') return;
     if (node.revealPair) {
       if (key === 'revealPair') {
         out[key] = { id: node.revealPair.id, state: '[paired state]' };
@@ -84,13 +149,22 @@ function pairedBlocks(data, ctx) {
   if (matches.length !== 2 || new Set(matches.map((found) => found.block.revealPair.state)).size !== 2) {
     throw new Error(`REVEAL_PAIR_INVALID: "${id}" needs exactly one question and one answer block.`);
   }
-  const own = matches.find((found) => found.block === data);
+  // The half being drawn is found by its state and never by being the same
+  // object. A numbered row hands its items on as copies and every slide reaches
+  // its template through the wrapper in templates/index.js, so "the same
+  // object" was never true for either: a numbered row of questions and a pair
+  // set on a whole Your Turn slide were refused whatever they held, with no
+  // difference to name (five of twenty lessons, 7 October 2026). Exactly one
+  // block holds each state, which the test above has just established.
+  const own = matches.find((found) => found.block.revealPair.state === state);
   const counterpart = matches.find((found) => found.block.revealPair.state !== state);
   if (!own || !counterpart || own.slideIndex === counterpart.slideIndex || own.path !== counterpart.path ||
       JSON.stringify(staticSlide(slides[own.slideIndex], true)) !==
         JSON.stringify(staticSlide(slides[counterpart.slideIndex], true))) {
     let differs = '';
-    if (own && counterpart && own.slideIndex !== counterpart.slideIndex) {
+    if (own && counterpart && own.slideIndex === counterpart.slideIndex) {
+      differs = ` Both halves are on slide ${own.slideIndex + 1}: the answer belongs on a slide of its own.`;
+    } else if (own && counterpart) {
       const [asks, answers] = state === 'question' ? [own, counterpart] : [counterpart, own];
       const fields = own.path !== counterpart.path
         ? [`the paired block's place (${asks.path || 'the slide'} on the question slide, ${answers.path || 'the slide'} on the answer slide)`]
@@ -99,7 +173,7 @@ function pairedBlocks(data, ctx) {
         differs = ` They differ in: ${fields.slice(0, 4).join('; ')}${fields.length > 4 ? `; and ${fields.length - 4} more` : ''}.`;
       }
     }
-    throw new Error(`REVEAL_PAIR_LAYOUT: "${id}" needs the same template, content slot and static slide composition.${differs}`);
+    throw new Error(`REVEAL_PAIR_LAYOUT: "${id}" needs the same template, content slot and static slide composition. What a drawing shows may change; its kind and place may not.${differs}`);
   }
   return { id, state, peer: counterpart.block, slides, matches };
 }
@@ -213,4 +287,4 @@ function settlePairedHeaders(lesson) {
 }
 
 const PAIRED_LAYOUT = Symbol('paired reveal layout');
-module.exports = { pairedEntries, pairedText, PAIRED_LAYOUT, settlePairedHeaders };
+module.exports = { pairedEntries, pairedText, PAIRED_LAYOUT, settlePairedHeaders, isDrawing, drawingsShown };

@@ -34,7 +34,7 @@ class TeachLayoutError extends Error {
 }
 
 const SLOT_KEYS = [
-  'lead', 'lines', 'question', 'sticky', 'pictures', 'captions', 'sides',
+  'lead', 'lines', 'question', 'task', 'sticky', 'pictures', 'captions', 'sides',
   'headingRole', 'speakers', 'statement', 'steps', 'columns', 'answers', 'extract'
 ];
 
@@ -122,6 +122,67 @@ function textSlot(value, where, role) {
       'the two colours fight. Put the orange on another line.');
   }
   return item;
+}
+
+// The child's quick task on a Teach slide (the design's `pupilInstruction`).
+// Until 8 October 2026 these layouts had no place for one, so it went in as an
+// explanation line and printed black with no sign: three lessons of the
+// twenty-lesson test, and the teacher's ruling on each. The job prints blue;
+// `advice`, a sentence that only says how to go about it (`Don't work them
+// out.`), prints black under it on the same card; the sign is the one the job
+// calls for, named as on any card.
+const TASK_KEYS = ['value', 'text', 'advice', 'signal', 'emphasis'];
+const TASK_SIGNS = ['pencil', 'talk', 'magnifier'];
+
+function taskSlot(value, where) {
+  const item = {};
+  if (typeof value === 'string') {
+    item.value = value;
+  } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const extra = Object.keys(value).filter((k) => !TASK_KEYS.includes(k));
+    if (extra.length) {
+      fail(where, `${extra.join(', ')} cannot be set on the task; it takes its words ("value"), ` +
+        '"advice" for a sentence that only says how to go about it, a "signal" and "emphasis". ' +
+        'The layout sets its size, alignment and blue.');
+    }
+    item.value = value.value != null ? value.value : value.text;
+    if (value.advice !== undefined) item.advice = value.advice;
+    if (value.signal !== undefined) item.signal = value.signal;
+    if (value.emphasis !== undefined) item.emphasis = value.emphasis;
+  } else {
+    fail(where, 'expected the task as a string, or an object with a "value".');
+  }
+  if (typeof item.value !== 'string' || !item.value.trim()) fail(where, 'the task is empty.');
+  if (item.advice !== undefined && (typeof item.advice !== 'string' || !item.advice.trim())) {
+    fail(where, '"advice" is a sentence that says how to go about the task; leave it out when there is none.');
+  }
+  if (item.signal !== undefined && !TASK_SIGNS.includes(item.signal)) {
+    fail(where, `the task's "signal" is ${TASK_SIGNS.join(', ')}, by what children do; ` +
+      'leave it out when the job is none of those.');
+  }
+  return item;
+}
+
+// The job's words and its advice share one card, a blank line between them.
+// `adviceAfterBreaks` counts the line breaks that come before the advice, so
+// the builder paints from there in black and the check judges the job alone.
+function taskText(slot) {
+  const job = slot.value.trim();
+  const out = { type: 'text', value: job, align: 'center', colorRole: 'task-blue', teachTask: true };
+  if (slot.advice) {
+    out.value = `${job}\n\n${slot.advice.trim()}`;
+    out.adviceAfterBreaks = job.split('\n').length + 1;
+  }
+  if (slot.signal) out.signal = slot.signal;
+  if (slot.emphasis !== undefined) out.emphasis = slot.emphasis;
+  return out;
+}
+
+// The job without its advice, as the slide check reads a task card.
+function teachTaskJob(node) {
+  const whole = String(node.value || '');
+  if (!node.adviceAfterBreaks) return whole;
+  return whole.split('\n').slice(0, node.adviceAfterBreaks - 1).join('\n');
 }
 
 function tellsAndAsks(value) {
@@ -239,7 +300,7 @@ const LAYOUTS = {
   // ── with pictures ──
   'lead-picture-lines': {
     use: 'The big idea across the top, one picture below it, the explanation beside the picture.',
-    slots: { lead: 1, pictures: [1, 1], lines: [1, 3], question: [0, 1], sticky: [0, 1] },
+    slots: { lead: 1, pictures: [1, 1], lines: [1, 3], question: [0, 1], task: [0, 1], sticky: [0, 1] },
     column: [1, 4],
     build: (s) => ({
       template: 'split-v-80-20', primarySide: 'bottom',
@@ -257,7 +318,7 @@ const LAYOUTS = {
   // (27 September 2026).
   'picture-top-cards': {
     use: 'A wide picture across the top, two or three equal cards in a row underneath; a lead line, when there is one, goes above the picture.',
-    slots: { lead: [0, 1], pictures: [1, 1], lines: [0, 3], question: [0, 1], sticky: [0, 1] },
+    slots: { lead: [0, 1], pictures: [1, 1], lines: [0, 3], question: [0, 1], task: [0, 1], sticky: [0, 1] },
     column: [2, 3],
     build: (s) => {
       const cards = cardRow(s.columnItems, 'cards');
@@ -296,7 +357,7 @@ const LAYOUTS = {
   },
   'question-lines-picture': {
     use: 'The question in a band across the top, then the explanation beside the picture that answers it.',
-    slots: { question: 1, pictures: [1, 1], lines: [1, 3], sticky: [0, 1] },
+    slots: { question: 1, pictures: [1, 1], lines: [1, 3], task: [0, 1], sticky: [0, 1] },
     column: [1, 4],
     columnSkipsQuestion: true,
     build: (s) => ({
@@ -335,7 +396,7 @@ const LAYOUTS = {
   },
   'picture-three-cards': {
     use: 'A two by two grid of equal squares: the picture in one, one idea in each of the other three.',
-    slots: { pictures: [1, 1], lines: [1, 3], question: [0, 1], sticky: [0, 1] },
+    slots: { pictures: [1, 1], lines: [1, 3], question: [0, 1], task: [0, 1], sticky: [0, 1] },
     column: [3, 3],
     build: (s) => ({
       template: 'grid-4',
@@ -374,7 +435,7 @@ const LAYOUTS = {
   },
   'labelled-picture-lines': {
     use: 'A picture with its parts labelled on it, and the explanation beside it in equal cards.',
-    slots: { pictures: [1, 1], lines: [1, 3], question: [0, 1], sticky: [0, 1] },
+    slots: { pictures: [1, 1], lines: [1, 3], question: [0, 1], task: [0, 1], sticky: [0, 1] },
     column: [2, 4],
     labelled: true,
     build: (s) => ({
@@ -397,7 +458,7 @@ const LAYOUTS = {
   },
   'banner-picture-sidebar': {
     use: 'A short banner, a big picture under it, and equal key-point cards down the side.',
-    slots: { lead: 1, pictures: [1, 1], lines: [1, 3], question: [0, 1], sticky: [0, 1] },
+    slots: { lead: 1, pictures: [1, 1], lines: [1, 3], question: [0, 1], task: [0, 1], sticky: [0, 1] },
     column: [2, 3],
     build: (s) => ({
       template: 'body-sidebar',
@@ -470,7 +531,7 @@ const LAYOUTS = {
   },
   'four-cards': {
     use: 'Four equal cards in a two by two grid, one idea each.',
-    slots: { lines: [2, 4], question: [0, 1], sticky: [0, 1] },
+    slots: { lines: [2, 4], question: [0, 1], task: [0, 1], sticky: [0, 1] },
     column: [4, 4],
     build: (s) => ({
       template: 'grid-4',
@@ -521,7 +582,7 @@ const LAYOUTS = {
   },
   'source-text': {
     use: 'A written source or passage children read closely: the lead line on top, the passage full width, then any explanation, question and line to remember under it.',
-    slots: { lead: [0, 1], extract: 1, lines: [0, 2], question: [0, 1], sticky: [0, 1] },
+    slots: { lead: [0, 1], extract: 1, lines: [0, 2], question: [0, 1], task: [0, 1], sticky: [0, 1] },
     build: (s) => {
       const items = [];
       if (s.lead) items.push(card(toText(s.lead, 'lead'), 'lead', { weight: 0.7 }));
@@ -533,6 +594,7 @@ const LAYOUTS = {
         items.push(Object.assign(cardRow(s.lines.map((l) => toText(l, 'line')), 'lines'), { weight: 1 }));
       }
       if (s.question) items.push(card(toText(s.question, 'question'), 'question', { weight: 0.8 }));
+      if (s.task) items.push(card(taskText(s.task), 'task', { weight: 0.8 }));
       if (s.sticky) items.push(card(toText(s.sticky, 'sticky'), 'sticky', { weight: 0.8 }));
       return { template: 'body-full', body: { type: 'stack', items } };
     }
@@ -610,6 +672,9 @@ function expandSlide(slide, slideNumber) {
     s[key] = textSlot(slide[key], `${at} ${key}`, key);
     if (key === 'question') s.questions = [s[key]];
   });
+  if (def.slots.task !== undefined && slide.task !== undefined) {
+    s.task = taskSlot(slide.task, `${at} task`);
+  }
   if (def.oneOf && !def.oneOf.some((k) => s[k])) {
     fail(at, `needs one of ${def.oneOf.map((k) => `"${k}"`).join(' or ')} for the bar along the bottom.`);
   }
@@ -666,6 +731,9 @@ function expandSlide(slide, slideNumber) {
     const range = countRange(def.slots[key]);
     if (!range) return;
     s[key] = listSlot(slide, key, at, lists[key]);
+    // A column whose only card is the child's task has no explanation line
+    // (the lead said it); the column's own count below still holds.
+    if (key === 'lines' && def.column && s.task && !s[key].length) return;
     if (s[key].length < range[0] || s[key].length > range[1]) {
       const want = range[0] === range[1] ? `${range[0]}` : `${range[0]} to ${range[1]}`;
       fail(at, `takes ${want} ${key}; found ${s[key].length}.`);
@@ -690,11 +758,12 @@ function expandSlide(slide, slideNumber) {
   if (def.column) {
     s.columnItems = (s.lines || []).map((l) => toText(l, 'line'))
       .concat(!def.columnSkipsQuestion && s.questions ? s.questions.map((q) => toText(q, 'question')) : [])
+      .concat(s.task ? [taskText(s.task)] : [])
       .concat(s.sticky ? [toText(s.sticky, 'sticky')] : []);
     const [min, max] = def.column;
     if (s.columnItems.length < min || s.columnItems.length > max) {
       const want = min === max ? `${min}` : `${min} to ${max}`;
-      fail(at, `the cards with the picture take ${want} lines in total (lines, question and ` +
+      fail(at, `the cards with the picture take ${want} lines in total (lines, question, task and ` +
         `line to remember together); found ${s.columnItems.length}.`);
     }
   }
@@ -746,5 +815,6 @@ module.exports = {
   TeachLayoutError,
   expandTeachLayouts,
   expandTeachLayoutsEach,
-  isTeachLayout
+  isTeachLayout,
+  teachTaskJob
 };

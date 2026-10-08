@@ -16,7 +16,15 @@ const test = require('node:test');
 
 const { measureContainedAspect } = require('../src/content/contained-extent');
 const { drawContent } = require('../src/content');
-const { labelDiagramKey } = require('../src/content/label-diagram');
+const { labelDiagramKey, preparedLabelDiagrams } = require('../src/content/label-diagram');
+
+// The pictures a build has read, with every drawing it will ask for already
+// made, as they stand in the build's second pass.
+function madeDiagrams(entries) {
+  const images = preparedLabelDiagrams(entries);
+  images._store.made = { get: () => Buffer.from('x') };
+  return images;
+}
 
 const ZONE = { x: 1, y: 2, w: 6, h: 4 };
 const inside = (rect, zone) =>
@@ -60,7 +68,7 @@ test('in a row, a labelled diagram and the card beside it keep the gap between t
     cardLook: true,
     lesson: { slides: [{}] },
     // A wide drawing (2.4:1), so its width is what holds it in the cell.
-    labelDiagramImages: { [labelDiagramKey(diagram)]: { png: Buffer.from('x'), aspect: 2.4 } },
+    labelDiagramImages: madeDiagrams({ [labelDiagramKey(diagram)]: { href: 'x', width: 2400, height: 1000 } }),
   };
   drawContent(pptx, slide, zone, row, ctx);
 

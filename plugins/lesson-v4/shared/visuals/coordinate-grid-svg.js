@@ -58,6 +58,7 @@ const LABEL_COLOUR  = '#C00000';    // point-letter colour (matches the dot)
 const ROUTE_COLOUR  = '#0070C0';    // across-then-up modelling route
 
 const { INK_TONES, printsInInk } = require('./surface-profiles');
+const { textWidthEm } = require('../text/comic-glyph-width');
 // The photocopied pack's version: pale grey squared paper under dark axes, and
 // plotted points and their letters in ink, which stand out from a pale grid
 // as well as red does.
@@ -196,7 +197,19 @@ function tightSvg(data, profile) {
     const cx = px(p.x), cy = py(p.y);
     parts.push(`<circle cx="${f(cx)}" cy="${f(cy)}" r="${f(POINT_R)}" fill="${C.point}"/>`);
     if (p.label != null && String(p.label).length) {
-      parts.push(`<text x="${f(cx + POINT_R + LABEL_OFF)}" y="${f(cy - POINT_R - LABEL_OFF)}" text-anchor="start" dominant-baseline="auto" font-family="${FONT}" font-size="${f(LABEL_FONT)}" font-weight="bold" fill="${C.label}">${escapeXml(p.label)}</text>`);
+      // The letter sits up and to the right of its dot, unless that would run
+      // it off the drawing: a point on the top edge takes its letter below, a
+      // point on the right edge takes it to the left. The grid itself never
+      // moves or resizes for a letter, so a question grid and its answer grid
+      // stay the same picture. Before this the letter of any point on the top
+      // or right edge was cut off (A at (2,5) on a 0 to 5 grid, 7 October 2026).
+      const off = POINT_R + LABEL_OFF;
+      const labelW = textWidthEm(String(p.label), true) * LABEL_FONT;
+      const offRight = cx + off + labelW > w;
+      const offTop = cy - off - LABEL_FONT * 0.8 < 0;
+      const lx = offRight ? cx - off : cx + off;
+      const ly = offTop ? cy + off + LABEL_FONT * 0.75 : cy - off;
+      parts.push(`<text x="${f(lx)}" y="${f(ly)}" text-anchor="${offRight ? 'end' : 'start'}" dominant-baseline="auto" font-family="${FONT}" font-size="${f(LABEL_FONT)}" font-weight="bold" fill="${C.label}">${escapeXml(p.label)}</text>`);
     }
   });
 

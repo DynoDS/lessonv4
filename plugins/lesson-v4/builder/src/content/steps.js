@@ -8,6 +8,7 @@ const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { textWidthEm, RENDER_SAFETY } = require('../../../shared/text/comic-glyph-width');
 const { warn } = require('../warnings');
 const { recordCriteriaBelowFloor } = require('../marked-criteria');
+const { criteriaMarkProblems } = require('../../../shared/text/criteria-marks');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PAD              = 0.15;
@@ -51,15 +52,90 @@ const SC_HELPER_GAP    = 0.10;
 // A step of a worked example is { text, colorRole: 'worked-purple' }: its
 // words and its number print purple, the worked example's colour (the
 // teacher's rule of 24 September 2026). validate.js refuses any other role.
+//
+// An item that opens with \u2753 is not a step either. It is what to do for a
+// different kind of question: on a bar chart, steps 1 to 3 read one bar, and
+// `How many more or fewer? Read both bars, then bigger number - smaller
+// number.` is for the questions that compare two. Numbered 4 it read as the
+// next thing every child does, and hung under step 3 it read as part of step 3
+// (the teacher, 8 October 2026: "It's a separate thing... It's different"). So
+// it takes a card of its own under the steps, with an orange question mark
+// where a number would be, and the steps keep counting 1..N around it.
+const OTHER_QUESTION = /^\s*\u2753\s*/;
+
 function normaliseStep(step) {
+  const raw = step && typeof step === 'object' && !Array.isArray(step)
+    ? (step.text == null ? '' : String(step.text))
+    : String(step == null ? '' : step);
+  const otherQuestion = OTHER_QUESTION.test(raw);
+  const text = otherQuestion ? raw.replace(OTHER_QUESTION, '') : raw;
   if (step && typeof step === 'object' && !Array.isArray(step)) {
     return {
-      text: step.text == null ? '' : String(step.text),
+      text,
       helper: helperKeyForStep(step),
-      worked: step.colorRole === 'worked-purple'
+      worked: step.colorRole === 'worked-purple',
+      otherQuestion
     };
   }
-  return { text: String(step == null ? '' : step), helper: '', worked: false };
+  return { text, helper: '', worked: false, otherQuestion };
+}
+
+// A step may carry smaller points under it: what only some children need on
+// only some questions (`Exchange? Take 1 from the tens.`), each written on its
+// own line inside the step's string. The step itself stays bold and the points
+// under it print in ordinary weight in the same card, so the eye runs down the
+// bold route and finds a point only when it needs one (the teacher's own lists,
+// 8 October 2026). The lines are measured bold, as every step is, which is
+// never narrower than they print. A colour mark that runs across the line
+// break cannot be split, so that step is drawn as it always was.
+const NEWLINE = String.fromCharCode(10);
+
+// The question that opens a smaller point (`Exchange?`, `No scratch?`) is the
+// part a child looks for, so it prints in the orange that already means "the
+// part to look at or decide", and bold; what to do then stays plain. Weight
+// alone did not set a point apart from its step (the teacher, 8 October 2026).
+// A question the designer has already marked keeps the designer's mark.
+const OPENING_QUESTION = /^([^?]{1,40}\?)(?=\s|$)/;
+const ANY_MARK = /\*\*|\[\[|\{\{|<<|\(\(|\|\|/;
+
+function pointsWithQuestionsMarked(points) {
+  return points.split(NEWLINE)
+    .map((line) => line.replace(OPENING_QUESTION, (question) => (ANY_MARK.test(question) ? question : `<<${question}>>`)))
+    .join(NEWLINE);
+}
+
+// `sizes` gives each part its own size, for a list planned below; without it
+// every run takes the size of its box.
+function stepRuns(text, baseColour, sizes) {
+  const at = text.indexOf(NEWLINE);
+  const whole = () => splitAnswerRuns(text, true, baseColour);
+  if (at === -1) return whole();
+  const head = text.slice(0, at);
+  const rest = pointsWithQuestionsMarked(text.slice(at + 1));
+  if (!sizes && (criteriaMarkProblems(head).length || criteriaMarkProblems(rest).length)) return whole();
+  const colour = baseColour || COLOURS.body;
+  const runsOf = (value, bold, pt) => {
+    const runs = splitAnswerRuns(value, bold, baseColour);
+    const list = [];
+    if (Array.isArray(runs)) {
+      runs.forEach((run) => list.push({ text: run.text, options: Object.assign({}, run.options) }));
+    } else {
+      const lines = String(runs).split(NEWLINE);
+      lines.forEach((line, index) => {
+        if (line !== '') list.push({ text: line, options: { color: colour, bold } });
+        if (index < lines.length - 1) list.push({ text: NEWLINE, options: { color: colour, bold } });
+      });
+    }
+    list.forEach((run) => {
+      if (run.options.bold === undefined) run.options.bold = bold;
+      if (pt) run.options.fontSize = pt;
+    });
+    return list;
+  };
+  const pointPt = sizes ? sizes.pointPt : undefined;
+  const breakRun = { text: NEWLINE, options: { color: colour, bold: false } };
+  if (pointPt) breakRun.options.fontSize = pointPt;
+  return runsOf(head, true, sizes ? sizes.pt : undefined).concat([breakRun], runsOf(rest, false, pointPt));
 }
 
 // How many lines a piece of text takes at a given size in a given width, if it
@@ -349,6 +425,76 @@ function floorNeed(text, rows, floorPt = TEXT_FONT_MIN) {
     * (floorPt / 72) * 1.28 + FIT_PAD_H + rows.rowGapForFit;
 }
 
+// A list with smaller points under its steps is sized by what each step holds.
+//
+// The ordinary sizing gives every step one size, set by the longest, and reads
+// a step with points under it as one long step: so `Line up the digits.` was
+// drawn at the 18pt floor because the step after it carried an `Exchange?`
+// line, and a two-step list sat at the floor with half its panel empty. The
+// teacher's ruling (8 October 2026): the bold steps are the route a child finds
+// their place in, so they are sized by their own words, up to the 24pt he
+// passed on a four-step list; the points under them may be a little smaller,
+// never under the floor; and nothing grows to poster size. Each card is as
+// tall as its own words need, with a little of any spare room, and the rest of
+// the panel stays empty below, as it does under any short list.
+//
+// Returns null when the list will not fit this way even at the floor, and the
+// ordinary sizing below then draws it or refuses it as it always has.
+const POINTED_STEP_MAX = 24;
+const POINT_STEP_DOWN = 4;
+const POINTED_SPARE_MAX = 0.25;
+const BADGE_CLEARANCE = 0.12;
+
+function splitPoints(text) {
+  const at = text.indexOf(NEWLINE);
+  return at === -1 ? { head: text, points: '' } : { head: text.slice(0, at), points: text.slice(at + 1) };
+}
+
+const linesHeight = (lines, pt) => lines * (pt / 72) * 1.28 + FIT_PAD_H;
+
+function planPointedList(steps, rows, innerH, floorPt) {
+  const fullW = Math.max(0.3, rows.stepTextW);
+  const widthOf = (step) => usableWidth(
+    Math.max(0.3, fullW - (normaliseStep(step).helper ? SC_HELPER_SLOT_W + SC_HELPER_GAP : 0))
+  );
+
+  for (let pt = POINTED_STEP_MAX; pt >= floorPt; pt -= 1) {
+    const pointPt = Math.max(floorPt, pt - POINT_STEP_DOWN);
+    const referencePt = Math.max(TEXT_FONT_MIN, Math.min(pt, TEXT_FONT_TARGET));
+    const parts = steps.map((step) => {
+      const text = normaliseStep(step).text;
+      if (isReferenceStep(step)) {
+        return {
+          headH: linesHeight(wrappedLineCount(text, usableWidth(fullW), referencePt), referencePt),
+          pointH: 0,
+          font: referencePt
+        };
+      }
+      const { head, points } = splitPoints(text);
+      return {
+        headH: linesHeight(wrappedLineCount(head, widthOf(step), pt), pt),
+        pointH: points ? linesHeight(wrappedLineCount(points, widthOf(step), pointPt), pointPt) : 0,
+        font: pt
+      };
+    });
+    // A card is never shorter than the number beside it: a one-line step in a
+    // full panel was given a card its own number stood out of.
+    const cardNeed = (part) => Math.max(part.headH + part.pointH, rows.badgeW + BADGE_CLEARANCE);
+    const need = parts.reduce((total, part) => total + cardNeed(part) + rows.rowGapForFit, 0);
+    if (!Number.isFinite(need) || need > innerH + 1e-9) continue;
+
+    const spare = Math.min(POINTED_SPARE_MAX, (innerH - need) / steps.length);
+    return {
+      pt,
+      pointPt,
+      parts,
+      rowHeights: parts.map((part) => cardNeed(part) + rows.rowGapForFit + spare)
+    };
+  }
+
+  return null;
+}
+
 function drawSteps(pptx, slide, zone, data, ctx) {
   const steps = Array.isArray(data.steps) ? data.steps : [];
   if (steps.length === 0) return;
@@ -407,7 +553,10 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   const CRITERIA_PANEL_ROWS = 4;
   const textOf = (s) => normaliseStep(s).text;
   const panelH = innerH;
-  if (zone.criteriaPanel && steps.length < CRITERIA_PANEL_ROWS) {
+  // A list drawn under the floor (one marked too long) keeps the ordinary
+  // sizing, which names its lines for the final fit.
+  const hasPoints = !drawnSmaller && steps.some((s) => !isReferenceStep(s) && textOf(s).includes(NEWLINE));
+  if (!hasPoints && zone.criteriaPanel && steps.length < CRITERIA_PANEL_ROWS) {
     innerH = innerH * steps.length / CRITERIA_PANEL_ROWS;
     for (let pass = 0; pass < 8 && innerH < panelH; pass += 1) {
       const shortRows = cardRows(steps, zone, innerX, innerW, innerH);
@@ -494,6 +643,7 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     return error;
   };
   const { rowH, badgeW, badgeFont, cardW, cardX, stepTextW, rowGapForFit } = rows;
+  const plan = hasPoints ? planPointedList(steps, rows, innerH, floorPt) : null;
 
   // The height each item genuinely needs at the readable floor.
   //
@@ -533,7 +683,9 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   const equalShareFits = textNeed.every((need) => need <= rowH - rowGapForFit);
   let rowHeights;
 
-  if (equalShareFits) {
+  if (plan) {
+    rowHeights = plan.rowHeights;
+  } else if (equalShareFits) {
     rowHeights = steps.map(function () { return rowH; });
   } else {
     // A reference takes the height its sentence genuinely needs at the readable
@@ -688,7 +840,7 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   const shortOfFloor = stepIndexes.some((i) => rowHeights[i] < stepFloorNeed[i] - 1e-9);
   const stepNeedSum = stepIndexes.reduce((total, i) => total + stepFloorNeed[i], 0);
 
-  if (shortOfFloor && stepIndexes.length && stepNeedSum <= stepRoom + 1e-9) {
+  if (!plan && shortOfFloor && stepIndexes.length && stepNeedSum <= stepRoom + 1e-9) {
     let taller = new Set();
     let shared = stepRoom / stepIndexes.length;
 
@@ -711,9 +863,11 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   }, []);
   const fitHeights = rowHeights.map((h) => h - rowGapForFit);
 
-  const perStepFont = steps.map((s, i) =>
-    largestStepFont(textOf(s), Math.max(0.3, stepTextW), Math.max(0.1, fitHeights[i]), floorFor(s))
-  );
+  const perStepFont = plan
+    ? plan.parts.map((part) => part.font)
+    : steps.map((s, i) =>
+        largestStepFont(textOf(s), Math.max(0.3, stepTextW), Math.max(0.1, fitHeights[i]), floorFor(s))
+      );
 
   const overloadedAt = perStepFont.indexOf(null);
   if (overloadedAt !== -1) {
@@ -834,7 +988,14 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     const step = normaliseStep(rawStep);
     const rowY   = rowTops[i];
     const cardH  = rowHeights[i] - rowGap;
-    const badgeY = rowY + (cardH - badgeW) / 2;
+    // In a planned list a card holds its step and, under it, any points: the
+    // two are centred in the card together, and the number sits beside the
+    // step it numbers.
+    const part   = plan && !isReferenceStep(rawStep) ? plan.parts[i] : null;
+    const blockY = part ? rowY + Math.max(0, (cardH - part.headH - part.pointH) / 2) : rowY;
+    const badgeY = part
+      ? Math.min(rowY + cardH - badgeW, Math.max(rowY, blockY + (part.headH - badgeW) / 2))
+      : rowY + (cardH - badgeW) / 2;
     const rowX   = cardX + cardPad;
     const rowW   = cardW - 2 * cardPad;
     // The size this step genuinely fits at while keeping related cards coherent.
@@ -885,14 +1046,15 @@ function drawSteps(pptx, slide, zone, data, ctx) {
       return;
     }
 
-    stepNum += 1;
+    if (!step.otherQuestion) stepNum += 1;
     const badgeColour = step.worked ? COLOURS.worked : COLOURS.green;
+    const badgeFill = step.otherQuestion ? COLOURS.orange : badgeColour;
     slide.addShape(pptx.shapes.OVAL, {
       x: rowX, y: badgeY, w: badgeW, h: badgeW,
-      fill: { color: badgeColour },
-      line: { color: badgeColour, width: 1 }
+      fill: { color: badgeFill },
+      line: { color: badgeFill, width: 1 }
     });
-    slide.addText(String(stepNum), {
+    slide.addText(step.otherQuestion ? '?' : String(stepNum), {
       x: rowX, y: badgeY, w: badgeW, h: badgeW,
       fontFace: FONT, fontSize: badgeFont, bold: true,
       color: COLOURS.pureWhite,
@@ -920,18 +1082,55 @@ function drawSteps(pptx, slide, zone, data, ctx) {
         textW -= SC_HELPER_SLOT_W + SC_HELPER_GAP;
         // The picture took part of this row, so this card has less width than
         // the set was sized against. It takes the largest size that fits what
-        // is left rather than overflowing at the shared one.
-        textFont = fontForStep(i, textW);
+        // is left rather than overflowing at the shared one. A planned list
+        // was measured with the picture's room already taken.
+        if (!part) textFont = fontForStep(i, textW);
       }
     }
 
     smallestDrawn = Math.min(smallestDrawn, textFont);
+    if (part) {
+      const colour = step.worked ? COLOURS.worked : undefined;
+      if (!part.pointH) {
+        slide.addText(splitAnswerRuns(step.otherQuestion ? pointsWithQuestionsMarked(step.text) : step.text, true, colour), {
+          x: textX, y: blockY,
+          w: textW, h: part.headH,
+          fontFace: FONT, fontSize: plan.pt, bold: true,
+          color: step.worked ? COLOURS.worked : COLOURS.body,
+          align: 'left', valign: 'middle', margin: 0, fit: FIT,
+          objectName: growFitObjectName(stepTextGroup, plan.pt, 'step-text-' + i, floorPt)
+        });
+        return;
+      }
+      // A step and its points are one box of text, so they stay together and
+      // centred however the lines wrap on the slide: as two boxes, a step that
+      // wrapped one line fewer than it measured left a strip of empty card
+      // above it. The two sizes are set here, from words measured at their
+      // bold widths, and the final fit (which gives a box one size) leaves the
+      // box alone.
+      slide.addText(stepRuns(step.text, colour, { pt: plan.pt, pointPt: plan.pointPt }), {
+        x: textX, y: rowY,
+        w: textW, h: cardH,
+        fontFace: FONT, fontSize: plan.pt, bold: false,
+        color: step.worked ? COLOURS.worked : COLOURS.body,
+        align: 'left', valign: 'middle', margin: 0,
+        objectName: 'NOFIT_step-with-points-' + i
+      });
+      return;
+    }
     // A worked step's runs start from the worked purple, so a taught word or a
     // bold word in it does not turn the rest of the step black (the fourth check).
-    slide.addText(splitAnswerRuns(step.text, true, step.worked ? COLOURS.worked : undefined), {
+    // Each run of a step with points under it carries its own weight, and the
+    // box's weight is what a run falls back to, so that box is not bold.
+    const stepText = step.text.includes(NEWLINE)
+      ? stepRuns(step.text, step.worked ? COLOURS.worked : undefined)
+      : step.otherQuestion
+        ? splitAnswerRuns(pointsWithQuestionsMarked(step.text), true)
+        : splitAnswerRuns(step.text, true, step.worked ? COLOURS.worked : undefined);
+    slide.addText(stepText, {
       x: textX, y: rowY,
       w: textW, h: cardH,
-      fontFace: FONT, fontSize: textFont, bold: true,
+      fontFace: FONT, fontSize: textFont, bold: !(Array.isArray(stepText) && step.text.includes(NEWLINE)),
       color: step.worked ? COLOURS.worked : COLOURS.body,
       align: 'left', valign: 'middle', margin: 0, fit: FIT,
       objectName: lineName('step-text-', i)
@@ -945,4 +1144,4 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   }
 }
 
-module.exports = { drawSteps, TEXT_FONT_MIN };
+module.exports = { drawSteps, TEXT_FONT_MIN, lineWidthIn, usableWidth };

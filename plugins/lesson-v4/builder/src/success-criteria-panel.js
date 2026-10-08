@@ -76,6 +76,16 @@ function lowestStep(contentZone, content, ctx) {
   return bottom;
 }
 
+// The tallest a panel this wide may be drawn before it passes the teacher's
+// half-slide limit, for a stack measuring what the panel needs
+// (content/stack.js). Measured without it, a full-width panel was tried at
+// the whole stack's height, refused for its size, and counted as a panel
+// that cannot be measured at all.
+function tallestPanel(zone, ctx) {
+  if ((ctx && ctx._criteriaSlide) || workIsOnPaper(ctx)) return Infinity;
+  return (MAX_SLIDE_SHARE * SLIDE_W * SLIDE_H) / zone.w;
+}
+
 function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
   const { drawContent } = require('./content');
   const label = data.criteriaLabel || data.label || '\u2713 Success Criteria';
@@ -175,7 +185,12 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
     // A container measuring how tall this panel must be to hold its criteria at
     // a given size draws it on a slide nobody sees with that size as the floor
     // (content/stack.js). Never set on a panel that is really drawn.
-    if (Number.isFinite(zone.measureFloorPt)) contentZone.floorPt = zone.measureFloorPt;
+    if (Number.isFinite(zone.measureFloorPt)) {
+      contentZone.floorPt = zone.measureFloorPt;
+      // A table reads the measure under its own name, and says whether its
+      // cells hold their words at this height (content/table.js).
+      contentZone.measureFloorPt = zone.measureFloorPt;
+    }
 
     // The panel owns its surface, so nested content must not draw cards on
     // top of it — EXCEPT steps, whose per-item white cards ARE the criteria's
@@ -226,4 +241,7 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
   }
 }
 
-module.exports = { drawSuccessCriteriaPanel };
+// What the panel's heading and edges take before its content is drawn.
+const PANEL_FRAME_H = 2 * PAD + LABEL_H;
+
+module.exports = { drawSuccessCriteriaPanel, tallestPanel, PANEL_FRAME_H };

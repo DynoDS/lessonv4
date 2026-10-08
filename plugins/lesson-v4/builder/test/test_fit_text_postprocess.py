@@ -67,6 +67,32 @@ def test_reveal_pair_uses_one_final_font_across_slides():
                 for slide in checked.slides] == [(Inches(0.5), Inches(1), Inches(4), Inches(0.9))] * 2
 
 
+# Six option cards in one size group, three of them paired with an answer on the
+# next slide. The pair's group used to replace the size group, so the paired
+# cards settled larger than their neighbours and text size gave the answers
+# away on the question slide (Year 4 fronted adverbials, 7 October 2026).
+def test_a_paired_card_is_the_size_of_the_cards_beside_it_on_both_slides():
+    with tempfile.TemporaryDirectory() as temp_dir:
+        deck = Path(temp_dir) / "options.pptx"
+        presentation = Presentation()
+        long_text = "after a long, cold night in the dark garden"
+        for state in ("question", "answer"):
+            slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+            add_box(slide, "GROWFIT__size-options__30__size-group", long_text, 0.5, 1.0, 2.0, 0.9, size=30)
+            add_box(slide, "GROWFIT__revealpair-opt-2__30__paired-text-WITH-size-options",
+                    "she laughed" if state == "question" else "she laughed - no", 3.0, 1.0, 2.0, 0.9, size=30)
+            add_box(slide, "GROWFIT__revealpair-opt-3__30__paired-text", "it rained", 5.5, 1.0, 2.0, 0.9, size=30)
+        presentation.save(deck)
+
+        MODULE.process(str(deck), floor_pt=18)
+        sizes = [[run_sizes(shape)[0] for shape in slide.shapes] for slide in Presentation(deck).slides]
+        assert sizes[0] == sizes[1], "a pair must not change size between its two slides"
+        plain, tied, alone = sizes[0]
+        assert plain < 30, "test must make the long card shrink"
+        assert tied == plain, "the paired card in the group prints at the group's size"
+        assert alone == 30, "a pair in no group is left to its own size"
+
+
 def test_explicit_projected_floor_refuses_text_that_only_fits_at_ten_points(capsys):
     with tempfile.TemporaryDirectory() as temp_dir:
         deck = Path(temp_dir) / "small-table.pptx"
@@ -534,3 +560,76 @@ def test_small_furniture_is_not_worth_reporting(capsys):
         prs.save(str(path))
         MODULE.process(str(path))
     assert "UNDERFILLED" not in capsys.readouterr().err
+
+
+# A card's sign is drawn at the card's left edge, halfway down, before the words
+# have a final size. On a tall centred card that put a pencil beside the third
+# line of a task (Year 5 long multiplication, the test of 7 October 2026). The
+# teacher chose it tucked beside the first word (8 October 2026).
+SIGN = ROOT / "builder" / "assets" / "signals" / "pencil.png"
+
+
+def card_with_sign(slide, text, align, box_h=3.0):
+    from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+    sign = slide.shapes.add_picture(str(SIGN), Inches(1.0), Inches(1.0 + box_h / 2 - 0.3), height=Inches(0.6))
+    sign.name = "CardSign"
+    left = sign.left + sign.width + Inches(0.10)
+    shape = add_box(slide, "size-column::40::size-group", text, 0, 1.0, 5.0, box_h, size=28)
+    shape.left = left
+    shape.text_frame.word_wrap = True
+    shape.text_frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+    shape.text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER if align == "center" else PP_ALIGN.LEFT
+    return sign, shape
+
+
+def test_a_card_sign_is_tucked_beside_the_first_word_of_a_centred_card():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "sign.pptx"
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        sign, shape = card_with_sign(slide, "Write it.", "center")
+        drawn_left, drawn_top = sign.left, sign.top
+        prs.save(path)
+        MODULE.process(str(path))
+        after = Presentation(path).slides[0]
+        sign = next(s for s in after.shapes if s.name == "CardSign")
+        shape = next(s for s in after.shapes if s.has_text_frame)
+        # Two short words centred in a five inch box start well to the right.
+        assert sign.left > drawn_left + Inches(0.5)
+        assert sign.left + sign.width <= shape.left + shape.width // 2
+        # One line, centred in the box: the sign stays level with it.
+        middle = shape.top + shape.height // 2
+        assert abs((sign.top + sign.height // 2) - middle) < Inches(0.15)
+        assert drawn_top is not None
+
+
+def test_a_card_sign_rises_to_the_first_line_of_a_tall_card():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "sign-tall.pptx"
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        words = "Write the two multiplications we need to do for this sum and then stop"
+        sign, shape = card_with_sign(slide, words, "center")
+        drawn_top = sign.top
+        prs.save(path)
+        MODULE.process(str(path))
+        after = Presentation(path).slides[0]
+        sign = next(s for s in after.shapes if s.name == "CardSign")
+        shape = next(s for s in after.shapes if s.has_text_frame)
+        assert sign.top < drawn_top - Inches(0.2)
+        assert sign.top >= shape.top
+
+
+def test_a_sign_with_no_words_beside_it_stays_where_it_was_drawn():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "sign-alone.pptx"
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        sign = slide.shapes.add_picture(str(SIGN), Inches(1.0), Inches(2.0), height=Inches(0.6))
+        sign.name = "CardSign"
+        add_box(slide, "far", "Words somewhere else.", 6.0, 5.0, 3.0, 1.0)
+        drawn = (sign.left, sign.top, sign.height)
+        prs.save(path)
+        MODULE.process(str(path))
+        sign = next(s for s in Presentation(path).slides[0].shapes if s.name == "CardSign")
+        assert (sign.left, sign.top, sign.height) == drawn

@@ -91,8 +91,10 @@ test('sentence-long labels in the poster layout are stacked, never drawn through
 });
 
 test('a poster of names is drawn exactly as it was before labels were measured', () => {
-  // The templates.md church poster with one blank added. Pinned from the
-  // drawing as it stood at 4.2.315, so the measure cannot move a healthy one.
+  // The templates.md church poster. Pinned from the drawing as it stood at
+  // 4.2.315, so the measure cannot move a healthy one. It was pinned with a
+  // blank write-on line added, which held in place the fault of 7 October 2026
+  // (a blank line given no room of its own); the blank has its own test below.
   const out = tightSvg({
     imagePath: 'church-interior.jpg', imageHref: 'church-interior.jpg', imageWidth: 1200, imageHeight: 800,
     layout: 'sides',
@@ -101,12 +103,11 @@ test('a poster of names is drawn exactly as it was before labels were measured',
       { anchor: [82, 28], label: 'stained glass windows', given: true },
       { anchor: [26, 42], label: 'pulpit', given: true },
       { anchor: [50, 50], label: 'altar', given: true },
-      { anchor: [20, 70], label: 'font' },
     ],
   });
   assert.equal(
     crypto.createHash('sha256').update(out.svg).digest('hex'),
-    'd1de01b8ceebda666154170ee8357d199647b99f894d7be5e967170bfbe42fde'
+    '282d55e818cd265f0ff5b90009afeaea6a86df92ad78267476c4435f0f0bdc61'
   );
   assert.deepEqual(out.restacked, []);
   assert.deepEqual(out.outgrown, []);
@@ -192,4 +193,116 @@ test('a label that runs off the edge of the drawing is reported', () => {
     callouts: [{ anchor: [40, 50], label: 'small intestine' }],
   });
   assert.deepEqual(blank.labelFaults, { overlaps: [], clipped: [] });
+});
+
+// A surface read from across a room gives the words their own size. On the
+// 7 October 2026 stress test three lessons went to the board with 11 to 14pt
+// labels beside 18 to 32pt sentences, because the type was always a twentieth
+// of the picture and a picture sharing a slide is drawn small.
+test('without a type size the words stay a twentieth of the picture, as paper has always drawn them', () => {
+  const out = buildLabelDiagramSvg({
+    href: 'p.jpg', width: 1200, height: 800, layout: 'sides',
+    callouts: [{ anchor: [30, 40], label: 'stem', given: true }],
+  });
+  assert.equal(out.fontSize, 60);
+});
+
+test('a given type size sets the words, and the bands that hold them follow the words', () => {
+  const callouts = [{ anchor: [30, 40], label: 'confluence', given: true }];
+  const small = buildLabelDiagramSvg({ href: 'p.jpg', width: 1200, height: 800, layout: 'sides', callouts, fontSize: 60 });
+  const large = buildLabelDiagramSvg({ href: 'p.jpg', width: 1200, height: 800, layout: 'sides', callouts, fontSize: 120 });
+  assert.equal(large.fontSize, 120);
+  assert.match(large.svg, /font-size="120"/);
+  // The picture is the same picture; only the room for the words has grown.
+  assert.deepEqual([large.picture.w, large.picture.h], [1200, 800]);
+  assert.ok(large.picture.x > small.picture.x * 1.8, `${small.picture.x} then ${large.picture.x}`);
+  assert.deepEqual(large.labelFaults, { overlaps: [], clipped: [] });
+  // Counted in type sizes, the need is the same at any size.
+  assert.ok(Math.abs(large.bands.leftEm - small.bands.leftEm) < 1e-9);
+});
+
+test('room kept for a longer label on another slide puts the picture in the same place', () => {
+  const base = { href: 'p.jpg', width: 1200, height: 800, layout: 'sides', labelMaxChars: 16, fontSize: 80 };
+  const short = [{ anchor: [30, 60], label: 'here', given: true }];
+  const long = [{ anchor: [30, 60], label: 'We are here, half a turn later', given: true }];
+  const alone = buildLabelDiagramSvg({ ...base, callouts: short });
+  const longer = buildLabelDiagramSvg({ ...base, callouts: long });
+  assert.notDeepEqual(alone.picture, longer.picture, 'left to itself each slide places the picture for its own label');
+  const kept = buildLabelDiagramSvg({ ...base, callouts: short, reserve: longer.bands });
+  assert.deepEqual(kept.picture, longer.picture);
+  assert.deepEqual([kept.w, kept.h], [longer.w, longer.h]);
+});
+
+test('with a type size, a blank write-on rule has its room beside the picture', () => {
+  // Year 1 parts of a plant, 7 October 2026: four rules drew across the
+  // photograph and off the edge, because only printed labels were given room.
+  const out = buildLabelDiagramSvg({
+    href: 'p.jpg', width: 1000, height: 800, layout: 'sides', fontSize: 50,
+    callouts: [{ anchor: [30, 30], label: 'flower' }, { anchor: [70, 60], label: 'stem' }],
+  });
+  const rules = [...out.svg.matchAll(/<line x1="([\d.-]+)" y1="([\d.-]+)" x2="([\d.-]+)" y2="([\d.-]+)" stroke="#1A1A1A"/g)]
+    .map((m) => m.slice(1).map(Number))
+    .filter(([, y1, , y2]) => y1 === y2);
+  assert.equal(rules.length, 2);
+  for (const [x1, , x2] of rules) {
+    assert.ok(x1 >= 0 && x2 <= out.w, `the rule ${x1} to ${x2} is on the drawing (${out.w} wide)`);
+    const leftOf = x2 <= out.picture.x;
+    const rightOf = x1 >= out.picture.x + out.picture.w;
+    assert.ok(leftOf || rightOf, `the rule ${x1} to ${x2} is clear of the picture`);
+  }
+});
+
+// "A ||source" printed "Asource": the picture-maker drops a space that ends a
+// coloured piece of a line unless the line says to keep it (7 October 2026).
+test('a letter and its hidden answer on one line keep the space between them', () => {
+  const { svg } = buildLabelDiagramSvg({
+    href: 'x', width: 600, height: 400, layout: 'sides',
+    callouts: [{ anchor: [48, 58], label: 'A ||source', given: true }],
+  });
+  const line = /<text[^>]*>(<tspan[^>]*>A <\/tspan><tspan[^>]*>source<\/tspan>)<\/text>/.exec(svg);
+  assert.ok(line, 'the question and its answer are one line of two pieces');
+  assert.match(line[0], /xml:space="preserve"/);
+});
+
+// Year 1 parts of a plant, 7 October 2026: on the sheets children write on, the
+// blank lines ran across the photograph, 11 to 24mm of them clear.
+const { buildForPaper } = require('../visuals/label-diagram-svg');
+const PLANT = {
+  href: 'x', width: 480, height: 664, layout: 'sides', labelMaxChars: 18, marginYRatio: 0.03,
+  callouts: [
+    { anchor: [43, 29], label: 'flower', given: true },
+    { anchor: [27, 43], label: 'leaves', given: false },
+    { anchor: [58, 35], label: 'stem', given: false },
+    { anchor: [63, 67], label: 'roots', given: false },
+  ],
+};
+const rules = (svg) => [...svg.matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)" stroke="#1A1A1A"/g)]
+  .filter((m) => m[2] === m[4])
+  .map((m) => ({ x0: Number(m[1]), x1: Number(m[3]) }));
+
+test('on paper a write-on line is long enough for a young hand, clear of the picture and inside the drawing', () => {
+  for (const widthMm of [134, 100, 90]) {
+    const out = buildForPaper(PLANT, { widthMm, perLetterMm: 6.5, minMm: 30 });
+    const mm = widthMm / out.w;
+    const lines = rules(out.svg);
+    assert.equal(lines.length, 3);
+    for (const line of lines) {
+      assert.ok((line.x1 - line.x0) * mm >= 29.5, `${widthMm}mm: a line is ${((line.x1 - line.x0) * mm).toFixed(0)}mm`);
+      assert.ok(line.x0 >= 0 && line.x1 <= out.w, `${widthMm}mm: a line runs off the drawing`);
+      assert.ok(line.x1 <= out.picture.x || line.x0 >= out.picture.x + out.picture.w, `${widthMm}mm: a line crosses the photograph`);
+    }
+  }
+});
+
+test('long lines go down one side when a band each side would leave the picture under half the width', () => {
+  const young = buildForPaper(PLANT, { widthMm: 134, perLetterMm: 6.5, minMm: 30 });
+  assert.equal(young.sides, 'right');
+  assert.ok(young.pictureMm > 66, `the photograph keeps its size: ${young.pictureMm.toFixed(0)}mm`);
+  // Short lines on a wide sheet leave the picture plenty: the labels keep to
+  // the side their dot is on.
+  const roomy = buildForPaper(PLANT, { widthMm: 250, perLetterMm: 3, minMm: 20 });
+  assert.equal(roomy.sides, 'both');
+  // Nothing to write on: nothing changes.
+  const names = { ...PLANT, callouts: PLANT.callouts.map((c) => ({ ...c, given: true })) };
+  assert.equal(buildForPaper(names, { widthMm: 134, perLetterMm: 6.5, minMm: 30 }).svg, buildLabelDiagramSvg(names).svg);
 });

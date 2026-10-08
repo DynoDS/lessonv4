@@ -54,6 +54,8 @@ const PICTURE_H_MM = 30;
 const PICTURE_GAP_MM = 1.5;
 const PICTURE_MIME = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".webp": "image/webp", ".svg": "image/svg+xml" };
 
+const { printSizedDataUriSync: printSizedDataUri } = require("./print-size");
+
 const MIN_CARDS = 2;
 const MAX_CARDS = 12;
 const MIN_HEADINGS = 2;
@@ -230,7 +232,7 @@ function normaliseCardSet(item, classSize, baseDir) {
       if (!fs.existsSync(imgPath)) {
         return fault(`card "${card.label}": its picture ${card.imagePath} was not found, and the card is not printed without it`);
       }
-      pictures.set(card.id, `data:${mime};base64,${fs.readFileSync(imgPath).toString("base64")}`);
+      pictures.set(card.id, printSizedDataUri(imgPath, mime));
     }
     if (card.detail != null && typeof card.detail !== "string") {
       return fault(`card "${card.label}" has a detail that is not text`);
@@ -597,6 +599,43 @@ function sheetGrid(n, widthMm, heightMm, labelMm) {
   return best;
 }
 
+// Cards of words alone are a different shape of problem from pictured ones. The
+// picture grid above asks which cells hold the biggest 4:3 picture, and for
+// seven sentences it chose four narrow cards; the words were then indented by
+// the box's width on BOTH sides, leaving a 25mm column, so every sentence ran a
+// word or two to a line and out of the bottom of its card (a Year 6 science
+// sort, 7 October 2026). For words, the grid is the one whose cards hold the
+// longest sentence at the largest size, and the box sits in its own row at the
+// top with the card's letter beside it, so the words have the card's width.
+const TEXT_SHEET_SIZES_PT = [18, 16, 14, 13, 12];
+const PT_MM = 0.3528;
+const TEXT_SHEET_PAD_MM = 3;
+const TEXT_SHEET_HEAD_MM = SHEET_BOX_MM + 3;
+
+function textSheetGrid(cards, widthMm, heightMm) {
+  const longest = Math.max(...cards.map((c) => String(c.label).length));
+  for (const pt of TEXT_SHEET_SIZES_PT) {
+    let best = null;
+    for (let cols = 1; cols <= Math.min(cards.length, 5); cols++) {
+      const rows = Math.ceil(cards.length / cols);
+      const cellW = (widthMm - (cols - 1) * SHEET_GAP_MM) / cols;
+      const cellH = (heightMm - (rows - 1) * SHEET_GAP_MM) / rows;
+      const textW = cellW - TEXT_SHEET_PAD_MM * 2 - 1;
+      // An average character is a little over half its size wide; one spare
+      // line covers a long word carried over.
+      const perLine = Math.max(1, Math.floor(textW / (pt * PT_MM * 0.56)));
+      const lines = Math.ceil(longest / perLine) + 1;
+      const needMm = TEXT_SHEET_HEAD_MM + lines * pt * PT_MM * 1.3 + TEXT_SHEET_PAD_MM * 2;
+      if (needMm > cellH) continue;
+      // Of the grids that hold the words, the one nearest a card's shape.
+      const shape = Math.abs(cellW / cellH - 1.4);
+      if (!best || shape < best.shape) best = { cols, rows, cellW, cellH, pt, shape, picH: 0, size: 0 };
+    }
+    if (best) return best;
+  }
+  return null;
+}
+
 // A sheet: one page per set, the instruction and (for letters) the key at the
 // top, then every item filling the rest of the page with a box to write in.
 // Nothing is cut: the set is one page, printed per child, pair or group.
@@ -635,15 +674,34 @@ function renderSheetPages(kit, { printableWMm, printableHMm, pageHtml }) {
   const longest = Math.max(...kit.cards.map((c) => c.label.length));
   const gridHMm = printableHMm - topMm;
   let grid = null;
-  for (const lines of [1, 2, 3]) {
-    grid = sheetGrid(kit.cards.length, printableWMm, gridHMm, lines * SHEET_LABEL_LINE_MM);
-    if (grid && longest <= lines * Math.floor(grid.cellW / 2.6)) break;
+  if (pictured) {
+    for (const lines of [1, 2, 3]) {
+      grid = sheetGrid(kit.cards.length, printableWMm, gridHMm, lines * SHEET_LABEL_LINE_MM);
+      if (grid && longest <= lines * Math.floor(grid.cellW / 2.6)) break;
+    }
+  } else {
+    grid = textSheetGrid(kit.cards, printableWMm, gridHMm);
   }
   if (!grid) {
     return { error: `${kit.cards.length} items do not fit one page with their words; split the set or shorten the labels` };
   }
   const labelMm = grid.cellH - grid.picH - 6;
+  const wordsOnlyCell = (card) => {
+    const match = card.letter ? [null, card.letter, card.label] : String(card.label).match(CARD_LETTER);
+    const letter = match ? match[1] : "";
+    const words = match ? match[2] : card.label;
+    const head = `<div style="display:flex;align-items:center;height:${SHEET_BOX_MM}mm;margin-bottom:3mm">` +
+      `<div style="flex:none;width:${SHEET_BOX_MM}mm;height:${SHEET_BOX_MM}mm;box-sizing:border-box;` +
+      `border:0.8mm solid ${INK};background:#ffffff;border-radius:1.5mm"></div>` +
+      `<div style="flex:1;text-align:center;font-weight:bold;font-size:24pt;padding-right:${SHEET_BOX_MM}mm">${esc(letter)}</div></div>`;
+    const bodyH = grid.cellH - TEXT_SHEET_HEAD_MM - TEXT_SHEET_PAD_MM * 2;
+    return `<div style="width:${grid.cellW.toFixed(1)}mm;height:${grid.cellH.toFixed(1)}mm;box-sizing:border-box;` +
+      `border:0.4mm solid ${INK};border-radius:2mm;padding:${TEXT_SHEET_PAD_MM}mm;overflow:hidden">${head}` +
+      `<div style="height:${bodyH.toFixed(1)}mm;display:flex;align-items:center;justify-content:center;text-align:center;` +
+      `font-size:${grid.pt}pt;line-height:1.3"><div>${wordsHtml(words)}</div></div></div>`;
+  };
   const cellHtml = (card) => {
+    if (!pictured) return wordsOnlyCell(card);
     const picture = kit.pictures.get(card.id);
     const box = `<div style="position:absolute;top:2mm;left:2mm;width:${SHEET_BOX_MM}mm;height:${SHEET_BOX_MM}mm;` +
       `border:0.8mm solid ${INK};background:#ffffff;border-radius:1.5mm"></div>`;

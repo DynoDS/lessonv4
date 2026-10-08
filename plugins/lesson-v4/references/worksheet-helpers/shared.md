@@ -311,12 +311,21 @@ photograph the child works from.) They cost very different amounts of page, and 
 what turns a buildable picture-led sheet into an unbuildable one.
 
 **Words round the picture.** Each part's name is written on a line beside the
-photograph. The line has to be long enough for a child to write the word on, and
-the picture has to survive a band of those lines down each side, so a diagram
-naming a "flower head" needs about **99mm across and 139mm down** - half a page.
-Reach for it when the photograph carries the sheet: one big picture, labelled
-properly, and the questions beside or beneath it. Two of these are a page's
-ceiling; a third never fits.
+photograph. The line is as long as the word is in a child's own hand: in Years
+1 to 3 about 6.5mm a letter and never under 30mm ("leaves" gets 39mm), in Years
+4 to 6 about 4.5mm a letter and never under 25mm. The lines take that room from
+the picture, and when a band of them down each side would leave the picture
+less than half the width, the engine stacks every line down one side so the
+picture keeps the rest. So a Year 1 diagram naming a "flower head" needs at
+least **123mm across** (about 101mm in Years 4 to 6), and at the full width of
+the page it stands about **137mm down** - half a page. Reach for it when the
+photograph carries the sheet: one big picture, labelled properly, given as
+much of the page's width as the sheet can spare (a tall photograph at the full
+width is also tall, so check it still leaves room for the questions under it).
+A narrow column beside a word bank leaves the picture the size of a stamp: the
+lines keep their length and the picture pays. Two of these sit
+comfortably on a page; four is the ceiling, as quarters with small pictures,
+and a fifth never fits.
 
 **Numbers on the picture.** The dots carry printed numbers and the naming happens
 in a list beside or below. A number needs almost no line, so the same photograph

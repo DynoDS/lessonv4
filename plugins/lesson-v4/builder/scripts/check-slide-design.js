@@ -9,7 +9,7 @@ const { spawnSync } = require('node:child_process');
 const { capacityWarnings } = require('../src/content/capacity');
 const { isSumToWorkOut } = require('../src/presentation-text');
 const { friendlyParseError } = require('../src/validate');
-const { expandTeachLayoutsEach, LAYOUTS } = require('../src/teach-layouts');
+const { expandTeachLayoutsEach, LAYOUTS, teachTaskJob } = require('../src/teach-layouts');
 
 const BLOCKING_CAPACITY_SIGNALS = new Set([
   'FIXED_CAPTION_CAPACITY',
@@ -22,12 +22,17 @@ const BLOCKING_CAPACITY_SIGNALS = new Set([
   // A picture children work from below its readable floor. Was a warning
   // only, and a warning shipped a two-inch classroom photograph under "look
   // closely" (4 September 2026); the repair is the designer's own (a taller
-  // zone, a split, `essential: false` for a picture that is only context).
+  // zone, a split, a close-up of the part children must find). A picture
+  // no task points at is out of it with `essential: false`.
   'PICTURE_BELOW_READABLE_FLOOR',
   // Labels of a labelled diagram drawn on top of each other or off its edge.
   // They are inside a picture, so nothing else here can see them; the repair
   // is one field (`"layout": "sides"`), named in the message.
   'LABEL_DIAGRAM_LABELS_COLLIDE',
+  // A labelled picture left too small to read once its labels have the
+  // board's size. The words never shrink to make room, so the picture needs
+  // more of the slide; the message names the ways to give it.
+  'LABEL_DIAGRAM_PICTURE_TOO_SMALL',
 ]);
 
 function buildDiagnostic(warning) {
@@ -643,25 +648,62 @@ function showsTerm(board, term) {
   return new RegExp(` ${stem.replace(/ /g, ' ')}(?:s|es)? `).test(board);
 }
 
+// The starter is outside the placement rule (the teacher, 7 October 2026: "I
+// wouldn't want any vocab before starters"). It checks old learning, so a word
+// it prints ("Noun or adjective?") has not been met in this lesson yet, and a
+// card ahead of it hands over its answers. Six of twenty lessons were refused
+// until the starter stopped counting, and their designers hand-built word
+// slides on a free layout to get round it.
+function isStarterSlide(slideData) {
+  if (!slideData || typeof slideData !== 'object') return false;
+  if (slideData.headerStyle === 'starter') return true;
+  return /\/starter\//.test(String(slideData.designUnitId || slideData.sourceUnitId || ''));
+}
+
+// A paired card (`whole and part`, `tributary / confluence`) is its two words,
+// as the lesson-design validator already reads it: no board prints the phrase.
+function cardTerms(word) {
+  return word.split(/\s*\/\s*|\s+and\s+/).map((part) => part.trim()).filter(Boolean);
+}
+
 function vocabCardBeforeItsWord(lesson) {
   const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
   const warnings = [];
   const isCard = (slideData) => slideData && slideData.template === 'key-vocabulary';
+  let starterEnd = -1;
+  for (let at = 0; at < slides.length && (isStarterSlide(slides[at]) || isCard(slides[at])); at += 1) {
+    if (isStarterSlide(slides[at])) starterEnd = at;
+  }
   slides.forEach((slideData, index) => {
     if (!isCard(slideData)) return;
-    const terms = (Array.isArray(slideData.words) ? slideData.words : [])
+    const words = (Array.isArray(slideData.words) ? slideData.words : [])
       .map((entry) => (entry && typeof entry.word === 'string' ? entry.word : ''))
       .filter(Boolean);
+    const terms = words.flatMap(cardTerms);
     if (!terms.length) return;
     const shows = (at) => {
       const board = boardWords(slides[at] || {});
       return terms.some((term) => showsTerm(board, term));
     };
-    const named = terms.map((term) => `"${term}"`).join(' and ');
+    const named = words.map((term) => `"${term}"`).join(' and ');
+    if (index < starterEnd) {
+      warnings.push({
+        signal: 'VOCAB_CARD_BEFORE_THE_STARTER',
+        slide: index + 1,
+        field: 'words',
+        message:
+          `The card for ${named} comes before the starter. No word card goes ahead of the starter: ` +
+          'it checks what children already know, and a card in front of it answers it for them. ' +
+          `Move the card to after slide ${starterEnd + 1}, the starter's last slide, straight before ` +
+          'the first slide after the starter whose board shows its word.'
+      });
+      return;
+    }
     // Too late: a board before the card already shows the word (a paced Teach
     // that says "a disease called cholera" on its fourth slide, with the card
     // after the whole Teach and a script saying "the word we've just met").
-    const earlier = slides.findIndex((other, at) => at < index && !isCard(other) && shows(at));
+    const earlier = slides.findIndex((other, at) =>
+      at < index && at > starterEnd && !isCard(other) && shows(at));
     if (earlier !== -1) {
       warnings.push({
         signal: 'VOCAB_CARD_AFTER_A_SLIDE_WITH_ITS_WORD',
@@ -725,6 +767,95 @@ function pictureWarnings(lesson) {
     });
   });
 
+  return warnings;
+}
+
+// A picture the lesson plan calls essential, drawn on the deck only as
+// background.
+//
+// `essential: false` on a slide's picture takes it out of the size check, which
+// is right for a picture nobody works from. It is also the one repair that
+// silences that check whatever the picture is, and a Year 6 science deck used
+// it on the lesson's main diagram on all six slides that showed it: the plan
+// had asked for the diagram as essential, a task said "Find a red tube on the
+// diagram", and it reached the class 2.25in wide and then 1.1in wide with no
+// check having measured it (7 October 2026). The plan's word and the slide's
+// word about one picture disagreed, and nothing compared them.
+//
+// So the deck is read as a whole: each picture the plan calls essential must
+// be drawn at least once as a picture children work from. After that it may
+// come back small as a reminder, which is what the opt-out is for, and the
+// teacher's ruling on a Year 1 plant deck that did exactly that was "it's
+// fine" (8 October 2026). A picture the deck does not use at all is not this
+// check's business, and neither is the picture on a vocabulary card (a `visual`
+// under `words`): that card refuses nothing by the teacher's ruling of 13
+// September 2026, so a picture drawn there counts neither for nor against.
+function planEssentialPictures(jsonPath, options) {
+  const named = new Set();
+  const requirementsPath = options && options.photoRequirementsPath
+    ? path.resolve(options.photoRequirementsPath)
+    : (jsonPath ? path.join(path.dirname(jsonPath), 'photo-requirements.json') : null);
+  if (!requirementsPath || !fs.existsSync(requirementsPath)) return named;
+  let requirements;
+  try {
+    requirements = JSON.parse(fs.readFileSync(requirementsPath, 'utf8'));
+  } catch {
+    return named;
+  }
+  (Array.isArray(requirements && requirements.photos) ? requirements.photos : []).forEach((photo) => {
+    if (photo && photo.essential === true && typeof photo.filename === 'string' && photo.filename.trim()) {
+      named.add(photo.filename.trim());
+    }
+  });
+  return named;
+}
+
+function backgroundOnlyPictureWarnings(lesson, jsonPath, options) {
+  const essential = planEssentialPictures(jsonPath, options);
+  if (!essential.size) return [];
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  // filename -> { worked: drawn at least once without the opt-out, background: slides that opt out }
+  const uses = new Map();
+
+  slides.forEach((slideData, index) => {
+    const seen = new Set();
+    const walk = (node) => {
+      if (Array.isArray(node)) return node.forEach(walk);
+      if (!node || typeof node !== 'object' || seen.has(node)) return;
+      seen.add(node);
+      if (typeof node.imagePath === 'string' && essential.has(node.imagePath)) {
+        const use = uses.get(node.imagePath) || { worked: false, background: [] };
+        if (node.essential === false) use.background.push(index + 1);
+        else use.worked = true;
+        uses.set(node.imagePath, use);
+      }
+      Object.entries(node).forEach(([key, child]) => {
+        if (UNRENDERED_SLIDE_KEYS.has(key) || key === 'words') return;
+        if (child && typeof child === 'object') walk(child);
+      });
+    };
+    walk(slideData);
+  });
+
+  const warnings = [];
+  uses.forEach((use, imagePath) => {
+    if (use.worked || !use.background.length) return;
+    const where = Array.from(new Set(use.background));
+    warnings.push({
+      signal: 'ESSENTIAL_PICTURE_ONLY_AS_BACKGROUND',
+      slide: where[0],
+      field: `image:${imagePath}`,
+      message:
+        `The lesson plan asks for "${imagePath}" as an essential picture, and every slide ` +
+        `that draws it (${where.join(', ')}) marks it \`essential: false\`, so no check has ` +
+        'measured whether a class can read it. Take the mark off on the slide where children ' +
+        'first work from the picture and give it the room the size check then asks for: a ' +
+        'tall picture in a column beside the words, a wide one in a band above them, and a ' +
+        'close-up file of the part when children have to find a part. Later slides that only ' +
+        'bring the same picture back as a reminder may keep the mark. If no layout can show ' +
+        'it large enough for its task, report that as a picture fault instead of marking it.'
+    });
+  });
   return warnings;
 }
 
@@ -942,7 +1073,7 @@ function taskSentences(whole) {
   return splitSentences(String(whole).replace(/\b(e\.g|i\.e)\.(?=\s)/gi, (m) => m.replace(/\./g, '․')));
 }
 
-function taskBlueFault(whole, facts) {
+function taskBlueFault(whole, facts, teachTask) {
   if (TASK_BLUE_REVEAL.test(whole)) {
     return 'it carries the reveal mark `||`, and an answer is green on an answer slide, never blue';
   }
@@ -954,6 +1085,11 @@ function taskBlueFault(whole, facts) {
   }
   const sentences = taskSentences(whole);
   const tasks = sentences.filter((sentence) => !sentence.endsWith('?'));
+  // A Teach slide's task card holds the design's own instruction for the beat,
+  // which can be two sentences that are both the job (`Decide who has eaten
+  // more. Write Chidi, Ali or the same.`); its advice is held apart and black
+  // (teach-layouts.js, taskText), so the count below is not its measure.
+  if (teachTask) return null;
   // A method line with the sum under it is the commonest way to reach the
   // refusal below, and "a short task is one" sent a Year 4 deck's repair to
   // take the blue off altogether (Lesson 23, 5 October 2026). The builder
@@ -978,7 +1114,8 @@ function taskBlueWarnings(lesson, jsonPath) {
   slides.forEach((slideData, index) => {
     walkContent(slideData, (node) => {
       if (node.colorRole !== 'task-blue') return;
-      const whole = typeof node.value === 'string' ? node.value : node.text;
+      const whole = node.teachTask === true ? teachTaskJob(node)
+        : (typeof node.value === 'string' ? node.value : node.text);
       if (typeof whole !== 'string' || !whole.trim()) return;
       // The role is the short task's only blue. A colour beside it would let a
       // hex decide what the role is for: the turn check reads a house-blue hex,
@@ -997,7 +1134,7 @@ function taskBlueWarnings(lesson, jsonPath) {
         });
         return;
       }
-      const fault = taskBlueFault(whole, facts);
+      const fault = taskBlueFault(whole, facts, node.teachTask === true);
       if (!fault) return;
       warnings.push({
         signal: 'TASK_BLUE_NOT_A_SHORT_TASK',
@@ -1249,7 +1386,7 @@ function ordinaryRevealWarnings(lesson, jsonPath) {
         answerIds.some((id) => !questionIds.includes(id))) {
       warnings.push({
         signal: 'ORDINARY_REVEAL_UNPAIRED', slide: index + 1, field: 'revealPair',
-        message: `source unit ${ids[0]} has an exact answer-slide reveal. Pair every ordinary answer-bearing text or question block with the preceding task slide using matching revealPair ids and opposite states, then keep the static composition unchanged. If the settled source calls for a different model or visual completion, refer that teaching decision to the lesson designer.`
+        message: `source unit ${ids[0]} has an exact answer-slide reveal. Pair every ordinary answer-bearing text or question block with the preceding task slide using matching revealPair ids and opposite states. The answers slide is the task slide duplicated with the answers swapped in: the same template and the same blocks in the same places, with each drawing free to show its answer (bars shaded, a chart filled in). If the settled source calls for a different model, refer that teaching decision to the lesson designer.`
       });
     }
   });
@@ -1273,7 +1410,11 @@ function teachUnits(jsonPath) {
         typeof unit.sourceUnitId === 'string') {
       const script = unit.speakerNotes && typeof unit.speakerNotes === 'object'
         ? unit.speakerNotes.script : null;
-      units.set(unit.sourceUnitId, { hasScript: typeof script === 'string' && script.trim().length > 0 });
+      units.set(unit.sourceUnitId, {
+        hasScript: typeof script === 'string' && script.trim().length > 0,
+        pupilInstruction: typeof unit.pupilInstruction === 'string' && unit.pupilInstruction.trim()
+          ? unit.pupilInstruction : null
+      });
     }
   };
   (Array.isArray(design.teachingSequence) ? design.teachingSequence : []).forEach(visit);
@@ -1408,6 +1549,44 @@ function teachLayoutWarnings(lesson, jsonPath) {
     // So each half carries teaching the class reads, and each carries the
     // words the teacher says for what it shows (slide-composition-playbook.md,
     // Space-pressure order, and the Slide Designer's script rule).
+    // The child's quick task on a Teach slide has its own place, `task`, which
+    // prints it blue with its sign. Written into an explanation line instead it
+    // prints black with none, and reads as more of the teacher's telling: three
+    // lessons of the twenty-lesson test (7 October 2026) did exactly that,
+    // because until the next day there was no `task` to put it in.
+    const TOLD_SLOTS = ['lead', 'lines', 'sticky', 'captions', 'statement', 'answers', 'steps'];
+    const slotWords = (value) => {
+      if (typeof value === 'string') return [value];
+      if (Array.isArray(value)) return value.flatMap(slotWords);
+      if (value && typeof value === 'object') {
+        return [value.value, value.text].filter((words) => typeof words === 'string');
+      }
+      return [];
+    };
+    slides.forEach((slideData, index) => {
+      if (!slideData || slideData.template !== 'teach-layout') return;
+      const unit = slideUnitIds(slideData).find((id) => teachIds.has(id) && teachIds.get(id).pupilInstruction);
+      if (!unit) return;
+      const instruction = teachIds.get(unit).pupilInstruction;
+      if (instruction.trim().endsWith('?')) return;
+      const wanted = plainLine(instruction);
+      const slot = TOLD_SLOTS.find((key) =>
+        slotWords(slideData[key]).some((words) => plainLine(words).includes(wanted)));
+      if (!slot) return;
+      warnings.push({
+        slide: index + 1,
+        field: slot,
+        signal: 'TEACH_TASK_OUTSIDE_ITS_SLOT',
+        message:
+          `"${instruction.trim().slice(0, 60)}" is this Teach unit's instruction to the children, and it sits in ` +
+          `\`${slot}\`, where it prints black with no sign, like the explanation beside it. Move it to the ` +
+          'slide\'s `task`, which prints the child\'s job blue with its sign: ' +
+          '`"task": { "value": "Write one word: yes or no.", "signal": "pencil" }`. A sentence of it that only ' +
+          'says how to go about the job (`Don\'t work them out.`) goes in the task\'s `advice` and stays black. ' +
+          'The layouts with a column or row of cards take a `task` (templates.md, teach-layout).'
+      });
+    });
+
     const slidesByUnit = new Map();
     slides.forEach((slideData, index) => {
       slideUnitIds(slideData).forEach((id) => {
@@ -1962,6 +2141,7 @@ function runSlideDesignCheck(inputPath, options = {}) {
     .concat(starterAskWarnings(lesson))
     .concat(stickyEmphasisWarnings(lesson))
     .concat(pictures)
+    .concat(backgroundOnlyPictureWarnings(lesson, jsonPath, options))
     .concat(repeatedLineWarnings(lesson))
     .concat(vocabCardBeforeItsWord(lesson))
     .filter((warning) => !onRefusedTeachSlide(warning) || teachLayout.includes(warning) || launchPair.includes(warning));
@@ -2101,6 +2281,7 @@ function runSlideDesignCheck(inputPath, options = {}) {
         env: {
           ...process.env,
           ...(options.env || {}),
+          LESSON_FIGURE_BOXES_PATH: path.join(scratchDir, 'figure-boxes.json'),
           ...(options.photoRequirementsPath
             ? {
                 PHOTO_REQUIREMENTS_PATH: path.resolve(
@@ -2229,6 +2410,14 @@ function runSlideDesignCheck(inputPath, options = {}) {
                 // off as the current deck. Its absence only loses that stamp.
                 try {
                   fs.copyFileSync(jsonPath, path.join(previewDir, 'lesson-source.json'));
+                } catch (_) { /* the preview is still good without it */ }
+                // And where each figure sits, which measure-slide-room.py
+                // reads so the inside of a chart is not counted as clear.
+                try {
+                  fs.copyFileSync(
+                    path.join(scratchDir, 'figure-boxes.json'),
+                    path.join(previewDir, 'figure-boxes.json')
+                  );
                 } catch (_) { /* the preview is still good without it */ }
                 outcome.previewDir = previewDir;
                 outcome.previewOutputPath = previewOutputPath;

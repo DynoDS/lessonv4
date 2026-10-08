@@ -1005,6 +1005,10 @@ def displayed_lo_is_the_objective_or_its_opening(lo: str, displayed: str) -> boo
     if not full.startswith(shown):
         return False
     tail = full[len(shown):]
+    # An objective's bracketed list is written with a space before the bracket
+    # ("...flowering plant (roots, stem, ...)"), so the tail starts " (".
+    if tail.lstrip().startswith("("):
+        return True
     return any(tail.startswith(cut.rstrip()) for cut in DISPLAYED_LO_CUT_POINTS)
 
 

@@ -174,3 +174,173 @@ test('a bracket on a stanza the passage does not have is refused by name', () =>
 test('counts need lines to sit beside', () => {
   assert.throws(() => A.tightSvg({ passage: 'One two three.', counts: [3] }, 'worksheets', { widthMm: 180 }), /ANNOTATED_TEXT_INVALID.*lines/);
 });
+
+// ─── Marks that keep off the letters (8 October 2026) ────────────────────────
+// Three lessons of twenty in the stress test of 7 October had a mark cutting
+// its own words: an oval through the first and last letters, a box edge on the
+// full stop. Nothing here asked where a ring's line was, only which words it
+// was on. These ask. The passages are the ones that showed it (a Year 6
+// argument, a Year 6 online-safety message) and two that did not, so the rule
+// is not learnt from English prose alone: a maths word problem and the poem.
+
+const ARGUMENT = {
+  passage: 'On the other hand, many people say children need a rest after school. They have already spent six hours there. Homework can also be unfair, because not every child has a quiet place to work or someone at home to help.\n\nIn conclusion, there are good points on both sides. I think a small amount of homework is a good idea, as long as it is short.',
+  marks: [
+    { find: 'children need a rest after school', style: 'box', colour: 'blue', note: 'A' },
+    { find: 'They have already spent six hours there', style: 'underline', colour: 'orange' },
+    { find: 'Homework can also be unfair', style: 'box', colour: 'blue', note: 'A' },
+    { find: 'I think a small amount of homework is a good idea, as long as it is short', style: 'circle', colour: 'purple' },
+  ],
+};
+
+const WORD_PROBLEM = {
+  passage: 'Maya has 248 stickers. She gives 59 to Tom, then buys 3 packs of 12. How many stickers does she have now?',
+  marks: [
+    { find: '248', style: 'circle', colour: 'blue', note: 'start' },
+    { find: 'gives 59', style: 'box', colour: 'red', note: 'take away' },
+    { find: '3 packs of 12.', style: 'box', colour: 'green', note: 'multiply first' },
+    { find: 'How many stickers', style: 'circle', colour: 'purple' },
+  ],
+};
+
+const SIGNS = {
+  title: 'StarPlayer_K',
+  passage: "That was so fun! You're my favourite person to play with. Which school do you go to? Don't tell your mum we're chatting. She won't get it. Quick, tell me before I have to go!",
+  marks: [
+    { find: 'Which school do you go to', style: 'underline', colour: 'orange', note: 'asks for personal information' },
+    { find: "Don't tell your mum we're chatting", style: 'underline', colour: 'orange', note: 'asks him to keep a secret' },
+    { find: 'Quick, tell me before I have to go', style: 'underline', colour: 'orange', note: 'rushes him' },
+  ],
+};
+
+function ringPieces(L) {
+  const out = [];
+  for (const m of L.placed) for (const p of m.pieces) if (p.ring) out.push({ m, p, line: L.lines[p.line] });
+  return out;
+}
+
+for (const [surface, box] of SURFACES) {
+  test(`${surface}: a loop or a box clears its letters, tails and punctuation, and ends in the finger space`, () => {
+    for (const spec of [ARGUMENT, WORD_PROBLEM, RENGA]) {
+      const L = A.describeLayout(spec, surface, box);
+      const half = (Math.max(1, 0.085 * L.pt) * 1.3) / 2; // half the drawn line
+      const rings = ringPieces(L);
+      assert.ok(rings.length > 0, 'the passage has no rings to check');
+      for (const { m, p, line } of rings) {
+        const first = line.words[p.pos1];
+        const last = line.words[p.pos2];
+        const what = `the ${m.style} round "${m.find}" at ${L.pt}pt`;
+        // Round the whole of its words, the punctuation that touches them included.
+        assert.ok(p.ring.x1 + half <= first.x + L.textX + 0.01, `${what} cuts its first letter`);
+        assert.ok(p.ring.x2 - half >= last.x + last.w + L.textX - 0.01, `${what} cuts its last letter or the punctuation after it`);
+        // Above the tall letters and below the tails.
+        assert.ok(p.ring.top + half <= line.baseline - 0.8 * L.pt, `${what} cuts the tops of the tall letters`);
+        assert.ok(p.ring.bottom - half >= line.baseline + 0.33 * L.pt, `${what} cuts the tails`);
+        // Short of the words either side, and inside the drawing.
+        const before = line.words[p.pos1 - 1];
+        const after = line.words[p.pos2 + 1];
+        if (before) assert.ok(p.ring.x1 - half >= before.x + before.w + L.textX - 0.01, `${what} runs onto the word before it`);
+        if (after) assert.ok(p.ring.x2 + half <= after.x + L.textX + 0.01, `${what} runs onto the word after it`);
+        assert.ok(p.ring.x1 - half >= -0.5 && p.ring.x2 + half <= L.usedW + 0.5, `${what} leaves the drawing`);
+        assert.ok(p.ring.top - half >= -0.5 && p.ring.bottom + half <= L.h + 0.5, `${what} leaves the drawing`);
+      }
+      // Two rings on neighbouring lines never share ink.
+      for (const a of rings) for (const b of rings) {
+        if (a === b || b.p.line !== a.p.line + 1) continue;
+        assert.ok(a.p.ring.bottom + half <= b.p.ring.top - half + 0.01, 'two rings on neighbouring lines overlap');
+      }
+    }
+  });
+}
+
+test('a circle is drawn as a rounded loop, never an oval', () => {
+  const { svg } = A.tightSvg(ARGUMENT, 'slides', { widthPt: 860, heightPt: 400 });
+  assert.ok(!svg.includes('<ellipse'), 'an oval clips the corners of what it goes round, which is the first and last letters');
+  assert.ok(svg.includes('annotated-text-ring'));
+});
+
+test('an underline and a highlight stop at the last letter, as the teacher ruled', () => {
+  // 8 October 2026: an underline through the tail of a g and a highlight that
+  // stops at the last letter are right as they are. Only rings changed.
+  const L = A.describeLayout(PROSE, 'slides', { widthPt: 860, heightPt: 400 });
+  const set = L.placed.find((m) => m.find === 'As the sun set,');
+  const piece = set.pieces[set.pieces.length - 1];
+  assert.ok(piece.x2 < piece.fx2 - 0.5, 'the highlight has grown to take in the comma');
+  assert.equal(piece.ring, undefined);
+});
+
+test('notes that say different things take different colours; the same note keeps one', () => {
+  const marks = A.normalise(SIGNS).marks;
+  assert.equal(new Set(marks.map((m) => m.colour)).size, 3, 'three different notes share a colour');
+  assert.equal(marks[0].colour, 'orange', "the first note keeps the designer's colour");
+  assert.ok(marks.every((m) => m.style === 'underline'), 'the kind of mark changed');
+  // Two boxes both noted "A" are one kind of thing.
+  const arg = A.normalise(ARGUMENT).marks;
+  assert.equal(arg[0].colour, 'blue');
+  assert.equal(arg[2].colour, 'blue');
+  // The same note twice in the worksheet's own example.
+  const prose = A.normalise(PROSE).marks;
+  assert.equal(prose[0].colour, prose[1].colour);
+  // The two ends of an arrow keep their shared colour: it is the link.
+  const renga = A.normalise(RENGA).marks;
+  assert.equal(renga[0].colour, 'blue');
+  assert.equal(renga[1].colour, 'blue');
+  // A designer who already gave each note its own colour is left alone.
+  const own = A.normalise({ passage: 'One two three.', marks: [{ find: 'One', colour: 'red', note: 'a' }, { find: 'two', colour: 'purple', note: 'b' }] }).marks;
+  assert.deepEqual(own.map((m) => m.colour), ['red', 'purple']);
+  // A new colour is one no other mark is using.
+  const mixed = A.normalise({ passage: 'One two three four.', marks: [{ find: 'One', note: 'a' }, { find: 'two', note: 'b' }, { find: 'three', colour: 'green' }] }).marks;
+  assert.equal(mixed[1].colour, 'orange');
+});
+
+test('notes stacked in one margin have clear air between them', () => {
+  const L = A.describeLayout({ ...SIGNS, marks: SIGNS.marks.map((m) => ({ ...m, side: 'right' })) }, 'wall', { widthMm: 260 });
+  const right = L.notes.filter((n) => n.side === 'right').sort((a, b) => a.top - b.top);
+  assert.ok(right.length >= 2);
+  for (let i = 1; i < right.length; i += 1) {
+    assert.ok(right[i].top - (right[i - 1].top + right[i - 1].h) >= 0.5 * L.notePt, 'two notes read as one paragraph');
+  }
+});
+
+test('a punctuation mark can be marked on its own, but not ringed', () => {
+  const L = A.describeLayout({ lines: ['the bright, round moon'], marks: [{ find: ',', style: 'highlight', colour: 'green' }] }, 'wall', { widthMm: 260 });
+  const piece = L.placed[0].pieces[0];
+  const bright = L.lines[0].words[1];
+  assert.equal(bright.text, 'bright,');
+  assert.ok(piece.x1 > bright.x + L.textX + 0.5 * bright.w, 'the mark is on the word, not its comma');
+  assert.ok(Math.abs(piece.x2 - (bright.x + bright.w + L.textX)) < 0.5);
+  assert.throws(() => A.tightSvg({ lines: ['the bright, round moon'], marks: [{ find: ',', style: 'circle' }] }, 'wall', { widthMm: 260 }), /ANNOTATED_TEXT_INVALID.*punctuation/);
+});
+
+test('a wall step number that names a word is given room just above it', () => {
+  const spec = {
+    lines: ['a tree', 'the bright, round moon'],
+    marks: [{ find: 'bright', style: 'highlight', colour: 'orange' }],
+    callouts: [{ part: 'moon', step: 1 }, { part: 'bright', step: 3 }, { part: ',', step: 5 }, { part: 'tree', label: 'the noun' }],
+  };
+  const r = A.tightSvg(spec, 'wall', { widthMm: 260 });
+  const L = r.layout;
+  const plain = A.describeLayout({ ...spec, callouts: undefined }, 'wall', { widthMm: 260 });
+  assert.ok(L.h > plain.h, 'no room was left for the step numbers');
+  const second = L.lines[1];
+  const firstBottom = L.lines[0].top + 1.25 * L.pt;
+  for (const [part, word] of [['moon', 'moon'], ['bright', 'bright,']]) {
+    const [x, y, rad] = r.anchors[part];
+    const w = second.words.find((k) => k.text === word);
+    const cx = (x / 100) * r.w;
+    const cy = (y / 100) * r.h;
+    const cr = (rad / 100) * r.h;
+    assert.ok(cx > w.x + L.textX && cx < w.x + w.w + L.textX, `step on "${part}" is not over its word`);
+    assert.ok(cy + cr <= second.top + 0.01, `step on "${part}" sits on its word`);
+    assert.ok(cy - cr >= firstBottom - 0.01, `step on "${part}" sits on the line above`);
+  }
+  // The comma's own number is over the comma, right of the middle of "bright,".
+  const brightWord = second.words.find((k) => k.text === 'bright,');
+  assert.ok((r.anchors[','][0] / 100) * r.w > brightWord.x + L.textX + 0.6 * brightWord.w);
+  // A word label is told where its word is, with no circle.
+  assert.equal(r.anchors.tree.length, 2);
+  // A drawing nobody points at names no places, and is laid out as before.
+  assert.equal(A.tightSvg({ ...spec, callouts: undefined }, 'wall', { widthMm: 260 }).anchors, undefined);
+  // A different set of step numbers is a different picture.
+  assert.notEqual(A.cacheKey(spec, 'wall', { widthMm: 260 }), A.cacheKey({ ...spec, callouts: undefined }, 'wall', { widthMm: 260 }));
+});

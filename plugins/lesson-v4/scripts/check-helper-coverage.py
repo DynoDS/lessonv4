@@ -96,9 +96,28 @@ FIGURE_HELPERS: dict[str, dict[str, tuple[str, ...]]] = {
         s: ("place-value-chart", "place-value-counter-chart")
         for s in ("slides", "worksheets", "wall", "stick-in")
     },
-    "clock": {s: ("clock",) for s in ("slides", "worksheets", "wall", "stick-in")},
-    "part-whole": {s: ("part-whole-model",) for s in ("slides", "worksheets", "wall", "stick-in")},
-    "part whole": {s: ("part-whole-model",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    # The worksheet draws clocks as `clock-row`, and the stick-in pack takes
+    # either; naming only the board's key refused every worksheet clock.
+    "clock": {
+        "slides": ("clock",),
+        "worksheets": ("clock-row",),
+        "wall": ("clock",),
+        "stick-in": ("clock", "clock-row"),
+    },
+    # The worksheet's part-whole helper is keyed `part-whole` (and its saved
+    # money twin), not the board's `part-whole-model`.
+    "part-whole": {
+        "slides": ("part-whole-model",),
+        "worksheets": ("part-whole", "part-whole-money"),
+        "wall": ("part-whole-model",),
+        "stick-in": ("part-whole-model",),
+    },
+    "part whole": {
+        "slides": ("part-whole-model",),
+        "worksheets": ("part-whole", "part-whole-money"),
+        "wall": ("part-whole-model",),
+        "stick-in": ("part-whole-model",),
+    },
     "concept map": {s: ("concept-map",) for s in ("slides", "worksheets", "wall", "stick-in")},
     "fishbone": {s: ("fishbone",) for s in ("slides", "worksheets", "wall", "stick-in")},
     "map": {s: ("map", "grid-map") for s in ("slides", "worksheets", "wall", "stick-in")},
@@ -107,16 +126,36 @@ FIGURE_HELPERS: dict[str, dict[str, tuple[str, ...]]] = {
 FIGURE_WORDS = sorted(FIGURE_HELPERS, key=len, reverse=True)
 
 
-def figure_named(item: dict) -> str | None:
-    """The catalogue figure this representation's own words name, if any."""
-    text = " ".join(
-        str(item.get(field) or "")
-        for field in ("representationName", "description")
-    ).lower()
+# A description often places its figure beside another one ("a circle cut into
+# four parts, beside the clock at 7:15"). The figure it is placed beside is not
+# the figure this representation draws, so those mentions do not name it.
+_BESIDE_ANOTHER = re.compile(
+    r"\b(?:beside|next to|under|above|below|alongside|from|on|onto|against)\s+"
+    r"(?:the|a|an|its|each|their)\s+(?:[a-z'-]+\s+){0,2}$"
+)
+
+
+def _names_figure(text: str, *, skip_placed_beside: bool) -> str | None:
     for word in FIGURE_WORDS:
-        if re.search(r"(?<![a-z-])" + re.escape(word) + r"(?![a-z])", text):
+        for match in re.finditer(r"(?<![a-z-])" + re.escape(word) + r"(?![a-z])", text):
+            if skip_placed_beside and _BESIDE_ANOTHER.search(text[: match.start()]):
+                continue
             return word
     return None
+
+
+def figure_named(item: dict) -> str | None:
+    """The catalogue figure this representation's own words name, if any.
+
+    The representation's name is what it is; the description says how it is
+    used, so a figure the name gives wins, and a figure the description only
+    places this one beside is not counted.
+    """
+    name = str(item.get("representationName") or "").lower()
+    named = _names_figure(name, skip_placed_beside=False)
+    if named:
+        return named
+    return _names_figure(str(item.get("description") or "").lower(), skip_placed_beside=True)
 
 
 def lookalike_failure(item: dict, helper_key: str, surface: str, label: str) -> str | None:

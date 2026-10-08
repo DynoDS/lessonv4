@@ -51,24 +51,33 @@ function requiredZoneHeight(rowCount) {
 // accepts passes the fit. A table with a picture in a cell is not measured: how
 // small a picture may go is not a question of lines.
 function cellsHold(rows, widths, rowH) {
+  const need = wordsRowHeight(rows, widths);
+  return need != null && need <= rowH;
+}
+
+// The row height the fullest cell needs for its words at the reading floor,
+// or null when a cell cannot be measured (a picture, a word too wide to
+// break). Every row is drawn at one height, so the fullest cell sets it.
+function wordsRowHeight(rows, widths) {
   const { wrappedLineCount } = require('../glyph-width');
+  let most = 0;
   for (const row of rows) {
     if (!Array.isArray(row)) continue;
     for (let c = 0; c < row.length; c += 1) {
       const cell = row[c];
-      if (isPictureCell(cell)) return false;
+      if (isPictureCell(cell)) return null;
       const words = plainWords(cell).replace(/\*\*|\[\[|\]\]/g, '');
       if (!words.trim()) continue;
       let ems = 0;
       for (const para of words.split('\n')) {
         const n = para.trim() ? wrappedLineCount(para, TABLE_MIN_PT, widths[c] - 0.06, c === 0) : 1;
-        if (!Number.isFinite(n)) return false;
+        if (!Number.isFinite(n)) return null;
         ems += (1.2 + 1.26 * (n - 1)) * 1.02;
       }
-      if (ems * TABLE_MIN_PT / 72 + 0.03 > rowH) return false;
+      most = Math.max(most, ems * TABLE_MIN_PT / 72 + 0.03);
     }
   }
-  return true;
+  return most;
 }
 
 // A cell is words (a string) or a picture: any content object with a `type`,
@@ -157,13 +166,22 @@ function drawTable(pptx, slide, zone, data, ctx) {
   const colX   = widths.map((_, c) => innerX + widths.slice(0, c).reduce((a, w) => a + w, 0));
 
   if (rowH < ROW_MIN_H) {
-    const needed = requiredZoneHeight(rows.length);
+    // The height asked for holds the words, not only one line a row. A Year 4
+    // geography table of three definitions took the one-line height exactly
+    // and was refused again, once for every cell, because the definitions ran
+    // to two lines; the designer then dropped the table (7 October 2026).
+    const wordsH = wordsRowHeight(rows, widths);
+    const wraps = wordsH != null && wordsH > ROW_MIN_H;
+    const needed = wraps
+      ? 2 * PAD + HEADER_H + rows.length * (wordsH + 0.01)
+      : requiredZoneHeight(rows.length);
     const refusal = new Error(
       `TABLE_ZONE_TOO_SHORT: ${rows.length} row(s) plus the header leave ` +
         `${rowH.toFixed(2)}in per row in a ${zone.h.toFixed(2)}in zone, below the ` +
         `${ROW_MIN_H.toFixed(2)}in one line of cell text needs at the readable ` +
-        `floor. Give the table a zone at least ${needed.toFixed(2)}in tall, or ` +
-        `carry fewer rows; nothing was shrunk further or cut.`
+        `floor. Give the table a zone at least ${needed.toFixed(2)}in tall` +
+        (wraps ? ' (its fullest cell runs to more than one line at this width)' : '') +
+        `, or carry fewer rows; nothing was shrunk further or cut.`
     );
     // The height this zone would have to be, carried as a number so a stack
     // above can work out the weight that reaches it. Saying "at least 1.50in"

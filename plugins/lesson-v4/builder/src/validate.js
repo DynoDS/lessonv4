@@ -598,8 +598,17 @@ function validateLesson(lesson, lessonDir) {
         if (node.type === 'sort-board' && !Array.isArray(node.bank)) return true;
         return Object.keys(node).some((key) => scan(node[key]));
       })(slide);
-      if (!hasGreenHelper && !strings.some((s) => s.includes('||'))) {
-        warnings.push(`slide ${n} ("${answerLabel}") looks like an answer slide but carries no "||" reveal marker anywhere, so the answers would render plain black at question size instead of answer green. On a labelled diagram put the marker inside the label ("1||North America"). The one fair exception is a model-answer slide whose whole body IS the answer, where there is no question to reveal it against.`);
+      // A drawing reveals natively too: the bars shaded, the chart filled in,
+      // the column worked. Fifteen answers slides of a column subtraction deck
+      // carried this warning with every answer printed inside its chart
+      // (7 October 2026). The drawing has revealed something when it is not
+      // one the slide before already showed that way, so a blank drawing
+      // repeated under black answers is still warned.
+      const { drawingsShown } = require('./content/reveal-pair');
+      const before = i > 0 ? drawingsShown(withoutDecorations(slides[i - 1])) : [];
+      const drawingReveals = drawingsShown(slide).some((shown) => !before.includes(shown));
+      if (!hasGreenHelper && !drawingReveals && !strings.some((s) => s.includes('||'))) {
+        warnings.push(`slide ${n} ("${answerLabel}") looks like an answer slide but carries no "||" reveal marker anywhere, so the answers would render plain black at question size instead of answer green. On a labelled diagram put the marker inside the label ("1||North America"); a drawing that shows its answer (bars shaded, a chart filled in) is a reveal already. The one fair exception is a model-answer slide whose whole body IS the answer, where there is no question to reveal it against.`);
       }
     }
   });

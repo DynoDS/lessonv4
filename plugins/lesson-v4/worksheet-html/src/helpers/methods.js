@@ -142,10 +142,24 @@ function needsShortMultiplicationGrid(spec) {
 // and a grid one row short is a grid the method does not fit in. Two is the
 // floor, so the ordinary 2-digit case is drawn exactly as it always was.
 
+// The grid is one column wider than the longer number, and that spare column
+// (under the multiplication sign) takes the answer's leading digit, as it does on the
+// short multiplication grid. A 4-digit by 2-digit product can run to SIX
+// digits (4,326 x 52 = 224,952), which is two more than the longer number, so
+// such a sum had nowhere to put its first digit and the child had to write it
+// outside the grid (7 October 2026). The grid now grows to hold the product.
+function productDigits(spec) {
+  const digitsOnly = (value) => String(value ?? "").replace(/[^0-9]/g, "");
+  const top = digitsOnly(spec.top);
+  const bottom = digitsOnly(spec.bottom);
+  if (!top || !bottom) return 0;
+  return String(BigInt(top) * BigInt(bottom)).length;
+}
+
 function longMultGeometry(spec) {
   const width = Math.max(String(spec.top ?? "").length, String(spec.bottom ?? "").length);
   const partials = Math.max(2, String(spec.bottom ?? "").length);
-  return { width, cols: width + 1, partials };
+  return { width, cols: Math.max(width + 1, productDigits(spec)), partials };
 }
 
 function longMultRowsEquiv(spec) {
@@ -154,9 +168,11 @@ function longMultRowsEquiv(spec) {
 }
 
 function renderLongMultiplicationGrid(spec) {
-  const { width, cols, partials } = longMultGeometry(spec);
-  const topDigits = padDigits(spec.top, width);
-  const bottomDigits = padDigits(spec.bottom, width);
+  const { cols, partials } = longMultGeometry(spec);
+  // Both numbers stay right-aligned under the ones column whatever the
+  // grid's width; the sign keeps the first column.
+  const topDigits = padDigits(spec.top, cols - 1);
+  const bottomDigits = padDigits(spec.bottom, cols - 1);
 
   const partialRows = Array.from({ length: partials }, (unused, i) =>
     // Only the FIRST partial row carries the thick rule: it is the line drawn

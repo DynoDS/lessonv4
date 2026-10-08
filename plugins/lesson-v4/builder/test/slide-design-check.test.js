@@ -1916,3 +1916,139 @@ test('a word card after a slide that already shows its word is sent back before 
   assert.strictEqual(found[0].signal, 'VOCAB_CARD_AFTER_A_SLIDE_WITH_ITS_WORD');
   assert.match(found[0].message, /move it back to sit before slide 2/);
 });
+
+// The teacher's rulings of 7 October 2026, after six of twenty lessons were
+// refused: the starter is outside the placement rule, a paired card is two
+// words, and cards may sit back to back.
+test('a starter that prints the word does not make the card after it late', () => {
+  const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
+  const lesson = { slides: [
+    { template: 'split-h-60-40', headerStyle: 'starter', title: 'Starter', primary: { type: 'text', value: 'Noun or adjective?' } },
+    { template: 'split-h-60-40', designUnitId: 'lesson-section/starter/unit-001', title: 'Starter - check', primary: { type: 'text', value: 'owl is a noun' } },
+    { template: 'key-vocabulary', words: [{ word: 'noun', definition: 'A naming word.' }, { word: 'adjective', definition: 'A describing word.' }] },
+    { template: 'teach-layout', lead: 'Tall is the adjective and tree is the noun.' }
+  ] };
+  assert.deepStrictEqual(vocabCardBeforeItsWord(lesson), []);
+});
+
+test('a word card before the starter is sent to after it', () => {
+  const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
+  const lesson = { slides: [
+    { template: 'key-vocabulary', words: [{ word: 'noun', definition: 'A naming word.' }] },
+    { template: 'split-h-60-40', headerStyle: 'starter', title: 'Starter', primary: { type: 'text', value: 'Noun or adjective?' } },
+    { template: 'split-h-60-40', headerStyle: 'starter', title: 'Answers', primary: { type: 'text', value: 'owl is a noun' } },
+    { template: 'teach-layout', lead: 'Tree is the noun.' }
+  ] };
+  const found = vocabCardBeforeItsWord(lesson);
+  assert.strictEqual(found.length, 1);
+  assert.strictEqual(found[0].signal, 'VOCAB_CARD_BEFORE_THE_STARTER');
+  assert.match(found[0].message, /after slide 3, the starter's last slide/);
+});
+
+test('a paired card is read as its two words', () => {
+  const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
+  const pair = { template: 'key-vocabulary', words: [{ word: 'whole and part', definition: 'Everything, and one piece of it.' }] };
+  const shown = { slides: [pair, { template: 'maths-turn-sc', title: 'My Turn', body: '5 is the whole.' }] };
+  assert.deepStrictEqual(vocabCardBeforeItsWord(shown), []);
+  const slashed = { slides: [
+    { template: 'key-vocabulary', words: [{ word: 'tributary / confluence', definition: 'A smaller river, and where it joins.' }] },
+    { template: 'teach-layout', lead: 'The two rivers meet at a confluence.' }
+  ] };
+  assert.deepStrictEqual(vocabCardBeforeItsWord(slashed), []);
+  const absent = { slides: [pair, { template: 'maths-turn-sc', title: 'My Turn', body: '7 and 3 make 10.' }] };
+  const found = vocabCardBeforeItsWord(absent);
+  assert.strictEqual(found.length, 1, 'neither word is on the next board');
+  assert.strictEqual(found[0].signal, 'VOCAB_CARD_BEFORE_A_SLIDE_WITHOUT_ITS_WORD');
+});
+
+test('two word cards back to back pass when the slide after them shows their words', () => {
+  const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
+  const lesson = { slides: [
+    { template: 'body-full', headerStyle: 'starter', title: 'Starter', body: 'Count the boxes.' },
+    { template: 'key-vocabulary', words: [{ word: 'number bond', definition: 'Two numbers that make another.' }] },
+    { template: 'key-vocabulary', words: [{ word: 'whole', definition: 'Everything together.' }] },
+    { template: 'teach-layout', lead: 'In this number bond, 10 is the whole.' }
+  ] };
+  assert.deepStrictEqual(vocabCardBeforeItsWord(lesson), []);
+});
+
+// ─── An essential picture drawn only as background ────────────────────────
+
+function writePhotoRequirements(root, photos) {
+  fs.writeFileSync(path.join(root, 'photo-requirements.json'), JSON.stringify({ schema_version: 2, photos }));
+}
+
+function diagramSlide(title, essential) {
+  const picture = { type: 'image', imagePath: 'unsplash/body-diagram.jpg' };
+  if (essential !== undefined) picture.essential = essential;
+  return pictureSlide(title, [{ type: 'text', value: 'Blood travels in tubes called blood vessels.' }], [picture]);
+}
+
+test('a picture the plan calls essential cannot be background on every slide that draws it', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    writePhotoRequirements(root, [{ id: 'photo-005', filename: 'unsplash/body-diagram.jpg', essential: true }]);
+
+    // The Year 6 science deck: the main diagram, opted out everywhere.
+    const hidden = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [diagramSlide('How does blood get around your body?', false), diagramSlide('Find a red tube', false)]
+    });
+    const refused = runSlideDesignCheck(hidden, { buildPath: fakeBuilder });
+    assert.equal(refused.ok, false);
+    assert.match(refused.stdout, /"signal":"ESSENTIAL_PICTURE_ONLY_AS_BACKGROUND"/);
+    assert.match(refused.stdout, /every slide that draws it \(1, 2\)/);
+
+    // Shown properly once, it may come back as a reminder (the Year 1 plant deck).
+    const reminder = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [diagramSlide('How does blood get around your body?'), diagramSlide('The same body again', false)]
+    });
+    const allowed = runSlideDesignCheck(reminder, { buildPath: fakeBuilder });
+    assert.doesNotMatch(allowed.stdout, /ESSENTIAL_PICTURE_ONLY_AS_BACKGROUND/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a picture the plan does not call essential may be background everywhere', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    writePhotoRequirements(root, [{ id: 'photo-005', filename: 'unsplash/body-diagram.jpg', essential: false }]);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [diagramSlide('How does blood get around your body?', false)]
+    });
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+    assert.doesNotMatch(result.stdout, /ESSENTIAL_PICTURE_ONLY_AS_BACKGROUND/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a vocabulary card picture is left out of the background-only check', () => {
+  // The Year 1 plant deck: three word-card pictures, each essential in the
+  // plan and drawn nowhere else. The card refuses nothing (13 September 2026).
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    writePhotoRequirements(root, [{ id: 'photo-002', filename: 'unsplash/flower-close-up.jpg', essential: true }]);
+    const lessonPath = writeLesson(root, {
+      ...ordinaryLesson(),
+      slides: [{
+        template: 'key-vocabulary',
+        words: [{
+          word: 'flower',
+          definition: 'A flower is the colourful part of a plant.',
+          visual: { type: 'image', imagePath: 'unsplash/flower-close-up.jpg', essential: false }
+        }]
+      }]
+    });
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+    assert.doesNotMatch(result.stdout, /ESSENTIAL_PICTURE_ONLY_AS_BACKGROUND/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

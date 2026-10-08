@@ -179,9 +179,13 @@ body { font-family: var(--font); color: var(--colour-ink); background: var(--col
 .a-level h2 { font-size: ${s.headPt}pt; color: var(--colour-paper); background: var(--colour-navy);
   padding: 1mm 2.5mm; margin: 0 0 3mm; break-after: avoid; }
 .a-standin { font-size: ${s.notePt}pt; color: var(--colour-quiet); margin: 0 0 3mm; }
-.a-row { display: grid; grid-template-columns: ${LABEL_COLUMN_MM}mm 1fr; margin-bottom: 3.2mm;
-  break-inside: avoid; }
-.a-label { color: var(--colour-question); font-weight: bold; font-size: ${s.labelPt}pt; padding-top: 0.5mm; }
+/* The label column is as wide as a question number, and grows for a row whose
+   label is a word: "(Conclusion)" is twice the column and printed straight
+   over the first word of its answer (7 October 2026). */
+.a-row { display: grid; grid-template-columns: minmax(${LABEL_COLUMN_MM}mm, max-content) 1fr;
+  column-gap: 1mm; margin-bottom: 3.2mm; break-inside: avoid; }
+.a-label { color: var(--colour-question); font-weight: bold; font-size: ${s.labelPt}pt; padding-top: 0.5mm;
+  white-space: nowrap; }
 .a-body { min-width: 0; }
 .a-answer { display: block; color: ${ANSWER_GREEN}; font-weight: bold; font-size: ${s.answerPt}pt; line-height: 1.3; }
 .a-answer--long { font-weight: normal; }

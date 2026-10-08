@@ -357,14 +357,21 @@ function renderDiagramSection(card, style, specDir, ctx) {
     // 2026. Counted as Chrome wraps, a wrapped note costs its second line.
     const lineIn = sharedNotePt * 1.3 / 72;
     const widthPx = innerWidth * 96;
-    const lines = items.reduce((sum, item) => {
+    // A step's row is as tall as its number badge when that is taller than its
+    // words: the badge is the font's own line box (about 1.4 times the type)
+    // and a line of words is 1.3. Planned at 1.3 a row, three one-line steps
+    // came out a few pixels taller than their room and the last one printed
+    // past the foot of its panel (Year 1 number bonds wall, 7 October 2026).
+    const badgeIn = lineBoxPx(sharedNotePt) / 96;
+    const linesIn = items.reduce((sum, item) => {
       const room = item.kind === "result" ? widthPx - 2 * mm(0.08) * 96 / 25.4 : widthPx;
       const prefixPx = item.kind === "step" ? Math.max(boldWidthPx(`${item.label}.`, sharedNotePt), lineBoxPx(sharedNotePt)) + mm(0.06) * 96 / 25.4 : 0;
       const counted = wrappedLines(plainCriteria(item.text), sharedNotePt, room, { prefixPx });
-      return sum + (Number.isFinite(counted) ? counted : 1);
+      const wordsIn = (Number.isFinite(counted) ? counted : 1) * lineIn;
+      return sum + (item.kind === "step" ? Math.max(wordsIn, badgeIn) : wordsIn);
     }, 0);
     const textHeight = items.length
-      ? Math.min(textCeiling, lines * lineIn + items.length * 0.04 + 0.06) + resultExtra
+      ? Math.min(textCeiling, linesIn + items.length * 0.04 + 0.06) + resultExtra
       : 0;
     const size = figureSize(figure, innerWidth, available - textHeight);
 

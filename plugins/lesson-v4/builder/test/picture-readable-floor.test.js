@@ -441,7 +441,12 @@ test('a portrait photograph in the same cell is stopped by height instead', () =
   assert.ok(message, 'a portrait picture drawn at 2.71" wide must be reported');
   assert.match(message, /renders 2\.71" by 3\.26"/);
   assert.match(message, /Height is what binds/);
-  assert.match(message, /0\.35" more height/);
+  // A portrait picture is held to as much picture as a 3" square, not to 3" of
+  // width, so this one is a hair short (2.73" by 3.29" would do) rather than
+  // the 0.35" its narrow side alone would say.
+  assert.match(message, /as much picture as a 3\.00" square/);
+  assert.match(message, /2\.73" by 3\.29"/);
+  assert.match(message, /0\.03" more height/);
 });
 
 test('a panoramic photograph is told the real width a hero would need', () => {
@@ -505,4 +510,74 @@ test('one delivered picture raises one finding, not one per measurement', () => 
   assert.equal(findings[0].signal, 'PICTURE_BELOW_READABLE_FLOOR');
   assert.match(findings[0].message, /renders 3\.26" by 2\.71"/);
   clearPictureFloor();
+});
+
+// ─── A picture taller than it is wide ─────────────────────────────────────
+//
+// A slide is a landscape page, so height is what a tall picture runs out of. A
+// whole-body diagram of the circulatory system arrived 1920 x 4249, 0.45 times
+// as wide as tall. Held to 3" on its narrow side it needed 6.6" of height, the
+// tallest zone a slide has is about 6.4", and so no template could ever pass
+// it. The designer marked the lesson's main diagram `essential: false`, the
+// one repair the message offered that always works, and it went to a class
+// unmeasured (Year 6 science, 7 October 2026). A tall picture is therefore
+// measured by how much picture there is: as much as a square of the floor's
+// side, and never narrower than the base floor.
+
+const BODY_DIAGRAM = { w: 1920, h: 4249 };
+// The side column the diagram was actually drawn in: 2.25" by 5.0" of picture.
+const SIDE_COLUMN = { x: 10.6, y: 2.0, w: 2.49, h: 5.24 };
+
+test('a tall narrow picture passes at a size a slide can really give it', () => {
+  // The teacher's ruling on this very slide: big enough, when children only
+  // need to see the whole body from top to toe (8 October 2026).
+  assert.equal(deliveredWarning(SIDE_COLUMN, { type: 'image' }, BODY_DIAGRAM), null);
+});
+
+test('the tallest zone a slide has is enough for it', () => {
+  // The mutation check for the whole section: on the narrow-side measure this
+  // 2.9" by 6.4" picture, twice the area of a passing 3" square, was refused.
+  assert.equal(
+    deliveredWarning({ x: 9, y: 0.9, w: 4, h: 6.64 }, { type: 'image' }, BODY_DIAGRAM),
+    null
+  );
+});
+
+test('a tall picture with too little picture is still refused, and sent beside the words', () => {
+  // The same diagram in a shallow band above a row of cards: 3.6" of height
+  // draws it 1.63" wide. Over the base floor, far short of a hero.
+  const message = deliveredWarning({ x: 0.5, y: 0.9, w: 12, h: 3.84 }, { type: 'image' }, BODY_DIAGRAM);
+  assert.ok(message, 'a 1.63" by 3.60" lone picture must be reported');
+  assert.match(message, /as much picture as a 3\.00" square/);
+  assert.match(message, /Height is what binds/);
+  assert.match(message, /beside the words/);
+});
+
+test('a tall picture is never passed thinner than the base floor', () => {
+  // One of three, so the tier asks only for the base floor, and a strip 1.1"
+  // wide has the area of a 1.6" square. It is still a strip.
+  const message = deliveredWarning(
+    { x: 0.5, y: 0.9, w: 1.34, h: 2.67 },
+    { type: 'image' },
+    BODY_DIAGRAM,
+    { companions: 2 }
+  );
+  assert.ok(message, 'a 1.10" wide picture must be reported whatever its height');
+  assert.match(message, /1\.60" by 3\.54"/);
+});
+
+test('a wide picture is measured exactly as before', () => {
+  // The discrimination: the amount-of-picture measure is for portrait shapes
+  // only. A 16:9 photograph 4" by 2.25" has the area of a 3" square and is
+  // still refused as a hero, because a slide can always find it more width.
+  const message = deliveredWarning({ x: 0.5, y: 0.9, w: 4.24, h: 4 }, { type: 'image' }, { w: 1600, h: 900 });
+  assert.ok(message, 'a landscape hero 2.25" tall must still be reported');
+  assert.match(message, /needs 3\.00" for a class to read it/);
+});
+
+test('the message no longer offers the opt-out as a repair for a picture children work from', () => {
+  const message = deliveredWarning(SQUARE_CELL, { type: 'image' }, { w: 400, h: 332 });
+  assert.ok(!/belongs here at this size/.test(message));
+  assert.match(message, /`essential: false` is only for a picture no task and no line of the script points at/);
+  assert.match(message, /find a part of this picture, show that part/);
 });

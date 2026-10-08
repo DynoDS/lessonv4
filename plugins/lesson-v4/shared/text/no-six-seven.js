@@ -27,7 +27,7 @@
 // square's rows, a list of every number from 60 to 70): the run cannot skip
 // one, and a number square on every classroom wall has never been the trigger.
 
-const SKIPPED_STRING_KEYS = /(^id$|Id$|Ids$|Ref$|Refs$|path|Path|url|Url|^src$|^href$|sha|Sha|[Ff]ile|[Cc]olou?r|^fill$|[Ss]lug|^layout$|^template$|^kind$)/;
+const SKIPPED_STRING_KEYS = /(^id$|Id$|Ids$|Ref$|Refs$|path|Path|url|Url|^src$|[Hh]ref$|sha|Sha|[Ff]ile|[Cc]olou?r|^fill$|[Ss]lug|^layout$|^template$|^kind$)/;
 const SKIPPED_NUMBER_KEYS = /^(fontSize|headingFontSize|weight|rotation|transparency|x|y|w|h|width|height|anchor|label_at|maxRows|blankChars|classSize|dpi|radius|lineW|pad|gap|minFont|maxFont|version|schemaVersion|lon|lat|longitude|latitude)$/;
 const NUMBER_TOKEN = /(?<![\p{L}\p{N}_/\\.#-])(\d{1,3}(?:,\d{3})+|\d+)(?![\p{N}_/\\]|\.\d|-\d|,\d{3})/gu;
 
@@ -60,6 +60,9 @@ function sixSevenNumbers(tree) {
   const walk = (node, key, run) => {
     if (typeof node === 'string') {
       if (key && SKIPPED_STRING_KEYS.test(key)) return;
+      // An embedded picture is data, not words: a photo's own bytes held a
+      // "679" and refused a finished sheet (7 October 2026).
+      if (node.startsWith('data:')) return;
       for (const match of node.matchAll(NUMBER_TOKEN)) {
         const token = match[1];
         const digits = token.replace(/,/g, '');

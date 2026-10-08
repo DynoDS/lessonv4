@@ -181,9 +181,39 @@ The other readings stand as read to him:
 11. All seven corrected; the build never withholds a deck over the criteria.
 12. The wall never rewords a step; it makes room (no picture, or two cards).
 13. The slide designer never turns a table into lines and never reports back; it
-    makes it fit. How to fit a very large list (perhaps a new layout) is a
+    makes it fit. (Amended by the teacher, 8 October 2026: a table whose every
+    row is a name with its meaning may be stacked as cards when it will not fit
+    where the slide needs it; a table children look things up in, read across
+    or fill in still stays a table.) How to fit a very large list (perhaps a new layout) is a
     separate investigation after this topic, not started without his word.
 14. As suggested. 16. As suggested.
+
+### Smaller points under a step (8 October 2026)
+
+He said the criteria were "too long and wordy and hard to actually use" and that
+he and his year partner write their own. Shown three lists the plugin wrote
+(Year 4 column subtraction, Year 3 rock hardness, Year 4 fronted adverbials), he
+gave his own versions, and said yes to them written out in full: a short
+numbered route, with what only sometimes happens hung under its step ("a sub
+section, not necessarily a new step"), such as `Exchange? Take 1 from the tens.
+Make 10 ones.`
+
+What changed, and which rows it touches:
+
+- New in `teacher-voice.md` → Success criteria: `A list is a short route, with
+  the detail hung where it is needed`, with his three lists.
+- Decisions 2 and 15 (SC-D06, SC-D40) stand, with a new usual home: a condition
+  only some children meet goes under its step as a smaller point; one every
+  child meets may still be an `If...` sentence or a short question step.
+- The column addition example no longer says the + sign left: his own list
+  keeps `Write the symbol.` (he said so unprompted; the earlier line was my
+  reading of a list he agreed with, not his ruling).
+- A smaller point is a line of its own inside the step's string. The board
+  prints it lighter under the step in the same card. The wall still prints it
+  straight after the step on the same line (not yet built).
+- Nothing was removed from the section. A five-lesson trial showed the new
+  shape being used and the wording no shorter overall, so the rest of the
+  section is still pulling towards full sentences; trimming it is his to decide.
 
 ### After the first change check (23 September 2026)
 

@@ -242,3 +242,67 @@ test('a step list that is nobody else\'s wording may still be shortened', () => 
   assert.match(message, /Shorten the step to that/);
   assert.doesNotMatch(message, /not yours to shorten/);
 });
+
+// A smaller point under a step (the teacher's own lists, 8 October 2026): the
+// step is the bold route, sized by its own words, and what only some children
+// need hangs under it in the same numbered card, lighter and no larger, with
+// the question that opens it in the orange of "the part to decide".
+test('a smaller point under a step is lighter, no larger, and opens in orange, inside that step\'s card', () => {
+  const { shapes, texts } = drawn(ZONE, {
+    steps: ['Start with the ones.', 'Rub the mark with your finger.\nStays? Write medium.\nRubs off? Write {{hard}}.'],
+  });
+
+  const cards = shapes.filter((s) => s.w && s.h && s.rectRadius !== undefined);
+  assert.equal(cards.length, 2, 'a smaller point became a card of its own');
+
+  const cue = texts.find((t) => t.content === 'Start with the ones.');
+  const block = texts.find((t) => Array.isArray(t.content) && t.content.some((r) => /Rub the mark/.test(r.text)));
+  const run = (pattern) => block.content.find((r) => pattern.test(r.text)).options;
+
+  // The short cue is not dragged down by the step that carries points: both
+  // are the route, at one size, the 24pt the teacher passed.
+  assert.equal(cue.fontSize, 24);
+  assert.equal(run(/Rub the mark/).fontSize, 24);
+  assert.equal(run(/Rub the mark/).bold, true);
+
+  assert.equal(run(/Write medium/).bold, false);
+  assert.ok(run(/Write medium/).fontSize < 24 && run(/Write medium/).fontSize >= 18);
+
+  assert.equal(run(/^Stays\?$/).color, 'E46C0A');
+  assert.equal(run(/^Stays\?$/).bold, true);
+  // The designer's own mark later in a line stays, and its question is still orange.
+  assert.equal(run(/^Rubs off\?$/).color, 'E46C0A');
+  assert.equal(run(/^hard$/).color, '00B050');
+
+  // One box, inside the card, left alone by the final fit so both sizes stay.
+  const card = cards[1];
+  assert.ok(block.y >= card.y - 1e-6 && block.y + block.h <= card.y + card.h + 1e-6);
+  assert.match(block.objectName, /^NOFIT_/);
+});
+
+// Without a smaller point anywhere, a list is sized exactly as it always was.
+test('a list with no smaller points keeps the ordinary sizing', () => {
+  const { texts } = drawn(ZONE, { steps: ['Read it', 'Say it', 'Write it'] });
+  const sizes = texts.filter((t) => /^(Read|Say|Write) it$/.test(String(t.content))).map((t) => t.fontSize);
+  assert.equal(sizes.length, 3);
+  assert.ok(sizes.every((size) => size > 24), 'a plain list was held to the pointed list\'s top size');
+});
+
+// What to do for a different kind of question (the teacher, 8 October 2026:
+// "It's a separate thing"): a card of its own under the steps, a question mark
+// where a number would be, and the steps still counted 1..N.
+test('an item for a different kind of question is unnumbered, on its own card', () => {
+  const { shapes, texts } = drawn(ZONE, {
+    steps: ['Find the bar.', 'Read the number.', '❓ How many more? Read both bars.', 'Write it.'],
+  });
+
+  const cards = shapes.filter((s) => s.w && s.h && s.rectRadius !== undefined);
+  assert.equal(cards.length, 4);
+
+  const badges = texts.filter((t) => t.objectName === 'NOFIT_step-badge').map((t) => t.content);
+  assert.deepEqual(badges, ['1', '2', '?', '3']);
+
+  const other = texts.find((t) => Array.isArray(t.content) && t.content.some((r) => /How many more\?/.test(r.text)));
+  assert.equal(other.content.find((r) => /How many more\?/.test(r.text)).options.color, 'E46C0A');
+  assert.ok(!other.content.some((r) => /❓/.test(r.text)), 'the marker was printed');
+});

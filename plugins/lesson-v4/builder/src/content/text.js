@@ -171,6 +171,20 @@ function sizeGroupName(data, ceiling) {
   return growFitObjectName('size-' + data.sizeGroup.trim(), ceiling, 'size-group');
 }
 
+// A card with a hidden answer is sized with its twin on the answers slide, and
+// it still belongs with the cards beside it. The pair's group used to replace
+// the slide's own group outright, so in a row of six option cards the three
+// that carried an answer settled on their own, larger, size and the text size
+// gave the answers away on the question slide (Year 4 fronted adverbials,
+// 7 October 2026). The paired card now names the group it sits in as well,
+// and the text fitter settles the pair and that group as one.
+function pairedLabel(data, zone) {
+  const own = typeof data.sizeGroup === 'string' && data.sizeGroup.trim()
+    ? 'size-' + data.sizeGroup.trim()
+    : zone.textFitGroup;
+  return own ? 'paired-text-WITH-' + own : 'paired-text';
+}
+
 function drawText(pptx, slide, zone, data, ctx) {
   let value = data.value || data.text || '';
   const pair = pairedText(data, ctx);
@@ -199,9 +213,16 @@ function drawText(pptx, slide, zone, data, ctx) {
   // refuses a second sign on it (validate.js).
   const sign = textSignal(data, zone, ceiling);
   if (sign && !isSticky(value)) {
+    // Drawn at the card's left edge, halfway down, and named so the text
+    // fitter can move it once the words have their final size: it tucks the
+    // sign beside the first word of the first line (fit_text_postprocess.py,
+    // place_card_signs). Halfway down a tall centred card put a pencil beside
+    // the third line of a task, nowhere near `Write` (the teacher, 8 October
+    // 2026, choosing from three positions).
     drawSignal(slide, data.signal, {
       x: zone.x + PAD,
-      y: zone.y + (zone.h - sign.h) / 2, h: sign.h
+      y: zone.y + (zone.h - sign.h) / 2, h: sign.h,
+      objectName: 'CardSign'
     });
     indent = sign.indent;
   }
@@ -255,7 +276,7 @@ function drawText(pptx, slide, zone, data, ctx) {
       heightMode === 'fill'
         ? (data.fontSize || Math.min(fillGrowCeiling(pair.question), fillGrowCeiling(pair.answer)))
         : ceiling,
-      'paired-text'
+      pairedLabel(data, zone)
     ) : null) || sizeGroupName(
       data,
       heightMode === 'fill' ? (data.fontSize || fillGrowCeiling(value)) : ceiling

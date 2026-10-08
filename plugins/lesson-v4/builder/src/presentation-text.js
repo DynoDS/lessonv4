@@ -456,6 +456,38 @@ function sumsTheTaskPrintedBlue(slides, index) {
   return found;
 }
 
+// A Teach slide's task card holds the child's job and, under it, any advice on
+// how to go about it (teach-layouts.js, taskText). The job is blue, the advice
+// black (the teacher, 8 October 2026, choosing between the two on a Year 5
+// slide), so every run after the advice's line break that still wears the
+// card's own blue goes back to body black. A supplied orange number or a
+// green taught word inside the advice keeps its colour.
+function adviceInBlack(runs, base, bold, breaks) {
+  if (!Number.isInteger(breaks) || breaks < 1) return runs;
+  const plain = { color: base, bold: !!bold };
+  const list = typeof runs === 'string' ? [{ text: runs, options: plain }] : runs;
+  if (!Array.isArray(list)) return runs;
+  const same = function (a, b) {
+    return String(a || '').replace('#', '').toUpperCase() === String(b || '').replace('#', '').toUpperCase();
+  };
+  const out = [];
+  let seen = 0;
+  list.forEach(function (run) {
+    const options = run.options || plain;
+    String(run.text).split('\n').forEach(function (part, index, parts) {
+      if (part !== '') {
+        const black = seen >= breaks && same(options.color, base);
+        out.push({ text: part, options: black ? Object.assign({}, options, { color: COLOURS.body }) : options });
+      }
+      if (index < parts.length - 1) {
+        out.push({ text: '\n', options: plain });
+        seen += 1;
+      }
+    });
+  });
+  return out;
+}
+
 function sumLinesInBlue(runs, text, base, bold) {
   if (String(base).replace('#', '').toUpperCase() !== COLOURS.body.toUpperCase()) return runs;
   if (text.startsWith('||')) return runs;
@@ -502,7 +534,8 @@ function presentationRuns(value, bold, baseColor, owner) {
   const base = baseColourForRole(baseColor, data.colorRole);
 
   if (!Array.isArray(data.emphasis) || data.emphasis.length === 0) {
-    const runs = sumLinesInBlue(splitAnswerRuns(text, bold, base), text, base, bold);
+    const runs = adviceInBlack(sumLinesInBlue(splitAnswerRuns(text, bold, base), text, base, bold),
+      base, bold, data.adviceAfterBreaks);
     return wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(runs, base, bold) : runs);
   }
 
@@ -551,7 +584,8 @@ function presentationRuns(value, bold, baseColor, owner) {
 
   // The marked route above never passes through splitAnswerRuns, so a taught
   // word outside its emphasis spans is turned green here (answer-text.js).
-  const withTaught = sumLinesInBlue(taughtWordsInGreen(runs, base, bold), text, base, bold);
+  const withTaught = adviceInBlack(sumLinesInBlue(taughtWordsInGreen(runs, base, bold), text, base, bold),
+    base, bold, data.adviceAfterBreaks);
   return wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(withTaught, base, bold) : withTaught);
 }
 

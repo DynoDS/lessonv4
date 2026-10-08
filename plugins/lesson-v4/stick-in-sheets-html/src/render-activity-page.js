@@ -21,6 +21,7 @@
 // rare piece that is glued into a book because gluing it in is the task.
 
 const fs = require("fs");
+const { printSizedDataUriSync } = require("./print-size");
 const path = require("path");
 const { PALETTES } = require("../../shared/visuals/surface-profiles");
 const { withoutTaughtMarks } = require("../../shared/text/criteria-marks");
@@ -171,7 +172,7 @@ function taskSheetPages(sheet, { printableWMm, printableHMm, classSize, pageHtml
     if (!mime) return { error: `${sheet.imagePath} is not a picture the pack can print` };
     const picH = Math.min(85, (printableHMm - used) * 0.5);
     parts.push(
-      `<div style="text-align:center;margin-bottom:3mm"><img src="data:${mime};base64,${fs.readFileSync(file).toString("base64")}" alt="" ` +
+      `<div style="text-align:center;margin-bottom:3mm"><img src="${printSizedDataUriSync(file, mime)}" alt="" ` +
       `style="max-width:${printableWMm}mm;height:${picH.toFixed(1)}mm;object-fit:contain">` +
       (sheet.caption ? `<div style="font-size:12pt;color:${INK}">${esc(sheet.caption)}</div>` : "") + `</div>`
     );

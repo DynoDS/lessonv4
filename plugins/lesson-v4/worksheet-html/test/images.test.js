@@ -230,14 +230,24 @@ test("a write-on line is long enough for a child to write the word on", () => {
     labels: [{ anchor: [30, 30], label }],
   });
 
-  const MM_PER_CHAR = 3.2; // primary handwriting, not print
-  for (const label of ["stem", "roots", "petal"]) {
-    const { minWidthMm } = REGISTRY["label-diagram"].needs(of(label));
-    // The two bands together are what is left once the picture has its share.
-    const bandsMm = minWidthMm - 44;
-    assert.ok(
-      bandsMm / 2 >= label.length * MM_PER_CHAR - 0.01,
-      `"${label}" gets a ${(bandsMm / 2).toFixed(0)}mm line, which is under ${MM_PER_CHAR}mm a letter`
-    );
+  // 3.2mm a letter was the figure here until 8 October 2026: it is print, not
+  // a Year 1 hand, and the drawing never gave the line even that (the Year 1
+  // plant sheet printed 11 to 24mm of clear line for "leaves"). The line is
+  // now 6.5mm a letter and never under 30mm in Years 1 to 3, 4.5mm and 25mm in
+  // Years 4 to 6, and it is measured on the drawing itself.
+  const { buildForPaper } = require("../../shared/visuals/label-diagram-svg");
+  for (const [phase, perLetterMm, minMm] of [["lower", 6.5, 30], ["upper", 4.5, 25]]) {
+    for (const label of ["stem", "leaves", "flower head"]) {
+      const spec = { ...of(label), phase };
+      const { minWidthMm } = REGISTRY["label-diagram"].needs(spec);
+      const wantMm = Math.max(minMm, label.length * perLetterMm);
+      // One band of lines is what is left once the picture has its share.
+      assert.ok(minWidthMm - 44 >= wantMm, `"${label}" (${phase}) is given ${(minWidthMm - 44).toFixed(0)}mm for a ${wantMm}mm line`);
+      const html = REGISTRY["label-diagram"].render(spec, minWidthMm);
+      const viewW = Number(/viewBox="0 0 ([\d.]+)/.exec(html)[1]);
+      const rule = /<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="\2" stroke="#1A1A1A"/.exec(html);
+      const drawnMm = ((Number(rule[3]) - Number(rule[1])) / viewW) * minWidthMm;
+      assert.ok(drawnMm >= wantMm - 0.5, `"${label}" (${phase}) prints a ${drawnMm.toFixed(0)}mm line, under ${wantMm}mm`);
+    }
   }
 });

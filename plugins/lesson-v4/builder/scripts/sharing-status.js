@@ -50,7 +50,7 @@ function sourcesOf(primitive) {
 // the module's drawing functions through them. A file that requires the module
 // only for a helper (a colour table, a counter layout) does not draw the picture
 // from it, which is why requiring alone is not enough.
-const DRAWING_FUNCTIONS = ['tightSvg', 'buildLabelDiagramSvg', 'buildSvg'];
+const DRAWING_FUNCTIONS = ['tightSvg', 'buildLabelDiagramSvg', 'buildForPaper', 'buildSvg'];
 
 function drawsFrom(src, geometrySource) {
   const base = path.basename(geometrySource, '.js');
@@ -160,11 +160,11 @@ function worksheetDrawsFrom(key, geometrySource) {
   // file must draw from the module and the entry's render must reach it.
   if (!drawsFrom(src, geometrySource)) return false;
   const renderName = /render\s*:\s*([A-Za-z_$][\w$]*)/.exec(entry);
-  if (!renderName) return /tightSvg|buildLabelDiagramSvg/.test(entry);
+  if (!renderName) return /tightSvg|buildLabelDiagramSvg|buildForPaper/.test(entry);
   const body = new RegExp(String.raw`function\s+` + renderName[1] + String.raw`\s*\([^)]*\)\s*\{`).exec(src);
   if (!body) return false;
   const slice = src.slice(body.index, body.index + 6000);
-  return /tightSvg|buildLabelDiagramSvg|Shared\.|Svg\.\w+\(/.test(slice);
+  return /tightSvg|buildLabelDiagramSvg|buildForPaper|Shared\.|Svg\.\w+\(/.test(slice);
 }
 
 // ── wall ────────────────────────────────────────────────────────────────────

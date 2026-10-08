@@ -262,18 +262,112 @@ def as_inches(rectangle: dict | None) -> dict | None:
     }
 
 
-def measure_page(path: Path) -> dict:
+# A pixel belongs to a figure when it is not the colour of the card behind it.
+# This is finer than ink on purpose: a shape's pale fill and a chart's thin
+# gridline are both surface to the page measurement and both figure here.
+FIGURE_PIXEL_DIFFERENCE = 10
+FIGURE_CELL_SHARE = 0.02
+
+
+def figure_cells(image, Image, ImageChops, figure: dict) -> set[tuple[int, int]]:
+    """The grid cells one drawn figure occupies, empty-looking ones included.
+
+    The builder says which box it drew a chart or a shape into. Inside that box
+    a cell is the figure when something is drawn in it, or when the figure lies
+    on both sides of it: to its left and its right, or above and below it. That
+    takes in the inside of an L-shape and the empty middle of a bar chart, under
+    its title and over its axis, where the teacher draws the bars. It leaves out
+    the notch of the L and the border round the picture, which are card, and
+    where a drawing that belongs to the lesson may still sit.
+    """
+    cell_w = SLIDE_W_INCHES / GRID_W
+    cell_h = SLIDE_H_INCHES / GRID_H
+    try:
+        x, y = float(figure["x"]), float(figure["y"])
+        w, h = float(figure["w"]), float(figure["h"])
+    except (KeyError, TypeError, ValueError):
+        return set()
+    left = max(0, int(x / cell_w + 0.5))
+    right = min(GRID_W, int((x + w) / cell_w + 0.5))
+    top = max(0, int(y / cell_h + 0.5))
+    bottom = min(GRID_H, int((y + h) / cell_h + 0.5))
+    columns, rows = right - left, bottom - top
+    if columns <= 0 or rows <= 0:
+        return set()
+    px_w = image.width / float(GRID_W)
+    px_h = image.height / float(GRID_H)
+    crop = image.crop((
+        int(left * px_w), int(top * px_h), int(right * px_w), int(bottom * px_h)
+    ))
+    if crop.width < columns or crop.height < rows:
+        return set()
+    sample = crop.resize((48, 48), Image.NEAREST)
+    background = max(sample.getcolors(48 * 48))[1]
+    difference = ImageChops.difference(
+        crop, Image.new("RGB", crop.size, background)
+    ).convert("L")
+    drawn_pixels = difference.point(
+        lambda value: 255 if value > FIGURE_PIXEL_DIFFERENCE else 0
+    )
+    shares = list(drawn_pixels.resize((columns, rows), Image.BOX).getdata())
+    drawn = [
+        [shares[row * columns + column] / 255.0 > FIGURE_CELL_SHARE for column in range(columns)]
+        for row in range(rows)
+    ]
+    cells: set[tuple[int, int]] = set()
+    row_spans = [
+        (min(c for c in range(columns) if line[c]), max(c for c in range(columns) if line[c]))
+        if any(line) else None
+        for line in drawn
+    ]
+    column_spans = []
+    for column in range(columns):
+        marked = [row for row in range(rows) if drawn[row][column]]
+        column_spans.append((marked[0], marked[-1]) if marked else None)
+    for row in range(rows):
+        for column in range(columns):
+            across, down = row_spans[row], column_spans[column]
+            if (
+                drawn[row][column]
+                or (across and across[0] < column < across[1])
+                or (down and down[0] < row < down[1])
+            ):
+                cells.add((top + row, left + column))
+    return cells
+
+
+def measure_page(path: Path, figures: list[dict] | None = None) -> dict:
     image, Image, ImageChops, ImageFilter = load_image(path)
     grid = clear_grid(image, Image, ImageChops, ImageFilter)
+    # A figure is occupied all the way across, not only where its lines are.
+    # Ink is what this page is read by, and that forgives a pale fill and a thin
+    # line because a card is made of them; a chart's gridlines and a shape's
+    # inside are made of them too, so the empty middle of a bar chart was
+    # measured as a clear place and a drawing was put where the teacher draws a
+    # bar (six of twenty lessons, 7 October 2026).
+    kept: list[dict] = []
+    for figure in figures or []:
+        cells = figure_cells(image, Image, ImageChops, figure)
+        if not cells:
+            continue
+        for row, column in cells:
+            grid[row][column] = False
+        kept.append({
+            "type": str(figure.get("type") or "figure"),
+            "x": figure["x"], "y": figure["y"], "w": figure["w"], "h": figure["h"],
+        })
     clear_cells = sum(1 for row in grid for cell in row if cell)
     areas = clear_areas(grid)
     largest = largest_clear_rectangle(grid)
-    return {
+    measurement = {
         "clearFraction": round(clear_cells / float(GRID_W * GRID_H), 4),
         "largestClear": as_inches(largest),
         "readableAreas": len(areas),
         "areas": [as_inches(area) for area in areas],
     }
+    if kept:
+        measurement["figures"] = kept
+    return measurement
 
 
 def read_manifest(path: Path) -> list[tuple[int, Path]]:
@@ -339,6 +433,34 @@ def rendered_lesson(manifest_path: Path) -> Path | None:
     return kept if kept.is_file() else None
 
 
+# And beside the same deck, where each chart, shape and table was drawn.
+RENDERED_FIGURES_NAME = "figure-boxes.json"
+
+
+def rendered_figures(manifest_path: Path) -> dict[int, list[dict]]:
+    """Each slide's figures, when the build that drew these pages kept them.
+
+    Absent for a deck built before the builder said, and then the page is
+    measured by its ink alone, as it always was.
+    """
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        source = manifest.get("source") if isinstance(manifest, dict) else None
+        if not isinstance(source, str) or not source:
+            return {}
+        kept = json.loads(
+            (Path(source).parent / RENDERED_FIGURES_NAME).read_text(encoding="utf-8")
+        )
+    except (OSError, json.JSONDecodeError):
+        return {}
+    figures = kept.get("figures") if isinstance(kept, dict) else None
+    found: dict[int, list[dict]] = {}
+    for figure in figures if isinstance(figures, list) else []:
+        if isinstance(figure, dict) and isinstance(figure.get("slide"), int):
+            found.setdefault(figure["slide"], []).append(figure)
+    return found
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
@@ -363,6 +485,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"SLIDE_ROOM_FAILED: {exc}", file=sys.stderr)
         return 1
 
+    figures = rendered_figures(Path(args.render_manifest))
     slides = []
     for number, page_path in entries:
         if not page_path.is_file():
@@ -372,7 +495,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 1
         try:
-            measurement = measure_page(page_path)
+            measurement = measure_page(page_path, figures.get(number))
         except MeasureError as exc:
             print(f"SLIDE_ROOM_FAILED: page {number}: {exc}", file=sys.stderr)
             return 1

@@ -283,11 +283,18 @@ test('one chart in the same zone draws counters at full size', () => {
   assert.doesNotThrow(() => drawCounterChart({ x: 0.2, y: 1.8, w: 7.2, h: 4.56 }));
 });
 
-test('a chart nobody writes in is judged on height alone', () => {
+test('a chart nobody writes in needs only the width its headings read at', () => {
   // Every cell is printed, so there is nothing to count and nothing to write,
-  // and a narrow column costs the chart nothing.
+  // and neither the counter floor nor the write-in floor applies. The one thing
+  // a narrow column still costs it is the heading: "Th" at 18pt (8 October 2026).
+  const printed = {
+    type: 'place-value-chart',
+    columns: ['Th', 'H', 'T', 'O'],
+    rows: [{ label: '3,462', cells: ['3', '4', '6', '2'] }],
+  };
+  assert.throws(() => boardLayout({ x: 0.2, y: 1.8, w: 2.4, h: 3.0 }, printed), /PLACE_VALUE_HEADINGS_TOO_SMALL/);
   assert.doesNotThrow(() =>
-    boardLayout({ x: 0.2, y: 1.8, w: 2.4, h: 3.0 }, {
+    boardLayout({ x: 0.2, y: 1.8, w: 2.6, h: 3.0 }, {
       type: 'place-value-chart',
       columns: ['Th', 'H', 'T', 'O'],
       rows: [{ label: '3,462', cells: ['3', '4', '6', '2'] }],

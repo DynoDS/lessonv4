@@ -91,9 +91,15 @@ test("one write-on photograph with a written answer fits a page", () => {
   assert.ok(fits([writeOnPhoto(), writtenAnswer()]));
 });
 
-test("two write-on photographs fit; three never do", () => {
-  assert.ok(fits([writeOnPhoto(), writeOnPhoto()]), "two should fit");
-  assert.ok(!fits([writeOnPhoto(), writeOnPhoto(), writeOnPhoto()]), "three should not");
+// Until 8 October 2026 this read "two fit; three never do". A write-on line had
+// no room of its own then, so the photograph was drawn nearly the full width of
+// its zone (with the lines across it) and stood too tall for a third. With the
+// lines given their length the picture is narrower and shorter.
+test("two write-on photographs fit, four are the ceiling, five never do", () => {
+  const photos = (n) => Array.from({ length: n }, writeOnPhoto);
+  assert.ok(fits(photos(2)), "two should fit");
+  assert.ok(fits(photos(4)), "four should fit, as quarters");
+  assert.ok(!fits(photos(5)), "five should not");
 });
 
 test("three numbered photograph-and-list pairs fit; four never do", () => {
@@ -105,7 +111,8 @@ test("three numbered photograph-and-list pairs fit; four never do", () => {
 });
 
 test("the worked plant example in shared.md matches the engine", () => {
-  // shared.md quotes this case with millimetres: write-on about 99x139mm,
+  // shared.md quotes this case with millimetres: write-on at least 123mm
+  // across (Years 1 to 3) and about 137mm down at the full width of the page,
   // numbered about 84x103mm. A drift of a few millimetres is rounding; a drift
   // of ten is the documents lying.
   const labels = [
@@ -134,8 +141,9 @@ test("the worked plant example in shared.md matches the engine", () => {
     );
 
   const wNeed = needsContent(writeOn);
-  close(wNeed.minWidthMm, 99, "write-on plant width");
-  close(measure(writeOn, wNeed.minWidthMm), 139, "write-on plant height");
+  close(wNeed.minWidthMm, 123, "write-on plant width");
+  close(measure(writeOn, 174), 137, "write-on plant height at full width");
+  close(needsContent({ ...writeOn, phase: "upper" }).minWidthMm, 101, "write-on plant width, Years 4 to 6");
 
   const nNeed = needsContent(numbered);
   close(nNeed.minWidthMm, 84, "numbered plant width");

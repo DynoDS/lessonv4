@@ -3,6 +3,8 @@
 const { FONT, COLOURS, SIZE_CEILINGS, FIT, SAFE, CARD, CARD_COMPACT } = require('../styles');
 const { categoryColourFor } = require('../category-colours');
 const { warn } = require('../warnings');
+const { watchFigure } = require('./_figure-boxes');
+const { CONTENT_W } = require('../layout');
 const { drawText, measureText } = require('./text');
 const { drawBullets } = require('./bullets');
 const { drawSteps } = require('./steps');
@@ -332,7 +334,14 @@ const SELF_PADDED = new Set([
   // the text/image entries above guard against.
   'label-diagram',
   'circuit-diagram',
-  'circuit-symbol-bank'
+  'circuit-symbol-bank',
+  // A table keeps a margin of its own (0.12in) round its grid. With the
+  // card's on top it stood in two, and the second came off the height its
+  // rows needed: a Year 3 RE row handed 1.21in drew its one-row table in
+  // 0.97in, under the 1.12in floor, and the Slide Designer spent every
+  // repair pass on it (7 October 2026). The teacher, shown the slide both
+  // ways, chose the one margin.
+  'table'
 ]);
 
 // The card look (slide visual refresh, Aug 2026): one white rounded card
@@ -374,6 +383,23 @@ function wantsCard(zone, type, data, ctx) {
   return true;
 }
 
+// The class a zone is checked against for what it may hold.
+//
+// "E-narrow" names the smaller share of an uneven split, and on a
+// top-and-bottom slide that share is the full width of the board. Checked by
+// its name, it refused a table, a timeline or a matching task "for a narrow
+// zone" with 12.9in to draw in. A smaller share as wide as the narrowest
+// larger one takes what the larger one takes; whether it is tall enough is
+// each helper's own refusal to make. Only the check reads this: the zone keeps
+// its class, so its text sizes do not move. A side panel that really is narrow
+// still refuses a table, and the teacher chose that (8 October 2026).
+const WIDE_SIDE_MIN_W = (CONTENT_W - 0.20) * 0.60;
+
+function compatClass(zone) {
+  if (zone.class === 'E-narrow' && zone.w >= WIDE_SIDE_MIN_W - 1e-6) return 'E-wide';
+  return zone.class;
+}
+
 function drawContent(pptx, slide, zone, data, ctx) {
   if (!data || !data.type) {
     return drawFallback(slide, zone, '', ctx);
@@ -384,7 +410,7 @@ function drawContent(pptx, slide, zone, data, ctx) {
     warn(ctx.slideIndex, `unknown content type "${type}" — falling back to label text`);
     return drawFallback(slide, zone, stringifyFallback(data), ctx);
   }
-  if (zone.class && !classes.includes(zone.class)) {
+  if (zone.class && !classes.includes(compatClass(zone))) {
     // Say where it sits and what the zone will take. A container draws its
     // children into its own box but passes its zone class down, because the
     // class is a fact about how wide the slide is there and a panel cannot make
@@ -498,8 +524,13 @@ function drawContent(pptx, slide, zone, data, ctx) {
   // table, neither of those is the thing the designer has to go and look at.
   const hadContainer = ctx._containerType;
   ctx._containerType = type;
+  // A figure's place on the slide is noted for the decoration check, which
+  // cannot tell a chart's empty middle from the blank half of a card.
+  const figure = watchFigure(slide, type, ctx);
   try {
-    return fn(pptx, slide, inner, data, ctx);
+    const drawn = fn(pptx, figure.slide, inner, data, ctx);
+    figure.done();
+    return drawn;
   } finally {
     ctx._cardBarrier = hadBarrier;
     ctx._containerType = hadContainer;

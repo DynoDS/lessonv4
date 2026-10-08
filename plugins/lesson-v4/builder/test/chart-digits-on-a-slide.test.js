@@ -12,7 +12,9 @@
 // What this file pins:
 //   - the ordinary chart, the counters chart and the written sum stop at 18pt
 //     on a slide, and a zone too short for that is refused with its height;
-//   - headings keep their share of the digit (13pt at the smallest size);
+//   - headings have the same 18pt floor (8 October 2026): the word where it
+//     fits at 18pt, the short name otherwise, and a column too narrow for the
+//     short name at 18pt refused with the width it needs;
 //   - the wall, the worksheet and the stick-in pack are drawn as they were;
 //   - a chart refused in the share its weight gave it still takes the spare
 //     height the words beside it hand back, so a column with room builds.
@@ -42,11 +44,80 @@ test('the sum on Lesson 24 slide 11 is refused, with the height it needs', () =>
   );
 });
 
-test('at its smallest on a slide a sum has 18pt digits and 13pt headings', () => {
+test('at its smallest on a slide a sum has 18pt digits and 18pt headings', () => {
   const smallest = onSlide(SUM, 12.4, 2.42);
   assert.ok(smallest.D >= 17.95 && smallest.D < 18.6, `digits are ${smallest.D.toFixed(1)}pt`);
-  assert.ok(Math.abs(smallest.headings.font - 0.72 * smallest.D) < 0.01, 'headings keep their share of the digit');
-  assert.ok(smallest.headings.font >= 12.9, `headings are ${smallest.headings.font.toFixed(1)}pt`);
+  assert.ok(smallest.headings.font >= 18, `headings are ${smallest.headings.font.toFixed(1)}pt`);
+});
+
+// Stress test, 7 October 2026: "Thousands" at 11pt over three starter sums
+// (Year 4 column subtraction, slide 1) and "HTh" at 14pt in three six-column
+// sums across one slide (Year 5 long multiplication, slide 10). The teacher's
+// rulings on those pages (8 October 2026): the short name whenever the word
+// will not fit at a proper size, no second line, never under 18pt, and a slide
+// split in two rather than a smaller heading.
+const WORDS = ['Thousands', 'Hundreds', 'Tens', 'Ones'];
+const STARTER_SUM = { columns: WORDS, calculation: { operator: '-', numbers: ['4628', '1354'] } };
+const SIX = ['HTh', 'TTh', 'Th', 'H', 'T', 'O'];
+const SIX_SUM = { columns: SIX, calculation: { operator: 'x', numbers: ['3214', '40'], answer: '128560' } };
+const headingsOf = (layout) => layout.texts.filter((t) => t.role === 'heading');
+
+test('a word that will not fit at 18pt gives way to the short name, all columns together', () => {
+  // A third of the slide: the starter's three sums side by side.
+  const third = onSlide(STARTER_SUM, 3.9, 3.2);
+  assert.deepEqual(headingsOf(third).map((t) => t.text), ['Th', 'H', 'T', 'O']);
+  headingsOf(third).forEach((t) => assert.ok(t.pt >= 18, `"${t.text}" printed at ${t.pt.toFixed(1)}pt`));
+});
+
+test('a chart with room keeps the whole word, at 18pt or more', () => {
+  const wide = onSlide(STARTER_SUM, 12.4, 3.2);
+  assert.deepEqual(headingsOf(wide).map((t) => t.text), WORDS);
+  headingsOf(wide).forEach((t) => assert.ok(t.pt >= 18, `"${t.text}" printed at ${t.pt.toFixed(1)}pt`));
+});
+
+test('a heading grows into a wide column, and stays under the digit', () => {
+  const roomy = onSlide(STARTER_SUM, 12.4, 4.5);
+  assert.ok(roomy.headings.font > 18.5, `headings stayed at ${roomy.headings.font.toFixed(1)}pt with room to grow`);
+  assert.ok(roomy.headings.font < roomy.D, 'a heading outgrew the digits it names');
+});
+
+test('three six-column sums across a slide are refused on width, and two across are drawn', () => {
+  assert.throws(() => onSlide(SIX_SUM, 3.6, 4.0), (error) => {
+    assert.match(error.message, /^PLACE_VALUE_HEADINGS_TOO_SMALL/);
+    assert.match(error.message, /"HTh"/);
+    assert.match(error.message, /more WIDTH/);
+    assert.match(error.message, /two across instead of three/);
+    return true;
+  });
+  const half = onSlide(SIX_SUM, 5.8, 4.0);
+  headingsOf(half).forEach((t) => assert.ok(t.pt >= 18, `"${t.text}" printed at ${t.pt.toFixed(1)}pt`));
+});
+
+test('no heading on a slide is under 18pt, in any form, at any width that is drawn', () => {
+  const PAIR = { columns: ['Th', 'H', 'T', 'O'], pair: { from: ['3', '4', '0', '6'], to: ['3', '5', '0', '6'] } };
+  let drew = 0;
+  for (const [name, spec] of [['sum', STARTER_SUM], ['six-column sum', SIX_SUM], ['chart', CHART], ['counters', COUNTERS], ['pair', PAIR]]) {
+    for (let width = 1.5; width <= 12.5; width += 0.25) {
+      let drawn = null;
+      try {
+        drawn = onSlide(spec, width, 4.2);
+      } catch (error) {
+        assert.match(error.message, /^PLACE_VALUE_/, `${name} at ${width}in`);
+        continue;
+      }
+      drew += 1;
+      headingsOf(drawn).forEach((t) => assert.ok(t.pt >= 18, `${name} at ${width}in printed "${t.text}" at ${t.pt.toFixed(1)}pt`));
+    }
+  }
+  assert.ok(drew > 50, `only ${drew} charts were drawn, so the sweep proved little`);
+});
+
+test('headings on paper are sized as they were', () => {
+  // The slide's floor is the slide's alone: a worksheet heading is still a
+  // share of its digit, well under 18pt, and is not refused.
+  const sheet = describeLayout(STARTER_SUM, profileFor('worksheets', { widthMm: 60 }));
+  assert.ok(sheet.headings.font < 18, `a worksheet heading came out at ${sheet.headings.font.toFixed(1)}pt`);
+  assert.ok(sheet.headings.font <= 0.72 * sheet.D + 0.01, 'a worksheet heading outgrew its share of the digit');
 });
 
 test('no chart form goes under 18pt on a slide, however short its zone', () => {

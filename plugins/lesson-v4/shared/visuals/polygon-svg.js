@@ -41,6 +41,14 @@
 //                line IS a line of symmetry, and sticks out when it is not
 //     aspect     width:height, to draw a longer or squarer rectangle
 //     vertices   [[x, y], ...] for a triangle drawn to exact proportions
+//     roomFor    side labels this drawing does not carry but keeps room for, in
+//                the same order as sideLabels. The board sets it, never a
+//                designer: the same shape on a question slide and on its
+//                answers slide is one shape to the class, and it used to
+//                shrink and move when the answers added lengths (290px then
+//                218px, 7 October 2026), because the lengths take their room
+//                from the shape. Each slide keeps room for the longest length
+//                any of them writes on that side.
 //   symmetryLines        true overlays every correct line of symmetry, dashed
 //   symmetryLinesAnswer  true draws those lines in answer green (a reveal)
 //
@@ -188,6 +196,7 @@ function normalise(spec = {}) {
       ratio,
       label: s.label ? String(s.label) : '',
       sideLabels,
+      roomFor: (Array.isArray(s.roomFor) ? s.roomFor : []).map((t) => (t == null ? '' : String(t))),
       angleLabels: (Array.isArray(s.angleLabels) ? s.angleLabels : []).map((t) => (t == null ? '' : String(t))),
       candidate: sym.candidateLineFor(candidate, { x: 0, y: 0, w: 1, h: 1 }) ? candidate : '',
       verdict: s.verdict === 'pass' || s.verdict === 'fail' ? s.verdict : '',
@@ -198,13 +207,25 @@ function normalise(spec = {}) {
   return { shapes, symmetryLines: spec.symmetryLines === true, answer: spec.symmetryLinesAnswer === true };
 }
 
-function outwardNormal(p1, p2, c) {
+// Which way is out of the shape from one of its sides. It is read from the way
+// the corners run round the shape, which is right for any outline. It used to
+// point away from the average of the corners, and on an L-shape that average
+// sits by the notch, so the two inside sides had it backwards and their
+// lengths were written inside the shape, where "5 cm" in a 4 cm leg read as
+// the leg's width (Year 5 rectilinear shapes, 7 October 2026).
+function turnsClockwise(verts) {
+  let twice = 0;
+  verts.forEach((v, i) => {
+    const n = verts[(i + 1) % verts.length];
+    twice += v.x * n.y - n.x * v.y;
+  });
+  return twice > 0; // as drawn, y running down the page
+}
+
+function outwardNormal(p1, p2, clockwise) {
   const dx = p2.x - p1.x; const dy = p2.y - p1.y;
   const len = Math.hypot(dx, dy) || 1;
-  let nx = -dy / len; let ny = dx / len;
-  const mx = (p1.x + p2.x) / 2; const my = (p1.y + p2.y) / 2;
-  if (nx * (c.x - mx) + ny * (c.y - my) > 0) { nx = -nx; ny = -ny; }
-  return { nx, ny };
+  return clockwise ? { nx: dy / len, ny: -dx / len } : { nx: -dy / len, ny: dx / len };
 }
 
 // Everything one shape draws, at a body width, in points with the body's
@@ -218,18 +239,30 @@ function shapeGeometry(shape, bodyW, profile, T) {
   const grow = (x, y) => { b.minX = Math.min(b.minX, x); b.maxX = Math.max(b.maxX, x); b.minY = Math.min(b.minY, y); b.maxY = Math.max(b.maxY, y); };
   const g = { box, verts, texts: [], ghost: null, candLine: null, symLines: [], verdict: null, rightMark: null, bounds: b };
   const textH = T * 1.1;
+  const clockwise = turnsClockwise(verts);
 
-  shape.sideLabels.forEach((text, i) => {
-    if (!text) return;
+  const sideCount = Math.max(shape.sideLabels.length, (shape.roomFor || []).length);
+  for (let i = 0; i < sideCount; i++) {
+    const text = shape.sideLabels[i] || '';
+    const kept = (shape.roomFor || [])[i] || '';
+    if (!text && !kept) continue;
     const p1 = verts[i % verts.length]; const p2 = verts[(i + 1) % verts.length];
-    const { nx, ny } = outwardNormal(p1, p2, c);
-    const tw = textWidthEm(text, profile.bold) * T;
-    const half = Math.abs(nx) * (tw / 2) + Math.abs(ny) * (textH / 2);
-    const d = SIDE_GAP_EM * T + half;
-    const x = (p1.x + p2.x) / 2 + nx * d; const y = (p1.y + p2.y) / 2 + ny * d;
-    g.texts.push({ text, x, y, pt: T, kind: 'side' });
-    grow(x - tw / 2, y - textH / 2); grow(x + tw / 2, y + textH / 2);
-  });
+    const { nx, ny } = outwardNormal(p1, p2, clockwise);
+    // The label sits against its side at its own width; the room it takes is
+    // that of the widest label this side carries on any slide of its group.
+    const place = (label) => {
+      const tw = textWidthEm(label, profile.bold) * T;
+      const half = Math.abs(nx) * (tw / 2) + Math.abs(ny) * (textH / 2);
+      const d = SIDE_GAP_EM * T + half;
+      return { tw, x: (p1.x + p2.x) / 2 + nx * d, y: (p1.y + p2.y) / 2 + ny * d };
+    };
+    [text, kept].forEach((label, which) => {
+      if (!label) return;
+      const at = place(label);
+      if (which === 0) g.texts.push({ text, x: at.x, y: at.y, pt: T, kind: 'side' });
+      grow(at.x - at.tw / 2, at.y - textH / 2); grow(at.x + at.tw / 2, at.y + textH / 2);
+    });
+  }
   shape.angleLabels.forEach((text, i) => {
     if (!text || !verts[i]) return;
     const v = verts[i];

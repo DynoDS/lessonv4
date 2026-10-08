@@ -53,7 +53,9 @@ function drawSignal(slide, name, box) {
   const s = signalMeta(name);
   if (!s) return 0;
   const w = box.h * s.aspect;
-  slide.addImage({ path: s.path, x: box.x, y: box.y, w: w, h: box.h });
+  const image = { path: s.path, x: box.x, y: box.y, w: w, h: box.h };
+  if (box.objectName) image.objectName = box.objectName;
+  slide.addImage(image);
   return w;
 }
 

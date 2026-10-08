@@ -1923,8 +1923,20 @@ def criteria_review_cues(row: dict, vocabulary_terms: list[str] | None = None) -
     # second sentence and a question step are asked about, not faulted: the
     # teacher's decisions of 23 September 2026 keep a condition that is part of
     # the step and a question that tells the child what to do next.
+    # A step may carry smaller points on lines of its own (what only some
+    # children need on only some questions). The step is its first line, and
+    # the cues below are asked of that; a smaller point is a cue, so a long one
+    # is raised (the teacher's own lists, 8 October 2026).
     for index, step in enumerate(steps, 1):
-        text = step if isinstance(step, str) else str((step or {}).get("text", ""))
+        whole = step if isinstance(step, str) else str((step or {}).get("text", ""))
+        lines = [line.strip() for line in whole.splitlines() if line.strip()]
+        text = lines[0] if lines else ""
+        for point in lines[1:]:
+            if len(point.split()) > 10:
+                cues.append(
+                    f"step {index}: a smaller point of {len(point.split())} words; it is "
+                    "there for a glance, so is it as brief as a cue (the child's question, then what to do)?"
+                )
         words = len(text.split())
         if words > 16:
             cues.append(

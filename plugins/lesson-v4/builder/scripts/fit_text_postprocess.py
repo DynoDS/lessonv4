@@ -439,6 +439,19 @@ GROW_FIT_RE = re.compile(
 )
 
 
+# A paired card that also sits in a group on its own slide says so in its name
+# ("paired-text-WITH-<group>"). The pair settles across two slides and the
+# group within one, and a card in both ties them into one size.
+PAIRED_WITH = "paired-text-WITH-"
+
+
+def paired_slide_group(name):
+    match = GROW_FIT_RE.fullmatch(name or "")
+    if not match or not match.group("label").startswith(PAIRED_WITH):
+        return None
+    return match.group("label")[len(PAIRED_WITH):] or None
+
+
 def grow_fit_directive(name):
     match = GROW_FIT_RE.fullmatch(name or "")
     if not match:
@@ -662,6 +675,120 @@ def note_below_target(collected, slide_number, shape, final_pt):
     collected.append((slide_number, name, round(final, 1), preview))
 
 
+# A card's sign (the pencil, speech bubble or magnifier of content/text.js) is
+# drawn at the card's left edge, halfway down, before anyone knows how large
+# the words will be or where they will wrap. On a tall centred card that put a
+# pencil beside the third line of a task, a long way from `Write`. The teacher
+# chose from three positions (8 October 2026): tucked beside the first word.
+# Only this script knows the final size, so it moves the sign: level with the
+# first line, its right edge one gap from where that line starts, and no
+# taller than the line. A sign whose words cannot be measured stays where the
+# builder drew it.
+CARD_SIGN_NAME = "CardSign"
+CARD_SIGN_GAP = Emu(int(0.10 * 914400))
+CARD_SIGN_TUCK = Emu(int(0.16 * 914400))
+CARD_SIGN_SPANS = 0.7
+CARD_SIGN_REACH =Emu(int(0.06 * 914400))
+
+
+def first_line_width(runs, width_emu, pt):
+    """Width of the first line these runs wrap to, each word in its own font."""
+    cur = 0
+    for text, font_file in runs:
+        use = font_file or FONT_REGULAR
+        space_w, _ = _rendered_size(" ", pt, use)
+        for word in breakable_words(text):
+            word_w, _ = _rendered_size(word, pt, use)
+            add = word_w if cur == 0 else space_w + word_w
+            if cur and cur + add > width_emu:
+                return cur
+            cur += add
+    return cur
+
+
+def text_block(shape):
+    """(height of the whole text, width of its first line, one line's height)."""
+    tf = shape.text_frame
+    pt, bold, italic = inspect_runs(tf)
+    if pt <= 0:
+        return None
+    font_file = pick_font_file(bold, italic)
+    usable_w = max((shape.width - PAD_W) / WIDTH_SAFETY, 1)
+    line_h = _real_line_height_emu(font_file, pt)
+    total_h = 0
+    first_w = None
+    for paragraph in tf.paragraphs:
+        spacing = paragraph.line_spacing if isinstance(paragraph.line_spacing, float) else DEFAULT_LINE_SPACING
+        n = 0
+        for runs in paragraph_lines(paragraph, font_file):
+            if first_w is None and "".join(t for t, _ in runs).strip():
+                first_w = first_line_width(runs, usable_w, pt)
+            n += wrap_runs(runs, usable_w, pt)
+        n = max(n, 1)
+        total_h += line_h + (n - 1) * int(line_h * spacing) + points_to_emu(paragraph_spacing_pt(paragraph))
+    if not first_w:
+        return None
+    return total_h, first_w, line_h
+
+
+def sign_text_shape(slide, sign):
+    """The text box a card's sign was drawn for: it starts one gap to the sign's right."""
+    wanted_left = sign.left + sign.width + CARD_SIGN_GAP
+    middle = sign.top + sign.height // 2
+    best = None
+    for shape in slide.shapes:
+        if not shape.has_text_frame or not shape.text_frame.text.strip():
+            continue
+        if abs(shape.left - wanted_left) > CARD_SIGN_REACH:
+            continue
+        if not (shape.top <= middle <= shape.top + shape.height):
+            continue
+        if best is None or abs(shape.left - wanted_left) < abs(best.left - wanted_left):
+            best = shape
+    return best
+
+
+def place_card_signs(prs):
+    from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+    moved = 0
+    for slide in prs.slides:
+        for sign in [s for s in slide.shapes if (s.name or "").startswith(CARD_SIGN_NAME)]:
+            try:
+                shape = sign_text_shape(slide, sign)
+                block = text_block(shape) if shape is not None else None
+                if block is None:
+                    continue
+                total_h, first_w, line_h = block
+                edge = sign.left
+                tf = shape.text_frame
+                # A sign about as tall as all its words already sits beside
+                # them: one or two lines of small type with a pencil the height
+                # of both. It keeps its size and its place halfway down (the
+                # teacher, 8 October 2026, of a Year 6 slide where the first
+                # version shrank it to one small line: "bigger and better
+                # placed" before). Only words much taller than the sign leave
+                # it stranded, and there it rises to the first line.
+                if sign.height < total_h * CARD_SIGN_SPANS:
+                    if sign.height > line_h:
+                        sign.width = Emu(int(sign.width * line_h / sign.height))
+                        sign.height = Emu(int(line_h))
+                    top = shape.top
+                    if tf.vertical_anchor != MSO_ANCHOR.TOP:
+                        top = shape.top + max(0, (shape.height - total_h) // 2)
+                    sign.top = Emu(int(max(shape.top, min(top + (line_h - sign.height) // 2,
+                                                           shape.top + shape.height - sign.height))))
+                first = next((p for p in tf.paragraphs if p.text.strip()), tf.paragraphs[0])
+                if first.alignment == PP_ALIGN.CENTER:
+                    start = shape.left + (shape.width - first_w) // 2
+                    sign.left = Emu(int(max(edge, start - CARD_SIGN_TUCK - sign.width)))
+                elif first.alignment in (None, PP_ALIGN.LEFT):
+                    sign.left = Emu(int(shape.left - CARD_SIGN_GAP - sign.width))
+                moved += 1
+            except Exception as error:  # a sign left where it was drawn is still a sign
+                print(f"  CARD_SIGN_NOT_MOVED: {error}", file=sys.stderr)
+    return moved
+
+
 def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
     prs = Presentation(path)
     grown = 0
@@ -727,6 +854,10 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
                 ))
 
     paired_grouped = {}
+    # (slide, group on that slide) -> the pair groups a card ties it to, and the
+    # slide groups held back to be settled with those pairs.
+    tied = {}
+    held = {}
     for slide_idx, slide in enumerate(prs.slides):
         slide_number = slide_idx + 1
         grouped = {}
@@ -747,14 +878,20 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
                 group_id, ceiling = directive
                 target = paired_grouped if group_id.startswith("revealpair-") else grouped
                 target.setdefault(group_id, []).append((slide_number, shape, ceiling))
+                own = paired_slide_group(shape.name) if target is paired_grouped else None
+                if own:
+                    tied.setdefault((slide_number, own), set()).add(group_id)
                 continue
 
             if not force and tf.auto_size != MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE:
                 continue
             ordinary.append(shape)
 
-        for members in grouped.values():
-            settle_group(members)
+        for group_id, members in grouped.items():
+            if (slide_number, group_id) in tied:
+                held[(slide_number, group_id)] = members
+            else:
+                settle_group(members)
 
         for shape in ordinary:
             tf = shape.text_frame
@@ -784,9 +921,30 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
 
     # Only explicitly paired reveal groups share a final fitted size across
     # slides. Legacy groups still settle independently within each slide.
-    for members in paired_grouped.values():
+    # A pair tied to a group on its slide settles with that whole group, and
+    # with every other pair the group holds, so a row of cards is one size on
+    # the question slide and on the answers slide alike.
+    parent = {}
+
+    def find(key):
+        parent.setdefault(key, key)
+        while parent[key] != key:
+            parent[key] = parent[parent[key]]
+            key = parent[key]
+        return key
+
+    for slide_key, pair_ids in tied.items():
+        for pair_id in pair_ids:
+            parent[find(("pair", pair_id))] = find(("slide", slide_key))
+    merged = {}
+    for pair_id, members in paired_grouped.items():
+        merged.setdefault(find(("pair", pair_id)), []).extend(members)
+    for slide_key, members in held.items():
+        merged.setdefault(find(("slide", slide_key)), []).extend(members)
+    for members in merged.values():
         settle_group(members)
 
+    place_card_signs(prs)
     prs.save(path)
     print(
         f"Fit-text: grown {grown}, shrunk {shrunk}, unchanged {unchanged}, "

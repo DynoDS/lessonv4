@@ -45,6 +45,12 @@ const CARD_BORDER_W   = 1.5;
 const PANEL_MIN_W = 2.20;
 const TEXT_PICTURE_MAX_W = 5.60;
 const PANEL_MAX_W = 7.40;
+// A fitted panel is wide enough when the picture drawn in it is this share of
+// the size it was measured at, and is widened by this much a time until it is.
+const PANEL_KEEPS_SIZE = 0.97;
+const PANEL_WIDEN_STEP = 0.25;
+// How many times the type is re-planned against a panel that came out wider.
+const PLAN_ROUNDS = 4;
 const STACKED_VISUALS = new Set([
   'table', 'bullets', 'steps', 'numbered-questions', 'question-cards', 'chip-bank',
   'sc-panel', 'method-frame', 'diamond-nine', 'pyramid', 'stack', 'row', 'vocab',
@@ -156,6 +162,11 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
 
   const visuals0 = words.map(function (item) { return resolveVocabVisual(item.visual, ctx); });
   const stacked0 = visuals0.map(function (v) { return !!v && STACKED_VISUALS.has(v.type); });
+  // The type and the card heights, worked out for a given panel width beside
+  // each card's words. Run twice: see below the function.
+  const plan = function (assumedW) {
+  const visuals = visuals0;
+  const stacked = stacked0;
   // Grow the type until the tallest card reaches its share of the band, then
   // stop. A stacked-picture card is measured the way the heights below measure
   // it, so the size that fits is the size that will actually be drawn.
@@ -163,7 +174,7 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
     return words.every(function (item, i) {
       const need = stacked0[i]
         ? stackedTextHeight(item, candidate) + LARGE_PICTURE_MIN_H
-        : naturalCardHeight(item, visuals0[i], candidate, visuals0[i] ? PANEL_MAX_W : 0);
+        : naturalCardHeight(item, visuals0[i], candidate, visuals0[i] ? assumedW[i] : 0, true);
       return need <= shareH;
     });
   };
@@ -193,16 +204,14 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
   // are nearly full and wrong when they are not: it is what put one word in a
   // six-inch green rectangle. Three or more cards are already over their equal
   // share, so they are clipped back to it and nothing about them moves.
-  const visuals = visuals0;
-  const stacked = stacked0;
   const heights = words.map(function (item, i) {
     if (stacked[i]) return stackedTextHeight(item, fonts) + LARGE_PICTURE_MIN_H;
-    // Measured against the widest panel the picture could take, so a panel that
-    // turns out wide never leaves the definition more lines than its card holds.
+    // Measured against the panel width this plan assumes, so the panel never
+    // leaves the definition more lines than its card holds.
     // Beside a full-width picture a compact card gives up its picture minimum
     // and hugs its words; the full-width picture needs the height more.
     const compact = stacked.some(Boolean) && (!visuals[i] || visuals[i].type === 'text');
-    return Math.min(shareH, naturalCardHeight(item, compact ? null : visuals[i], fonts, visuals[i] ? PANEL_MAX_W : 0));
+    return Math.min(shareH, naturalCardHeight(item, compact ? null : visuals[i], fonts, visuals[i] ? assumedW[i] : 0));
   });
   // Every card in a set is the height of the tallest, capped at its share.
   //
@@ -266,21 +275,59 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
   if (spare > 0 && pictureIdx.length) {
     pictureIdx.forEach(function (i) { heights[i] += spare / pictureIdx.length; });
   }
+  return { fonts: fonts, heights: heights };
+  };
+
+  const visuals = visuals0;
+  const stacked = stacked0;
+  const panelsFor = function (heights) {
+    return visuals.map(function (v, i) {
+      return v && !stacked[i] ? panelWidthFor(v, heights[i] - 2 * CARD_PAD, ctx) : PANEL_MIN_W;
+    });
+  };
+  // First with every picture assumed to take the widest panel there is, which
+  // is always safe and says how tall the cards are. Then again with the width
+  // each picture really draws at that height.
+  //
+  // The first pass alone sized the type for room most pictures never use: two
+  // Year 6 science cards, one with a small photograph, printed their
+  // definitions at 23pt in half-empty cards, where the same cards without the
+  // photograph printed them at 34pt (stress test, 7 October 2026). The second
+  // pass is kept only when no picture then asks for a wider panel than the one
+  // its words were measured beside. Bigger type can change a card's height and
+  // so its picture's width, so the plan is tried again at the wider panel a few
+  // times; if it never settles, the safe first pass stands.
+  let settled = plan(words.map(function () { return PANEL_MAX_W; }));
+  let panelWs = panelsFor(settled.heights);
+  if (visuals.some(function (v, i) { return v && !stacked[i]; })) {
+    let assumed = panelWs;
+    for (let round = 0; round < PLAN_ROUNDS; round += 1) {
+      const again = plan(assumed);
+      const againWs = panelsFor(again.heights);
+      if (againWs.every(function (w, i) { return w <= assumed[i] + 0.005; })) {
+        settled = again;
+        panelWs = againWs;
+        break;
+      }
+      assumed = againWs.map(function (w, i) { return Math.max(w, assumed[i]); });
+    }
+  }
+  const fonts = settled.fonts;
+  const heights = settled.heights;
   const stackH = heights.reduce(function (a, b) { return a + b; }, 0) + totalGap;
 
   let cardY = CONTENT_Y + Math.max(0, (CONTENT_H - stackH) / 2);
   words.forEach(function (item, i) {
     const card = { x: CONTENT_X, y: cardY, w: CONTENT_W, h: heights[i] };
     if (stacked[i]) drawStackedCard(pptx, slide, item, card, ctx, fonts, visuals[i]);
-    else drawCard(pptx, slide, item, card, ctx, fonts, visuals[i],
-      visuals[i] ? panelWidthFor(visuals[i], card.h - 2 * CARD_PAD, ctx) : PANEL_MIN_W);
+    else drawCard(pptx, slide, item, card, ctx, fonts, visuals[i], panelWs[i]);
     cardY += heights[i] + CARD_GAP;
   });
 }
 
 // The height this card's own contents ask for, measured the way the card
 // actually divides itself: the word's own line, then the definition's lines.
-function naturalCardHeight(item, visual, fonts, visualW) {
+function naturalCardHeight(item, visual, fonts, visualW, wordsOnly) {
   const panelW = visualW || VISUAL_W;
   const textW = visual
     ? CONTENT_W - 2 * CARD_PAD - panelW - VISUAL_GAP
@@ -301,7 +348,12 @@ function naturalCardHeight(item, visual, fonts, visualW) {
   // that they're more readable on the board." (19 September 2026.)
   const textH = wordNeeds + defnNeeds;
   const height = 2 * CARD_PAD + textH;
-  return visual ? Math.max(height, MIN_CARD_H_WITH_VISUAL) : height;
+  // `wordsOnly` asks what the words need, without the picture's minimum. The
+  // type is fitted by that: with three picture cards on a slide each card's
+  // share of the band is under the picture's minimum, so no type size ever
+  // "fitted" and every word fell to the smallest size the card allows, in cards
+  // with room to spare (three Year 3 science cards, stress test, 7 October 2026).
+  return visual && !wordsOnly ? Math.max(height, MIN_CARD_H_WITH_VISUAL) : height;
 }
 
 // How wide a panel this picture uses at this height. The picture is drawn into
@@ -327,16 +379,16 @@ function panelWidthFor(visual, panelH, ctx) {
     return layout ? Math.max(PANEL_MIN_W, layout.w + 2 * VISUAL_PAD + 0.1) : PANEL_MIN_W;
   }
   const innerH = panelH - 2 * VISUAL_PAD;
-  const innerW = PANEL_MAX_W - 2 * VISUAL_PAD;
   const saved = getWarnings();
   const quiet = console.warn;
   console.warn = function () {};
-  try {
+  // How wide the picture's ink is when it is drawn into a panel this wide.
+  const inkWidth = function (panelW) {
     const probe = new PptxGenJS();
     probe.defineLayout({ name: 'PROBE', width: 20, height: 20 });
     probe.layout = 'PROBE';
     const slide = probe.addSlide();
-    withoutRecording(() => drawVisual(probe, slide, { x: 1, y: 1, w: innerW, h: innerH }, visual,
+    withoutRecording(() => drawVisual(probe, slide, { x: 1, y: 1, w: panelW - 2 * VISUAL_PAD, h: innerH }, visual,
       Object.assign({}, ctx, { cardLook: false })));
     let minX = Infinity;
     let maxX = -Infinity;
@@ -346,9 +398,25 @@ function panelWidthFor(visual, panelH, ctx) {
       minX = Math.min(minX, opt.x);
       maxX = Math.max(maxX, opt.x + opt.w);
     });
-    if (!Number.isFinite(minX)) return PANEL_MAX_W;
-    const used = Math.min(innerW, maxX - minX) + 2 * VISUAL_PAD;
-    return Math.max(PANEL_MIN_W, Math.min(PANEL_MAX_W, used + 0.1));
+    return Number.isFinite(minX) ? Math.min(panelW - 2 * VISUAL_PAD, maxX - minX) : null;
+  };
+  try {
+    const used = inkWidth(PANEL_MAX_W);
+    if (used == null) return PANEL_MAX_W;
+    let panelW = Math.max(PANEL_MIN_W, Math.min(PANEL_MAX_W, used + 2 * VISUAL_PAD + 0.1));
+    // The picture is drawn again into the fitted panel, and it has to come out
+    // the size it was measured at. Some drawings need more box than their own
+    // ink to keep their size (an example phrase keeps a margin either side, a
+    // shared drawing an inset), so in a panel that hugged the ink they shrank a
+    // second time: "a tall tree" was measured at 38pt and printed at about 22pt
+    // beside a 36pt definition (stress test, 7 October 2026). The panel widens
+    // until the picture in it is the picture that was measured.
+    while (panelW < PANEL_MAX_W) {
+      const drawn = inkWidth(panelW);
+      if (drawn == null || drawn >= used * PANEL_KEEPS_SIZE) break;
+      panelW = Math.min(PANEL_MAX_W, panelW + PANEL_WIDEN_STEP);
+    }
+    return panelW;
   } catch (err) {
     return PANEL_MAX_W;
   } finally {

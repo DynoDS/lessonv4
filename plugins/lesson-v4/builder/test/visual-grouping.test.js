@@ -17,7 +17,15 @@ const { drawRow } = require('../src/content/row');
 const { drawTable } = require('../src/content/table');
 const { drawNumberedQuestions, measureQuestionStack, CARD_FONT_MAX } = require('../src/content/numbered-questions');
 const { chooseBulletFont } = require('../src/content/bullets');
-const { labelDiagramKey } = require('../src/content/label-diagram');
+const { labelDiagramKey, preparedLabelDiagrams } = require('../src/content/label-diagram');
+
+// The pictures a build has read, with every drawing it will ask for already
+// made, as they stand in the build's second pass.
+function madeDiagrams(entries) {
+  const images = preparedLabelDiagrams(entries);
+  images._store.made = { get: () => Buffer.from('x') };
+  return images;
+}
 const { circuitDiagramKey } = require('../src/content/circuit-diagram');
 const { circuitSymbolBankKey } = require('../src/content/circuit-symbol-bank');
 const { tightSvg } = require('../../shared/visuals/circuit-diagram-svg');
@@ -562,17 +570,18 @@ test('a labelled diagram card hugs the contained picture', () => {
   const data = {
     type: 'label-diagram',
     imagePath: 'robin.png',
+    layout: 'sides',
     callouts: [{ anchor: [50, 50], label: 'The beak', given: true }]
   };
   const ctx = {
     slideIndex: 0,
     imageDims: {},
     cardLook: true,
-    labelDiagramImages: { [labelDiagramKey(data)]: { png: Buffer.from('x'), aspect: 4 } }
+    labelDiagramImages: madeDiagrams({ [labelDiagramKey(data)]: { href: 'x', width: 2400, height: 600 } })
   };
   const { shapes } = capture(drawContent, ZONE, data, ctx);
   assert.equal(shapes.length, 1, 'one card around the contained diagram');
-  assert.ok(shapes[0].h < 3.2, 'the card hugs the 4:1 picture, not the 5in zone');
+  assert.ok(shapes[0].h < 3.2, 'the card hugs the wide picture, not the 5in zone');
   assert.ok(shapes[0].h > 2.0, 'and it still carries the picture at a real size');
 });
 

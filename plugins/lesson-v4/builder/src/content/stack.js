@@ -298,6 +298,13 @@ function textNeed(item, zone, pt, ctx, countSign) {
 // words above a table could not have an inch the table was not using: a Year 6
 // maths task was refused for its instruction while the table under it stood
 // in rows twice the height its cells needed (4 October 2026).
+//
+// A criteria panel that holds a table is measured as one that holds steps is,
+// and so is a table or a panel standing beside words in a row (wordsNeed
+// below). Wrapped either way a table used to keep the share its weight
+// guessed, with the wrapper's own frame taken out of it first, and five
+// lessons of twenty had one refused for height while a line above it sat in
+// room it did not use (7 October 2026).
 function panelNeed(item, zone, pt, most, ctx) {
   if (!item) return null;
   if (item.type === 'sort-board') {
@@ -307,7 +314,11 @@ function panelNeed(item, zone, pt, most, ctx) {
   } else {
     if (item.type !== 'sc-panel') return null;
     const content = item.content || item.criteria;
-    if (!content || content.type !== 'steps') return null;
+    if (!content || (content.type !== 'steps' && content.type !== 'table')) return null;
+    // Never tried taller than the half slide a panel may take: tried at the
+    // whole stack's height, a full-width panel was refused for its size and
+    // so went unmeasured, steps and table alike.
+    most = Math.min(most, require('../success-criteria-panel').tallestPanel(zone, ctx));
   }
   const { drawContent } = require('./index');
   const { withoutRecording } = require('../warnings');
@@ -354,12 +365,16 @@ function isPlain(node, fields) {
   return Object.keys(node).every(function (key) { return fields.has(key); });
 }
 
-// What a block of words needs when it sits inside a row: a text card, or a
-// stack of text cards one above the other. Null for anything else, so a row
-// holding a picture or a drawn figure is left to its weight as before.
-function wordsNeed(item, zone, pt, ctx) {
+// What a block of words needs when it sits inside a row: a text card, a
+// stack of text cards one above the other, or a table or criteria panel
+// (measured as drawn, up to `most`). Null for anything else, so a row holding
+// a picture or a drawn figure is left to its weight as before.
+function wordsNeed(item, zone, pt, ctx, most) {
   if (!item || typeof item !== 'object') return null;
   if (item.type === 'text') return textNeed(item, zone, pt, ctx, true);
+  if (item.type === 'table' || item.type === 'sc-panel') {
+    return Number.isFinite(most) ? panelNeed(item, zone, pt, most, ctx) : null;
+  }
   if (item.type !== 'stack' || !Array.isArray(item.items) || !item.items.length) return null;
   if (!isPlain(item, PLAIN_COLUMN)) return null;
   if (item.heightRatio != null && Number(item.heightRatio) !== 1) return null;
@@ -387,14 +402,14 @@ function wordsNeed(item, zone, pt, ctx) {
 // and inside rows of stacks were the largest refusal left once the headline
 // strip and the sorting letters were mended, in six runs of ten. Measured
 // here, a row takes what it needs from the room the stack has.
-function rowNeed(item, zone, pt, ctx) {
+function rowNeed(item, zone, pt, ctx, most) {
   const items = Array.isArray(item.items) ? item.items : [];
   if (!items.length || !isPlain(item, PLAIN_ROW)) return null;
   const widths = require('./row').rowWidths(zone, item, ctx);
   if (widths.length !== items.length) return null;
   let tallest = 0;
   for (let i = 0; i < items.length; i += 1) {
-    const need = wordsNeed(items[i], Object.assign({}, zone, { w: widths[i] }), pt, ctx);
+    const need = wordsNeed(items[i], Object.assign({}, zone, { w: widths[i] }), pt, ctx, most);
     if (need == null) return null;
     tallest = Math.max(tallest, need);
   }
@@ -414,12 +429,18 @@ function itemNeed(item, zone, share, pt, most, ctx, wide) {
     return need == null ? null : { need, takes: true };
   }
   if (item.type === 'row') {
-    const need = wide ? rowNeed(item, zone, pt, ctx) : null;
+    const need = wide ? rowNeed(item, zone, pt, ctx, most) : null;
     return need == null ? null : { need, takes: true };
   }
   if (item.type === 'sc-panel' || (wide && LATE_JOINERS.has(item.type))) {
     const need = panelNeed(item, zone, pt, most, ctx);
-    return need == null ? null : { need, takes: true };
+    if (need == null) return null;
+    // A criteria panel takes what is left over only up to the half slide it
+    // may fill (shareOut below).
+    const cap = item.type === 'sc-panel'
+      ? require('../success-criteria-panel').tallestPanel(zone, ctx)
+      : Infinity;
+    return { need, takes: true, cap };
   }
   if (item.type === 'image') {
     const { measureContentExtent } = require('./index');
@@ -503,10 +524,31 @@ function settleAmong(items, heights, zone, zoneFor, ctx, wide) {
       else { heights[i] = n.need; kept += n.need; }
     });
     const wanted = takers.reduce(function (sum, i) { return sum + needs[i].need; }, 0);
-    const left = room - kept - wanted;
-    takers.forEach(function (i) {
-      heights[i] = needs[i].need + left * needs[i].need / wanted;
-    });
+    takers.forEach(function (i) { heights[i] = needs[i].need; });
+    // What is left is shared in proportion. An item with a ceiling (a
+    // criteria panel, which never passes half the slide) stops at it and what
+    // it could not take goes round the others again; with no ceiling in the
+    // stack this is the one proportional share it always was.
+    let spare = room - kept - wanted;
+    let open = takers.slice();
+    while (open.length && spare > 1e-6) {
+      const asking = open.reduce(function (sum, i) { return sum + needs[i].need; }, 0);
+      const still = [];
+      let over = 0;
+      open.forEach(function (i) {
+        const offered = heights[i] + spare * needs[i].need / asking;
+        const cap = needs[i].cap;
+        if (Number.isFinite(cap) && offered > cap) {
+          over += offered - Math.max(cap, heights[i]);
+          heights[i] = Math.max(cap, heights[i]);
+        } else {
+          heights[i] = offered;
+          still.push(i);
+        }
+      });
+      spare = over;
+      open = still;
+    }
   };
 
   const atTarget = measure(TARGET_PT, stackH);
@@ -1036,13 +1078,22 @@ function drawStack(pptx, slide, zone, data, ctx) {
         ? err.neededZoneHeight - err.zoneHeight
         : null;
       const needed = shortfall > 0 ? entry.zone.h + shortfall + FIT_MARGIN : null;
-      const wanted = weightThatWouldFit(entry, needed);
-      if (wanted) {
+      // Said once, by the stack that holds the item. Each stack further out
+      // used to add a weight of its own, also "on this item", and a table
+      // three stacks deep was told 2.40, 3.33 and 4.65 in one sentence (a
+      // Year 6 English plan, 7 October 2026).
+      const said = Boolean(err && err.weightAdvised);
+      const wanted = said ? null : weightThatWouldFit(entry, needed);
+      if (said) {
+        // The stack that holds the item has spoken.
+      } else if (wanted) {
+        err.weightAdvised = true;
         err.message +=
           ' In this stack that is a weight of ' + wanted.toFixed(2) +
           ' on this item (it has ' + entry.weight +
           '); the other items keep theirs.';
       } else if (Number.isFinite(needed) && entry.contentH <= needed) {
+        err.weightAdvised = true;
         err.message +=
           ' No weight reaches it here: the whole stack is only ' +
           entry.contentH.toFixed(2) + 'in, so this item needs a roomier zone or' +

@@ -280,6 +280,8 @@ How-to steps:
 }
 ```
 
+A smaller point under a step goes on its own line inside that step's string (`"Rub the nail's mark with your finger.\nStays? Write medium.\nRubs off, or no mark? Write hard."`), never in a step of its own. What to do for a different kind of question is an item of its own after the steps, opening with ❓ (`"❓ How many more or fewer? Read both bars, then bigger number - smaller number."`), which the board prints unnumbered; `teaching-sequence-skill-based.md` → Writing the Success Criteria says when a step has one.
+
 Reference table:
 
 ```json

@@ -136,6 +136,46 @@ function containRect(frame, aspect) {
   };
 }
 
+// ─── Showing only one part of a picture, as the picture ──────────────
+//
+// An image may name a RECTANGLE of its own file and be drawn as that part
+// alone, at the size the whole would have had:
+//
+//   { "type": "image", "imagePath": "...", "detail": { "x": 0, "y": 0.13, "w": 1, "h": 0.37 } }
+//
+// Fractions of the whole image, origin top-left: the same rectangle an inset's
+// `detail` takes, and the same PowerPoint crop, so nothing is sourced and no
+// pixels are processed. The inset keeps the whole picture and adds a small
+// enlargement in a corner. This is for the case where the whole is the wrong
+// thing to show: a Year 6 science slide asked children to find a red tube on
+// a whole-body diagram of the blood vessels, and at any size a slide can give
+// a body 0.45 times as wide as tall the tubes are hairlines. The chest alone,
+// in the same room, is four times the scale, and the teacher chose it for
+// that slide and for the word card (8 October 2026). Everything that asks
+// what shape or size this picture is (the fit, the card that hugs it, the
+// row that shares width with it, the readable floor) is answered for the part
+// shown, through `shownPart`.
+function detailFractions(detail) {
+  if (!detail || typeof detail !== 'object') return null;
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const w = clamp(Number(detail.w) || 0, 0.01, 1);
+  const h = clamp(Number(detail.h) || 0, 0.01, 1);
+  return {
+    x: clamp(Number(detail.x) || 0, 0, 1 - w),
+    y: clamp(Number(detail.y) || 0, 0, 1 - h),
+    w,
+    h,
+  };
+}
+
+// The pixel size of what this image puts on the slide: the named part when it
+// names one, otherwise the whole file.
+function shownPart(data, dims) {
+  const part = detailFractions(data && data.detail);
+  if (!part) return dims;
+  return { w: dims.w * part.w, h: dims.h * part.h };
+}
+
 // Will this image actually put something on the slide? Any layout that reserves
 // space for a picture, or writes a caption describing one, needs this answer
 // rather than "is `image` a type I can draw?" — the two come apart exactly when
@@ -249,7 +289,8 @@ function pictureShape(data, ctx) {
   }
   const dims = ctx && ctx.imageDims ? ctx.imageDims[data.imagePath] : null;
   if (!dims || !(dims.w > 0) || !(dims.h > 0)) return null;
-  return { aspect: dims.w / dims.h, delivered: true, dims };
+  const shown = shownPart(data, dims);
+  return { aspect: shown.w / shown.h, delivered: true, dims };
 }
 
 // Is this picture big enough for a class to read once it is on the slide?
@@ -296,6 +337,25 @@ function pictureShape(data, ctx) {
 // a short side of min(w, h, w/a, h*a), so the frame needs `floor * max(1, a)`
 // of width and `floor * max(1, 1/a)` of height, and whichever of those two it
 // is missing is the axis to name.
+//
+// That holds for a picture at least as wide as it is tall. A picture TALLER
+// than it is wide is measured by how much picture there is instead, because a
+// slide is a landscape page and height is the one thing it cannot find more
+// of: a body diagram 0.45 times as wide as tall needs 6.6" of height to be 3"
+// wide and the tallest zone on a slide is about 6.4", so on its narrow side it
+// could never pass, in any template. The check's own last line offered
+// `essential: false` as the way through, and the lesson's main diagram went
+// out unmeasured at 2.25" by 5.0" and again at 1.1" wide on a word card
+// (Year 6 science, 7 October 2026). So a portrait picture passes when it
+// shows as much picture as a square of the floor's side (the square root of
+// width times height reaches the floor) and is never narrower than the base
+// floor. At a square the two measures agree, so nothing jumps at the join.
+function neededPictureSize(floor, aspect) {
+  if (aspect >= 1) return { w: floor * aspect, h: floor };
+  const w = Math.max(floor * Math.sqrt(aspect), PICTURE_READABLE_FLOOR);
+  return { w, h: w / aspect };
+}
+
 function checkPictureCellSize(zone, data, ctx) {
   if (!ctx || !data || data.essential === false) return;
   // A picture in a table cell is a cue read with its row's words.
@@ -319,19 +379,28 @@ function checkPictureCellSize(zone, data, ctx) {
   const guaranteed = Math.min(frameW, frameH);
   const drawn = containRect({ x: 0, y: 0, w: frameW, h: frameH }, aspect);
   const measured = Math.min(drawn.w, drawn.h);
-  if (!(measured > 0) || measured >= floor) return;
+  if (!(measured > 0)) return;
+  const needed = neededPictureSize(floor, aspect);
+  // A hair of tolerance: the needed size is a square root, and a picture
+  // drawn at exactly that size must not fail on the last binary digit.
+  const widthShort = needed.w - frameW;
+  const heightShort = needed.h - frameH;
+  if (widthShort <= 1e-9 && heightShort <= 1e-9) return;
 
   const short = (n) => n.toFixed(2);
-  const widthShort = floor * Math.max(1, aspect) - frameW;
-  const heightShort = floor * Math.max(1, 1 / aspect) - frameH;
+  const portrait = aspect < 1;
 
   let opening;
   if (delivered) {
     opening =
       `image "${data.imagePath}" renders ${short(drawn.w)}" by ${short(drawn.h)}" ` +
       `on the slide, so it is only ${short(measured)}" on its short side. ${role} ` +
-      `it needs ${short(floor)}" for a class to read it from the back of the room. `;
-    if (guaranteed >= floor) {
+      (portrait
+        ? `it needs to show as much picture as a ${short(floor)}" square for a class to read it ` +
+          `from the back of the room, which for a picture this shape is ` +
+          `${short(needed.w)}" by ${short(needed.h)}". `
+        : `it needs ${short(floor)}" for a class to read it from the back of the room. `);
+    if (guaranteed >= floor && !portrait) {
       opening +=
         `The cell reserves ${short(guaranteed)}", which reads as enough, but this ` +
         `photograph is ${dims.w} by ${dims.h} and keeps its true proportions, so the ` +
@@ -377,11 +446,23 @@ function checkPictureCellSize(zone, data, ctx) {
       `stopped by the width.`;
   }
 
+  // What the last line used to say: "A picture that is only supporting context
+  // belongs here at this size and should say so with `essential: false`." It
+  // was true, and it was the only repair in the message that always works, so
+  // it was the one taken for pictures a task depended on. It now names who the
+  // opt-out is for, and the repair a picture children search has instead.
   const message =
     opening +
     diagnosis +
-    ' A picture that is only supporting context belongs here at this size ' +
-    'and should say so with `essential: false`.';
+    (portrait
+      ? ' A tall picture earns its size beside the words, in a column the full ' +
+        'depth of the slide, not in a band above or below them.'
+      : '') +
+    ' When children have to find a part of this picture, show that part: a ' +
+    'close-up file of it if the lesson has one, or ask for one. ' +
+    '`essential: false` is only for a picture no task and no line of the ' +
+    'script points at, or one children have already studied at full size on ' +
+    'an earlier slide and now see again as a reminder.';
   warn(ctx.slideIndex, message);
   if (!recording()) return;
   floorFindings.push({
@@ -468,7 +549,9 @@ function drawOneImage(pptx, slide, frame, imageData, isInset, ctx) {
       : undefined;
 
   if (fit === 'contain') {
-    const fitted = containRect(frame, dims.w / dims.h);
+    const part = isInset ? null : detailFractions(imageData.detail);
+    const shown = part ? shownPart(imageData, dims) : dims;
+    const fitted = containRect(frame, shown.w / shown.h);
     // Contained means the picture keeps its true shape, so a frame shaped unlike
     // it leaves the rest empty. `cover` is exempt because it fills by design, and
     // an inset is exempt because being small in a corner is the whole point of one.
@@ -476,6 +559,27 @@ function drawOneImage(pptx, slide, frame, imageData, isInset, ctx) {
     // own, so the room either side of it is the slide, not a slot it fails to
     // fill.
     if (!isInset && !isClassCharacterPortrait(imageData.imagePath)) checkZoneFill(ctx, frame, fitted, 'this photograph');
+    if (part) {
+      // The whole file scaled so the named part is exactly the fitted
+      // rectangle, then everything outside the part cropped away.
+      const scale = fitted.w / shown.w;
+      slide.addImage({
+        path: resolved,
+        x: fitted.x,
+        y: fitted.y,
+        w: dims.w * scale,
+        h: dims.h * scale,
+        sizing: {
+          type: 'crop',
+          x: part.x * dims.w * scale,
+          y: part.y * dims.h * scale,
+          w: fitted.w,
+          h: fitted.h
+        },
+        altText: altText
+      });
+      return;
+    }
     slide.addImage({
       path: resolved,
       x: fitted.x,
@@ -657,9 +761,10 @@ function measureImage(zone, data, ctx) {
   const frameH = zone.h - 2 * PAD - (hasCaption ? (CAPTION_H + CAPTION_GAP) : 0);
   if (frameW <= 0.3 || frameH <= 0.3) return null;
 
+  const shown = pending ? null : shownPart(data, dims);
   const fitted = containRect(
     { x: 0, y: 0, w: frameW, h: frameH },
-    pending ? PENDING_ASPECT : dims.w / dims.h
+    pending ? PENDING_ASPECT : shown.w / shown.h
   );
 
   return {
@@ -683,7 +788,8 @@ function imageAspect(data, ctx) {
   if (!resolved || !fs.existsSync(resolved)) return PENDING_ASPECT;
   const dims = ctx && ctx.imageDims ? ctx.imageDims[data.imagePath] : null;
   if (!dims || !(dims.w > 0) || !(dims.h > 0)) return null;
-  return dims.w / dims.h;
+  const shown = shownPart(data, dims);
+  return shown.w / shown.h;
 }
 
 // The width a delivered photograph uses when it is held by the height `zoneH`,
@@ -704,7 +810,8 @@ function widthAtHeight(data, zoneH, ctx) {
   const caption = data.caption || '';
   const frameH = zoneH - 2 * PAD - (caption ? (CAPTION_H + CAPTION_GAP) : 0);
   if (!(frameH > 0.3)) return null;
-  let w = frameH * (dims.w / dims.h) + 2 * PAD;
+  const shown = shownPart(data, dims);
+  let w = frameH * (shown.w / shown.h) + 2 * PAD;
   if (caption) {
     const { textBoxWidthIn } = require('../glyph-width');
     w = Math.max(w, textBoxWidthIn(caption, data.captionFontSize || CAPTION_FONT, false) + 2 * PAD);
@@ -726,4 +833,5 @@ module.exports = {
   missingPictureFindings,
   recordMissingPicture,
   detailRect,
+  shownPart,
 };

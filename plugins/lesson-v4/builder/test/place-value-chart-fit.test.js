@@ -140,6 +140,10 @@ test('a long row label no longer decides how big the digits are', () => {
 });
 
 test('a narrow chart is still held back by its own columns', () => {
-  const narrow = measurePlaceValueChart({ x: 0, y: 0, w: 1.6, h: 3.0 }, ONE_ROW);
-  assert.ok(narrow.h < 3.0 * 0.75, 'a narrow chart inflated to fill a tall zone');
+  // It used to draw small, with "Th" at 9pt. A slide heading stops at 18pt now
+  // (8 October 2026), so a chart this narrow is refused instead of inflated.
+  assert.throws(
+    () => measurePlaceValueChart({ x: 0, y: 0, w: 1.6, h: 3.0 }, ONE_ROW),
+    /PLACE_VALUE_HEADINGS_TOO_SMALL/
+  );
 });

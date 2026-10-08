@@ -166,3 +166,95 @@ test('a delivered deck flags the slide whose labels collide, and not one whose l
     fs.rmSync(tall.root, { recursive: true, force: true });
   }
 });
+
+// ── The size of the words ────────────────────────────────────────────────────
+//
+// A label on the board is board text. Until 8 October 2026 its size was a
+// twentieth of the picture, so a picture sharing a slide took its labels down
+// with it: on the 7 October stress test three photographs across a slide left
+// the letters A to D at 11pt, and the Earth beside the Sun was named at 14pt.
+// The teacher's rulings on the real pages: 20pt on every slide, 18pt only where
+// 20pt would leave the picture too small, never less; the picture takes the
+// room the words leave; and a picture that is left too small is a fault.
+
+const { layoutAt, pictureFaultFor, preparedLabelDiagrams, preRenderLabelDiagrams, labelDiagramKey } =
+  require('../src/content/label-diagram');
+
+function laidOut(diagram, w, h, size = { width: 1536, height: 1024 }) {
+  const images = preparedLabelDiagrams({ [labelDiagramKey(diagram)]: { href: 'x', ...size } });
+  return layoutAt(diagram, images[labelDiagramKey(diagram)], { labelDiagramImages: images, slideIndex: 0 }, w, h);
+}
+
+const NAMES = { imagePath: 'river.jpg', layout: 'sides', callouts: [
+  { anchor: [30, 60], label: 'confluence', given: true }, { anchor: [70, 60], label: 'tributary', given: true },
+] };
+
+test('a label is 20pt on the board however small its picture is drawn', () => {
+  const letters = { imagePath: 'river.jpg', layout: 'sides', callouts: [
+    { anchor: [30, 60], label: 'B', given: true }, { anchor: [70, 60], label: 'C', given: true },
+  ] };
+  // A third of a slide, half a slide, most of a slide.
+  for (const [w, h] of [[3.9, 2.6], [6.2, 3.5], [12, 5.5]]) {
+    const laid = laidOut(letters, w, h);
+    assert.ok(Math.abs(laid.pt - 20) < 0.01, `${w}" by ${h}": ${laid.pt}pt`);
+    assert.ok(laid.w <= w + 1e-6 && laid.h <= h + 1e-6, 'and the drawing stays in its room');
+    assert.equal(pictureFaultFor(letters, laid), null);
+  }
+});
+
+test('the words drop to 18pt only where 20pt would leave the picture too small', () => {
+  const roomy = laidOut(NAMES, 7, 4);
+  assert.ok(Math.abs(roomy.pt - 20) < 0.01, `${roomy.pt}pt`);
+
+  let tight = null;
+  for (let w = 7; w > 4 && !tight; w -= 0.02) {
+    const laid = laidOut(NAMES, w, 4);
+    if (Math.abs(laid.pt - 18) < 0.01 && !laid.squeezed) tight = laid;
+  }
+  assert.ok(tight, 'some width is tight enough for 18pt');
+  assert.ok(tight.pictureShort >= 1.6, 'and there 18pt keeps the picture over its floor');
+  assert.equal(pictureFaultFor(NAMES, tight), null);
+});
+
+test('words that leave the picture too small are a fault that names the ways out, and never shrink below 18pt', () => {
+  const laid = laidOut(NAMES, 4.4, 2.6);
+  assert.ok(laid.pt >= 18 - 0.01, `${laid.pt}pt`);
+  const fault = pictureFaultFor(NAMES, laid);
+  assert.ok(fault);
+  assert.equal(fault.signal, 'LABEL_DIAGRAM_PICTURE_TOO_SMALL');
+  assert.match(fault.message, /fewer pictures on this slide/);
+  assert.match(fault.message, /letters \(A, B, C\)/);
+  // A picture that is only context is meant to be small.
+  assert.equal(pictureFaultFor({ ...NAMES, essential: false }, laid), null);
+});
+
+test('the same picture in the same slot of two slides stands still when a label gets longer', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'label-diagram-still-test-'));
+  try {
+    const sharp = requireGlobal('sharp');
+    await sharp({ create: { width: 1500, height: 1000, channels: 3, background: '#112233' } })
+      .png().toFile(path.join(root, 'earth.png'));
+    const diagram = (label) => ({
+      type: 'label-diagram', imagePath: 'earth.png', layout: 'sides',
+      callouts: [{ anchor: [40, 70], label, given: true }, { anchor: [70, 50], label: 'day', given: true }],
+    });
+    const slide = (label, template) => ({ template, layout: 'two-pictures', pictures: [diagram(label)] });
+    const lesson = { slides: [
+      slide('here', 'teach-layout'),
+      slide('We are here, half a turn later', 'teach-layout'),
+      slide('here', 'split-h-60-40'),
+    ] };
+    const images = await preRenderLabelDiagrams(lesson, root);
+    const at = (i) => {
+      const data = lesson.slides[i].pictures[0];
+      return layoutAt(data, images[labelDiagramKey(data)], { labelDiagramImages: images, slideIndex: i }, 6.2, 3.5);
+    };
+    const [first, second, elsewhere] = [at(0), at(1), at(2)];
+    assert.deepEqual(first.picture, second.picture, 'one place and one size on both slides');
+    assert.deepEqual([first.w, first.h], [second.w, second.h]);
+    // A slide that arranges its pictures differently shares nothing.
+    assert.ok(elsewhere.picture.w > first.picture.w, 'and a different template keeps no room for words it does not carry');
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

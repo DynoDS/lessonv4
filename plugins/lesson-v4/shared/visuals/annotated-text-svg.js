@@ -25,6 +25,19 @@
 // lines and down the margins, never across another word. That is why a marked
 // text is set with more room between its lines than a plain one.
 //
+// A ring (`circle` or `box`) is measured from the ink, not from the line box:
+// from the tops of the tall letters to the bottoms of the tails, with air all
+// round, and its two ends sit in the finger spaces either side of its words.
+// So a comma or full stop that touches the last word is inside the ring with
+// it. Until 8 October 2026 a `circle` was an oval drawn through the corners of
+// the words' box, which is the first and last letters, and a box stopped at
+// the last letter, which is where the full stop is (three lessons of twenty in
+// the stress test of 7 October). The teacher chose the rounded loop over a
+// true oval grown big enough to miss the letters, which on a sentence runs out
+// into the margins and over the lines above and below. He ruled the same day
+// that an underline crossing the tail of a g, and a highlight that stops at
+// the last letter, are right as they are: leave both alone.
+//
 //   tightSvg(spec, profile) -> { svg, w, h, aspect, layout }
 //   cacheKey(spec, profile) -> string
 //   describeLayout(spec, profile) -> where every line, mark, note and arrow went
@@ -39,13 +52,20 @@
 //              find     the word or words to mark, as printed ("Puddles",
 //                       "As the sun set"). Punctuation at either end of a word
 //                       is ignored when matching, and case is ignored when no
-//                       exact match exists.
+//                       exact match exists. A punctuation mark alone (",")
+//                       marks that comma itself: underline, wavy, highlight
+//                       or colour, never a ring, which has no room there.
 //              nth      which occurrence, counting from 1 through the whole
 //                       text (default 1).
 //              style    underline | wavy | circle | box | highlight | colour
 //                       (default underline). `colour` prints the words
 //                       themselves in the colour.
 //              colour   blue | green | orange | red | purple (default blue).
+//                       Two marks whose notes say different things never
+//                       share a colour: the second takes the next free one,
+//                       so a note is matched to its words by colour and not
+//                       only by following its line. Marks with the same note
+//                       keep one colour, and so do two marks an arrow joins.
 //              note     a short note in the margin, joined to the words by a
 //                       line. "" or `write: true` leaves a ruled line there
 //                       for the child to write the note.
@@ -65,6 +85,10 @@
 //              stanza (or paragraph)  which one, counting from 1
 //              note    "3 lines: 5, 7, 5", "Always ends on 2 lines"
 //              colour  default purple
+//   callouts the working wall's step numbers and pointers (its own field, drawn
+//            by the wall). A callout whose `part` names a mark's id, or any
+//            words of the passage as printed ("moon", ","), is given a place:
+//            a step number gets room left for it just above its word.
 //   space    "annotate" leaves wide empty margins and roomy lines for the child
 //            to mark the text by hand: the write-on form.
 //   title    an optional heading printed above the passage.
@@ -86,7 +110,9 @@ const STANZA_GAP = 0.5; // extra space between stanzas or paragraphs, in pitches
 const TEXT_BOX = 1.25; // the height of one line of words
 const INDENT = 1.2; // a wrapped continuation line's indent
 const NOTE_SCALE = 0.82; // margin notes are a little smaller than the text
-const NOTE_GAP = 0.35; // air between two notes stacked in one margin
+// Air between two notes stacked in one margin. At 0.35 three two-line notes
+// read as one paragraph of six lines (7 October 2026).
+const NOTE_GAP = 0.8;
 const NOTE_MAX_SHARE = 0.3; // one margin is at most this share of the width
 const NOTE_MIN_W = 5.5; // a margin narrower than this many ems cannot hold a note
 const NOTE_OFFSET = 0.9; // gap between the text and a margin note
@@ -95,8 +121,19 @@ const LANE_STEP = 0.55; // between two arrows running down the left margin
 const LANE_PAD = 0.5; // between the text and the nearest arrow lane
 const UNDERLINE_DROP = 0.12; // below the baseline
 const STROKE = 0.085; // marks and arrows
-const RING_PAD_X = 0.14;
-const RING_PAD_Y = 0.16;
+// Where Comic Sans puts its ink, from the baseline: the tall letters rise this
+// far and the tails of g, y, p and Q drop this far. A ring clears both.
+const INK_TOP = 0.8;
+const INK_BOTTOM = 0.33;
+const RING_PAD_X = 0.2; // a ring's ends, out from its words into the finger space
+const RING_PAD_Y = 0.13; // above the tall letters and below the tails
+const RING_CLEAR = 0.06; // the least air between a ring's end and the next word
+const LOOP_RADIUS = 0.5; // the loop's rounded corners; a box's are BOX_RADIUS
+const BOX_RADIUS = 0.1;
+const HIGHLIGHT_REACH = 0.16; // how far past a highlighted line an arrow starts
+// A step number the wall pins above a word: the circle, and the air under it.
+const PIN_R = 0.6;
+const PIN_GAP = 0.15;
 const HEAD_LEN = 0.42;
 const HEAD_W = 0.36;
 const WRITE_LINE_H = 1.6; // a ruled note line for the child, in note ems
@@ -111,6 +148,9 @@ const MAX_LINKS = 8;
 // ────────────────────────────────────────────────────────────────────────────
 
 const STYLES = ['underline', 'wavy', 'circle', 'box', 'highlight', 'colour'];
+// The order a note takes a colour of its own in. Red is last: on a board it
+// reads as "wrong".
+const NOTE_COLOURS = ['blue', 'green', 'orange', 'purple', 'red'];
 const COLOURS = {
   blue: { colour: '#0070C0', ink: INK_TONES.ink },
   green: { colour: '#00B050', ink: INK_TONES.dark },
@@ -191,8 +231,12 @@ function normalise(spec = {}) {
     const note = write ? null : m.note == null ? null : str(m.note).trim();
     const side = str(m.side || 'auto').toLowerCase();
     if (side !== 'left' && side !== 'right' && side !== 'auto') throw fail('ANNOTATED_TEXT_INVALID', `mark "${find}" puts its note on side "${m.side}"; use left or right, or leave it out.`);
+    if (!core(find) && (style === 'circle' || style === 'box')) {
+      throw fail('ANNOTATED_TEXT_INVALID', `mark "${find}" asks for a ${style} round a punctuation mark on its own. It touches the word beside it, so a ring there would cut the letter; use highlight, colour or underline for it, or ring the word and its punctuation together by naming the word.`);
+    }
     return { id: str(m.id || find).trim(), find, nth, style, colour, note, write, side };
   });
+  ownNoteColours(marks, spec.links);
   if (marks.length > MAX_MARKS) {
     throw fail('ANNOTATED_TEXT_TOO_MANY_MARKS', `${marks.length} marks were asked for and ${MAX_MARKS} is the most one passage carries before nothing stands out. Mark what this question is about.`);
   }
@@ -231,7 +275,52 @@ function normalise(spec = {}) {
   const countColour = str(spec.countColour || 'blue').toLowerCase();
   if (!COLOURS[countColour]) throw fail('ANNOTATED_TEXT_INVALID', `countColour "${spec.countColour}"; use one of ${Object.keys(COLOURS).join(', ')}.`);
   const space = str(spec.space).toLowerCase() === 'annotate' ? 'annotate' : 'set';
-  return { blocks, marks, links, brackets, hasCounts, countColour, space, title: str(spec.title).trim(), stem: str(spec.text).trim() };
+  // The places the wall's callouts name. A step number is given room above its
+  // word; any other pointer is only told where the word is.
+  const pins = [];
+  for (const c of Array.isArray(spec.callouts) ? spec.callouts : []) {
+    const part = c && typeof c.part === 'string' ? c.part.trim() : '';
+    if (!part || pins.some((p) => p.part === part)) continue;
+    pins.push({ part, step: Number.isInteger(c.step) && c.step > 0 });
+  }
+  return { blocks, marks, links, brackets, pins, hasCounts, countColour, space, title: str(spec.title).trim(), stem: str(spec.text).trim() };
+}
+
+// Two marks whose notes say different things, both in one colour, leave a
+// reader to follow each dashed line to learn which note is whose, and a line
+// that runs under the next marked phrase looks tied to that one (a Year 6
+// online-safety wall, 7 October 2026: three warning signs, all orange). So
+// the second note to arrive at a colour another note already has takes the
+// next colour nothing else is using, and its mark, note and line all match.
+// Marks with the same note keep one colour ("fronted adverbial" twice is one
+// kind of thing), and so do the two ends of an arrow, whose shared colour is
+// the link. Only the colour changes, never the kind of mark.
+function ownNoteColours(marks, rawLinks) {
+  const linked = new Set();
+  for (const l of Array.isArray(rawLinks) ? rawLinks : []) {
+    linked.add(str(l && l.from).trim());
+    linked.add(str(l && l.to).trim());
+  }
+  const taken = new Set(marks.filter((m) => !m.note || linked.has(m.id)).map((m) => m.colour));
+  const owner = new Map(); // colour -> the note it belongs to
+  const colourOfNote = new Map();
+  for (const m of marks) {
+    if (!m.note) continue;
+    const key = m.note.toLowerCase();
+    const holder = owner.get(m.colour);
+    if (linked.has(m.id) || holder === undefined || holder === key) {
+      owner.set(m.colour, holder === undefined ? key : holder);
+      if (!colourOfNote.has(key)) colourOfNote.set(key, m.colour);
+      continue;
+    }
+    const next = colourOfNote.get(key)
+      || NOTE_COLOURS.find((c) => !owner.has(c) && !taken.has(c))
+      || NOTE_COLOURS.find((c) => !owner.has(c));
+    if (!next) continue; // more kinds of note than colours: the lines still join them
+    m.colour = next;
+    owner.set(next, key);
+    colourOfNote.set(key, next);
+  }
 }
 
 // ─── Laying out the words ────────────────────────────────────────────────────
@@ -278,14 +367,25 @@ function setLines(n, pt, availW, bold) {
 // Every word in reading order, with the printed line it landed on.
 function wordList(lines) {
   const all = [];
-  lines.forEach((line, li) => line.words.forEach((w) => all.push({ ...w, line: li, key: core(w.text) })));
+  lines.forEach((line, li) => line.words.forEach((w, pos) => all.push({ ...w, line: li, pos, key: core(w.text) })));
   return all;
 }
 
 // Which printed words a mark covers: the nth run of words matching `find`.
 function locate(mark, words) {
   const want = mark.find.split(/\s+/).map(core).filter(Boolean);
-  if (!want.length) return null;
+  if (!want.length) {
+    // A punctuation mark on its own: the nth word that carries it at an end.
+    const p = mark.find.trim();
+    const hits = [];
+    for (const w of words) {
+      const lead = w.text.match(/^[^\p{L}\p{N}]*/u)[0];
+      const trail = w.key ? w.text.match(/[^\p{L}\p{N}]*$/u)[0] : '';
+      const at = trail.includes(p) ? w.text.length - trail.length + trail.indexOf(p) : lead.includes(p) ? lead.indexOf(p) : -1;
+      if (p && at >= 0) hits.push([{ ...w, punct: { at, text: p } }]);
+    }
+    return hits[mark.nth - 1] || null;
+  }
   const runs = (exact) => {
     const hits = [];
     for (let i = 0; i + want.length <= words.length; i += 1) {
@@ -310,6 +410,7 @@ function locate(mark, words) {
 // The ink of a word without the punctuation either side of it, so an underline
 // stops at the word and a ring hugs it.
 function coreSpan(w, pt, bold) {
+  if (w.punct) return { x: w.x + T.widthPt(w.text.slice(0, w.punct.at), pt, bold), w: T.widthPt(w.punct.text, pt, bold) };
   const lead = w.text.match(/^[^\p{L}\p{N}]*/u)[0];
   const trail = w.text.match(/[^\p{L}\p{N}]*$/u)[0];
   const body = w.text.slice(lead.length, w.text.length - trail.length) || w.text;
@@ -405,19 +506,6 @@ function layoutAt(n, profile, pt) {
   const stemH = stemLines.length ? T.blockHeight(stemLines.length, pt) + TITLE_GAP * pt : 0;
   const titleH = stemH + (titleLines.length ? T.blockHeight(titleLines.length, pt * TITLE_SCALE) + TITLE_GAP * pt : 0);
 
-  // Vertical placement: a gap above the first line too, so an arrow pointing
-  // up into the first line has somewhere to run.
-  const gapH = pitch - TEXT_BOX * pt;
-  let y = PAD * pt + titleH + (routed ? gapH : 0);
-  lines.forEach((line, i) => {
-    if (i > 0 && line.block !== lines[i - 1].block) y += STANZA_GAP * pitch;
-    line.top = y;
-    line.baseline = y + T.BASELINE * pt;
-    line.gapBelow = { top: y + TEXT_BOX * pt, h: (i < lines.length - 1 && lines[i + 1].block !== line.block ? gapH + STANZA_GAP * pitch : gapH), tracks: 0 };
-    y += pitch;
-  });
-  const topGap = { top: PAD * pt + titleH, h: routed ? gapH : 0, tracks: 0 };
-
   // The marks, found.
   const words = wordList(lines);
   const placed = [];
@@ -429,17 +517,74 @@ function layoutAt(n, profile, pt) {
         `the mark "${m.find}"${m.nth > 1 ? ` (occurrence ${m.nth})` : ''} is not in the passage. A mark names words exactly as printed; check the spelling, or which occurrence it means.`
       );
     }
-    // A run of words can wrap; each printed line it touches gets its own piece.
-    const pieces = [];
-    for (const w of hit) {
-      const span = coreSpan(w, pt, bold);
-      const last = pieces[pieces.length - 1];
-      if (last && last.line === w.line) last.x2 = span.x + span.w;
-      else pieces.push({ line: w.line, x1: span.x, x2: span.x + span.w });
-    }
-    placed.push({ ...m, pieces: pieces.map((p) => ({ ...p, x1: p.x1 + textX, x2: p.x2 + textX })) });
+    placed.push({ ...m, pieces: piecesOf(hit, pt, bold, textX) });
   }
   const markById = new Map(placed.map((m) => [m.id, m]));
+
+  // The places the wall's callouts name: a mark by its id, or any words of
+  // the passage. A name the passage does not hold is left for the wall to
+  // refuse in its own words.
+  const pins = [];
+  for (const pin of n.pins) {
+    const mark = markById.get(pin.part);
+    const hit = mark ? null : locate({ find: pin.part, nth: 1 }, words);
+    const piece = mark ? mark.pieces[0] : hit ? piecesOf(hit, pt, bold, textX)[0] : null;
+    if (piece) pins.push({ ...pin, line: piece.line, x: (piece.x1 + piece.x2) / 2 });
+  }
+  const pinRoom = (li) => (pins.some((p) => p.step && p.line === li) ? (2 * PIN_R + PIN_GAP) * pt : 0);
+
+  // Vertical placement: a gap above the first line too, so an arrow pointing
+  // up into the first line has somewhere to run, and room above any line a
+  // step number is pinned to.
+  const gapH = pitch - TEXT_BOX * pt;
+  let y = PAD * pt + titleH + (routed ? gapH : 0);
+  lines.forEach((line, i) => {
+    if (i > 0 && line.block !== lines[i - 1].block) y += STANZA_GAP * pitch;
+    y += pinRoom(i);
+    line.top = y;
+    line.baseline = y + T.BASELINE * pt;
+    line.gapBelow = { top: y + TEXT_BOX * pt, h: (i < lines.length - 1 && lines[i + 1].block !== line.block ? gapH + STANZA_GAP * pitch : gapH), tracks: 0 };
+    y += pitch;
+  });
+  const topGap = { top: PAD * pt + titleH, h: routed ? gapH : 0, tracks: 0 };
+
+  for (const pin of pins) {
+    pin.y = pin.step ? lines[pin.line].top - (PIN_GAP + PIN_R) * pt : lines[pin.line].top;
+  }
+
+  // The rings. Each end goes out into the finger space beside its words: as
+  // far as RING_PAD_X where there is room, half the space where the next word
+  // is ringed too, and never as far as the next word or the drawing's edge.
+  const sw = Math.max(1, STROKE * pt) * 1.3;
+  const ringed = new Set();
+  for (const m of placed) {
+    if (!isRing(m.style)) continue;
+    for (const p of m.pieces) for (let k = p.pos1; k <= p.pos2; k += 1) ringed.add(`${p.line}:${k}`);
+  }
+  for (const m of placed) {
+    if (!isRing(m.style)) continue;
+    for (const p of m.pieces) {
+      const line = lines[p.line];
+      const before = line.words[p.pos1 - 1];
+      const after = line.words[p.pos2 + 1];
+      const reach = (space, shared) => Math.max(0, Math.min(RING_PAD_X * pt, (shared ? space / 2 : space - RING_CLEAR * pt) - sw / 2));
+      const padL = before
+        ? reach(p.fx1 - (before.x + before.w + textX), ringed.has(`${p.line}:${p.pos1 - 1}`))
+        : Math.max(0, Math.min(RING_PAD_X * pt, p.fx1 - sw / 2));
+      const padR = after
+        ? reach(after.x + textX - p.fx2, ringed.has(`${p.line}:${p.pos2 + 1}`))
+        : Math.max(0, Math.min(RING_PAD_X * pt, usedW - p.fx2 - sw / 2));
+      p.ring = {
+        x1: p.fx1 - padL,
+        x2: p.fx2 + padR,
+        top: line.baseline - (INK_TOP + RING_PAD_Y) * pt,
+        bottom: line.baseline + (INK_BOTTOM + RING_PAD_Y) * pt,
+      };
+    }
+  }
+  // Where a mark's top and bottom are, for an arrow or a note's line to leave from.
+  const markTop = (m, piece) => (piece.ring ? piece.ring.top - sw / 2 : lines[piece.line].top - (m.style === 'highlight' ? HIGHLIGHT_REACH * pt : 0));
+  const markBottom = (m, piece) => (piece.ring ? piece.ring.bottom + sw / 2 : lines[piece.line].top + TEXT_BOX * pt + (m.style === 'highlight' ? HIGHLIGHT_REACH * pt : 0));
 
   // A route takes the next free track in a gap; tracks spread through the gap
   // so two routes in one gap never share a line.
@@ -460,28 +605,25 @@ function layoutAt(n, profile, pt) {
     const pb = b.pieces[0];
     const ax = (pa.x1 + pa.x2) / 2;
     const bx = (pb.x1 + pb.x2) / 2;
-    const ring = (m) => (markDraws(m.style) === 'ring' ? RING_PAD_Y * pt : 0);
-    const topOf = (li, m) => lines[li].top - ring(m);
-    const bottomOf = (li, m) => lines[li].top + TEXT_BOX * pt + ring(m);
     let aY;
     let bY;
     let gA;
     let gB;
     if (pb.line > pa.line) {
       // Down the page: out of the bottom of the first, into the top of the second.
-      aY = bottomOf(pa.line, a);
+      aY = markBottom(a, pa);
       gA = lines[pa.line].gapBelow;
-      bY = topOf(pb.line, b);
+      bY = markTop(b, pb);
       gB = gapAbove(pb.line);
     } else if (pb.line < pa.line) {
-      aY = topOf(pa.line, a);
+      aY = markTop(a, pa);
       gA = gapAbove(pa.line);
-      bY = bottomOf(pb.line, b);
+      bY = markBottom(b, pb);
       gB = lines[pb.line].gapBelow;
     } else {
       // Along one line: under it, and up into the second word.
-      aY = bottomOf(pa.line, a);
-      bY = bottomOf(pb.line, b);
+      aY = markBottom(a, pa);
+      bY = markBottom(b, pb);
       gA = lines[pa.line].gapBelow;
       gB = gA;
     }
@@ -546,7 +688,7 @@ function layoutAt(n, profile, pt) {
     const p = note.mark.pieces[note.mark.pieces.length - 1];
     const line = lines[p.line];
     const mid = (p.x1 + p.x2) / 2;
-    const fromY = line.top + TEXT_BOX * pt + (markDraws(note.mark.style) === 'ring' ? RING_PAD_Y * pt : 0);
+    const fromY = markBottom(note.mark, p);
     const yT = trackY(line.gapBelow);
     const edge = note.side === 'right' ? textX + textW + 0.3 * pt : textX - lanesW - 0.3 * pt;
     const noteMid = note.top + note.h / 2;
@@ -564,7 +706,34 @@ function layoutAt(n, profile, pt) {
       `the passage needs ${(h / 72).toFixed(2)}in of height at the ${profile.minFontPt}pt readable size and the space is ${(profile.heightPt / 72).toFixed(2)}in. Give it more height, use less of the passage, or split it across two slides.`
     );
   }
-  return { pt, notePt, pitch, lines, textX, textW, usedW, stemLines, stemH, titleLines, placed, arrows, notes, brackets, countsX, h, routed };
+  return { pt, notePt, pitch, lines, textX, textW, usedW, stemLines, stemH, titleLines, placed, arrows, notes, brackets, pins, countsX, h, routed };
+}
+
+// The printed pieces of a run of words: a run can wrap, and each printed line
+// it touches gets its own piece. `x1`..`x2` is the words without the
+// punctuation at either end (where an underline or a highlight stops);
+// `fx1`..`fx2` is the words with it (what a ring goes round); `pos1`..`pos2`
+// is where they sit in their line.
+function piecesOf(hit, pt, bold, textX) {
+  const pieces = [];
+  for (const w of hit) {
+    const span = coreSpan(w, pt, bold);
+    const full = w.punct ? span : { x: w.x, w: w.w };
+    const last = pieces[pieces.length - 1];
+    if (last && last.line === w.line) {
+      last.x2 = span.x + span.w + textX;
+      last.fx2 = full.x + full.w + textX;
+      last.pos2 = w.pos;
+    } else {
+      pieces.push({ line: w.line, x1: span.x + textX, x2: span.x + span.w + textX, fx1: full.x + textX, fx2: full.x + full.w + textX, pos1: w.pos, pos2: w.pos });
+    }
+  }
+  return pieces;
+}
+
+// A ring is drawn round its words, clear of them; a highlight is laid over them.
+function isRing(style) {
+  return style === 'circle' || style === 'box';
 }
 
 // A note with no side goes in the margin nearer its words, so its leader is
@@ -587,14 +756,6 @@ function sideMarks(n, profile, pt) {
     const mid = (hit[0].x + hit[hit.length - 1].x + hit[hit.length - 1].w) / 2;
     return { ...m, side: mid < lineW / 2 ? 'left' : 'right' };
   });
-}
-
-// What a style draws: a ring round the words, a line under them, or a change
-// to the words themselves.
-function markDraws(style) {
-  if (style === 'circle' || style === 'box' || style === 'highlight') return 'ring';
-  if (style === 'colour') return 'words';
-  return 'line';
 }
 
 function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
@@ -679,14 +840,12 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
           up = !up;
         }
         over.push(`<path d="${d}" fill="none" stroke="${col}" stroke-width="${T.f2(sw * 1.1)}" stroke-linecap="round"/>`);
-      } else if (m.style === 'circle') {
-        const cx = (x1 + x2) / 2;
-        const cy = line.top + (TEXT_BOX * pt) / 2;
-        const rx = (x2 - x1) / 2 + RING_PAD_X * pt + 0.06 * pt;
-        const ry = (TEXT_BOX * pt) / 2 + RING_PAD_Y * pt;
-        over.push(`<ellipse cx="${T.f2(cx)}" cy="${T.f2(cy)}" rx="${T.f2(rx)}" ry="${T.f2(ry)}" fill="none" stroke="${col}" stroke-width="${T.f2(sw * 1.3)}"/>`);
-      } else if (m.style === 'box') {
-        over.push(`<rect x="${T.f2(x1 - RING_PAD_X * pt)}" y="${T.f2(line.top - RING_PAD_Y * pt * 0.5)}" width="${T.f2(x2 - x1 + 2 * RING_PAD_X * pt)}" height="${T.f2(TEXT_BOX * pt + RING_PAD_Y * pt)}" rx="${T.f2(0.1 * pt)}" fill="none" stroke="${col}" stroke-width="${T.f2(sw * 1.3)}"/>`);
+      } else if (p.ring) {
+        // A loop (`circle`) or a box: one shape, measured in the layout, that
+        // differs only in how round its corners are.
+        const r = p.ring;
+        const corner = Math.min((m.style === 'circle' ? LOOP_RADIUS : BOX_RADIUS) * pt, (r.x2 - r.x1) / 2, (r.bottom - r.top) / 2);
+        over.push(`<rect class="annotated-text-ring" x="${T.f2(r.x1)}" y="${T.f2(r.top)}" width="${T.f2(r.x2 - r.x1)}" height="${T.f2(r.bottom - r.top)}" rx="${T.f2(corner)}" fill="none" stroke="${col}" stroke-width="${T.f2(sw * 1.3)}"/>`);
       }
     }
   }
@@ -741,7 +900,14 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   }
 
   const h = L.h;
-  return { svg: T.svgDoc(L.usedW, h, [...under, ...words, ...over]), w: L.usedW, h, aspect: L.usedW / h, layout: L };
+  const out = { svg: T.svgDoc(L.usedW, h, [...under, ...words, ...over]), w: L.usedW, h, aspect: L.usedW / h, layout: L };
+  // Where each place a wall callout names is, as [x%, y%, r%] of the drawing:
+  // a step number's circle in the room left above its word.
+  if (L.pins.length) {
+    out.anchors = {};
+    for (const p of L.pins) out.anchors[p.part] = p.step ? [(p.x / L.usedW) * 100, (p.y / h) * 100, ((PIN_R * pt) / h) * 100] : [(p.x / L.usedW) * 100, (p.y / h) * 100];
+  }
+  return out;
 }
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {

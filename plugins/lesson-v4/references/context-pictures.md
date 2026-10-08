@@ -281,10 +281,28 @@ cannot say what the search returned, you have not made the choice yet.
   composition can leave a corner, a margin beside a card and a band under the
   content, and three relevant drawings can sit in those three places without any
   of them touching a word. Take each clear area on its own merits and stop when
-  the clear places run out, never when a count is reached. A drawing of
-  something the slide names goes in first, then one that belongs to the lesson
-  without being named there, and plain decoration takes the places still open.
-  That order decides which goes first, never whether plain decoration is seen.
+  no place is left that suits a drawing you have, never when a count is
+  reached. A drawing of something the slide names goes in first, then one that
+  belongs to the lesson without being named there, and plain decoration takes
+  the places round the outside that are still open. That order decides which
+  goes first, never whether plain decoration is seen.
+- What the drawing is decides how close it may come. A drawing of the lesson's
+  own subject may sit in among the teaching, because a child can tell why it is
+  there. A plain decoration in the same spot reads as part of the task (a
+  ladybird between the clocks a child is reading, 7 October 2026), so it keeps
+  to the outside of the slide, and a place in among the teaching with no lesson
+  drawing to fill it stays empty. The Slide Decorator's brief carries the
+  judgement in full.
+- No drawing goes on a figure itself: the empty middle of a chart, the inside
+  of a shape, a blank table cell. That is where the teaching happens, whatever
+  the drawing is of, and the check refuses it. Beside the figure is open.
+- No decoration is a pencil, a tick, a lightning bolt or a sheet of paper,
+  anywhere in the deck. Those are the signs children act on, and a decoration
+  that looks like one is a sign in the wrong place.
+- A run of slides that is one page clicked through (a question slide and its
+  answers slide, or a page answered a click at a time) carries the same drawings
+  in the same frames on every slide, so the answer is the only thing that
+  moves.
 - A lesson drawing may sit in the `decorations` array, in clear space, like any
   other framed drawing. It does not need a text item to carry it, and a
   photograph of the same thing on the slide does not rule it out: the orange
@@ -340,17 +358,21 @@ thing you do rather than a thing you claim: a single thought about the whole
 deck cannot be written in this shape, and the check reads the record before the
 deck is promoted.
 
-**A slide that took fewer drawings than it had places says so in `placesLeft`.**
+**A slide that took one drawing where three or more places were measured says
+so in `placesLeft`.**
 The render counts the separate clear places on each slide, up to six, and that
 count is in `slide-room.json` beside the one you read for question 1. Take one
 drawing where four places were measured and `placesLeft` gives the reason the
-other three stayed empty, in a sentence.
+other three stayed empty, in a sentence. A slide that took two or more owes no
+sentence: it first owed one for every place left over, and filling the place
+was easier than writing the sentence, which is how plain decorations came to be
+wedged between clock faces (7 October 2026).
 
 This is not a demand for a picture in every place. A place too small for a
-drawing to be told at that size, or one where a drawing would sit against a
-word or a helper, is a complete answer. "The subjects ran out" no longer is,
-because decoration needs no subject, and neither is the same sentence written
-onto every slide, which is one thought about the deck copied out. What it ends is
+drawing to be told at that size, one where a drawing would sit against a word
+or a helper, or one in among the teaching that the lesson had no drawing of its
+own for, is a complete answer. The same sentence written
+onto every slide is not, because that is one thought about the deck copied out. What it ends is
 stopping without noticing: every other check here polices a slide that refused,
 so a slide that accepted once and left five places empty passed unexamined, and
 that is where the layer was actually being emptied. Across twenty built lessons

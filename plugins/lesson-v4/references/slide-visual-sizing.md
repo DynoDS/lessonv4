@@ -68,9 +68,32 @@ question can still be named once the photograph lands, and the message then
 quotes the drawn size and the picture's pixel dimensions rather than the cell's.
 When a picture has to be the hero of its slide, spend the axis its subject runs
 along: a landscape photograph needs the floor multiplied by how many times wider
-than tall it is, a portrait one the same on height. A wide landscape cannot be a
-3″ hero in a cell narrower than 8″, and that is a template decision rather than
-a nudge.
+than tall it is. A wide landscape cannot be a 3″ hero in a cell narrower than 8″,
+and that is a template decision rather than a nudge.
+
+**A picture taller than it is wide goes beside the words, and is measured by how
+much picture there is.** A slide is a landscape page, so height is the one thing
+it cannot find more of. A tall picture in a band above or below the words is
+held by that band's height and sits small in the middle with bare slide either
+side; in a column beside the words it has the depth of the slide. The wide-picture
+layouts (`picture-top-cards`, `picture-with-statement`) are for pictures wider
+than tall. Because a tall picture can never be given more height than the slide
+has, the floor asks it for as much picture as a square of the floor's side
+rather than for the floor on its narrow side, and never lets it be narrower than
+the 1.6″ base: a body diagram 0.45 times as wide as tall passes as a lone
+picture at about 2.0″ by 4.5″.
+
+**When children have to find a part of a picture, show the part.** Passing the
+floor says the picture as a whole can be seen. It does not say a thin tube, a
+date on a coin or one face in a crowd can. An `image` can name a rectangle of
+its own file with `detail` and is then drawn as that part alone, in the same
+room (`templates.md`, the image helper). A Year 6 science slide asked children
+to find a red tube on a whole-body diagram of the blood vessels, where the tubes
+were hairlines at any size the slide could give; the teacher chose the chest
+alone for that slide and for the word card that names arteries and veins, and
+kept the whole body on the slide about oxygen reaching the toes, where seeing
+head to foot is the point (8 October 2026). So the question is what children do
+with the picture on this slide: see the whole thing, or find something in it.
 
 This is why four pictures belong in a 2 by 2 rather than a row, and why a picture
 grid squeezed between a statement bar above and a conclusion bar below is usually
@@ -102,10 +125,19 @@ crop and framing of the photograph itself.
 
 **A picture that is meant to be small says so.** `essential: false` marks a photo
 as supporting context rather than something children work from, and takes it out
-of this floor entirely, which is the right answer for a corner inset of the real
-setting. It is not the right answer for a picture a task depends on: marking a
-load-bearing photo non-essential to quiet the check leaves the lesson with a hole
-in it, because an unsourced non-essential picture is dropped silently.
+of this floor entirely. It is for two cases: a picture no task and no line of
+the script points at (a corner inset of the real setting), and a picture children
+have already worked from at full size on an earlier slide, brought back as a
+reminder. It is not a repair for a picture a task depends on. The mark removes
+the only check on whether a class can see that picture, and an unsourced
+non-essential picture is dropped silently, so the lesson is left with a hole in
+it. The slide-design check compares the deck with the lesson plan and refuses a
+deck in which a picture the plan calls essential is marked this way on every
+slide that draws it (`ESSENTIAL_PICTURE_ONLY_AS_BACKGROUND`; a vocabulary
+card's picture is left out of that count). When a picture
+children work from will not reach its floor, the repairs are a layout that suits
+its shape, a `detail` close-up of the part they need, or the beat split across
+two slides; when none of those can do it, report the picture as a fault.
 
 ---
 
@@ -129,13 +161,13 @@ The floors for the helpers that get crammed into rows most often:
 
 - `clock`: 2.0″ square, and it binds on both axes — 3 across = ~6″ wide zone (4 = ~8″, 6 = ~12″), *and* each stacked row needs ~2.0″ of height before its heading
 - `numberline`: 3.5″ wide, and **at most three stacked lines** - a fourth is refused by name, because each extra line comes out of the size of the numerals on all of them
-- `place-value-chart`: the digits are very tolerant — ~2.0″ wide with 4 columns is still readable — but the **headings** are what bind. A column name is one word with nowhere to break, so a column narrower than its own heading gets that heading shrunk to fit (the build does this rather than letting PowerPoint split "Thousands" mid-word and clip it). Full words need about 1.0″ of column to read from the back, so a four-column **Thousands / Hundreds / Tens / Ones** chart wants ~4.0″ of width, and **two** is the most a body zone holds side by side. Three want stacking, which also gives the counters the width a row denies them. Abbreviated headings (`Th H T O`) are back at the 2.0″ figure
+- `place-value-chart`: the **headings** are what bind, and width is the lever. Children find the right column by its heading, so on a slide a heading is never printed under 18pt, the same floor as the digits. The build chooses the spelling: the whole word (`Thousands`) where every heading fits its column at 18pt, otherwise the short name (`Th`) for all the columns together, whichever you wrote in `columns`. A heading is one line and is never shrunk below 18pt, so a column too narrow for even the short name is refused with `PLACE_VALUE_HEADINGS_TOO_SMALL`, and a taller zone will not move it. The widths that clear it, for a chart or a column sum in its own zone: three columns `H T O` 1.1″; four columns to `Th` 1.9″; five columns to `TTh` 3.3″; six columns to `HTh` 4.1″. Whole words want far more (about 6.3″ for a four-column sum), so expect short names whenever charts share a row. In practice a full-width row holds **three** charts of up to five columns, and **two** of six: three six-column sums across one slide is the layout the build refuses (Year 5 long multiplication answers, 7 October 2026). When the sums will not all fit at those widths, put two across and the rest on the next slide, or stack them; the teacher prefers two slides to a smaller heading. Counters and write-in rows have higher width floors of their own, described in the playbook's section on dividing a My Turn.
 - `part-whole-model`: **the floor depends on the numbers in it, not on the helper.** 1.4″ square is right for single digits; a circle has only its inscribed width for one line of text, so four-digit labels need roughly 2.4″ × 2.5″ upright, or 2.4″ × 1.9″ lying on its side. The build measures the real labels and **refuses the zone by name** (`PART_WHOLE_MODEL_DOES_NOT_FIT`) with the size it needs, because a flat figure here let a Year 4 slide print "3,000" in a 0.39″ circle, where it wrapped to "3,00" over "0". A wide, shallow band is the shape that causes this: an upright model cuts its circles from the HEIGHT, so eight inches of width buys nothing. Lay it on its side (`"orientation": "horizontal"`) or give it more of the stack
 - `pyramid`: 2.0″ square if empty, 2.8″ square if cells carry text
-- `table`: 5.5″ wide for sentence-length cells, 3.0″ for digit-only cells, **and 0.74″ of height for the header band plus 0.2″ for every row**, so a two-row table needs a 1.15″ zone, a four-row table 1.55″, before any cell wraps onto a second line. A row shorter than that cannot show even `(1)` at a size a child can read, and the build refuses the zone by name rather than printing it
+- `table`: 5.5″ wide for sentence-length cells, 3.0″ for digit-only cells, **and 0.74″ of height for the header band plus 0.38″ for every row**, so a one-row table needs a 1.12″ zone, a two-row table 1.50″, a four-row table 2.26″, before any cell wraps onto a second line. The rows share one height, so a cell that wraps makes every row taller. On a white card that is the whole cost, because the table's margin is the card's. Inside an `sc-panel` the panel's heading and edges take 0.85″ first, so a one-row criteria table needs about 2.0″ of the stack. A row shorter than 0.38″ cannot show even `(1)` at the 20pt a projected table is read at, and the build refuses the zone by name rather than printing it
 - `money` single coin (focal): 1.0″ square, no upper cap when alone
 - `money` mixed strip: 6.0″ wide for a typical coin set
-- a photograph or sourced picture children work FROM: 1.6″ on the cell's **short** side as the base, because that is all a picture of unknown shape is guaranteed (see "A picture's shape is not yours to choose" below), and the floor climbs with how few such pictures share the slide, because one picture alone on a slide is the thing children are looking at while they work. **Alone on the slide: 3.0″. One of a pair: 2.2″. One of three or more: 1.6″.** A single classroom photograph a task said to "look closely" at once shipped at 2″ beside an empty table and a 5″ square of blank slide, and a flat 1.6″ floor passed it. The build names a required picture that falls below its tier and says which tier it is in, and the slide-design check refuses to promote a candidate that carries one (`PICTURE_BELOW_READABLE_FLOOR`), because a warning was read past once and a two-inch photograph reached a class. An `essential: false` picture is out of the check and out of the count, and so is a class character portrait (one of the boys, girls or Bailey from the engine's own drawings), because children read what the character says, not the face; a picture in a vocabulary card or a template's `supports` row is supporting by definition and keeps the 1.6″ base
+- a photograph or sourced picture children work FROM: 1.6″ on the cell's **short** side as the base, because that is all a picture of unknown shape is guaranteed (see "A picture's shape is not yours to choose" below), and the floor climbs with how few such pictures share the slide, because one picture alone on a slide is the thing children are looking at while they work. **Alone on the slide: 3.0″. One of a pair: 2.2″. One of three or more: 1.6″.** A picture taller than it is wide is held to as much picture as a square of that side instead, and to the 1.6″ base on its narrow side (see "A picture's shape is not yours to choose" above); a picture drawn with `detail` is measured as the part shown. A single classroom photograph a task said to "look closely" at once shipped at 2″ beside an empty table and a 5″ square of blank slide, and a flat 1.6″ floor passed it. The build names a required picture that falls below its tier and says which tier it is in, and the slide-design check refuses to promote a candidate that carries one (`PICTURE_BELOW_READABLE_FLOOR`), because a warning was read past once and a two-inch photograph reached a class. An `essential: false` picture is out of the check and out of the count, and so is a class character portrait (one of the boys, girls or Bailey from the engine's own drawings), because children read what the character says, not the face; a picture in a vocabulary card or a template's `supports` row is supporting by definition and keeps the 1.6″ base
 
 ---
 

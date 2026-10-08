@@ -400,7 +400,12 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             line for line in sizing.splitlines() if line.startswith("- `table`:")
         )
         self.assertIn("0.74", table_line)
-        self.assertIn("0.2", table_line)
+        # The row height the engine enforces (builder/test/doc-claims.test.js
+        # holds the figure to the engine). This line read 0.2 for a month
+        # after the reading floor raised it to 0.38, and six stress-test
+        # lessons of twenty sized a table zone from the old figure.
+        self.assertIn("0.38", table_line)
+        self.assertNotIn("0.2″", table_line)
         self.assertIn("row", table_line)
 
         helper = (

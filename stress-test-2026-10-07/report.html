@@ -1,0 +1,609 @@
+<title>Lesson V4 Stress Test</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:wght@600;800&display=swap">
+<style>
+/* Layout: one reading column; each finding is a row with a "how many lessons" meter on the left. */
+:root {
+  --bg: #f3f6f8; --panel: #ffffff; --fg: #17222b; --muted: #55646f; --rule: #d5dde3;
+  --accent: #1f5fa8; --high: #b3261e; --mid: #a15c00; --ok: #1d7044; --meter: #c9d6e2;
+  --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+  --body: "Atkinson Hyperlegible", Verdana, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121a20; --panel: #1a252d; --fg: #e6edf2; --muted: #9fb0bc; --rule: #2f3d48;
+  --accent: #7db4ef; --high: #ff8a80; --mid: #f0b35a; --ok: #6fd09a; --meter: #33444f; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121a20; --panel: #1a252d; --fg: #e6edf2; --muted: #9fb0bc; --rule: #2f3d48;
+  --accent: #7db4ef; --high: #ff8a80; --mid: #f0b35a; --ok: #6fd09a; --meter: #33444f; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 17px; line-height: 1.55; padding-inline: 16px; padding-block: 28px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
+h1 { font-family: var(--display); font-weight: 800; font-size: 2.1rem; line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 800; font-size: 1.45rem; margin: 0 0 4px; text-wrap: balance; }
+h3 { font-family: var(--display); font-weight: 600; font-size: 1.05rem; margin: 22px 0 6px; color: var(--accent); }
+p { margin: 0 0 8px; max-width: 65ch; }
+.lede { color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 6px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.fact { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; }
+.fact b { display: block; font-family: var(--display); font-size: 1.6rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.fact span { color: var(--muted); font-size: .9rem; }
+.rows { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+.row { display: grid; grid-template-columns: 104px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.row > div { min-width: 0; }
+.n { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.n b { display: block; font-family: var(--display); font-size: 1.15rem; color: var(--fg); }
+.meter { height: 6px; background: var(--meter); border-radius: 3px; margin-top: 5px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); }
+.row strong { display: block; }
+.row p { margin: 2px 0 0; color: var(--muted); font-size: .95rem; }
+.tag { display: inline-block; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; margin-right: 6px; }
+.tag.h { color: var(--high); } .tag.m { color: var(--mid); } .tag.g { color: var(--ok); }
+ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; max-width: 68ch; }
+.note { background: var(--panel); border-left: 4px solid var(--accent); padding: 12px 14px; border-radius: 0 6px 6px 0; }
+.note p:last-child { margin-bottom: 0; }
+nav { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .92rem; }
+a { color: var(--accent); } a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 480px) { .row { grid-template-columns: 1fr; gap: 4px; } .meter { max-width: 140px; } h1 { font-size: 1.7rem; } }
+
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 8px; font-size: .9rem; }
+.tools label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 700; color: var(--fg); }
+.tools input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--ok); cursor: pointer; }
+.tools button { font: inherit; font-weight: 700; color: var(--accent); background: var(--panel); border: 1px solid var(--rule); border-radius: 5px; padding: 4px 10px; cursor: pointer; }
+.tools button:hover { border-color: var(--accent); }
+.tools button:focus-visible, .tools input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tools .said { color: var(--ok); font-weight: 700; }
+.built { color: var(--ok); font-size: .88rem; font-weight: 700; margin-top: 6px; }
+pre.prompt { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 12px; margin: 8px 0 0; font-family: ui-monospace, Consolas, monospace; font-size: .78rem; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 340px; overflow: auto; color: var(--fg); }
+.ticked > div > strong, .ticked > div > p, li.ticked > .txt { opacity: .5; text-decoration: line-through; text-decoration-thickness: 1px; }
+#progress { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--bg); border-bottom: 1px solid var(--rule); padding: 8px 0; font-weight: 700; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+#progress .bar { flex: 1 1 160px; height: 8px; background: var(--meter); border-radius: 4px; overflow: hidden; }
+#progress .bar i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .2s; }
+#progress small { font-weight: 400; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { #progress .bar i { transition: none; } }
+</style>
+<main>
+<header>
+  <p class="lede">7 October 2026 · Lesson V4, before public release</p>
+  <h1>Twenty lessons, built and looked at page by page</h1>
+  <p class="lede" style="margin-top:10px">Mechanical, layout and usability faults only. Nothing here is about the teaching. Nothing is fixed until you say so, apart from the ten changes listed near the end.</p>
+  <p class="lede">Each finding has a prompt to copy into a new session, and a tick that saves itself.</p>
+  <nav>
+    <a href="#top">The big picture</a><a href="#sheets">Worksheets</a><a href="#slides">Slides</a><a href="#pictures">Pictures</a><a href="#wall">Wall</a><a href="#printed">Printed activities</a><a href="#drawings">Missing drawings</a><a href="#loops">What kept being redone</a><a href="#changed">Already changed</a><a href="#different">What I did differently</a>
+  </nav>
+</header>
+<div id="progress"><span id="pcount">0 done</span><div class="bar"><i id="pbar"></i></div><small id="psave">Ticks save as you go</small></div>
+
+<section id="top">
+  <h2>The big picture</h2>
+  <div class="facts">
+    <div class="fact"><b>20</b><span>lessons run, Year 1 to Year 6, nine subjects</span></div>
+    <div class="fact"><b>19 of 20</b><span>design reviews passed first time</span></div>
+    <div class="fact"><b>12</b><span>lessons where the worksheet was refused for not fitting</span></div>
+    <div class="fact"><b>10</b><span>lessons that lost at least one picture</span></div>
+    <div class="fact"><b>0</b><span>pages with text clipped by the page edge</span></div>
+  </div>
+  <p style="margin-top:12px"><strong>The packs build.</strong> Every lesson produced slides, sheets, answers and a wall or a stated reason for none. Nothing crashed in a way a teacher would see.</p>
+  <p><strong>The faults repeat.</strong> Most of what the checks found is the same dozen things showing up in lesson after lesson. Fix those and most of the list goes with them.</p>
+  <p><strong>Three causes sit behind most of it.</strong></p>
+  <ul>
+    <li><strong>The sizes the designers are told are wrong.</strong> They plan a sheet with one set of measurements and the page is built with another. That is where the refusals, the cut content and the cramped boxes come from.</li>
+    <li><strong>A lost picture is not followed through.</strong> The picture goes, but the script, the card and the task that pointed at it stay.</li>
+    <li><strong>Things only scale down.</strong> A figure shrinks to fit a tight page but does not grow to use an empty one.</li>
+  </ul>
+</section>
+
+<section id="sheets">
+  <h2>Worksheets</h2>
+  <p class="lede">The trim strips (foot of a portrait sheet, right of a landscape one) are by your ruling and are not counted anywhere below.</p>
+  <div class="rows">
+    <div class="row"><div class="n"><b>12 of 20</b>lessons<div class="meter"><i style="width:60%"></i></div></div><div><strong><span class="tag h">Root cause</span>The sheet is refused for not fitting, then cut to fit</strong><p>Up to five tries on one lesson. Content was dropped to pass: a photo and a practice go (fronted adverbials), a question part (subtraction), the grouping boxes (rocks). The Year 2 clocks sheet could not be built at all until the lesson itself was changed.</p></div></div>
+    <div class="row"><div class="n"><b>8 of 20</b>lessons<div class="meter"><i style="width:40%"></i></div></div><div><strong><span class="tag h">Root cause</span>The measurements behind that are wrong in six different ways</strong><p>The designer's notes say a portrait page holds 225mm and it holds 239mm (met 5 times). The measuring tool gave a question as 34mm that prints at 59mm, and a shape as 43mm that prints at 80mm. A 10mm gap beside each numbered part is not counted. Sum rows are measured 3.5mm too short. A word bank is priced at 42mm and prints at 29mm. Card borders are left out.</p></div></div>
+    <div class="row"><div class="n"><b>7 of 20</b>lessons<div class="meter"><i style="width:35%"></i></div></div><div><strong><span class="tag h">High</span>Answer green on a pupil sheet</strong><p>Word bank chips print in the answer sheet's green on seven lessons. On the subtraction Greater Depth sheet the given digits in the answer row are green, so the sums look already answered. Ten-frame boxes are green on sheets and blue on slides.</p></div></div>
+    <div class="row"><div class="n"><b>5 of 20</b>lessons<div class="meter"><i style="width:25%"></i></div></div><div><strong><span class="tag m">Medium</span>Pages facing different ways in one PDF</strong><p>For example Below landscape, Expected portrait, Greater Depth landscape. One lesson's designer was warned and matched them; four shipped mixed.</p></div></div>
+    <div class="row"><div class="n"><b>7 of 20</b>lessons<div class="meter"><i style="width:35%"></i></div></div><div><strong><span class="tag h">High</span>Writing room too small while the page has spare room</strong><p>Year 1 lines for writing "leaves" on a plant photo are 11 to 24mm long, and two start on top of the photo, beside an unused 45 x 80mm space. Year 1 missing-number boxes 12mm square with 25 to 36mm spare. Year 2 tick boxes 4.2mm square with 52mm spare. "quarter ___ ___" gives two 11mm blanks. Year 3 table cells 33 x 12mm for two describing words beside an empty 80 x 85mm block. Fraction answer boxes 8.7mm wide. A Below writing frame 81mm wide beside a blank area the same size.</p></div></div>
+    <div class="row"><div class="n"><b>4 of 20</b>lessons<div class="meter"><i style="width:20%"></i></div></div><div><strong><span class="tag h">High</span>A figure children draw on is drawn small</strong><p>The bar chart to draw bars on is 57mm tall (4.6mm a unit) with the bottom third of the page empty; the same chart on the class-set sheet is 137mm and right. Coordinate grid 102mm with 35mm spare. L-shape 47 x 42mm with 52mm spare. Clocks 43.7mm.</p></div></div>
+    <div class="row"><div class="n"><b>5 of 20</b>lessons<div class="meter"><i style="width:25%"></i></div></div><div><strong><span class="tag m">Medium</span>The same thing drawn differently on the three levels</strong><p>"A child says" as a plain line, a flat box, and a stick figure with a bubble. The same extended question with 10 boxed lines on one level and 6 unboxed on another. The same conclusion with lines 18.7mm, 7.8mm and 8.2mm apart. The question in black on Below and blue on the others.</p></div></div>
+    <div class="row"><div class="n"><b>5 of 20</b>lessons<div class="meter"><i style="width:25%"></i></div></div><div><strong><span class="tag m">Medium</span>Answer lines at uneven spacing inside one pack</strong><p>From 6.9mm to 19mm for the same kind of answer. One prompt (persuasive writing) has no answer space at all. A Greater Depth river sheet shows the pencil but has no box to draw in.</p></div></div>
+    <div class="row"><div class="n"><b>4 of 20</b>lessons<div class="meter"><i style="width:20%"></i></div></div><div><strong><span class="tag m">Medium</span>The tick-or-cross box only appears in one kind of question</strong><p>And that kind prints its question above the child's claim, so "Is she correct?" comes before her words. Designers added the words "tick or cross" to the question just to get the box.</p></div></div>
+    <div class="row"><div class="n"><b>3 of 20</b>lessons<div class="meter"><i style="width:15%"></i></div></div><div><strong><span class="tag m">Medium</span>The narrow sheet strands words</strong><p>"...the owl / swooped down." three times on one sheet. The same lines fit on the full-width Expected sheet.</p></div></div>
+    <div class="row"><div class="n"><b>4 of 20</b>lessons<div class="meter"><i style="width:20%"></i></div></div><div><strong><span class="tag m">Low</span>Answer sheet: one answer bold, the rest not</strong><p>Also a number sentence split across two lines.</p></div></div>
+  </div>
+  <h3>One-offs on worksheets</h3>
+  <ul>
+    <li>Bar chart grid lines are pale grey hairlines and only run across. They may vanish on a photocopier. You asked for squared axes.</li>
+    <li>Two typefaces on one page wherever a tally chart sits beside a bar chart, with the two titles at different sizes and heights.</li>
+    <li>Fractions are stacked in sums and flat with a slash in sentences, on the same page.</li>
+    <li>The comma sentences children write into are the smallest text on the sheet, centred, up to 62mm from their question number.</li>
+    <li>The carry row under a long multiplication grid is near-white and 5.8mm tall.</li>
+    <li>Two shapes both labelled 12 cm drawn at 59mm and 49mm, where children compare areas.</li>
+    <li>Slips print two headings for one thing: "Words you can use:" then "Word bank".</li>
+    <li>A picture word bank was refused as "missing", so a second text word bank was added that nobody asked for.</li>
+    <li>A small grey note under a table at about 7pt that children need to read.</li>
+    <li>Several helper gaps: no bold word inside a sentence, no second line in a table heading, no line across a drawing box, no picture in a word bank chip, writing lines stop at six.</li>
+  </ul>
+</section>
+
+<section id="slides">
+  <h2>Slides</h2>
+  <div class="rows">
+    <div class="row"><div class="n"><b>8 of 20</b>lessons<div class="meter"><i style="width:40%"></i></div></div><div><strong><span class="tag h">Root cause</span>Two answer-slide rules contradict each other</strong><p>An exact answer must use the paired reveal. The paired reveal refuses any slide where a figure changes. So an answers slide cannot show the bars shaded or the chart filled, and the deck carries a false "no reveal mark" note (on 15 slides in one lesson). In fractions the answer bars stayed blank.</p></div></div>
+    <div class="row"><div class="n"><b>6 of 20</b>lessons<div class="meter"><i style="width:30%"></i></div></div><div><strong><span class="tag h">Root cause</span>Vocabulary card placement rules are too strict</strong><p>A card must sit straight before the first slide showing its word, with no allowance for a starter, and a two-word card ("whole and part") can never pass. Results: a card that gives away two starter answers, a word said aloud a slide before its card, and cream word cards beside the usual green ones where designers built round it.</p></div></div>
+    <div class="row"><div class="n"><b>6 of 20</b>lessons<div class="meter"><i style="width:30%"></i></div></div><div><strong><span class="tag h">Root cause</span>A table is refused for height it was given</strong><p>The layout hands away part of a table's share before drawing it. One designer spent all its tries on this and failed; the repair was a small nudge to four numbers. Elsewhere tables were turned into plain text or slides were split.</p></div></div>
+    <div class="row"><div class="n"><b>5 of 20</b>lessons<div class="meter"><i style="width:25%"></i></div></div><div><strong><span class="tag h">Bug</span>A numbered row of questions will not pair with its answers</strong><p>The documented way is refused with a message that names no difference. Designers typed the numbers in by hand.</p></div></div>
+    <div class="row"><div class="n"><b>6 of 20</b>lessons<div class="meter"><i style="width:30%"></i></div></div><div><strong><span class="tag h">High</span>Decorations inside a teaching figure or speech bubble</strong><p>A ladybird inside the empty bar chart where the teacher draws a bar. A cloud inside the L-shape. A crescent moon under a label on the Earth diagram. A present and a peacock inside speech bubbles. The decorator removed seven by eye on one deck after the placement check had allowed them.</p></div></div>
+    <div class="row"><div class="n"><b>4 of 20</b>lessons<div class="meter"><i style="width:20%"></i></div></div><div><strong><span class="tag m">Medium</span>Too many decorations</strong><p>From 20 on 17 slides up to 84 on 27 slides (five on one slide). Ten clock slides and five Diwali slides look cluttered. On step-by-step answer runs the drawings change on every click, so they move more than the one new digit.</p></div></div>
+    <div class="row"><div class="n"><b>5 of 20</b>lessons<div class="meter"><i style="width:25%"></i></div></div><div><strong><span class="tag m">Medium</span>The vocabulary card's side panel is mostly empty</strong><p>One example line in a panel the full height of the card: 85 to 90 percent blank grey.</p></div></div>
+    <div class="row"><div class="n"><b>3 of 20</b>lessons<div class="meter"><i style="width:15%"></i></div></div><div><strong><span class="tag m">Medium</span>A child's task on a Teach slide cannot be blue with a pencil</strong><p>It prints black with no sign.</p></div></div>
+    <div class="row"><div class="n"><b>3 of 20</b>lessons<div class="meter"><i style="width:15%"></i></div></div><div><strong><span class="tag h">High</span>Labels over a photo are too small</strong><p>About 11 to 14pt on the board, beside 18 to 32pt text. Letter size is tied to the picture's size, so three photos across make tiny letters. The labelled picture also shifts sideways from slide to slide when a label gets longer.</p></div></div>
+    <div class="row"><div class="n"><b>3 of 20</b>lessons<div class="meter"><i style="width:15%"></i></div></div><div><strong><span class="tag m">Medium</span>Marks on marked-up text cut the letters</strong><p>Ovals cut the first and last letters, underlines and brackets cross the tails of g and y, boxes land on the full stop, a highlight swallows the comma. Leader lines run under the next phrase so a note looks tied to the wrong words.</p></div></div>
+    <div class="row"><div class="n"><b>3 of 20</b>lessons<div class="meter"><i style="width:15%"></i></div></div><div><strong><span class="tag m">Medium</span>Chart headings and titles shrink below the floor</strong><p>Place value headings at 11 to 14pt. Titles auto-shrunk to 20 and 24pt against 28pt elsewhere. The same table at 21pt and 23pt on one slide.</p></div></div>
+    <div class="row"><div class="n"><b>2 of 20</b>lessons<div class="meter"><i style="width:10%"></i></div></div><div><strong><span class="tag m">Medium</span>A tall narrow picture can never be drawn big enough</strong><p>The designer had to mark the lesson's main body diagram "not essential" to get it on the slide at all. It printed at about 11 percent of the slide and children are asked to find a red tube on it.</p></div></div>
+  </div>
+  <h3>Drawing faults seen on slides</h3>
+  <ul>
+    <li><strong>Clock:</strong> the long hand runs out through the number it points at, so 3 and 9 are struck through and 12 reads as 1|2. On every clock, on slides, sheets and wall.</li>
+    <li><strong>L-shape:</strong> the two inside side lengths are written inside the shape, where they read as the width of the leg. 16 slides, the wall and two sheets. No dashed split line, no numbered parts.</li>
+    <li><strong>Part-whole model, upright:</strong> the lines run through the word "whole".</li>
+    <li><strong>Coordinate grid:</strong> a point on the top or right edge has its letter cut off.</li>
+    <li><strong>Labelled photo:</strong> blank write-on lines drew across the photo and off its edge.</li>
+    <li><strong>Reveal mark:</strong> "A" then an answer prints as "Asource", the space is lost.</li>
+    <li><strong>Option cards:</strong> the cards holding an answer printed larger than the others, so size gave the answer away.</li>
+    <li><strong>Shape size:</strong> a shape changes size between a question slide and its answer slide.</li>
+  </ul>
+  <h3>Smaller slide points</h3>
+  <ul>
+    <li>The lightning bolt shows on one Your Turn layout and not the other. A sheet task shows the bolt, not the sheet sign.</li>
+    <li>Answer slides and model-answer slides have empty teacher notes because the design gives no script for them.</li>
+    <li>Teacher notes that say "the slide after next" are wrong once a unit is split across slides.</li>
+    <li>A launch's steps are meant to be a blue list and print with green number badges.</li>
+    <li>A portrait placed by its installed location (the known fault that breaks a deck after an upgrade).</li>
+  </ul>
+</section>
+
+<section id="pictures">
+  <h2>Pictures</h2>
+  <div class="note"><p><strong>Read this section with care.</strong> Twenty lessons searching at once used up the hourly Unsplash allowance by 16:53, and this app has no picture generator. A single normal run would do better. The faults below are the ones that would still happen on a normal day.</p></div>
+  <div class="rows">
+    <div class="row"><div class="n"><b>6 of 20</b>lessons<div class="meter"><i style="width:30%"></i></div></div><div><strong><span class="tag h">High</span>The script still points at a picture that never arrived</strong><p>"This photograph shows a place like it, at night." beside nothing. "Look at this sponge." "These five pictures" over four pictures and a white block. The repair step is not allowed to reword the script.</p></div></div>
+    <div class="row"><div class="n"><b>Every</b>lesson after 16:53<div class="meter"><i style="width:55%"></i></div></div><div><strong><span class="tag h">Robustness</span>When the allowance is spent, an easy picture is lost for good</strong><p>A sponge and a raincoat were marked final and unavailable. That triggers a lesson rework and a second review, where waiting or trying again at the end would have found them. Two picture-heavy lessons inside an hour could do this on an ordinary day.</p></div></div>
+    <div class="row"><div class="n"><b>3 of 20</b>lessons<div class="meter"><i style="width:15%"></i></div></div><div><strong><span class="tag m">Gap</span>After a lost-picture rework, later steps use the old lesson</strong><p>The easier and harder sheets would have been silently dropped on one lesson. On two others a correct sheet was refused because the record still described the old one.</p></div></div>
+    <div class="row"><div class="n"><b>1</b>lesson<div class="meter"><i style="width:5%"></i></div></div><div><strong><span class="tag h">Bug</span>Two different requests were filled with the same photo</strong><p>The slide for "a river you have not seen" showed the estuary just taught. Nothing compares a new picture with those the lesson already has.</p></div></div>
+    <div class="row"><div class="n"><b>4 of 20</b>lessons<div class="meter"><i style="width:20%"></i></div></div><div><strong><span class="tag m">Medium</span>Pictures that are wrong for a classroom though they passed</strong><p>Both "wind" photos are the American flag. "London houses in 1666" is a modern York street with shop signs. The slate is a museum shot with a handwritten label and a scale bar. An archive stamp shows on a river photo, 50mm wide on the wall. "Abdi" is a child in a pink heart T-shirt with long hair. A set of five rocks clashes in style and size.</p></div></div>
+    <div class="row"><div class="n"><b>4</b>workers<div class="meter"><i style="width:20%"></i></div></div><div><strong><span class="tag m">Friction</span>Workers cannot open a large photo to look at it</strong><p>One reworked a whole lesson round a geranium photo without being able to see it. Others made small copies first.</p></div></div>
+  </div>
+  <h3>Genuine misses (every source working)</h3>
+  <ul>
+    <li>Very specific requests do not exist as stock photos: a marigold lifted out with its roots showing, a tulip growing in soil, Rama and Sita welcomed home with lamps, a firefighter spraying a hose beside a modern engine.</li>
+    <li>The finder was right to refuse near misses, including a painting with a bare-breasted figure and one where the wrong character held the bow.</li>
+    <li>Best result with the allowance working: 7 of 8 (Benin lesson). Worst: 5 of 13 (plants, Year 1), 10 of 12 after the lesson was reworked round what arrived.</li>
+    <li>The Wikimedia search only fetches the top three results, so a better lower-ranked picture is never seen (2 lessons).</li>
+  </ul>
+</section>
+
+<section id="wall">
+  <h2>Working wall</h2>
+  <div class="rows">
+    <div class="row"><div class="n"><b>5 of 20</b>lessons<div class="meter"><i style="width:25%"></i></div></div><div><strong><span class="tag m">Medium</span>The wall's text limits are shorter than the lesson's own sentences</strong><p>A strip holds 52 characters and the lesson's sentences run 53 to 82. They were shortened or left off. Table cells hold 26 to 48 characters, so two lessons' named wall tables are not on the wall.</p></div></div>
+    <div class="row"><div class="n"><b>8 of 20</b>lessons<div class="meter"><i style="width:40%"></i></div></div><div><strong><span class="tag m">Medium</span>Pictures and figures small on an A3 poster with blank bands</strong><p>A chart 180 x 121mm on a 420 x 297mm sheet. A grid 105mm wide with 78mm blank above. Photos 74 to 116mm wide. Labels on figures at 12 to 19pt beside 50pt body text. A third of one poster empty in three bands.</p></div></div>
+    <div class="row"><div class="n"><b>3 of 20</b>lessons<div class="meter"><i style="width:15%"></i></div></div><div><strong><span class="tag m">Medium</span>Step numbers cannot be pinned to marked text</strong><p>Placed by guesswork they sat on the words, so designers left the steps loose under the picture.</p></div></div>
+    <div class="row"><div class="n"><b>1</b>lesson<div class="meter"><i style="width:5%"></i></div></div><div><strong><span class="tag h">Bug</span>A fact sheet squeezes its photo into a square</strong><p>A wide photo was squashed and a tall statue stretched by about 40 percent. The designer dodged it; the fault is still there.</p></div></div>
+    <div class="row"><div class="n"><b>1</b>lesson<div class="meter"><i style="width:5%"></i></div></div><div><strong><span class="tag m">Bug</span>A second sheet of steps starts again at 1</strong><p>Six river features in order print as 1, 2, 3 then 1, 2, 3.</p></div></div>
+    <div class="row"><div class="n"><b>1</b>lesson<div class="meter"><i style="width:5%"></i></div></div><div><strong><span class="tag m">Check gap</span>The wall check said fine while the answer strip ran past its panel</strong><p>Caught only because the designer built a copy and looked.</p></div></div>
+  </div>
+  <ul style="margin-top:10px">
+    <li>Bar chart pointers on the wall run through the title or the scale numbers.</li>
+    <li>Two clocks in one row at different sizes (146mm and 113mm). The same statement at 44pt on one sheet and 76pt on its twin.</li>
+    <li>One lesson got no wall at all: its only candidate needed a picture that never arrived.</li>
+  </ul>
+</section>
+
+<section id="printed">
+  <h2>Printed activities and class sets</h2>
+  <div class="rows">
+    <div class="row"><div class="n"><b>5 of 20</b>lessons<div class="meter"><i style="width:25%"></i></div></div><div><strong><span class="tag h">High</span>A small figure on a mostly empty page, repeated for the class</strong><p>A plant photo to label taking 13 percent of the page, 32 pages. A ten frame 78 x 31mm on an A4 page with 150mm blank below, 16 identical pages, and boxes too small for a counter. A fraction wall with 103mm blank and nowhere to write. Four river photos on four separate sheets (64 pages) where one sheet would do. The pack ignores the size it is asked for.</p></div></div>
+    <div class="row"><div class="n"><b>3 of 20</b>lessons<div class="meter"><i style="width:15%"></i></div></div><div><strong><span class="tag h">High</span>Nowhere to write on the activity sheet</strong><p>Three sums with no boxes. Eight coordinates with no lines. No time under its own clock.</p></div></div>
+    <div class="row"><div class="n"><b>1</b>lesson<div class="meter"><i style="width:5%"></i></div></div><div><strong><span class="tag h">High</span>The model text to mark up is single spaced</strong><p>2.2mm between lines, so a box round a phrase hits the lines above and below. No margin setting exists. The slides show it at double spacing.</p></div></div>
+    <div class="row"><div class="n"><b>3 of 20</b>lessons<div class="meter"><i style="width:15%"></i></div></div><div><strong><span class="tag m">Medium</span>Card sheets do not line up</strong><p>Cards with a one-line caption sit 3mm lower than their neighbours. A number box covers the corner of a photo. Tick boxes as tall as their rows read as one ladder. A word column 125mm wide for words 59mm long.</p></div></div>
+    <div class="row"><div class="n"><b>3+</b>lessons<div class="meter"><i style="width:15%"></i></div></div><div><strong><span class="tag m">Medium</span>File names in one pack disagree</strong><p>"Number bonds to 10 - Worksheets.pdf" beside "Find number bonds to 10.pptx". The deck, the wall and the Activities folder take their own title, not the lesson's.</p></div></div>
+  </div>
+</section>
+
+<section id="drawings">
+  <h2>Drawings the plugin does not have</h2>
+  <p class="lede">Ten cases. Each one cost the lesson on slides, sheets and wall together.</p>
+  <ul>
+    <li><strong>Four-quadrant coordinate grid.</strong> The biggest loss in the test: five slides ask about points and shapes that are not there. A new drawing is built and waiting for your say-so to install.</li>
+    <li><strong>Long multiplication on the board and wall.</strong> Only worksheets have the grid, so the teacher writes both models by hand in an empty box.</li>
+    <li><strong>Exchange marks on column subtraction.</strong> No crossed-out digit or small 1, on board or wall.</li>
+    <li><strong>L-shape with a split line and numbered parts.</strong></li>
+    <li><strong>Fraction wall with a ruled line down it.</strong></li>
+    <li><strong>Squared bar chart axes.</strong></li>
+    <li><strong>Ten frame</strong> (exists under another name, not listed where designers look).</li>
+    <li><strong>A loop or cycle diagram.</strong></li>
+    <li><strong>A clock with only the long hand,</strong> and coloured hands without the digital time printed under them.</li>
+    <li><strong>A whole river from source to mouth</strong> (needs a generator, which this app lacks).</li>
+  </ul>
+</section>
+
+<section id="loops">
+  <h2>What kept being redone</h2>
+  <div class="rows">
+    <div class="row"><div class="n"><b>12 of 20</b><div class="meter"><i style="width:60%"></i></div></div><div><strong>Worksheet designer</strong><p>Refused for fit on 12 lessons, 1 to 5 tries each. Six lessons passed first time. This is the biggest time sink and it comes from the wrong measurements.</p></div></div>
+    <div class="row"><div class="n"><b>13 of 20</b><div class="meter"><i style="width:65%"></i></div></div><div><strong>Slide designer</strong><p>Refused at least once on 13 lessons. Most common reason: too much text for the space (up to 23 refusals on one deck). Then the table height fault, the reveal pair fault, and the word card rules. Four designers built throwaway test decks first to find the real sizes because the written sizes are wrong (a column layout "needs 2 to 4 inches" and needs 4.26).</p></div></div>
+    <div class="row"><div class="n"><b>5 times</b><div class="meter"><i style="width:25%"></i></div></div><div><strong>Adaptation designer</strong><p>Guessed how to write "these side by side" or "these stacked", was refused, and read the engine's own code to find out. Five lessons.</p></div></div>
+    <div class="row"><div class="n"><b>1 of 20</b><div class="meter"><i style="width:5%"></i></div></div><div><strong>Design reviewer</strong><p>Sent one lesson back (it did not fit its time). About eight others were approved with one or two small corrections. This step is working.</p></div></div>
+    <div class="row"><div class="n"><b>173</b>wordings<div class="meter"><i style="width:45%"></i></div></div><div><strong>Voice editor</strong><p>About 9 changes a lesson, from 3 to 19. Its second pass over the easier and harder sheets changed 7 of 79 and can only see the first line of each instruction. Twice its change did not reach the answer sheet, so the slide and the answers now word a point differently.</p></div></div>
+    <div class="row"><div class="n"><b>3 of 20</b><div class="meter"><i style="width:15%"></i></div></div><div><strong>Lesson designer</strong><p>Two of its checks misfire: one needs "two new words" without saying so, one read "on the whiteboard" in a teacher note as where children write. One lesson hit the limit of tries because of them. There is no subject guide for English.</p></div></div>
+  </div>
+  <h3>Run plumbing</h3>
+  <ul>
+    <li>Designers start the moment the wording is done, but a lost picture can come back minutes later and change the lesson under them.</li>
+    <li>A picture search sat idle for 55 minutes and nothing noticed.</li>
+    <li>Four leftover background jobs ran at full power for up to three hours after their workers had finished. This is what slowed your computer.</li>
+    <li>Workers share one scratch folder and can overwrite each other's files. A second picture top-up reuses the first one's folder names.</li>
+    <li>Two of the run's own instructions do not match its tools (a missing setting for the picture finder, and a check that fails unless given something its help calls optional).</li>
+    <li>The deck's fingerprint breaks if a file is saved a certain way (1.0 becomes 1), failing the picture check. Three lessons.</li>
+  </ul>
+</section>
+
+<section id="changed">
+  <h2>Already changed (ten things, yours to keep or throw away)</h2>
+  <p class="lede">All made before you said stop. None is saved to the release. The full set of checks has not been run on them yet.</p>
+  <ul>
+    <li><span class="tag g">Blocked a build</span>The check for "do we have this drawing" used the slide names for worksheet part-whole models and clocks, so it could never say yes.</li>
+    <li><span class="tag g">Blocked a build</span>The same check read "a circle, beside the clock" as a clock.</li>
+    <li><span class="tag g">Blocked a build</span>A board objective cut short at a bracket was refused.</li>
+    <li><span class="tag g">Blocked a build</span>The no-67 check read the insides of a photo as numbers and refused a finished sheet.</li>
+    <li><span class="tag g">Blocked a build</span>A card sort with photos made a file so large it never finished printing (card sets).</li>
+    <li><span class="tag g">Blocked a build</span>The same fault in every other printed piece that holds a photo.</li>
+    <li><span class="tag m">Not blocking</span>Wikimedia pictures were always saved small (960 wide); now 1920.</li>
+    <li><span class="tag m">Not blocking</span>The long multiplication grid had no room for a six-digit answer.</li>
+    <li><span class="tag m">Not blocking</span>Long labels on the answer sheet printed over the answers.</li>
+    <li><span class="tag m">Not blocking</span>Word-only card sheets ran the words out of the cards.</li>
+  </ul>
+</section>
+
+<section id="different">
+  <h2>What I did differently from a normal run</h2>
+  <ul>
+    <li><strong>No second review</strong> after three lost-picture reworks, to save usage after the limit was hit at 17:37.</li>
+    <li><strong>No wording pass on the easier and harder sheets</strong> for the later lessons (it had changed 7 of 79).</li>
+    <li><strong>The dot-placing step for labelled photos was not run.</strong> The slide designers placed dots by eye and the checks found every dot on the right feature.</li>
+    <li><strong>Pictures lost only to the spent allowance did not trigger a rework.</strong> Those lessons show holes a normal run would have filled.</li>
+    <li><strong>One pack that the plugin would have withheld was built anyway</strong> (Diwali printed cards) so it could be looked at.</li>
+    <li><strong>L-shapes were recorded as "we can draw this"</strong> to see what the existing drawing really produces.</li>
+    <li><strong>Nothing was written to your real lesson log.</strong> Everything is in the test folder's own log.</li>
+    <li><strong>One look-up by a reviewer sent your email address in a request to Wikimedia.</strong> The plugin's own picture fetchers do not. Told you at the time.</li>
+  </ul>
+  <div class="note" style="margin-top:12px"><p><strong>What this test cannot tell you.</strong> It ran in Claude Code only, so nothing here covers Codex. Picture results are worse than a real run. Twenty runs at once is harder on the machine than you would ever be.</p></div>
+</section>
+</main>
+<script>
+(function () {
+var R = String.raw;
+var ROOT = R`C:\Users\Daniel\Projects\lessonv4\stress-test-2026-10-07`;
+var PLUGIN = R`C:\Users\Daniel\Projects\lessonv4\plugins\lesson-v4`;
+var MEM = R`C:\Users\Daniel\.claude\projects\C--Users-Daniel-Projects-lessonv4\memory`;
+var LESSON = {
+  1: ["L01", "year-1-maths-number-bonds-to-10", "Year 1 maths, number bonds to 10"],
+  2: ["L02", "year-2-maths-tell-the-time-to-quarter-past-and-quarter-to", "Year 2 maths, telling the time"],
+  3: ["L03", "year-4-maths-equivalent-fractions", "Year 4 maths, equivalent fractions"],
+  4: ["L04", "year-5-maths-long-multiplication", "Year 5 maths, long multiplication"],
+  5: ["L05", "year-6-maths-translate-shapes-in-four-quadrants", "Year 6 maths, translating shapes in four quadrants"],
+  6: ["L06", "year-5-maths-perimeter-and-area-of-rectilinear-shapes", "Year 5 maths, perimeter and area of L-shapes"],
+  7: ["L07", "year-3-maths-bar-charts", "Year 3 maths, bar charts"],
+  8: ["L08", "year-2-english-expanded-noun-phrases", "Year 2 English, expanded noun phrases"],
+  9: ["L09", "year-4-english-fronted-adverbials", "Year 4 English, fronted adverbials"],
+  10: ["L10", "year-6-english-plan-a-balanced-argument", "Year 6 English, planning a balanced argument"],
+  11: ["L11", "year-1-science-parts-of-a-plant", "Year 1 science, parts of a plant"],
+  12: ["L12", "year-3-science-compare-and-group-rocks", "Year 3 science, rocks"],
+  13: ["L13", "year-5-science-day-and-night", "Year 5 science, day and night"],
+  14: ["L14", "year-6-science-the-circulatory-system", "Year 6 science, the circulatory system"],
+  15: ["L15", "year-2-history-the-great-fire-of-london", "Year 2 history, the Great Fire of London"],
+  16: ["L16", "year-5-history-athens-and-sparta", "Year 5 history"],
+  17: ["L17", "year-4-geography-features-of-a-river", "Year 4 geography, features of a river"],
+  18: ["L18", "year-3-re-rama-and-sita-and-diwali", "Year 3 RE, Rama and Sita and Diwali"],
+  19: ["L19", "year-6-pshe-staying-safe-online", "Year 6 PSHE, staying safe online"],
+  20: ["L20", "year-4-maths-column-subtraction-with-exchanging", "Year 4 maths, column subtraction with exchanging"]
+};
+var F = {
+WS: R`- worksheet-html\src\ : the worksheet engine. page.js (page size and the trim strips), layouts.js and composition.js (how pieces are placed), suggest.js (the measuring tool the designers use), settle-fit.js and tightness.js (fitting, and how full a page is), slips.js, tokens.js (colours and sizes), helpers\ (one file per family of question or drawing).
+- worksheet-html\test\ : its tests.
+- agents\worksheet-designer.md and agents\adaptation-designer.md : what the two designers are told.
+- references\worksheet-helpers.md, references\worksheet-helpers\, references\worksheet-compositions.md, references\worksheet-visual-profile.md.`,
+SL: R`- builder\src\ : the slide engine. templates\ (slide layouts), content\ (one file per kind of block), layout.js and layout-preflight.js, text-fit.js and autofit.js, validate.js.
+- builder\scripts\check-slide-design.js : the slide check that refuses a draft.
+- builder\test\ : its tests.
+- agents\slide-designer.md and agents\slide-designer-focused-repair.md : what the slide designer is told.
+- references\templates.md, references\slide-composition-playbook.md, references\slide-visual-sizing.md.`,
+DEC: R`- builder\src\decorations.js and shared\decorations.js : how slide drawings are placed.
+- scripts\check-optional-pictures.py and scripts\measure-slide-room.py : the placement check and the room it measures.
+- agents\slide-decorator.md : what the decorator is told.`,
+PIC: R`- scripts\unsplash_fetch.py, wikimedia_fetch.py, openverse_fetch.py, web_fetch.py : the picture sources.
+- scripts\compile-picture-assignments.py, image-scout-attempts.py, validate-image-scout.py, finalize-picture-assignment.py, publish-picture.py, photo-contract.py : the picture stage.
+- agents\image-scout.md, references\image-scout-search.md, references\image-scout-recovery-repair.md.
+- skills\ (the make-lesson run instructions) and scripts\make-lesson-runtime.py.`,
+WALL: R`- working-wall-html\src\ : the wall engine (layout.js, figure-size.js, render-*.js, note-callouts.js, visuals.js).
+- working-wall-html\ tests, and scripts\validate-working-wall-evidence.py.
+- agents\working-wall-designer.md, references\working-wall-card-contracts.md, references\working-wall-preferences.md, references\working-wall-visual-language.md.`,
+STK: R`- stick-in-sheets-html\src\ : the printed activity engine (layout-rules.js, render-piece-html.js, render-activity-page.js, render-card-set.js, render-source-text.js, visual-registry.js).
+- stick-in-sheets-html\test\ : its tests.
+- agents\stick-in-sheets-designer.md and references\stick-in-sheets-pedagogy.md.`,
+VIS: R`- shared\visuals\ : one shared drawing per picture, used on slides, sheets, wall and printed activities alike. Tests in shared\test\.
+- builder\scripts\check-parity.js and shared\visual-parity.js : the check that all four surfaces draw the same thing.
+- references\slide-representations.md and references\worksheet-helpers.md : where designers look a drawing up.`,
+RUN: R`- skills\ : the make-lesson run instructions the orchestrator follows.
+- scripts\make-lesson-runtime.py, worker-launch.py, run-fixed-resource.py : the run's own tools.`,
+HELP: R`- references\helper-authoring.md and references\helper-route.md : how a new drawing is added.
+- agents\helper-builder.md, scripts\install-pending-helper.py, scripts\check-helper-coverage.py.`
+};
+function mem() { return Array.prototype.slice.call(arguments).map(function (n) { return "- " + MEM + "\\" + n; }).join("\n"); }
+
+// l: ledger lines. L: lessons. f: plugin areas. x: extra places. m: his earlier rulings. q: questions for him. n: note.
+var P = {
+s1: { l: "75, 81, 102, 134, 166, 266, 312, 333, 336, 343, 351, 365, 483, 523", L: [10, 12, 20, 2, 9], f: ["WS"], m: mem("worksheet-designer-three-runs-2026-10-04.md", "worksheet-sizing-diagnosis-4-2-108.md"), n: R`Read C:\Users\Daniel\Projects\lessonv4\plans\2026-10-04-worksheet-one-shot-handover.md first: this is the same work as "worksheets right first time". The next finding in the report ("the measurements are wrong in six different ways") is very likely the cause of this one, so treat the two as one job.`, q: ["When a sheet truly cannot fit, what should give way first: a smaller picture, fewer questions, a second page, or slips instead of a sheet?"] },
+s2: { l: "38, 57, 94, 253, 82, 135, 167, 261, 275, 337, 354, 366, 96, 260", L: [9, 15, 6, 17, 12, 1], f: ["WS"], m: mem("worksheet-designer-three-runs-2026-10-04.md"), n: R`Six separate wrong numbers are listed. Check each one against the engine yourself. The aim is one source of truth for sizes that the designers' notes, the measuring tool and the real page all share, so they cannot drift apart again.`, q: [] },
+s3: { l: "105, 215, 284, 285, 296, 342, 397, 540", L: [20, 9, 1, 12, 8, 18, 11], f: ["WS"], x: R`- worksheet-html\src\tokens.js (colours) and the word bank and chart helpers in worksheet-html\src\helpers\.
+- shared\visuals\place-value-chart-svg.js and the column sum drawing (the 'answer' field is always painted green).`, m: mem("answer-sheet-mirrors-worksheet.md", "criteria-colour-and-half-slide.md"), q: ["What colour should a word bank be on a pupil sheet?", "On a missing-digit sum, should the digits that are given in the answer row be black like the other given digits?", "Is there anything on a pupil sheet that should ever be green?"] },
+s4: { l: "72, 138, 171, 295, 342, 403, 490", L: [12, 1, 15, 17, 4], f: ["WS"], q: ["Must all three levels always face the same way, or is a mix fine when one level truly needs the other direction?", "If they must match, which wins when they disagree?"] },
+s5: { l: "172, 293, 294, 402, 421, 338, 139, 474, 531, and the lesson 11 lines near the end of the log", L: [1, 15, 2, 12, 3, 16, 11], f: ["WS"], x: R`- worksheet-html\src\helpers\forms.js, tables.js, text.js and the labelled-photo helper.`, m: mem("worksheet-sizing-diagnosis-4-2-108.md", "worksheet-edge-and-trim-2026-10-06.md"), n: R`The common thread: a box or line keeps one fixed small size while the page has spare room. Look for why writing room does not grow into free space, and whether sizes know the year group.`, q: ["What is the smallest box you would accept for one number in Year 1 and 2, and in Key Stage 2?", "How long should a line be for one written word in Year 1?"] },
+s6: { l: "114, 313, 314, 392, 510, 426", L: [7, 5, 6, 2], f: ["WS"], x: R`- worksheet-html\src\helpers\visuals.js, scales-and-diagrams.js, at-printed-width.js and worksheet-html\src\sized-by-eye.js.
+- stick-in-sheets-html\src\ draws the same bar chart at 137mm, the right size: compare the two.`, m: mem("sheet-practises-what-the-board-taught.md", "worksheet-sizing-diagnosis-4-2-108.md"), q: ["When a child draws on a figure, should it take the spare room on the page before the questions do?"] },
+s7: { l: "59, 89, 214, 329, 533, 540", L: [9, 10, 16, 18], f: ["WS"], q: ["When a child's words are quoted on a sheet (\"Chidi says...\"), which look do you want on every level: a plain line, a box, or a figure with a speech bubble?", "Should the same question get the same writing room on all three levels unless the task itself differs?"] },
+s8: { l: "77, 78, 86, 216, 329, 398, 404, 474, 486", L: [10, 9, 8, 15, 3, 17], f: ["WS"], x: R`- worksheet-html\src\helpers\forms.js (written answers and writing frames).`, m: mem("question-separation-4-2-176.md"), q: ["What line spacing do you want for Key Stage 1 and for Key Stage 2?", "When a sheet shows the pencil (write on the sheet), should a question with no answer space be refused?"] },
+s9: { l: "71, 103, 137, 345", L: [4, 20, 12, 3], f: ["WS"], x: R`- the named-claim helper in worksheet-html\src\helpers\ (find it by its tick-or-cross box).`, q: ["Where should the question sit: after the child's claim (\"Emma says... Is she correct?\")?", "Should any 'is this right?' question get a tick-or-cross box, whatever its wording?"] },
+s10: { l: "88, 140, 213", L: [9, 12], f: ["WS"], m: mem("worksheet-edge-and-trim-2026-10-06.md"), q: ["When a narrow sheet strands words that fit at full width, would you rather the sheet went full width or the text got smaller?"] },
+s11: { l: "232, 289, 320, 512", L: [9, 7, 6, 20], x: R`- worksheet-html\src\answer-sheet.js (already has one uncommitted repair from the stress test: leave it in place).`, m: mem("answer-sheet-mirrors-worksheet.md"), q: [] },
+so1: { l: "8, 115, 302, 313", L: [7], x: R`- shared\visuals\bar-chart-svg.js and the print-darkening step in stick-in-sheets-html\src\.`, q: ["For a chart children draw bars on, do you want full squares (lines up and across) on every such chart?"] },
+so2: { l: "116, 315, 317", L: [7], x: R`- shared\visuals\tally-chart-svg.js and bar-chart-svg.js, and shared\fonts\.`, q: [] },
+so3: { l: "344, 473", L: [3], f: ["WS", "SL"], q: ["Should a fraction always be stacked wherever it appears, including inside a sentence?"] },
+so4: { l: "83, 87, 212", L: [9], f: ["WS"], x: R`- the marking-text helper in worksheet-html\src\helpers\text.js.`, q: [] },
+so5: { l: "199", L: [4], x: R`- worksheet-html\src\helpers\methods.js.`, m: mem("column-method-layout.md"), q: [] },
+so6: { l: "511", L: [6], x: R`- shared\visuals\polygon-svg.js and worksheet-html\src\helpers\geometry.js.`, q: [] },
+so7: { l: "418", L: [13], x: R`- worksheet-html\src\slips.js.`, q: [] },
+so8: { l: "524", L: [11], f: ["WS"], q: [] },
+so9: { l: "294, 342", L: [12, 1], f: ["WS"], q: [] },
+so10: { l: "84, 136, 484, 492, 525", L: [9, 12, 16, 18, 11], f: ["WS", "HELP"], n: R`These are five separate small gaps. Tell me which are cheap and which are not before building any.`, q: ["Which of these five would you actually use?"] },
+
+sl3: { l: "155, 157, 268, 270, 443, 446, 515, 516, 521", L: [18, 9, 10, 19], f: ["SL"], x: R`- builder\src\content\table.js, stack.js and row.js.
+- Lesson 18's slide-attempts\ folder holds the three refused drafts and the four-number repair that fixed it.`, q: [] },
+sl4: { l: "144, 145, 371, 375, 386", L: [4, 8, 5, 2], f: ["SL"], x: R`- builder\src\content\reveal-pair.js and numbered-questions.js, builder\src\templates\index.js (the wrapper that copies a row's items).
+- builder\test\reveal-pair.test.js, reveal-pair-names-the-difference.test.js, answer-shown-in-a-drawing.test.js.`, m: mem("stress-test-2026-10-07.md"), n: R`The answers-slide rules were repaired on 7 October (uncommitted). That repair left this fault open on purpose. Build on it, do not undo it.`, q: [] },
+sl5: { l: "316, 417, 502, 507, 512, 538, and the lesson 11 lines near the end of the log", L: [7, 13, 6, 18, 2, 11], f: ["DEC"], m: mem("slide-decorations-variety-rulings.md", "decorations-never-deleted.md", "release-4-2-312.md"), n: R`I ruled that decorations may sit on cards and are never deleted. So the question is where on a card is out of bounds, not whether cards are allowed.`, q: ["A drawing may sit on a card. May it sit inside a chart, a shape or a labelled photo?", "May it sit inside a speech bubble?", "How close to words or numbers is too close?"] },
+sl6: { l: "165, 181, 231, 286, 301, 311, 411, 423, 427, 530, 538", L: [2, 18, 20], f: ["DEC"], m: mem("slide-decorations-variety-rulings.md", "decorations-never-deleted.md"), q: ["Looking at lesson 2's clock slides and lesson 18's Diwali slides, how many drawings on one slide feels right to you?", "On a run of slides where one answer appears per click, should the drawings stay exactly where they were?"] },
+sl7: { l: "159, 198, 221, 373, 396, 459", L: [4, 9, 8, 14], f: ["SL"], x: R`- builder\src\content\vocab.js, builder\test\vocab-card.test.js, key-vocabulary-card-height.test.js, vocab-cards-take-everything.test.js.`, m: mem("vocab-cards-refuse-nothing.md", "vocab-card-placement-rulings-2026-10-07.md"), q: ["When a word card has only one short example line, what should fill the rest: a bigger picture, bigger words, or a smaller card?"] },
+sl8: { l: "146, 271, 436", L: [4, 10, 3], f: ["SL"], x: R`- builder\src\teach-layouts.js and builder\src\do-signs.js.`, m: mem("slide-signs-and-sheet-numbering-2026-10-05.md", "christingle-deck-three-rulings-2026-10-05.md"), q: ["When a teaching slide gives children a quick thing to do, should that line be blue with a pencil like any other task?"] },
+sl9: { l: "388, 389, 413, 414, 449, 487", L: [13, 17, 11], f: ["SL"], x: R`- builder\src\content\label-diagram.js, shared\visuals\label-diagram-svg.js, shared\test\label-diagram-labels.test.js.`, m: mem("label-diagram-stated-size-bug.md"), q: ["What is the smallest label on a photo you would accept on the board?"] },
+sl10: { l: "178, 222, 327, 381, 399, 465", L: [9, 10, 19, 8], x: R`- shared\visuals\annotated-text-svg.js and shared\test\annotated-text-svg.test.js (one drawing for slides, sheets, wall and printed copies).`, m: mem("annotated-text-and-model-text-wall.md"), q: [] },
+sl11: { l: "147, 206, 224, 287, 330, 460", L: [4, 20, 9, 10], f: ["SL"], x: R`- shared\visuals\place-value-chart-svg.js, builder\src\headers.js.`, q: ["When a heading like 'Ten thousands' will not fit, do you prefer the short form (TTh) or a second line?"] },
+sl12: { l: "346, 431, 458, 544", L: [14, 11], f: ["SL"], x: R`- builder\src\content\image.js and builder\src\verify-pictures.js (the size floor).`, q: ["When the lesson's main picture is tall and thin, should it get a slide to itself?"] },
+d1: { l: "422", L: [2], f: ["VIS"], x: R`- shared\visuals\clock-svg.js.`, q: [] },
+d2: { l: "129, 495, 504, 508", L: [6], f: ["VIS"], x: R`- shared\visuals\polygon-svg.js (the wall designer named the cause: 'outside' is worked out from the average of the corners, which is wrong for an L).`, q: [] },
+d3: { l: "236", L: [1], f: ["VIS"], x: R`- shared\visuals\part-whole-model-svg.js.`, q: [] },
+d4: { l: "376", L: [5], f: ["VIS"], x: R`- shared\visuals\coordinate-grid-svg.js.`, q: [] },
+d5: { l: "543, and the lesson 11 lines near the end of the log", L: [11], f: ["VIS"], x: R`- shared\visuals\label-diagram-svg.js and builder\src\content\label-diagram.js.`, m: mem("label-diagram-stated-size-bug.md"), q: [] },
+d6: { l: "448", L: [17], x: R`- builder\src\answer-text.js and builder\src\verify-markers.js, with their tests in builder\test\.`, q: [] },
+d7: { l: "156", L: [9], f: ["SL"], x: R`- builder\src\content\question-cards.js and builder\src\text-fit.js.`, q: [] },
+d8: { l: "511", L: [6], f: ["SL", "VIS"], q: [] },
+p1: { l: "148, 272", L: [4, 10], x: R`- builder\src\templates\maths-your-turn-sc.js, maths-your-turn.js and builder\src\do-signs.js; builder\test\answer-slide-signs.test.js.`, m: mem("slide-signs-and-sheet-numbering-2026-10-05.md", "books-or-sheet-symbol.md"), q: [] },
+p2: { l: "444, 496", L: [19, 6], x: R`- agents\lesson-designer.md and agents\slide-designer.md.`, m: mem("teaching-lives-on-slide-and-in-notes.md"), q: ["What do you want in the notes of an answers slide?"] },
+p3: { l: "258", L: [12], x: R`- agents\slide-designer.md.`, q: [] },
+p4: { l: "361", L: [15], x: R`- builder\src\content\steps.js and agents\slide-designer.md.`, m: mem("three-do-beats-and-the-launch.md", "criteria-colour-and-half-slide.md"), q: ["Should a launch's steps look different from success criteria, and if so how?"] },
+p5: { l: "432", L: [14], f: ["SL"], x: R`- references\slide-speech-and-characters.md.`, m: mem("lesson-json-bakes-plugin-version.md"), q: [] },
+
+pc1: { l: "307, 369, 395, 430, 442, 518, 520, 536", L: [12, 8, 14, 19, 18, 16], f: ["PIC"], x: R`- scripts\check-repair-scope.py (refuses any rewording of a teacher script) and agents\slide-designer-focused-repair.md.`, m: mem("designers-never-wait-for-pictures.md", "flagged-finding-delivers-resource.md"), q: ["When a picture is lost, who should be allowed to reword the sentence that points at it?", "Would you rather the slide said nothing about a picture, or told you to bring one?"] },
+pc2: { l: "52, 54, 65, 66, 162", L: [12, 8, 11], f: ["PIC"], m: mem("overnight-2026-10-03-run-log-fixes.md", "designers-never-wait-for-pictures.md", "picture-ladder-reaches-the-open-web.md"), n: R`I have said no to holding slides and sheets until pictures arrive. So the answer is not 'wait before designing'.`, q: ["When the photo allowance runs out mid-run, would you rather the run tried again at the very end, or finished without and told you?"] },
+pc3: { l: "282, 333, 335, 351", L: [15, 13, 2], f: ["RUN"], x: R`- scripts\check-helper-coverage.py and the picture contract files in each lesson folder (phase2-initial-photo-requirements.json against the later photo-requirements-w-*.json).`, q: [] },
+pc4: { l: "230", L: [17], f: ["PIC"], m: mem("y6-run-fixes-2026-10-02.md"), q: [] },
+pc5: { l: "123, 233, 339, 340, 358, 401, 442, 485", L: [15, 12, 17, 19], f: ["PIC"], q: ["Which of these would you have thrown out on sight: the American flags, the modern shop signs, the museum label on the rock, the archive stamp, the child who does not match the name?", "Should a set of pictures shown side by side have to match in style?"] },
+pc6: { l: "498, 514, 525, 547", L: [11], f: ["PIC"], x: R`- agents\ files for every worker that looks at a photo (image-scout, lesson-designer, adaptation-designer, worksheet-designer, working-wall-designer).`, q: [] },
+gm4: { l: "154, 346", L: [5, 14], x: R`- scripts\wikimedia_fetch.py (already has one uncommitted repair from the stress test: leave it in place).`, q: [] },
+
+w1: { l: "245, 300, 412, 455, 528", L: [20, 10, 2, 3, 16], f: ["WALL"], m: mem("working-wall-point-at-test.md", "working-wall-review-2026-09-12.md"), n: R`The limits exist so wall text can be read across the room. Do not just raise them.`, q: ["When the lesson's own sentence is too long for the wall, would you rather it was shortened, split over two lines, or the lesson told to write a shorter one in the first place?"] },
+w2: { l: "170, 209, 288, 319, 328, 393, 406, 410, 440, 460, 488, 509, 529", L: [7, 5, 15, 13, 6], f: ["WALL"], x: R`- working-wall-html\src\figure-size.js.`, m: mem("working-wall-picture-plus-steps.md", "working-wall-review-2026-09-12.md", "wall-digit-cards-2026-10-03.md"), q: ["On a wall sheet, should the picture always grow to fill the room it has?"] },
+w3: { l: "178, 300, 381", L: [9, 8, 10], f: ["WALL"], x: R`- shared\visuals\annotated-text-svg.js.`, m: mem("working-wall-picture-plus-steps.md", "annotated-text-and-model-text-wall.md"), q: [] },
+w4: { l: "527", L: [16], f: ["WALL"], q: [] },
+w5: { l: "478, 488", L: [17], f: ["WALL"], x: R`- working-wall-html\src\render-steps.js.`, m: mem("wall-step-by-step-sheet.md"), q: [] },
+w6: { l: "505", L: [6], f: ["WALL"], q: [] },
+wl1: { l: "308, 309", L: [7], f: ["WALL"], x: R`- working-wall-html\src\note-callouts.js and shared\visuals\bar-chart-svg.js.`, q: [] },
+wl2: { l: "425, 534", L: [2, 16], f: ["WALL"], q: [] },
+wl3: { l: "305", L: [12], f: ["WALL"], q: ["When the only thing worth putting on the wall needs a picture that never arrived, do you want a words-only sheet or no sheet?"] },
+
+pr1: { l: "249, 292, 303, 469, 470, 482, 489, and the lesson 11 lines near the end of the log", L: [1, 3, 17, 11, 7], f: ["STK"], m: mem("printed-activities-full-page.md", "practical-do-beats-gap.md"), q: ["For a small thing every child needs (a ten frame), do you want one big copy per page or several to a page to cut up?", "When an activity uses four photos, one sheet with all four or a sheet each?"] },
+pr2: { l: "393, 409, 425, 469, 470", L: [3, 5, 2], f: ["STK"], m: mem("printed-activities-full-page.md"), q: ["On a printed activity, should children write on it or in their books?"] },
+pr3: { l: "283, 326", L: [10], f: ["STK"], x: R`- stick-in-sheets-html\src\render-source-text.js. A new test file, stick-in-sheets-html\test\source-text-fits-the-page.test.js, is sitting uncommitted: check whether another session has already started on this.`, m: mem("annotated-text-and-model-text-wall.md"), q: ["For a text children mark up, how much space between lines and how wide a margin do you want?"] },
+pr4: { l: "217, 225, 405, 466, 537", L: [9, 15, 19, 18], f: ["STK"], x: R`- stick-in-sheets-html\src\render-card-set.js (already has uncommitted repairs from the stress test: leave them in place).`, q: [] },
+pr5: { l: "180, 280", L: [9, 20, 1], x: R`- shared\text\filename.js, scripts\run-fixed-resource.py, scripts\deliver_files.py.`, m: mem("sheet-shows-the-objective-and-plain-names.md", "drive-gets-resources-only.md"), q: ["Which name should every file in a pack carry: the short lesson name or the full objective?"] },
+
+m1: { l: "14, 27, 126, 174, 175, 176, 177, 378, 390, 391", L: [5], f: ["HELP", "VIS"], n: R`A four-quadrant grid is already built and waiting, not installed, at stress-test-2026-10-07\L05\working\year-6-maths-translate-shapes-in-four-quadrants\pending-helper\coordinate-grid . Look at what it draws, show me, and install it only on my yes. Its catalogue wording is pinned word for word in two test files, so the pins need updating on purpose.`, q: [] },
+m2: { l: "7, 164, 169, 195", L: [4], f: ["HELP", "VIS"], x: R`- worksheet-html\src\helpers\methods.js already draws the grid for sheets.`, m: mem("column-method-layout.md", "column-answers-step-by-step-loved.md", "visuals-drawn-separately-audit.md"), q: ["On the board, do you want the long multiplication built up one row per click, like the column sums?"] },
+m3: { l: "6, 245", L: [20], f: ["HELP", "VIS"], m: mem("column-method-layout.md", "column-answers-step-by-step-loved.md"), q: ["How do you write an exchange on the board: cross out the digit, write the new one above, small 1 beside the next column?"] },
+m4: { l: "129, 495, 506", L: [6], f: ["HELP", "VIS"], x: R`- shared\visuals\polygon-svg.js.`, q: [] },
+m5: { l: "101, 454", L: [3], f: ["HELP", "VIS"], x: R`- shared\visuals\fraction-wall-svg.js.`, q: [] },
+m6: { l: "8, 115, 313", L: [7], f: ["HELP", "VIS"], x: R`- shared\visuals\bar-chart-svg.js.`, q: [] },
+m7: { l: "17, 95, 249", L: [1], f: ["HELP", "VIS"], q: ["Is a ten frame its own thing in your lessons often enough to deserve its own name in the list?"] },
+m8: { l: "130", L: [14], f: ["HELP", "VIS"], x: R`- shared\visuals\process-chain-svg.js (the straight chain).`, q: [] },
+m9: { l: "80, 263", L: [2], f: ["HELP", "VIS"], x: R`- shared\visuals\clock-svg.js.`, q: [] },
+m10: { l: "37", L: [17], f: ["HELP", "VIS"], n: R`This one may not be a drawing the plugin should own. Tell me honestly whether a drawn river is worth building or whether a generated picture is the right answer.`, q: [] },
+
+lp1: { same: "s1" },
+lp2: { l: "155, 184, 187, 254, 268, 274, 368, 494", L: [10, 12, 9, 20], f: ["SL"], m: mem("less-is-more-means-pacy.md", "room-by-need-test-version.md", "slide-designer-context-test-2026-10-04.md"), n: R`Two things to separate: drafts refused for too much text, and written sizes in the references that do not match what the engine needs (a column layout 'needs 2 to 4 inches' and needs 4.26).`, q: [] },
+lp3: { l: "39, 50, 96, 253, 353", L: [9, 4, 3, 14, 1], f: ["WS"], x: R`- references\adaptive-adaptation.md and references\output-template.md (its title line carries an em dash, which I do not allow: ledger lines 60 and 68).`, q: [] },
+lp5: { l: "31, 35, 49, 56, 62, 64, 248", L: [9, 10, 19, 4], x: R`- agents\lesson-voice-editor.md and scripts\check-voice-edit.py (the view it works from, the lane check, and the step that carries a change to every copy).`, m: mem("voice-editor-too-light-2026-10-05.md", "lesson-voice-editor-release.md"), q: ["The second pass over the easier and harder sheets changed 7 of 79 instructions. Do you want it made to work properly, or dropped?"] },
+lp6: { l: "10, 11, 16, 90, 99, 100, 110, 118, 119, 120, 133, 265", L: [13, 12, 10, 8], x: R`- scripts\beside_teaching.py, validate-lesson-design.py, do-beats-in-a-row.py, lesson-design-scaffold.py.
+- agents\lesson-designer.md, references\lesson-design-scaffold.md, and the references\subject-*.md files (there is none for English).`, m: mem("do-beats-effective-not-quick.md", "three-do-beats-and-the-launch.md"), q: ["Do you want an English subject guide written, and if so what should it say a good English lesson looks like?"] },
+rp1: { l: "42, 43, 113", L: [15, 17], f: ["RUN"], m: mem("designers-never-wait-for-pictures.md"), n: R`I have already said no to holding slides and sheets until pictures arrive. Look for a repair that keeps that.`, q: [] },
+rp2: { l: "438", L: [11], f: ["RUN", "PIC"], q: [] },
+rp3: { l: "362, 493", L: [], f: ["RUN"], x: R`- every agents\ file that tells a worker how to run a script.`, m: mem("python-found-not-named.md"), q: [] },
+rp4: { l: "367, 462, 499", L: [18, 11], f: ["RUN", "PIC"], q: [] },
+rp5: { l: "19, 21, 20, 477", L: [9, 18], f: ["PIC"], q: [] },
+rp6: { l: "322, 383, 503", L: [8, 12, 6], f: ["DEC"], q: [] }
+};
+var BUILT = {
+  sl1: "Investigated and built on 7 October. Not yet saved to the release.",
+  sl2: "Investigated and built on 7 October. Not yet saved to the release."
+};
+var ORDER = {
+  sheets: ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "so1", "so2", "so3", "so4", "so5", "so6", "so7", "so8", "so9", "so10"],
+  slides: ["sl1", "sl2", "sl3", "sl4", "sl5", "sl6", "sl7", "sl8", "sl9", "sl10", "sl11", "sl12", "d1", "d2", "d3", "d4", "d5", "d6", "d7", "d8", "p1", "p2", "p3", "p4", "p5"],
+  pictures: ["pc1", "pc2", "pc3", "pc4", "pc5", "pc6", null, null, null, "gm4"],
+  wall: ["w1", "w2", "w3", "w4", "w5", "w6", "wl1", "wl2", "wl3"],
+  printed: ["pr1", "pr2", "pr3", "pr4", "pr5"],
+  drawings: ["m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m10"],
+  loops: ["lp1", "lp2", "lp3", null, "lp5", "lp6", "rp1", "rp2", "rp3", "rp4", "rp5", "rp6"]
+};
+var SECTION = { sheets: "worksheets", slides: "slides", pictures: "pictures", wall: "the working wall", printed: "printed activities", drawings: "a drawing the plugin does not have", loops: "how the run itself behaves" };
+
+function clean(t) { return t.replace(/\s+/g, " ").trim(); }
+function faultOf(el) {
+  if (el.classList.contains("row")) {
+    var st = el.querySelector("strong").cloneNode(true);
+    var tag = st.querySelector(".tag"); if (tag) st.removeChild(tag);
+    var p = el.querySelector("p");
+    var n = el.querySelector(".n");
+    return { title: clean(st.textContent), body: p ? clean(p.textContent) : "", count: n ? clean(n.textContent.replace(/([a-z0-9+])(lessons?|workers|wordings)/i, "$1 $2")) : "" };
+  }
+  return { title: clean(el.querySelector(".txt").textContent), body: "", count: "" };
+}
+function build(key, sec, el) {
+  var d = P[key]; if (d.same) d = P[d.same];
+  var f = faultOf(el);
+  var out = [];
+  out.push("/improving-agents-and-skills");
+  out.push("");
+  out.push("I want you to investigate one fault in the Lesson V4 plugin, find its real cause and fix it.");
+  out.push("");
+  out.push("THE FAULT, AS A TEACHER SEES IT");
+  out.push("Area: " + SECTION[sec] + ".");
+  out.push(f.title + (f.body ? "\n" + f.body : ""));
+  if (f.count) out.push("How often: " + f.count + " in the test.");
+  out.push("");
+  out.push("This came out of a 20-lesson stress test on 7 October 2026. I want the general cause and a repair that holds across subjects and year groups, not a patch for the lessons that happened to show it.");
+  out.push("");
+  out.push("WHERE THE EVIDENCE IS");
+  out.push("The shared log of the test: " + ROOT + "\\ledger.md");
+  out.push("The lines about this fault are: " + d.l + ". They are the workers' own accounts of what they tried, and the page checker's measurements. If a line number looks off, search the log for the words in the fault above.");
+  if (d.L && d.L.length) {
+    out.push("Built lessons that show it:");
+    d.L.forEach(function (n) { var a = LESSON[n]; out.push("- " + ROOT + "\\" + a[0] + "\\working\\" + a[1] + "\\  (" + a[2] + "). Page pictures: " + ROOT + "\\" + a[0] + "\\_inspect\\"); });
+    out.push("Each lesson folder holds the specs that made the pages (lesson.json for slides, worksheet.json, working-wall.json, stick-in-sheets.json), the plan (lesson-design.json, adaptation.md), any refused slide drafts in slide-attempts\\ with the check's words beside them, and the build logs in build-results\\. The _inspect folder has a picture of every built page and measure.json. Look at the page pictures yourself before you theorise.");
+  }
+  out.push("The published report of the whole test: https://claude.ai/artifact/Aizj1gHfccokcbvA7fXuXX");
+  out.push("");
+  out.push("WHERE TO LOOK IN THE PLUGIN");
+  out.push("The live plugin is " + PLUGIN + " (never the teaching-plugins copy). Paths below start there.");
+  (d.f || []).forEach(function (g) { out.push(F[g]); });
+  if (d.x) out.push(d.x);
+  out.push("I have given you the area, not the exact line. Finding the exact place, and the tests that already cover it, is part of the job.");
+  out.push("");
+  if (d.m) {
+    out.push("MY EARLIER RULINGS, READ THESE FIRST");
+    out.push("Some of what you find may be there because I asked for it. Read these notes before you form a view, and check git history for why the behaviour was added:");
+    out.push(d.m);
+    out.push("");
+  }
+  if (d.n) { out.push("WHAT YOU SHOULD KNOW BEFORE YOU START"); out.push(d.n); out.push(""); }
+  out.push("ASK ME WHAT I REALLY WANT");
+  out.push("Once you understand the fault, and before you settle on a repair, ask me clarifying questions until you know what I actually want the page to look like or the run to do. The stress test only shows what went wrong, not what I would have preferred, and my old notes may be stricter or looser than what I meant. Ask one question at a time, each about a real page from the lessons above, and keep going until you could describe the finished result and I would agree with all of it.");
+  if (d.q && d.q.length) {
+    out.push("Make sure your questions cover at least these, and add your own where the evidence shows a case they miss:");
+    d.q.forEach(function (q) { out.push("- " + q); });
+  }
+  out.push("");
+  out.push("ABOUT THE REPO");
+  out.push("- The plugin has uncommitted changes from the stress test and from repairs made since. Work alongside them. Do not commit or push unless I ask.");
+  out.push("- The stress-test folder is evidence: work on copies in a scratch folder.");
+  out.push("- Do not run a whole lesson to test this. One spec through the relevant check or build is enough.");
+  out.push("- Tell me the repair you propose before you build it. When it is built, add one line to the end of the stress test log saying what changed.");
+  return out.join("\n");
+}
+
+var items = [];
+Object.keys(ORDER).forEach(function (sec) {
+  var els = document.querySelectorAll("#" + sec + " .row, #" + sec + " li");
+  ORDER[sec].forEach(function (key, i) {
+    var el = els[i]; if (!key || !el) return;
+    var host = el;
+    if (el.tagName === "LI") {
+      var span = document.createElement("span"); span.className = "txt";
+      while (el.firstChild) span.appendChild(el.firstChild);
+      el.appendChild(span);
+    } else { host = el.children[1]; }
+    var tools = document.createElement("div"); tools.className = "tools";
+    var label = document.createElement("label");
+    var box = document.createElement("input"); box.type = "checkbox"; box.id = "tick-" + key;
+    label.appendChild(box); label.appendChild(document.createTextNode("Done"));
+    tools.appendChild(label);
+    var pre = null;
+    if (BUILT[key]) {
+      var b = document.createElement("div"); b.className = "built"; b.textContent = BUILT[key];
+      host.appendChild(b);
+    } else {
+      var copy = document.createElement("button"); copy.type = "button"; copy.textContent = "Copy prompt";
+      var show = document.createElement("button"); show.type = "button"; show.textContent = "Show prompt";
+      var said = document.createElement("span"); said.className = "said"; said.setAttribute("aria-live", "polite");
+      tools.appendChild(copy); tools.appendChild(show); tools.appendChild(said);
+      pre = document.createElement("pre"); pre.className = "prompt"; pre.hidden = true; pre.tabIndex = 0;
+      var text = null;
+      function get() { if (text === null) { text = build(key, sec, el); pre.textContent = text; } return text; }
+      show.addEventListener("click", function () { get(); pre.hidden = !pre.hidden; show.textContent = pre.hidden ? "Show prompt" : "Hide prompt"; });
+      copy.addEventListener("click", function () {
+        var t = get();
+        function ok() { said.textContent = "Copied"; setTimeout(function () { said.textContent = ""; }, 1800); }
+        function fallback() {
+          pre.hidden = false; show.textContent = "Hide prompt";
+          var r = document.createRange(); r.selectNodeContents(pre);
+          var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+          said.textContent = "Selected: press Ctrl+C";
+        }
+        try { navigator.clipboard.writeText(t).then(ok, fallback); } catch (e) { fallback(); }
+      });
+    }
+    host.appendChild(tools);
+    if (pre) host.appendChild(pre);
+    items.push({ key: key, el: el, box: box });
+    box.addEventListener("change", function () { setTick(key, box.checked); });
+  });
+});
+
+var state = {};
+var LS = "stress-test-ticks";
+try { state = JSON.parse(localStorage.getItem(LS) || "{}") || {}; } catch (e) { state = {}; }
+var pcount = document.getElementById("pcount"), pbar = document.getElementById("pbar"), psave = document.getElementById("psave");
+function paint() {
+  var done = 0;
+  items.forEach(function (it) {
+    var on = !!state[it.key];
+    it.box.checked = on; it.el.classList.toggle("ticked", on);
+    if (on) done++;
+  });
+  pcount.textContent = done + " of " + items.length + " done";
+  pbar.style.width = (items.length ? (100 * done / items.length) : 0) + "%";
+}
+function keep() { try { localStorage.setItem(LS, JSON.stringify(state)); } catch (e) {} }
+var db = null, chain = {};
+function setTick(key, on) {
+  if (on) state[key] = true; else delete state[key];
+  keep(); paint();
+  if (!db) { psave.textContent = "Saved on this device"; return; }
+  psave.textContent = "Saving...";
+  var ref = db.doc("ticks/" + key);
+  chain[key] = (chain[key] || Promise.resolve()).then(function () {
+    return on ? ref.set({ done: true, at: new Date().toISOString() }) : ref.delete();
+  }).then(function () { psave.textContent = "Saved"; }, function () { psave.textContent = "Saved on this device only"; });
+}
+paint();
+if (window.claude && window.claude.use) {
+  window.claude.use("db").then(function (d) {
+    if (!d) { psave.textContent = "Ticks save on this device"; return; }
+    db = d;
+    d.collection("ticks").onSnapshot(function (snap) {
+      var next = {};
+      snap.docs.forEach(function (doc) { var v = doc.data(); if (v && v.done) next[doc.id] = true; });
+      state = next; keep(); paint();
+      psave.textContent = "Ticks save as you go";
+    }, function () { psave.textContent = "Ticks save on this device"; });
+  }, function () {});
+} else { psave.textContent = "Ticks save on this device"; }
+})();
+
+</script>

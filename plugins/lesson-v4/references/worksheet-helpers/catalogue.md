@@ -542,7 +542,7 @@ Smallest usable: **100mm wide x 76mm tall**. Spare height: never takes spare hei
 
 A picture with a dot on each part it names, joined out to a printed label or a blank line for the child to write on. Every callout states which with `given`, and unstated is refused. Built around a PHOTOGRAPH.
 
-Smallest usable: **84mm wide x 68mm tall**. Spare height: never takes spare height.
+Smallest usable: **90mm wide x 68mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1626,7 +1626,7 @@ Smallest usable: **40mm wide x 43mm tall**. Spare height: never takes spare heig
 
 The long multiplication shape: one partial product row per digit of the multiplier, then the total.
 
-Smallest usable: **40mm wide x 63mm tall**. Spare height: never takes spare height.
+Smallest usable: **50mm wide x 63mm tall**. Spare height: never takes spare height.
 
 ```json
 {

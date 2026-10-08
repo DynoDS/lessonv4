@@ -46,8 +46,13 @@ const NUM_MAX_SHARE = 0.3; // how far a small face may enlarge its numerals to
 const MAJOR_TICK = 0.066; // five-minute tick length
 const MINOR_TICK = 0.033; // one-minute tick length
 const NUM_TICK_GAP = 0.03; // clear air between the ticks and the numerals
-const MINUTE_HAND = 0.82;
-const HOUR_HAND = 0.55;
+// The long hand stops short of the numerals. At 0.82 of the radius it ended on
+// top of the number it pointed at, so the 3 and 9 were struck through on every
+// quarter clock and 12 read as 1|2 (7 October 2026). Its length now follows the
+// numerals: this much of a numeral's size inside their centres, which clears
+// the widest of them (10, 11, 12) on a face that enlarged its numerals too.
+const HAND_CLEAR_EM = 0.72;
+const HOUR_OF_MINUTE = 0.62; // the short hand, as a share of the long one
 const FACE_W = 0.014; const FACE_W_MIN = 1.2; // pt
 const MAJOR_W = 0.009; const MAJOR_W_MIN = 1; // pt
 const MINOR_W = 0.0055; const MINOR_W_MIN = 0.6; // pt
@@ -209,6 +214,8 @@ function facePart(face, cx, cy, L, parts) {
     }
   }
   if (face.hands) {
+    const minuteLen = numberR - numPt * HAND_CLEAR_EM;
+    const hourLen = minuteLen * HOUR_OF_MINUTE;
     const coded = face.colourCoded;
     const minuteColour = coded ? c.jump : c.ink;
     const hourColour = coded ? c.arrow : c.ink;
@@ -217,10 +224,10 @@ function facePart(face, cx, cy, L, parts) {
     const minRad = toRad(face.m * 6 - 90);
     const hourRad = toRad((face.h % 12) * 30 + face.m * 0.5 - 90);
     parts.push(
-      `<line x1="${f2(cx)}" y1="${f2(cy)}" x2="${f2(cx + r * MINUTE_HAND * Math.cos(minRad))}" y2="${f2(cy + r * MINUTE_HAND * Math.sin(minRad))}" stroke="${minuteColour}" stroke-width="${f2(Math.max(minuteW, MINUTE_W_MIN))}" stroke-linecap="round"/>`
+      `<line x1="${f2(cx)}" y1="${f2(cy)}" x2="${f2(cx + minuteLen * Math.cos(minRad))}" y2="${f2(cy + minuteLen * Math.sin(minRad))}" stroke="${minuteColour}" stroke-width="${f2(Math.max(minuteW, MINUTE_W_MIN))}" stroke-linecap="round"/>`
     );
     parts.push(
-      `<line x1="${f2(cx)}" y1="${f2(cy)}" x2="${f2(cx + r * HOUR_HAND * Math.cos(hourRad))}" y2="${f2(cy + r * HOUR_HAND * Math.sin(hourRad))}" stroke="${hourColour}" stroke-width="${f2(Math.max(hourW, HOUR_W_MIN))}" stroke-linecap="round"/>`
+      `<line x1="${f2(cx)}" y1="${f2(cy)}" x2="${f2(cx + hourLen * Math.cos(hourRad))}" y2="${f2(cy + hourLen * Math.sin(hourRad))}" stroke="${hourColour}" stroke-width="${f2(Math.max(hourW, HOUR_W_MIN))}" stroke-linecap="round"/>`
     );
   }
   parts.push(`<circle cx="${f2(cx)}" cy="${f2(cy)}" r="${f2(Math.max(DOT_R * r, DOT_R_MIN))}" fill="${c.ink}"/>`);

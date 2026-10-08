@@ -86,6 +86,23 @@
 //                of the drawing. 'sides' cannot produce either; 'auto' and
 //                `label_at` can, because the label goes where it was told.
 //
+// A surface read from across a room sets the size of the words itself:
+//   fontSize     the label type in the drawing's own units (picture pixels).
+//                Without it the type is a twentieth of the picture's long side,
+//                which is right on paper, where the picture is printed at a
+//                size chosen for it, and wrong on the board, where a picture
+//                sharing a slide with two others is drawn small and took its
+//                labels down with it: 11pt letters beside 28pt sentences on
+//                three lessons of the 7 October 2026 stress test. Given a
+//                size, the dots, lines and side bands follow the words rather
+//                than the picture, and blank write-on rules are given their
+//                room in the side bands like printed labels.
+//   reserve      { leftEm, rightEm, rows }: room to keep for labels this
+//                drawing does not carry, in multiples of the type size, so the
+//                same picture on several slides sits in one place whatever
+//                each slide's labels say. The drawing returns its own needs
+//                as `bands` in the same form.
+//
 // `width` and `height` must be the picture's real pixel size. The dots and
 // lines are sized from it, with a floor for small pictures, so a made-up small
 // size turns the floor into giant circles (the Week 4 digestive sheet, 29 Sept
@@ -121,7 +138,7 @@ function splitReveal(label) {
 // labels ("Equator", "the source") and numbers that carry their own meaning (a
 // date, a measurement) are left untouched, and only the leading number is
 // rewritten, so whatever the label says after it travels with its own dot.
-function renumberByReadingOrder(callouts) {
+function renumberByReadingOrder(callouts, onLeft = (c) => c.anchor[0] < 50) {
   const given = callouts.filter((c) => c.given && c.label != null);
   if (given.length < 2) return callouts;
 
@@ -135,8 +152,8 @@ function renumberByReadingOrder(callouts) {
   const byY = (a, b) => a.c.anchor[1] - b.c.anchor[1];
   const withIndex = given.map((c, k) => ({ c, k }));
   const readingOrder = [
-    ...withIndex.filter((o) => o.c.anchor[0] < 50).sort(byY),
-    ...withIndex.filter((o) => o.c.anchor[0] >= 50).sort(byY),
+    ...withIndex.filter((o) => onLeft(o.c)).sort(byY),
+    ...withIndex.filter((o) => !onLeft(o.c)).sort(byY),
   ];
 
   const renumbered = new Map();
@@ -189,25 +206,30 @@ function frameBox(W0, H0, frame) {
   return { W, H, dx: (W - W0) / 2, dy: (H - H0) / 2 };
 }
 
-function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN, frame = null }) {
+function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN, frame = null, fontSize = null, reserve = null, rule = null, sides = 'both' }) {
   // W and H are the box everything is laid out around; W0 and H0 the picture
   // inside it. With no frame they are the same, and the drawing is unchanged.
   const W0 = width, H0 = height;
   const { W, H, dx: picDX, dy: picDY } = frameBox(W0, H0, frame);
   const maxDim = Math.max(W, H);
 
-  const fsize = Math.round(maxDim * 0.05);
+  // The surface's own type size when it gives one, else a twentieth of the
+  // picture. `sized` marks the first case: everything that holds or serves the
+  // words then follows the words.
+  const sized = fontSize > 0;
+  const fsize = sized ? fontSize : Math.round(maxDim * 0.05);
   const lineHeight = fsize * 1.15;
   const charW = fsize * 0.52;             // rough Comic-Sans-bold character width
-  const lineLen = Math.round(W * 0.18);   // floor length for a blank write-on line
+  // Floor length for a blank write-on line.
+  const lineLen = sized ? fsize * 3.6 : Math.round(W * 0.18);
 
   // Scale the line and dot to the image so they read at whatever size the figure
   // is shown. Hairline-thin on a board-sized diagram is the recurring "I can't
   // see which part it points to" failure. The floors keep a small worksheet image
   // exactly as before (at ~360px a 2px line / r4 dot already read on paper), while
   // a board-sized image gets a proportionally bolder line and anchor.
-  const strokeW = Math.max(2, maxDim * 0.005);
-  const dotR    = Math.max(4, maxDim * 0.009);
+  const strokeW = Math.max(2, maxDim * 0.005, sized ? fsize * 0.1 : 0);
+  const dotR    = Math.max(4, maxDim * 0.009, sized ? fsize * 0.18 : 0);
 
   const f = (n) => Number(n).toFixed(2);
 
@@ -216,7 +238,12 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   // cut off at the canvas edge. A blank write-on callout carries no text block.
   // Only the `sides` layout stacks its labels into read-down-the-page columns, so
   // it is the only one where a number's position carries a reading order to honour.
-  const placed = layout === 'sides' ? renumberByReadingOrder(callouts || []) : (callouts || []);
+  // Which side margin a label goes to: the half of the picture its dot sits in,
+  // or with `sides` set to 'left' or 'right' every label down that one side, so
+  // a sheet whose write-on lines are long can keep them all in one band and
+  // leave the picture the rest of the page.
+  const onLeft = (c) => (sides === 'left' ? true : sides === 'right' ? false : c.anchor[0] < 50);
+  const placed = layout === 'sides' ? renumberByReadingOrder(callouts || [], onLeft) : (callouts || []);
 
   // Each printed label becomes rows of coloured segments. A plain label is one
   // segment per row exactly as before; a label carrying a `||` reveal keeps its
@@ -247,7 +274,10 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   const blankLineLen = (c) => {
     const word = splitReveal(c.label || '').head.trim();
     const needed = word ? word.length * charW * 1.4 + fsize : 0;
-    return Math.max(lineLen, Math.round(needed));
+    // A surface a child writes on says how long a hand-written word is there,
+    // in the drawing's own units: so much a letter, and never under a minimum.
+    const byHand = rule ? Math.max(rule.min || 0, word.length * (rule.perLetter || 0)) : 0;
+    return Math.max(lineLen, Math.round(needed), Math.round(byHand));
   };
 
   const list = placed.map((c) => ({
@@ -269,6 +299,7 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
     for (const row of o.rows) maxLineW = Math.max(maxLineW, rowWidth(row));
     maxLines = Math.max(maxLines, o.rows.length);
   }
+  if (reserve && reserve.rows > maxLines) maxLines = reserve.rows;
 
   // The margin bands hold the labels around the picture. The ratio sets the band
   // width. In the 'sides' layout the ratio is only a FLOOR: the band grows to fit
@@ -287,6 +318,16 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   // far as the document is concerned the image occupies the whole canvas.
   let MXL = ratioMX;
   let MXR = ratioMX;
+  let bandsEm = null;
+  // Outside the poster layout a label is centred 65% of the way out into its
+  // band, so words set larger than the picture would have set them need a
+  // wider band to stay on the drawing.
+  if (sized && layout !== 'sides') {
+    MX = Math.max(MX, Math.ceil((maxLineW + fsize) / 0.7));
+    MXL = MX;
+    MXR = MX;
+    MY = Math.max(MY, Math.ceil(maxLines * lineHeight + fsize));
+  }
   // How tall each label stands in its margin: its rows of type, or the room
   // above a write-on rule.
   const blockHeight = (o) => (o.c.given ? Math.max(0, o.rows.length - 1) * lineHeight + fsize : fsize);
@@ -327,8 +368,8 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
     return { centres, restacked: true, top, bottom: top + total, rows };
   };
   const byAnchorY = (a, b) => a.c.anchor[1] - b.c.anchor[1];
-  const leftGroup = layout === 'sides' ? list.filter((o) => o.c.anchor[0] < 50).sort(byAnchorY) : [];
-  const rightGroup = layout === 'sides' ? list.filter((o) => o.c.anchor[0] >= 50).sort(byAnchorY) : [];
+  const leftGroup = layout === 'sides' ? list.filter((o) => onLeft(o.c)).sort(byAnchorY) : [];
+  const rightGroup = layout === 'sides' ? list.filter((o) => !onLeft(o.c)).sort(byAnchorY) : [];
   const leftPlan = stackPlan(leftGroup);
   const rightPlan = stackPlan(rightGroup);
   if (layout === 'sides') {
@@ -341,7 +382,7 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
     // actually read shrinks to fit what is left. Sizing to the labels keeps a long
     // name like "Tropic of Capricorn" in clear space while letting a numbered map
     // fill the slot it was given.
-    const leaderRun = maxDim * 0.06;
+    const leaderRun = sized ? fsize * 1.2 : maxDim * 0.06;
     const floorMX = Math.round(maxDim * 0.04);
     // Widest label actually routed to each side. A side with no labels keeps
     // only the floor, so the picture takes the room instead.
@@ -350,11 +391,19 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
       for (const o of list) {
         if (!o.rows || !test(o)) continue;
         for (const row of o.rows) w = Math.max(w, rowWidth(row));
+        // A write-on rule needs its length in the band as a printed label
+        // needs its width, or it is drawn across the picture and off the edge
+        // (Year 1 parts of a plant, 7 October 2026). On every surface: it was
+        // first given only to the board, and the sheets children actually
+        // write on kept lines that started on top of the photograph.
+        if (!o.c.given) w = Math.max(w, blankLineLen(o.c));
       }
       return w;
     };
-    const leftW = widestOn((o) => o.c.anchor[0] < 50);
-    const rightW = widestOn((o) => o.c.anchor[0] >= 50);
+    const kept = (em) => (reserve && em > 0 ? em * fsize : 0);
+    const leftW = Math.max(widestOn((o) => onLeft(o.c)), kept(reserve && reserve.leftEm));
+    const rightW = Math.max(widestOn((o) => !onLeft(o.c)), kept(reserve && reserve.rightEm));
+    bandsEm = { leftEm: leftW / fsize, rightEm: rightW / fsize, rows: maxLines };
     const bandFor = (w) =>
       w > 0 ? Math.max(Math.round(w + fsize * 0.5 + leaderRun), floorMX) : floorMX;
     MXL = bandFor(leftW);
@@ -463,7 +512,10 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
       const tspans = rows[0]
         .map((seg) => `<tspan fill="${seg.g ? answerColour : labelColour}">${escapeXml(seg.t)}</tspan>`)
         .join('');
-      parts.push(`<text x="${f(lx)}" y="${f(ly + fsize * 0.35)}" font-family="${font}" font-size="${fsize}" font-weight="bold" text-anchor="middle">${tspans}</text>`);
+      // `xml:space` keeps the space that ends the question: without it the
+      // picture-maker drops a space at the end of a coloured piece, and
+      // "A ||source" printed "Asource" (Year 4 rivers, 7 October 2026).
+      parts.push(`<text x="${f(lx)}" y="${f(ly + fsize * 0.35)}" font-family="${font}" font-size="${fsize}" font-weight="bold" text-anchor="middle" xml:space="preserve">${tspans}</text>`);
     } else if (c.given) {
       // Wrapped label: stack the rows as tspans, the block centred on ly.
       const blockTop = ly - ((rows.length - 1) * lineHeight) / 2;
@@ -508,7 +560,47 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
     .map(([side, plan]) => ({ side, need: Math.round(plan.bottom - plan.top), room: H, rows: plan.rows }));
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${CW}" height="${CH}" viewBox="0 0 ${CW} ${CH}"><rect width="${CW}" height="${CH}" fill="#FFFFFF"/>${parts.join('')}</svg>`;
-  return { svg, w: CW, h: CH, aspect: CW / CH, fontSize: fsize, restacked, outgrown, labelFaults: { overlaps, clipped } };
+  const picture = { x: ox + picDX, y: oy + picDY, w: W0, h: H0 };
+  return { svg, w: CW, h: CH, aspect: CW / CH, fontSize: fsize, bands: bandsEm, box: { w: W, h: H }, picture, restacked, outgrown, labelFaults: { overlaps, clipped } };
+}
+
+// The labelled picture for paper a child writes on (worksheets, printed
+// activities). Paper knows how wide the drawing prints, so a write-on line can
+// be a real length: `perLetterMm` for each letter of the word that goes on it,
+// never under `minMm`. Lines that long take room from the picture, so when a
+// band on each side would leave the picture less than half the width, every
+// label goes down one side instead and the picture keeps the rest (the
+// teacher's choice from pictures of the Year 1 plant sheet, 8 October 2026:
+// 40mm lines down one side, the photograph bigger than before).
+//
+// A printed name is a twentieth of the picture, as paper has always drawn it,
+// but never under `minFontMm`: a picture that gave its room to the lines would
+// otherwise take the one printed word down to a size nobody can read.
+const PAPER_MIN_FONT_MM = 3.5; // about 10pt
+
+function buildForPaper(args, { widthMm, perLetterMm, minMm, minFontMm = PAPER_MIN_FONT_MM }) {
+  const at = (sides) => {
+    let unitsPerMm = args.width / widthMm;
+    let built = null;
+    let fontSize = args.fontSize || null;
+    for (let pass = 0; pass < 25; pass++) {
+      built = buildLabelDiagramSvg({ ...args, sides, fontSize, rule: { perLetter: perLetterMm * unitsPerMm, min: minMm * unitsPerMm } });
+      if (!args.fontSize && (fontSize || built.fontSize < minFontMm * (built.w / widthMm))) fontSize = minFontMm * (built.w / widthMm);
+      const next = built.w / widthMm;
+      const settled = Math.abs(next - unitsPerMm) / unitsPerMm < 0.002;
+      unitsPerMm = next;
+      // Lines that need more than the page has never settle: stop, and let
+      // the share of the page the picture kept say so.
+      if (settled || unitsPerMm > (args.width / widthMm) * 40) break;
+    }
+    return { ...built, sides, pictureMm: built.picture.w / unitsPerMm, share: built.picture.w / built.w };
+  };
+  const blanks = (args.callouts || []).filter((c) => !c.given);
+  const both = at('both');
+  if (!blanks.length || both.share >= 0.5) return both;
+  const left = (args.callouts || []).filter((c) => c.anchor[0] < 50).length;
+  const one = at(left > (args.callouts || []).length - left ? 'left' : 'right');
+  return one.share > both.share ? one : both;
 }
 
 // A labelled diagram from a lesson's spec, with the board's presentation
@@ -557,6 +649,8 @@ function tightSvg(spec = {}) {
     arrow: spec.arrow != null ? spec.arrow : false,
     labelColour: spec.labelColour || undefined,
     frame: spec.frame || null,
+    fontSize: spec.fontSize > 0 ? spec.fontSize : null,
+    reserve: spec.reserve || null,
   });
 }
 
@@ -583,4 +677,4 @@ function leaderCueSvg() {
   return { svg, aspect: w / h, w, h };
 }
 
-module.exports = { buildLabelDiagramSvg, tightSvg, cacheKey, leaderCueSvg };
+module.exports = { buildLabelDiagramSvg, buildForPaper, tightSvg, cacheKey, leaderCueSvg };

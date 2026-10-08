@@ -820,6 +820,8 @@ A **marked model text**: a poem (`lines`, `""` between stanzas) or prose (`passa
 
 A passage drawn large: the words print at the wall's readable size, so a long passage refuses by name rather than shrinking; the repair is less of it.
 
+**Step numbers and pointers name their words.** A callout on this drawing gives `part` the words it points at, as printed, or a mark's `id`: `{ "part": "bright", "step": 3 }` stands step 3's circle just above "bright", in room the drawing leaves for it, wherever the line lands. A punctuation mark is named the same way (`{ "part": ",", "step": 5 }` for "put a comma between the adjectives"), and can be marked on its own with `"find": ","`. Name the words rather than giving `anchor` percentages: the passage is laid out when it is drawn, so a percentage chosen by eye lands on the words the first time the sheet's size changes. Different notes are drawn in different colours (see `templates.md`, `annotated-text`), and a `circle` is a rounded loop that takes in the comma or full stop touching its last word.
+
 ### fishbone
 
 Spec: `{ "type": "fishbone", "effect": "Flooding", "causes": ["Heavy rain", "Steep slopes", "Trees cut down"] }`

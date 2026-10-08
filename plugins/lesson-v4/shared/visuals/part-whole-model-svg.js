@@ -239,11 +239,17 @@ function frame(M, p, f) {
   const capW = Math.max(...M.parts.map((x) => (x.caption ? textWidthEm(x.caption, false) * capFont : 0)));
   const pitch = Math.max(p + H_GAP * p, p + jw, capW + CAPTION_GAP * f);
   const rowW = (n - 1) * pitch + Math.max(p, capW);
-  const w = Math.max(W, rowW);
-  const drop = W * (M.paper ? PAPER_VERT_DROP : VERT_DROP) + (M.whole.caption ? captionH : 0);
-  const whole = { cx: w / 2, cy: W / 2, d: W };
+  // On the upright model the whole's name goes ABOVE its circle. Under it is
+  // where the lines to the parts leave, and they ran through the word (Year 1
+  // number bonds, 7 October 2026; the teacher chose above from three pictures).
+  // Room for the name at the size it prints, which is never under the floor.
+  const above = M.whole.caption ? CAPTION_GAP * f + Math.max(capFont, M.capFloor || 0) * 1.2 : 0;
+  const wholeCapW = M.whole.caption ? textWidthEm(M.whole.caption, false) * capFont : 0;
+  const w = Math.max(W, rowW, wholeCapW);
+  const drop = W * (M.paper ? PAPER_VERT_DROP : VERT_DROP);
+  const whole = { cx: w / 2, cy: above + W / 2, d: W, captionAbove: true };
   const left = (w - rowW) / 2 + Math.max(p, capW) / 2;
-  const partsY = W + drop + p / 2;
+  const partsY = above + W + drop + p / 2;
   const parts = M.parts.map((_, i) => ({ cx: left + i * pitch, cy: partsY, d: p }));
   const joiners = M.joiner ? M.parts.slice(1).map((_, i) => ({ x: (parts[i].cx + parts[i + 1].cx) / 2, y: partsY })) : [];
   return { w, h: partsY + p / 2 + (M.parts.some((x) => x.caption) ? captionH : 0), whole, parts, joiners, capFont, captionH };
@@ -262,6 +268,7 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
   const board = Boolean(profile.heightPt);
   paperProportions(M, board);
   const floor = board ? profile.minFontPt * BOARD_FLOOR_SHARE : profile.minFontPt;
+  M.capFloor = floor;
   // The part diameter the model's own labels need at size f; a long whole label
   // is cheaper in part diameters than a long part label.
   const partNeed = (f) => Math.max(contentAt(M.whole, f, !board).d / M.wholeRatio, ...M.parts.map((x) => contentAt(x, f, !board).d), f * (board ? 1.6 : 3));
@@ -357,7 +364,8 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
       parts.push(`<text x="${f2(c.cx)}" y="${f2(ty + pt * 0.35)}" text-anchor="middle" font-family="${font}" font-size="${f2(pt)}" font-weight="bold" fill="${ink ? INK : TEXT}">${esc(node.text)}</text>`);
     }
     if (node.caption) {
-      parts.push(`<text x="${f2(c.cx)}" y="${f2(c.cy + c.d / 2 + CAPTION_GAP * L.f + L.capFont)}" text-anchor="middle" font-family="${font}" font-size="${f2(Math.max(L.floor, L.capFont))}" fill="${ink ? INK : QUIET}">${esc(node.caption)}</text>`);
+      const capY = c.captionAbove ? c.cy - c.d / 2 - CAPTION_GAP * L.f - Math.max(L.floor, L.capFont) * 0.25 : c.cy + c.d / 2 + CAPTION_GAP * L.f + L.capFont;
+      parts.push(`<text x="${f2(c.cx)}" y="${f2(capY)}" text-anchor="middle" font-family="${font}" font-size="${f2(Math.max(L.floor, L.capFont))}" fill="${ink ? INK : QUIET}">${esc(node.caption)}</text>`);
     }
     drawn.push({ text: node.text, cx: c.cx, cy: c.cy, d: c.d, pt, caption: node.caption });
   });
@@ -382,6 +390,7 @@ function minWidthPt(spec = {}, profileOrSurface = 'worksheets') {
   const M = normalise(spec);
   paperProportions(M, false);
   const f = profile.minFontPt;
+  M.capFloor = f;
   const p = Math.max(contentAt(M.whole, f, true).d / M.wholeRatio, ...M.parts.map((x) => contentAt(x, f, true).d), f * 1.6);
   return frame(M, p, f).w + 2 * 2 + 1;
 }

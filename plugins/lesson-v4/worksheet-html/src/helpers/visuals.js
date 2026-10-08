@@ -702,8 +702,32 @@ function labelDiagramArgs(spec) {
 // only the SVG. So a designer who followed the documentation exactly shipped a
 // photograph with blank lines beside it and nothing anywhere saying what the
 // child was supposed to write.
-function renderLabelDiagram(spec) {
-  const svg = labelDiagramSvg.buildLabelDiagramSvg(labelDiagramArgs(spec)).svg;
+// How long a line a child writes a word on has to be, on paper. The drawing
+// was never told: it sized its side bands from printed words only, so a blank
+// line was longer than its band and ran across the photograph, and what was
+// left clear came out at 11 to 24mm, on a Year 1 sheet asking for "leaves"
+// (7 October 2026). Years 1 to 3 write big: 6.5mm a letter, never under 30mm,
+// which gives "leaves" 39mm. Years 4 to 6: 4.5mm a letter, never under 25mm.
+// A missing year group takes the longer line, as the writing lines do.
+const WRITE_ON = {
+  lower: { perLetterMm: 6.5, minMm: 30 },
+  upper: { perLetterMm: 4.5, minMm: 25 },
+};
+const NOMINAL_WIDTH_MM = 134; // a full-width zone, when no width is asked about
+
+function writeOn(spec) {
+  return WRITE_ON[spec && spec.phase === "upper" ? "upper" : "lower"];
+}
+
+function buildLabelDiagram(spec, widthMm) {
+  return labelDiagramSvg.buildForPaper(labelDiagramArgs(spec), {
+    widthMm: widthMm > 0 ? widthMm : NOMINAL_WIDTH_MM,
+    ...writeOn(spec),
+  });
+}
+
+function renderLabelDiagram(spec, widthMm) {
+  const svg = buildLabelDiagram(spec, widthMm).svg;
   // Wrapped for the same reason written-answers is: `.h-figure` claims the full
   // height of what it sits in, so an instruction line as its SIBLING came to
   // the stem's height plus all of the zone and the bottom was cut off. Scoped
@@ -717,7 +741,7 @@ function renderLabelDiagram(spec) {
 }
 
 function measureLabelDiagram(spec, widthMm) {
-  const { aspect } = labelDiagramSvg.buildLabelDiagramSvg(labelDiagramArgs(spec));
+  const { aspect } = buildLabelDiagram(spec, widthMm);
   return stemMm(spec, widthMm) + heightFromAspect(aspect, widthMm, 240);
 }
 
@@ -750,34 +774,35 @@ function needsLabelDiagram(spec) {
   // The band is sized to what a child has to WRITE on the line, not to what is
   // printed there. That distinction matters because on a worksheet almost every
   // label is blank, and a blank callout carries no type at all: the engine's
-  // legibility floor finds nothing to measure and stays silent. This is the
-  // only thing standing between a child and a 14mm line to write "roots" on.
+  // legibility floor finds nothing to measure and stays silent.
   //
-  // 3.2mm a character is primary handwriting, not print. Long labels are capped
-  // at eighteen because the drawing wraps them onto a second line at that point
-  // rather than letting one run on.
-  const WRITE_MM_PER_CHAR = 3.2;
+  // The lines may all go down one side when that keeps the picture bigger
+  // (buildForPaper), so the least a diagram needs is its picture, one band for
+  // the longest word a child writes or reads, and the run of the leader line.
+  // Long labels are capped at eighteen letters because the drawing wraps them
+  // onto a second line at that point rather than letting one run on.
   const WRAP_AT = 18;
+  const PRINT_MM_PER_CHAR = 3.2;
+  const LEADER_MM = 7;
+  const { perLetterMm, minMm } = writeOn(spec);
+  const bandMm = labels.reduce((mm, l) => {
+    const letters = Math.min(String(l.label || "").length, WRAP_AT);
+    return Math.max(mm, l.given ? letters * PRINT_MM_PER_CHAR : Math.max(minMm, letters * perLetterMm));
+  }, 20);
+  const pictureMm = 44; // the smallest a photograph stays worth looking at
 
-  // Each side is sized to the longest label ROUTED TO THAT SIDE, not to the
-  // longest label anywhere. The drawing stacks each name down whichever half of
-  // the picture its dot sits in, so a diagram whose long word is on the right
-  // does not owe the left margin the same room. Measured from the longest
-  // overall, a sunflower naming its "flower head" on the right demanded 35mm on
-  // the left as well, for the word "leaf".
+  // A diagram that only prints names keeps a band each side, each sized to the
+  // longest name routed to it, as it always has.
   const sideLongest = (side) =>
     labels
       .filter((l) => (side === "left" ? (l.anchor || [])[0] < 50 : (l.anchor || [])[0] >= 50))
       .reduce((n, l) => Math.max(n, String(l.label || "").length), 0);
-
-  const bandFor = (side) =>
-    Math.max(20, Math.min(sideLongest(side), WRAP_AT) * WRITE_MM_PER_CHAR);
-
-  const bandMm = (bandFor("left") + bandFor("right")) / 2;
-  const pictureMm = 44; // the smallest a photograph stays worth looking at
+  const printedBand = (side) => Math.max(20, Math.min(sideLongest(side), WRAP_AT) * PRINT_MM_PER_CHAR);
+  const writesOn = labels.some((l) => !l.given);
+  const bandsMm = writesOn ? bandMm + LEADER_MM : printedBand("left") + printedBand("right");
 
   return {
-    minWidthMm: Math.min(267, Math.max(70, pictureMm + bandMm * 2)),
+    minWidthMm: Math.min(267, Math.max(70, pictureMm + bandsMm)),
     // Two labels a side before the stack starts costing height.
     minHeightMm: Math.max(50, 26 + Math.ceil(count / 2) * 14),
   };

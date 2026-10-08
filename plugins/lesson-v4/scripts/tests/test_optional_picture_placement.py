@@ -191,6 +191,86 @@ class OptionalPicturePlacementTests(unittest.TestCase):
         self.assertIn("not once per deck", self.context)
         self.assertNotIn("when they share a style", self.context)
 
+    def test_a_page_clicked_through_keeps_its_drawings_still(self) -> None:
+        """A column subtraction answered a digit a click swapped its drawing on
+        every click, so the drawing moved more than the digit (7 October 2026).
+        The teacher: the same drawing, unchanged, on every click."""
+        import importlib.util
+        import sys
+
+        script = Path(__file__).resolve().parents[1] / "check-optional-pictures.py"
+        spec = importlib.util.spec_from_file_location("check_optional_pictures", script)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+
+        def click(answer, working, drawing, x=0.3):
+            return {
+                "title": "Answers",
+                "template": "maths-turn-sc",
+                "questionVisual": {"calculation": {"answer": answer}, "value": working},
+                "speakerNotes": f"notes for {answer}",
+                "decorations": [{
+                    "id": f"decoration-{answer}",
+                    "kind": "educational-svg",
+                    "concept": drawing,
+                    "educationalSvgId": f"standard/{drawing}.svg",
+                    "frame": {"x": x, "y": 0.7, "width": 0.1, "height": 0.15},
+                }],
+            }
+
+        steps = [("4", "Ones: 4\nTens:"), ("64", "Ones: 4\nTens: 6"),
+                 ("164", "Ones: 4\nTens: 6"), ("3164", "Ones: 4\nTens: 6")]
+        swapped = {"slides": [
+            click(answer, working, drawing)
+            for (answer, working), drawing in zip(steps, ["medal", "balloon", "man", "pencils"])
+        ]}
+        self.assertEqual(module.reveal_runs(swapped), [[1, 2, 3, 4]])
+        moved = module.drawings_that_move_in_a_run(swapped)
+        self.assertEqual(len(moved), 1)
+        self.assertIn("slides 1 to 4", moved[0])
+
+        # Held still, it passes, and four clicks of one page are one slide for
+        # the two-slide repeat limit.
+        still = {"slides": [click(answer, working, "man") for answer, working in steps]}
+        self.assertEqual(module.drawings_that_move_in_a_run(still), [])
+        self.assertEqual(module.repeated_decorations(still), [])
+
+        # The same drawing nudged sideways still moves.
+        nudged = {"slides": [
+            click(answer, working, "man", x=0.3 + 0.02 * index)
+            for index, (answer, working) in enumerate(steps)
+        ]}
+        self.assertEqual(len(module.drawings_that_move_in_a_run(nudged)), 1)
+
+        # The discrimination case: a second page of questions has the same
+        # shape and different words, so it is a new page and takes new drawings.
+        pages = {"slides": [
+            click("", "(1) 4,563 - 1,285 =", "medal"),
+            click("", "(3) 6,435 - 2,718 =", "balloon"),
+        ]}
+        self.assertEqual(module.reveal_runs(pages), [])
+        self.assertEqual(module.drawings_that_move_in_a_run(pages), [])
+        # A question slide and the answers slide made from it are one page too,
+        # and join the clicks that follow. An answers slide on another template
+        # was laid out afresh, so it is a new page.
+        def task(title, template="maths-turn-sc"):
+            return {"title": title, "template": template, "designUnitId": "unit-004",
+                    "questionVisual": {"type": "place-value-chart"}}
+
+        answers = [dict(click(answer, working, "man"), designUnitId="unit-004")
+                   for answer, working in steps]
+        self.assertEqual(
+            module.reveal_runs({"slides": [task("My Turn")] + answers}),
+            [[1, 2, 3, 4, 5]],
+        )
+        self.assertEqual(
+            module.reveal_runs({"slides": [task("Your Turn", "split-h-60-40"), answers[0]]}),
+            [],
+        )
+        self.assertIn("A page clicked through keeps its drawings still", self.decorator)
+        self.assertIn("What the drawing is decides how close it may come", self.decorator)
+
     def test_competing_is_defined_physically_and_per_surface(self) -> None:
         """Strong P1 visuals must not zero the optional layer.
 

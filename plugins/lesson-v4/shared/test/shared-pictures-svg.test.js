@@ -72,6 +72,45 @@ test('a clock sets its hands from the time, the hour hand moving between the hou
   assert.ok(L.numPt >= 9);
 });
 
+// The long hand ended on top of the number it pointed at: the 3 and 9 struck
+// through on every quarter clock, 12 reading as 1|2 (7 October 2026).
+test('the long hand stops before the numerals on every surface, and stays clearly longer than the short one', () => {
+  for (const surface of Object.keys(PROFILES)) {
+    for (const spec of [{ time: '3:00' }, { time: '8:15' }, { time: '2:45' }, { clocks: [{ time: "10:50" }, { time: "12:00" }] }]) {
+      const out = clock.tightSvg(spec, profileFor(surface, box(surface)));
+      const { r, numPt } = out.layout;
+      const hands = [...out.svg.matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)"[^>]*stroke-linecap="round"/g)]
+        .map((m) => Math.hypot(Number(m[3]) - Number(m[1]), Number(m[4]) - Number(m[2])));
+      const numeralCentre = r * (1 - 0.066 - 0.03) - numPt * 0.55;
+      for (let i = 0; i < hands.length; i += 2) {
+        // The widest numeral, 12, reaches about 0.7 of its size in from its centre.
+        assert.ok(hands[i] <= numeralCentre - numPt * 0.7, `${surface}: the long hand (${hands[i].toFixed(1)}) reaches the numerals (${(numeralCentre - numPt * 0.7).toFixed(1)})`);
+        assert.ok(hands[i + 1] <= hands[i] * 0.7, `${surface}: the short hand is not clearly shorter`);
+        assert.ok(hands[i] >= r * 0.45, `${surface}: the long hand is a stub`);
+      }
+    }
+  }
+});
+
+// The letter of a point on the top or right edge was cut off (7 October 2026).
+test('a coordinate grid keeps the letter of a point on its top or right edge inside the drawing, without resizing the grid', () => {
+  const grid = require('../visuals/coordinate-grid-svg');
+  const { textWidthEm } = require('../text/comic-glyph-width');
+  const blank = grid.tightSvg({ max: 5 });
+  const out = grid.tightSvg({ max: 5, points: [{ x: 2, y: 5, label: 'A' }, { x: 5, y: 2, label: 'B' }, { x: 5, y: 5, label: '(5, 5)' }, { x: 1, y: 1, label: 'D' }] });
+  assert.equal(out.w, blank.w); assert.equal(out.h, blank.h);
+  const labels = [...out.svg.matchAll(/<text x="([\d.]+)" y="([\d.]+)" text-anchor="(start|end)" dominant-baseline="auto"[^>]*font-size="([\d.]+)"[^>]*>([^<]*)</g)];
+  assert.equal(labels.length, 4);
+  for (const [, x, y, anchor, size, text] of labels) {
+    const width = textWidthEm(text, true) * Number(size);
+    const left = anchor === 'end' ? Number(x) - width : Number(x);
+    assert.ok(left >= 0 && left + width <= out.w, `"${text}" runs off the side`);
+    assert.ok(Number(y) - Number(size) * 0.8 >= 0 && Number(y) <= out.h, `"${text}" runs off the top or foot`);
+  }
+  // A point with room keeps its letter up and to the right, as before.
+  assert.equal(labels[3][3], 'start');
+});
+
 test('a blank face draws no hands, and an unreadable time is refused rather than drawn blank', () => {
   const blank = clock.tightSvg({ hands: false }, 'worksheets').svg;
   assert.equal((blank.match(/stroke-linecap="round"/g) || []).length, 0);
@@ -154,6 +193,37 @@ test('the sheet\'s older shape spelling still draws its measurements, and only t
   assert.ok(right.includes('<polyline'), 'no right-angle mark');
   assert.throws(() => polygon.tightSvg({ type: 'dodecahedron' }, 'worksheets'), /UNKNOWN_SHAPE/);
   assert.ok(polygon.tightSvg({ type: 'rectangle', labels: { top: '5 < 8 & 9' } }, 'worksheets').svg.includes('5 &lt; 8 &amp; 9'));
+});
+
+// The lengths of an L-shape's two inside sides were written inside the shape,
+// where they read as the width of the leg (7 October 2026).
+test('every side length is written outside the shape, on an L, a T and a staircase, drawn either way round', () => {
+  const inside = (pt, verts) => {
+    let hit = false;
+    for (let i = 0, j = verts.length - 1; i < verts.length; j = i++) {
+      const a = verts[i]; const b = verts[j];
+      if ((a.y > pt.y) !== (b.y > pt.y) && pt.x < ((b.x - a.x) * (pt.y - a.y)) / (b.y - a.y) + a.x) hit = !hit;
+    }
+    return hit;
+  };
+  const outlines = [
+    [[0, 0], [4, 0], [4, 5], [12, 5], [12, 7], [0, 7]],
+    [[0, 0], [9, 0], [9, 8], [5, 8], [5, 2], [0, 2]],
+    [[0, 0], [6, 0], [6, 2], [4, 2], [4, 5], [2, 5], [2, 2], [0, 2]],
+    [[0, 0], [2, 0], [2, 2], [4, 2], [4, 4], [6, 4], [6, 6], [0, 6]],
+    [[0, 0], [5, 0], [5, 3], [0, 3]],
+  ];
+  for (const outline of outlines) {
+    for (const vertices of [outline, [...outline].reverse()]) {
+      const sideLabels = vertices.map((_, i) => `${i + 1} cm`);
+      for (const surface of Object.keys(PROFILES)) {
+        const g = polygon.describeLayout({ shapes: [{ vertices, sideLabels }] }, profileFor(surface, box(surface))).geos[0];
+        const sides = g.texts.filter((t) => t.kind === 'side');
+        assert.equal(sides.length, vertices.length);
+        for (const t of sides) assert.ok(!inside(t, g.verts), `${surface}: "${t.text}" is written inside a ${vertices.length}-sided shape`);
+      }
+    }
+  }
 });
 
 test('grids refuse what cannot be counted or read', () => {
