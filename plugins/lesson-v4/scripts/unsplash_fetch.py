@@ -6,11 +6,13 @@ import argparse
 import hashlib
 import json
 import os
+import sys
 import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
 import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
+from picture_plain import plain_bytes
 
 ENV_FILE = os.path.expanduser("~/.env.unsplash")
 DEFAULT_OUTPUT = os.path.expanduser("~/Pictures/unsplash-fetch")
@@ -107,6 +109,14 @@ def search_unsplash(query, access_key, reserve, orientation=None):
     return data.get("results", [])
 
 
+# Unsplash asks to be told when a photograph is USED, and each telling is one
+# call against the hourly allowance of 50. This used to be sent for every
+# candidate a search downloaded, so one search of three candidates spent four
+# calls and one picture-heavy lesson could spend the hour's allowance alone,
+# after which every later picture was lost for the run (the 7 October 2026
+# stress test, and two picture-heavy lessons inside an hour on any day). It is
+# now sent once, for the photograph that is published: `--record-use ID`,
+# which the finaliser runs. A search costs one call.
 def trigger_download(photo_id, access_key):
     request = urllib.request.Request(f"https://api.unsplash.com/photos/{photo_id}/download", headers={"Authorization": f"Client-ID {access_key}", "Accept-Version": "v1"})
     try:
@@ -137,7 +147,8 @@ def download_image(url, dest_path):
     request = urllib.request.Request(url, headers={"User-Agent": "lesson-resources-image-scout/2.0"})
     with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS) as response:
         data = response.read()
-    _atomic_write(dest_path, data)
+    # Rewritten plain, so the worker who looks at it can open it (picture_plain.py).
+    _atomic_write(dest_path, plain_bytes(data))
 
 
 def decode_info(path):
@@ -211,7 +222,18 @@ def already_shown(output_dir, round_number):
     return {row.get("candidate_id") for row in rows if isinstance(row, dict) and row.get("candidate_id")}
 
 
+def record_use(photo_id):
+    """Tell Unsplash the published photograph was used. Never fails a run."""
+    try:
+        trigger_download(photo_id, load_api_key())
+    except BaseException:
+        pass
+
+
 def main():
+    if len(sys.argv) == 3 and sys.argv[1] == "--record-use":
+        record_use(sys.argv[2])
+        return
     parser = argparse.ArgumentParser(description="Fetch images from Unsplash")
     parser.add_argument("query")
     parser.add_argument("--count", type=int, default=1)
@@ -249,7 +271,6 @@ def main():
         try:
             download_image(image_url, dest)
             item = candidate_metadata(PathLike(dest), photo, index)
-            trigger_download(photo.get("id", ""), key)
         except Exception:
             failures += 1
             try: os.unlink(dest)

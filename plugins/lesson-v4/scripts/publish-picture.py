@@ -34,6 +34,7 @@ import sys
 import tempfile
 from pathlib import Path, PurePosixPath
 import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
+from picture_plain import plain_bytes
 
 STAGING_DIRNAME = "_staging"
 
@@ -225,7 +226,9 @@ def cmd_publish(args) -> dict:
         raise PublishError(f"unsupported destination extension: {ext!r}")
 
     if staged_format == target_format:
-        atomic_write_bytes(destination, source.read_bytes())
+        # The same picture in plain form, so every worker who looks at it can
+        # open it; a file a fetcher already rewrote comes through byte for byte.
+        atomic_write_bytes(destination, plain_bytes(source.read_bytes()))
         action = "copied"
     else:
         if target_format == "JPEG":

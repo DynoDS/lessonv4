@@ -21,6 +21,7 @@
 
 const { cssVariables } = require("./tokens");
 const { renderContent, helperCss } = require("./helpers");
+const { stackFractionsInHtml, STACKED_FRACTION_CSS } = require("../../shared/text/stacked-fractions");
 const { esc } = require("./helpers/shared");
 const { formatQuestionLabel } = require("./labels");
 const { PALETTES } = require("../../shared/visuals/surface-profiles");
@@ -161,11 +162,14 @@ function answerSheetHtml(worksheet, answerKey, { stoodIn = {}, size = "normal" }
     return `<section class="a-level"><h2>${esc(heading)}</h2>${standIn}${rows.join("")}</section>`;
   });
 
-  const html = `<!doctype html>
+  // An answer and its note are typed text too: "3/8" prints top and bottom
+  // here as it does on the sheet it marks (shared/text/stacked-fractions.js).
+  const html = stackFractionsInHtml(`<!doctype html>
 <html><head><meta charset="utf-8"><title>${esc(title)} - Answers</title>
 <style>
 ${cssVariables()}
 ${helperCss}
+${STACKED_FRACTION_CSS}
 @page { size: ${PAGE.widthMm}mm ${PAGE.heightMm}mm; margin: ${PAGE.marginVMm}mm ${PAGE.marginHMm}mm; }
 html, body { margin: 0; padding: 0; }
 body { font-family: var(--font); color: var(--colour-ink); background: var(--colour-paper); }
@@ -195,7 +199,7 @@ body { font-family: var(--font); color: var(--colour-ink); background: var(--col
 <body>
 <header class="a-head"><h1>${esc(title)} - Answers</h1><span>Teacher only</span></header>
 <main class="a-columns">${sections.join("")}</main>
-</body></html>`;
+</body></html>`);
   return { html, problems };
 }
 

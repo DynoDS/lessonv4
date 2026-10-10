@@ -54,6 +54,38 @@ test('a zone too small for a readable chart is refused by name, never drawn smal
   assert.throws(() => barChart.tightSvg({ categories: [], values: [] }, BOARD), /BAR_CHART_EMPTY/);
 });
 
+// The grid: squared paper where squares leave the chart its size (the teacher's
+// choice from the Year 3 weather sheet, 9 October 2026), lines across where they
+// would not.
+const gridLines = (svg) => {
+  const lines = [...svg.matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)" stroke="#8C8C8C"/g)].map((m) => m.slice(1).map(Number));
+  return { up: lines.filter((l) => l[0] === l[2]), across: lines.filter((l) => l[1] === l[3]) };
+};
+const WEATHER = { title: 'The weather in March', categories: ['Sunny', 'Cloudy', 'Rainy', 'Snowy'], values: [0, 0, 9, 0], yMax: 12, yInterval: 2, yLabel: 'Number of days' };
+
+test('on paper a chart is squared: true squares, and every bar starts and ends on a line', () => {
+  const out = barChart.tightSvg(WEATHER, profileFor('worksheets', { widthMm: 125 }));
+  const { up, across } = gridLines(out.svg);
+  assert.ok(up.length >= 8, 'lines run up as well as across');
+  const stepUp = across[0][1] - across[1][1];
+  const stepAcross = up[1][0] - up[0][0];
+  assert.ok(Math.abs(stepUp - stepAcross) < 0.05, `a square is ${stepAcross.toFixed(2)} across and ${stepUp.toFixed(2)} up`);
+  const bar = /<rect x="([\d.]+)" y="[\d.]+" width="([\d.]+)"/.exec(out.svg).slice(1).map(Number);
+  const onALine = (x) => up.some((l) => Math.abs(l[0] - x) < 0.05);
+  assert.ok(onALine(bar[0]) && onALine(bar[0] + bar[1]), 'the drawn bar sits between two grid lines');
+  assert.ok(!out.svg.includes('#DDDDDD'), 'no line is the pale grey a photocopier loses');
+});
+
+test('where squares would cost the chart its size it keeps its lines across and its own shape', () => {
+  const many = { categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], values: [3, 1, 2, 0, 2, 1, 3], yMax: 3, yInterval: 1 };
+  const out = barChart.tightSvg(many, profileFor('worksheets', { widthMm: 125 }));
+  const { up, across } = gridLines(out.svg);
+  assert.equal(up.length, 0, 'seven bars and three lines up would be a strip of squares, so there are none');
+  assert.equal(across.length, 3);
+  const board = barChart.tightSvg(CHART, BOARD);
+  assert.equal(gridLines(board.svg).up.length, 0, 'a wide board zone keeps the chart that fills it');
+});
+
 const GRAPH = { title: 'Temperature through the day', points: [{ x: 0, y: 4 }, { x: 3, y: 9 }, { x: 6, y: 11 }, { x: 9, y: 16 }, { x: 12, y: 17 }], xLabel: 'Hours', yLabel: 'Degrees', xMax: 12, yMax: 20, xStep: 3, yStep: 5 };
 
 test('a line graph on the board numbers both axes at board size and keeps its title', () => {

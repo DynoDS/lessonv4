@@ -36,7 +36,8 @@ function drawMathsMtotyt(pptx, slide, data, ctx) {
     headerStyle: 'title',
     title: data.title || '',
     instruction: data.instruction,
-    signal: data.signal
+    signal: data.signal,
+    doSign: data.doSign
   }, ctx);
 
   drawColumnLabel(slide, MT_X, 'My Turn');

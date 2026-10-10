@@ -120,7 +120,7 @@ class AdaptationArchitectureContractTests(unittest.TestCase):
         """A protected set nobody counted is how a sheet reaches the worksheet
         designer 60mm over a page with no removal authorised, and comes back."""
         self.assertIn("Page budget check", AGENT)
-        self.assertIn("225mm", AGENT)
+        self.assertIn("248mm", AGENT)
         self.assertIn("preferences.md", AGENT)
         self.assertIn(
             "refusing to name a removal order does not save the content",
@@ -129,8 +129,8 @@ class AdaptationArchitectureContractTests(unittest.TestCase):
         preferences = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")
         worksheets = preferences.split("## Worksheets", 1)[1].split("\n## ", 1)[0]
         self.assertIn("Price the protected set against the page", worksheets)
-        self.assertIn("225mm", worksheets)
-        self.assertIn("165mm", worksheets)
+        self.assertIn("248mm", worksheets)
+        self.assertIn("180mm", worksheets)
         self.assertIn(
             '"Nothing may be removed" is a claim about a sheet that already fits',
             worksheets,

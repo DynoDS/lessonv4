@@ -161,6 +161,24 @@ def render_prompt(photo: dict) -> str:
         f"STYLE:\n{STYLE_RULE}"
     )
 
+def avoid_list(photo: dict) -> list[str]:
+    """What the lesson's designer said would spoil this picture.
+
+    The designer writes it once, as the generation prompt's `must_avoid` and
+    `text_rule`, and until 10 October 2026 only the generator read it. A
+    searched photograph was judged without it: a rocks lesson that asked for
+    "no lettering, labels or numbers" got a museum slate with its name
+    handwritten on the rock, and a Great Fire lesson that asked for a flag with
+    "no emblems" got the stars and stripes twice. The same list now reaches the
+    scout whichever route the picture takes. A picture with no prompt (an
+    `authentic-real` one) has no list.
+    """
+    prompt = photo.get("generation_prompt")
+    if not prompt_valid(prompt):
+        return []
+    return [*prompt["must_avoid"], prompt["text_rule"]]
+
+
 # Kept public for callers that need to render/check the compiler's exact bytes.
 def render_initial_prompt(entry: dict) -> str:
     return render_prompt(entry)
@@ -553,6 +571,7 @@ def build_assignment(requirements_path: Path, photos: list[dict], batch_id: str,
             "coherent_group": photo["coherent_group"],
             "coherent_mode": photo["coherent_mode"],
             "coherent_visual_invariants": photo["coherent_visual_invariants"],
+            "avoid": avoid_list(photo),
             "initial_route": initial_route(photo),
             "search_schedule": [
                 {

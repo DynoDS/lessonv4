@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 "use strict";
 
+// A fraction in any drawing's label is stacked: installed before a drawing is
+// taken hold of (shared/visuals/stacked-fraction-labels.js).
+require("../shared/visuals/stacked-fraction-labels").installOnSharedDrawings();
+
 // Working-wall HTML/PDF builder entry point. Same JSON contract, same look;
 // A3 only (see the "A3 only" hard error below). Cards are rendered to HTML
 // fragments, assembled into one document carrying a named @page rule per
@@ -19,7 +23,7 @@ const { sanitizeHouseStyle } = require("../shared/text/house-style");
 const { sixSevenNumbers, sixSevenMessage } = require("../shared/text/no-six-seven");
 const { safeFilenameComponent } = require("../shared/text/filename");
 const { preRenderSvgs } = require("./src/svg-renderer");
-const { htmlToPdf } = require("../worksheet-html/src/chrome");
+const { stackFractionsInHtml, STACKED_FRACTION_IN_LINE_CSS } = require("../shared/text/stacked-fractions");
 const { PAGE_CSS } = require("./src/shared");
 const { tryReadPhoto } = require("./src/layout");
 const { renderSectionHeading, renderLabelledDiagram, renderMnemonicPoster, renderBanner } = require("./src/render-display");
@@ -28,8 +32,11 @@ const { renderReferenceTable, renderEquivalenceGrid, renderVocabChips } = requir
 const { renderPhotoMapOverview, renderHeroCallouts, renderCauseCards } = require("./src/render-overview");
 const { renderDiagramSection } = require("./src/render-section");
 const { renderStepByStep } = require("./src/render-steps");
-const { takePlacements, assertFiguresReadable } = require("./src/figure-size");
+const { continueStepSheets } = require("./src/step-colours");
+const { takePlacements, assertFiguresReadable, shrunkDrawings, assertFigureWordsReadable } = require("./src/figure-size");
 const { cardLabel } = require("./src/visuals");
+const { measurePages, edgeMessage, PART_TOLERANCE_MM } = require("./src/page-measure");
+const chrome = require("../worksheet-html/src/chrome");
 const {
   prepareWorkingWallOptionalImages,
   wrapWorkingWallPage,
@@ -224,6 +231,35 @@ function assertFinalOptionalPictureContract(cards) {
 // table cell 75 characters long where 74 fit and one to a panel 0.1in over at
 // 36pt. The rules cannot move to the designer, so the check does: the same
 // pages, the same warnings, no PDF.
+// The most of its printed height a section's drawing gives up when the drawn
+// page shows its part running over: a tenth. The words are already at their
+// smallest by then (the drawing has first call on the room), so a few
+// millimetres off the drawing keeps every word and cannot be seen, where a
+// refusal cost a rewrite: the perimeter wall lost "Rectangle 1:" and
+// "Rectangle 2:" that way. Past a tenth the drawing would be the small picture
+// the teacher turned down, so the sheet goes back with the size of the overrun
+// (his answers of 10 October 2026, from pictures of that poster).
+const DRAWING_GIVES_AT_MOST = 0.1;
+
+function pagesHtml(pageDivs) {
+  // A fraction typed with a slash prints top and bottom, as on every other
+  // surface, at the size that stands inside one planned line
+  // (shared/text/stacked-fractions.js).
+  return stackFractionsInHtml(`<!doctype html><html><head><meta charset="utf-8"><style>${PAGE_CSS}${STACKED_FRACTION_IN_LINE_CSS}</style></head><body>${pageDivs.join("")}</body></html>`);
+}
+
+function partTooTall(card, partIndex, overMm, canGiveMm) {
+  const part = (card.parts || [])[partIndex] || {};
+  return new Error(
+    `WALL_PART_TOO_TALL: ${cardLabel(card)} part ${partIndex + 1} ("${String(part.heading || "").trim()}") prints ${overMm.toFixed(1)}mm taller than its panel, measured on the drawn page with its words at their smallest size. ` +
+      (canGiveMm > 0
+        ? `Its drawing can give up ${canGiveMm.toFixed(1)}mm and no more without becoming too small for a wall. `
+        : `It has no drawing that can give the room up. `) +
+      "Make room first: give this idea a sheet of its own (a diagramSection with one part), or move a line to another part. " +
+      "Only then shorten a line to a shorter whole sentence, keeping its label."
+  );
+}
+
 async function build(specPath, outDir, options = {}) {
   const spec = sanitizeHouseStyle(JSON.parse(fs.readFileSync(specPath, "utf8")));
   const sixSeven = sixSevenNumbers(spec);
@@ -276,6 +312,9 @@ async function build(specPath, outDir, options = {}) {
       }
     }
 
+    // Before any picture is drawn: a step's colour reaches its drawing too.
+    continueStepSheets(cards);
+
     assertFinalOptionalPictureContract(cards);
 
     const specDir = path.dirname(specPath);
@@ -291,15 +330,18 @@ async function build(specPath, outDir, options = {}) {
     // Pre-render any SVG primitives the cards need (clock faces, step
     // badges) into PNG buffers before the render loop; one shared pre-render
     // pass feeds every wall renderer.
-    const svgImages = await preRenderSvgs(spec, specDir);
-    const ctx = { svgImages };
+    let svgImages = await preRenderSvgs(spec, specDir);
+    // What each section part's drawing gives up, once the drawn page is read.
+    const give = {};
+    let ctx = { svgImages, widths: {}, cards, give };
 
     // A renderer returns either a single page-inner HTML string, or an ARRAY
     // of them for a card that spans several physical pages (mnemonicPoster,
     // banner) - every page in that array shares the one card's page config.
     // flatMap turns each card into 1-or-more page divs, so total page count
     // is sum(Array.isArray(r) ? r.length : 1) over all cards.
-    const pageDivs = cards.flatMap((card, cardIndex) => {
+    const placedByCard = [];
+    const drawPages = () => cards.flatMap((card, cardIndex) => {
       const renderer = RENDERERS[card.type];
       if (!renderer) {
         throw new Error(`Unknown card type: "${card.type}"`);
@@ -316,7 +358,8 @@ async function build(specPath, outDir, options = {}) {
       // sheet of stamp-sized figures used to pass (src/figure-size.js).
       takePlacements();
       const result = renderer(card, style, specDir, ctx);
-      assertFiguresReadable(card, takePlacements(), cardLabel(card));
+      placedByCard[cardIndex] = takePlacements();
+      assertFiguresReadable(card, placedByCard[cardIndex], cardLabel(card));
       const innerHtmls = Array.isArray(result) ? result : [result];
       const orientationClass = card.page.orientation === "landscape" ? "landscape" : "portrait";
       return innerHtmls.map((innerHtml) =>
@@ -329,29 +372,126 @@ async function build(specPath, outDir, options = {}) {
       );
     });
 
-    if (layoutWarnings.length > 0) {
-      throw new Error(`Layout validation failed:\n${layoutWarnings.join("\n")}`);
+    let pageDivs = drawPages();
+
+    // A drawing is first laid out for a guessed width, and a card that prints
+    // it smaller shrinks its numbers and labels with it. So the cards are
+    // drawn, any drawing printed well under its laid-out width is laid out
+    // again to fit the room its card offered, and the cards are drawn again
+    // (src/figure-size.js). A drawing laid out narrower changes shape, which
+    // can change the room a card offers, so this is settled over a few
+    // passes. A drawing with no width at which it fits its room with words
+    // at wall size is left as it was, and a pass that cannot be drawn (a
+    // card that no longer fits) is given up and the last good pages kept:
+    // the words check below then says what the sheet needs.
+    const fitDrawings = async () => {
+      if (layoutWarnings.length > 0) return;
+      for (let pass = 0; pass < 3; pass += 1) {
+        const widths = { ...ctx.widths };
+        for (const shrunk of cards.flatMap((card, cardIndex) => shrunkDrawings(placedByCard[cardIndex] || [], card))) {
+          if (shrunk.kind === "label") {
+            // A labelled photograph: the type that prints its names at size.
+            const px = svgImages.fitLabel(shrunk.identity, shrunk.room.wMm, shrunk.room.hMm, shrunk.labelPt);
+            if (px > shrunk.labelPx * 1.05) widths[shrunk.identity] = px;
+            continue;
+          }
+          const width = svgImages.fitWidth(shrunk.identity, shrunk.room.wMm, shrunk.room.hMm);
+          if (width > 0 && width < shrunk.layoutWidthMm) widths[shrunk.identity] = width;
+        }
+        if (Object.keys(widths).every((id) => ctx.widths[id] === widths[id])) break;
+        const kept = { svgImages, ctx, pageDivs, placed: placedByCard.slice(), warnings: layoutWarnings.length };
+        try {
+          svgImages = await preRenderSvgs(spec, specDir, widths, svgImages);
+          ctx = { svgImages, widths, cards, give };
+          pageDivs = drawPages();
+          if (layoutWarnings.length > kept.warnings) throw new Error("the redrawn pass did not fit");
+        } catch (err) {
+          ({ svgImages, ctx, pageDivs } = kept);
+          placedByCard.splice(0, placedByCard.length, ...kept.placed);
+          layoutWarnings.length = kept.warnings;
+          break;
+        }
+      }
+    };
+    const assertSound = () => {
+      if (layoutWarnings.length > 0) {
+        throw new Error(`Layout validation failed:\n${layoutWarnings.join("\n")}`);
+      }
+      cards.forEach((card, cardIndex) => assertFigureWordsReadable(card, placedByCard[cardIndex] || [], cardLabel(card)));
+    };
+    await fitDrawings();
+    assertSound();
+
+    // The sums above say what the page should draw; this reads what it did
+    // draw, in the Chrome that prints it (src/page-measure.js). A section part
+    // that runs over has its drawing give the overrun up and the sheet is
+    // drawn again, a few times at most because a drawing laid out for less
+    // room can change shape. Anything else printed past its box, or past the
+    // page, is refused by name. With no Chrome to ask, the sums stand, as they
+    // did before, and the build says so.
+    let browser = null;
+    if (options.measure !== false) {
+      try {
+        browser = await chrome.launchBrowser();
+      } catch (err) {
+        console.log(`WALL_PAGE_NOT_MEASURED: no browser to draw the page in, so the layout was checked by its sums alone (${err && err.message ? err.message.split("\n")[0] : err})`);
+      }
+    }
+    try {
+    if (browser) {
+      const figureAtFirst = {};
+      let measured = await measurePages(browser, pagesHtml(pageDivs));
+      for (let round = 0; round < 4; round += 1) {
+        const over = measured.parts.filter((part) => part.overMm > PART_TOLERANCE_MM);
+        if (!over.length) break;
+        for (const part of measured.parts) {
+          if (figureAtFirst[part.id] === undefined) figureAtFirst[part.id] = part.figureMm;
+        }
+        for (const part of over) {
+          const [cardIndex, partIndex] = part.id.split(":").map(Number);
+          const givenMm = (give[part.id] || 0) * 25.4;
+          const canGiveMm = figureAtFirst[part.id] * DRAWING_GIVES_AT_MOST;
+          if (round === 3 || givenMm + part.overMm > canGiveMm) {
+            throw partTooTall(cards[cardIndex], partIndex, givenMm + part.overMm, canGiveMm);
+          }
+          give[part.id] = (givenMm + part.overMm + 0.2) / 25.4;
+        }
+        pageDivs = drawPages();
+        await fitDrawings();
+        assertSound();
+        measured = await measurePages(browser, pagesHtml(pageDivs));
+      }
+      if (measured.edges.length > 0) {
+        throw new Error(`Layout validation failed:\n${measured.edges.map(edgeMessage).join("\n")}`);
+      }
     }
 
     for (const notice of optionalVisuals.notices) {
       console.log(notice);
     }
 
+    // What each card's drawings printed at, for a caller that asks.
+    if (options.report) options.report.placedByCard = placedByCard;
+
     if (options.validateOnly) {
       console.log(`WORKING_WALL_LAYOUT_OK: ${cards.length} card(s), ${pageDivs.length} page(s)`);
       return null;
     }
 
-    const html = `<!doctype html><html><head><meta charset="utf-8"><style>${PAGE_CSS}</style></head><body>${pageDivs.join("")}</body></html>`;
+    const html = pagesHtml(pageDivs);
 
     let outPath;
     try {
-      const pdf = await htmlToPdf(html, {});
+      const pdf = await chrome.htmlToPdf(html, browser ? { browser } : {});
       assertPhysicalPages(pdf, pageDivs.length);
+      // The folder the wall is written to is made if it is not there: three
+      // workers in one trial lost a build to a folder they had not made first.
+      fs.mkdirSync(outDir, { recursive: true });
       outPath = path.join(outDir, naturalFilename(spec.topic, "pdf"));
       fs.writeFileSync(outPath, pdf);
     } catch (err) {
       if (err && err.physicalPageMismatch) throw err;
+      fs.mkdirSync(outDir, { recursive: true });
       outPath = path.join(outDir, naturalFilename(spec.topic, "html"));
       fs.writeFileSync(outPath, html);
       console.log(`PDF_SKIPPED: ${err && err.message ? err.message.split("\n")[0] : err}`);
@@ -359,6 +499,9 @@ async function build(specPath, outDir, options = {}) {
     console.log(`Built: ${outPath}`);
     console.log(`Cards: ${cards.length}`);
     return outPath;
+    } finally {
+      if (browser) await browser.close().catch(() => {});
+    }
   } finally {
     console.warn = originalWarn;
   }

@@ -30,7 +30,7 @@
 //              shape is placed (the chips themselves show the regions).
 
 const highlight = require('./figure-highlight');
-const { INK_TONES, printsInInk } = require('./surface-profiles');
+const { INK_TONES, printsInInk, answerColour } = require('./surface-profiles');
 
 // ─── CONSTANTS (geometry units; the whole drawing scales on placement) ────
 const BOX_W       = 1000;        // universe box width
@@ -372,7 +372,7 @@ function tightSvg(data, profile) {
       fits.forEach(function (fit) {
         const cx = a.x;
         const top = chipTop;
-        parts.push(`<rect x="${f(X(cx - CHIP_WIDTH / 2))}" y="${f(Y(top))}" width="${CHIP_WIDTH}" height="${f(fit.h)}" rx="${CHIP_RX}" fill="${CHIP_FILL}" stroke="${C.chip}" stroke-width="${CHIP_STROKE}"/>`);
+        parts.push(`<rect x="${f(X(cx - CHIP_WIDTH / 2))}" y="${f(Y(top))}" width="${CHIP_WIDTH}" height="${f(fit.h)}" rx="${CHIP_RX}" fill="${CHIP_FILL}" stroke="${answerColour(profile, C.chip, C.chipText)}" stroke-width="${CHIP_STROKE}"/>`);
         const lineH = fit.font * LABEL_LINE_GAP;
         const firstY = top + fit.h / 2 - (fit.lines.length * lineH) / 2 + lineH / 2;
         fit.lines.forEach(function (ln, i) {

@@ -92,13 +92,26 @@ reads AS text - not for a person speaking.
 
 **Which helper depends on how many people are speaking.**
 
-`named-claim` is the one for one person saying one thing: the claim sits in its
-own panel with the speaker's name on it, and what the child does about it - a
+`named-claim` is the one for one person saying one thing: the speaker is drawn
+with the claim in a speech bubble, and what the child does about it - a
 tick-or-cross box, ruled lines, both - is an ordinary response underneath. Most
-"is Ethan right, and how do you know" tasks are this.
+"is Ethan right, and how do you know" tasks are this, and it is the same helper
+on every level. It prints in reading order: `text` sets the scene above the
+words (`Aisha is working out 1,435 × 42.`), `ask` is the question about them
+and prints underneath, then the box, then the lines. A child has to read what
+Emma said before being asked whether she is right, so the question belongs in
+`ask` (or in the question helper that follows the claim), never in `text`.
+When the plan asks for a tick-or-cross box, set `tickOrCross: true` and leave
+the question's wording exactly as the plan wrote it. Leave the box off when the
+plan does not ask for one: a claim that is partly right, or a choice between
+two children, has no honest tick. The engine draws it: the figure and bubble wherever there is
+room, a flat panel carrying the name where the column is narrower than 85mm or
+the page would otherwise not fit. Because that choice is the engine's, the same
+task cannot come out as a box on one sheet and a figure on the next.
 
 `speech-scene` is for a CONVERSATION, where the exchange is the work: two
-children disagreeing, or a reply the child writes in a bubble of their own. It
+children disagreeing, or a reply the child writes in a bubble of their own. (A
+scene with a single printed turn is a claim, and the engine draws it as one.) It
 draws a figure and a bubble per turn, which is right when the turns are the
 point and wrong when they are not - a design that put the child's answer in the
 scene as a second turn got a second featureless person and a speaker called You,
@@ -141,7 +154,16 @@ brief asking for "a small picture beside each object" is asking for that, not fo
 one glyph per word at any cost - so a bank where two of eight words are bare is
 right, and a spiral standing in for a vacuum cleaner is not. `card-row` is the
 bank that carries pictures; `chip-bank` is words alone, and a bank titled
-`Word bank` prints in vocabulary green.
+`Word bank` prints as the slide's word bank does: black words on cream cards.
+Its printed heading is always "Words you could use:", so title it `Word bank`
+and leave `text` for a line that tells the child what to do ("Choose one for
+each gap."); a `text` that only names the bank again is not printed.
+A chip that is one of this lesson's taught words prints green and every other
+chip is a choice and stays black. The build marks a chip that matches a term in
+the lesson design's vocabulary by itself; write `{{stem}}`, as the slide does,
+only for a taught word spelled differently from its term. Green on a pupil
+sheet is for a taught word and nothing else, since the teacher's answer sheet
+prints answers in green.
 
 **Show the case, then attach its response to it.** When two or three cases are
 weighed against each other - two equations to judge, three claims to test, two
@@ -198,6 +220,13 @@ Leave it out when the questions speak for themselves. A line saying "Answer
 these questions" above some questions is one more thing for a child to read
 before starting.
 
+**The words a child has to find in a sentence can be bold.** Type them
+`**like this**` in any text a sheet prints ("The fox had a drink **by the
+pond**.") and they print bold with the marks gone. It is for showing which
+words a question is about, when the question works on a sentence the child is
+given. It is not emphasis: an instruction with a bold word in it reads as
+shouting, and a taught word already has its own green.
+
 ---
 
 ## Somewhere to draw
@@ -208,6 +237,14 @@ hold and it works out the size: `draw: 4` is how many separate things go on it,
 `areas: ["Uses electricity", "Works by hand"]` names side-by-side parts, so the
 names do the instructing and no second instruction line is needed under it.
 It is always drawn as a box, and there is no option for bare paper.
+
+**Where the drawing has an above and a below, give the box a line.**
+`line: "soil"` rules one line across the box and prints the name just under
+it, so a child draws the stem above and the roots below on one surface;
+`lineAt` (0.2 to 0.8, default 0.6) is how far down it sits. The same goes for
+ground, water or a horizon. Two boxes stacked with a gap between them make the
+child's drawing jump the gap, which is why this exists. A box has side-by-side
+areas or one line across, not both: a line runs the whole width.
 
 **Plain working room is rare, and the test is the child's book.** A sheet that
 sets aside space for jottings is competing with the exercise book already open

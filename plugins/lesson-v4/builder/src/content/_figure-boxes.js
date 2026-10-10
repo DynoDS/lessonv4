@@ -82,6 +82,38 @@ function watchFigure(slide, type, ctx) {
   };
 }
 
+// The blank after a sum left open is where the teacher writes the answer.
+//
+// "2,347 + 126 =" sits in a wide card with nothing after the equals sign, and
+// by ink that is the clearest place on the slide: twelve of a column addition
+// deck's drawings went there, and the teacher moved every one, because
+// "although they werent touching any text, they were touching or in the space
+// of where if I wrote on the board I would have wrote the answer" (8 October
+// 2026). What is kept is the card from the open sum's line down, since the
+// answer runs on from the sum or goes under it. The card above that line stays
+// open: the teacher rested the same drawings on the top corner of those cards.
+// A question that ends in a question mark is answered aloud or somewhere else
+// on the slide, so its card stays open too.
+function leavesASumOpen(text) {
+  return /=\s*$/.test(String(text == null ? '' : text));
+}
+
+// `lines` are the card's lines or rows from the top, as written. The share of
+// the card above the first open one is left out, which is generous when an
+// earlier line wraps, and that errs towards keeping the writing space.
+function noteAnswerSpace(ctx, box, lines) {
+  if (!recording() || !ctx || !Number.isInteger(ctx.slideIndex) || !box) return;
+  const list = Array.isArray(lines) ? lines : [];
+  const first = list.findIndex(leavesASumOpen);
+  if (first < 0) return;
+  const { x, w } = box;
+  const y = box.y + box.h * (first / list.length);
+  const h = box.h * ((list.length - first) / list.length);
+  if (![x, y, w, h].every((value) => typeof value === 'number' && Number.isFinite(value))) return;
+  const round = (value) => Math.round(value * 1000) / 1000;
+  boxes.push({ slide: ctx.slideIndex + 1, type: 'answer-space', whole: true, x: round(x), y: round(y), w: round(w), h: round(h) });
+}
+
 function figureBoxes() {
   return boxes.slice();
 }
@@ -90,4 +122,4 @@ function clearFigureBoxes() {
   boxes = [];
 }
 
-module.exports = { watchFigure, figureBoxes, clearFigureBoxes, isFigure };
+module.exports = { watchFigure, figureBoxes, clearFigureBoxes, isFigure, leavesASumOpen, noteAnswerSpace };

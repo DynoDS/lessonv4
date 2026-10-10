@@ -28,7 +28,7 @@
 // `rows: [[""], ["14", "20"], ["", "8", "12"]]`, is read too.
 
 const { textWidthEm } = require('../text/comic-glyph-width');
-const { profileFor } = require('./surface-profiles');
+const { profileFor, answerColour } = require('./surface-profiles');
 const { fitUnit, insetProfile } = require('./fit-unit');
 
 // ─── CONSTANTS (in U, the brick's width, unless named) ─────────────────────
@@ -204,7 +204,7 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
         const lh = L.font * 1.25;
         const top = y + (L.brickH - lines.length * lh) / 2;
         lines.forEach((line, k) =>
-          parts.push(`<text x="${f2(x + L.U / 2)}" y="${f2(top + k * lh + L.font * 0.95)}" text-anchor="middle" font-family="${font}" font-size="${f2(L.font)}" font-weight="bold" fill="${b.answer ? pal.answer : pal.text}">${esc(line)}</text>`)
+          parts.push(`<text x="${f2(x + L.U / 2)}" y="${f2(top + k * lh + L.font * 0.95)}" text-anchor="middle" font-family="${font}" font-size="${f2(L.font)}" font-weight="bold" fill="${b.answer ? answerColour(profile, pal.answer, pal.text) : pal.text}">${esc(line)}</text>`)
         );
       }
     });

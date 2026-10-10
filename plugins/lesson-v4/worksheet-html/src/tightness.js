@@ -295,11 +295,12 @@ function describeTightness(result) {
     lines.push(
       "  You cannot fill this with more questions - the question text is upstream's\n" +
         "  and you write none of it. What you own is the room, so spend it:\n" +
-        "  1. Give it to the child. Room under a question is answer space waiting to\n" +
-        "     be claimed: a helper the child writes into holds the height honestly\n" +
-        "     where a bare question list leaves it blank.\n" +
-        "  2. Move something beside it that WOULD use the room - writing lines, a\n" +
-        "     sorting frame, a blank surface - rather than leaving it next to\n" +
+        "  1. Give it to the child where the task has a use for it: a bigger table\n" +
+        "     to fill in, a sorting frame, a surface to draw on. Never ruled lines:\n" +
+        "     a line is one height and a question has the lines its answer needs,\n" +
+        "     so lines added to use up paper tell a child to write more.\n" +
+        "  2. Move something beside it that WOULD use the room - a sorting frame,\n" +
+        "     a table to fill in, a blank surface - rather than leaving it next to\n" +
         "     something that cannot.\n" +
         "  3. Take the height back: a shape whose zone here is shorter, or a smaller\n" +
         "     item beside it, so the work sits tight and the spare paper gathers\n" +

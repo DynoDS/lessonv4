@@ -19,9 +19,11 @@
 // by having its own line. Colour on paper means question (blue), given
 // material (orange) or vocabulary (green), and a scaffold is none of those.
 
-const { BODY_PT, LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, PT_MM, esc, promptHtml, linesFor } = require("./shared");
+const { BODY_PT, LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, PT_MM, BANK_HEADING, esc, promptHtml, linesFor, sentenceKinds } = require("./shared");
 const { criteriaSegments, plainCriteria } = require("../../../shared/text/criteria-marks");
 const { TYPE, RULE, INSET, SPACE, WRITING_LINE_GROWN_RATIO } = require("../tokens");
+
+const { claimInBook, frameInBook, bookNoteHtml, BOOK_NOTE_MM } = require("./in-book");
 
 const WIDEST_ZONE_MM = 261;
 
@@ -122,8 +124,17 @@ function turnHeightMm(turn, widthMm, lineMm) {
 // to happen. Wording the instruction IS asking for the box.
 const TICK_OR_CROSS = /\btick\s*(?:or|\/|,|and)\s*(?:a\s+)?cross\b/i;
 
+// ...and `tickOrCross: true` asks for it in so many words. The wording alone
+// was the only way in, and the question's wording is not the sheet designer's
+// to change: of four sheets in one test (7 October 2026) one went without the
+// box the plan asked for, and one had "Tick or cross" added to the teacher's
+// question to get it. The promise above still holds either way round: words
+// that say tick or cross draw the box whatever the switch says.
 function wantsTickOrCross(spec) {
-  return TICK_OR_CROSS.test(String(spec.text || ""));
+  return (
+    spec.tickOrCross === true ||
+    TICK_OR_CROSS.test(`${spec.text || ""} ${spec.ask || ""}`)
+  );
 }
 
 // The two marks, drawn rather than typed. A ✓ and a ✗ are characters Comic
@@ -150,7 +161,8 @@ function judgeBoxHtml() {
       </div>`;
 }
 
-function renderSpeechScene(spec) {
+function renderSpeechScene(spec, widthMm) {
+  if (sceneIsOneClaim(spec)) return renderNamedClaim(sceneAsClaim(spec), widthMm);
   const lineMm = writingLineMm(spec);
 
   const turns = (spec.turns || [])
@@ -182,6 +194,7 @@ function renderSpeechScene(spec) {
 }
 
 function measureSpeechScene(spec, widthMm) {
+  if (sceneIsOneClaim(spec)) return measureNamedClaim(sceneAsClaim(spec), widthMm);
   const lineMm = writingLineMm(spec);
   const stemMm = spec.text ? linesFor(spec.text, widthMm) * LINE_MM + 2 : 0;
   const turns = spec.turns || [];
@@ -194,6 +207,7 @@ function measureSpeechScene(spec, widthMm) {
 }
 
 function needsSpeechScene(spec) {
+  if (sceneIsOneClaim(spec)) return needsNamedClaim(sceneAsClaim(spec));
   return {
     // A figure plus a bubble a sentence fits into. Narrower than this and the
     // bubble takes more lines than it has room for.
@@ -215,13 +229,27 @@ function needsSpeechScene(spec) {
 // problem.
 //
 // So: the claim keeps its speaker, because a claim in a person's mouth reads as
-// theirs and separately from the question about it. It loses the figure, the
-// bubble and the second person, and what a child does about it - a tick or
-// cross, ruled lines, both - is an ordinary response underneath.
+// theirs and separately from the question about it. It loses the second
+// person, and what a child does about it - a tick or cross, ruled lines, both -
+// is an ordinary response underneath.
 //
 // Reach for `speech-scene` when the exchange is the work: two children
 // disagreeing, a reply written in a bubble. Reach for this when one person said
 // one thing and the child is judging it.
+//
+// ONE job, one look. The claim is drawn as the speaker's figure with the words
+// in a speech bubble, the same drawing a printed turn of a speech scene is. It
+// used to be a flat panel with the name in small print, while a one-turn
+// speech scene drew the figure, and a designer choosing afresh for each level
+// printed the same "is she right?" task as a flat box on Expected and a figure
+// with a bubble on Greater Depth, with 35mm of the page spare (a Year 4 English
+// sheet, the stress test of 7 October 2026). The teacher's ruling from those
+// pages (9 October 2026): the figure with the bubble first, the flat panel
+// where the page is too tight for it, and a difference between levels is fine
+// only when room forced it. So the look is never the designer's to pick. It is
+// the figure wherever the piece is wide enough for one, and the layout pass
+// (`resolveAutoLayouts`) asks for the panel only on a sheet that would
+// otherwise be refused for height.
 
 const CLAIM_PAD_V_MM = INSET.card.v;
 const CLAIM_PAD_H_MM = INSET.card.h;
@@ -245,7 +273,25 @@ function claimPanelWidthMm(widthMm) {
   return Math.min(widthMm, BUBBLE_MEASURE_MM + CLAIM_PAD_H_MM * 2);
 }
 
+// Which of the two drawings this claim gets. The figure needs the width a
+// speech scene needs; below that it would wrap its sentence into a column, so
+// the panel stands in. `look: "panel"` is set by the layout pass alone.
+const CLAIM_FIGURE_MIN_WIDTH_MM = 85;
+
+function claimLook(spec, widthMm) {
+  if (spec.look === "panel") return "panel";
+  const width = typeof widthMm === "number" && widthMm > 0 ? widthMm : 174;
+  return width < CLAIM_FIGURE_MIN_WIDTH_MM ? "panel" : "figure";
+}
+
+function claimTurn(spec) {
+  return { speaker: spec.speaker, says: spec.says || "" };
+}
+
 function claimSaysMm(spec, widthMm) {
+  if (claimLook(spec, widthMm) === "figure") {
+    return turnHeightMm(claimTurn(spec), widthMm, writingLineMm(spec));
+  }
   const inner = claimPanelWidthMm(widthMm) - CLAIM_PAD_H_MM * 2;
   return (
     NOTE_LINE_MM +
@@ -253,6 +299,26 @@ function claimSaysMm(spec, widthMm) {
     CLAIM_PAD_V_MM * 2 +
     RULE.line
   );
+}
+
+// What is printed above the words and what is printed under them.
+//
+// `text` sets the scene ("Aisha is working out 1,435 x 42.") and prints first.
+// `ask` is the question about what was said, and prints under it: a child
+// reads what Emma said and is then asked whether she is right. With one slot,
+// above the words, "Is she correct?" came before her words on every sheet that
+// used it (the stress test of 7 October 2026; the teacher's ruling, 9 October:
+// her words, then the question, then the box).
+//
+// A `text` that asks, with no `ask` beside it, is the old way of writing the
+// same thing, so it is printed where a question goes. Every sheet written
+// before `ask` existed reads in the right order without being rewritten.
+function claimWords(spec) {
+  const text = String(spec.text ?? "");
+  const ask = String(spec.ask ?? "");
+  if (ask) return { above: text, under: ask };
+  const asks = sentenceKinds(text).asks || TICK_OR_CROSS.test(text);
+  return asks ? { above: "", under: text } : { above: text, under: "" };
 }
 
 function renderNamedClaim(spec, widthMm) {
@@ -265,26 +331,73 @@ function renderNamedClaim(spec, widthMm) {
     { length: lines },
     () => `<span class="h-claim-line" style="height:${lineMm}mm"></span>`
   ).join("");
-
-  return `
-    <div class="h-claim">
-      ${spec.text ? `<p class="h-claim-stem">${promptHtml(spec.text)}</p>` : ""}
-      <div class="h-claim-panel" style="max-width:${panelMm.toFixed(1)}mm">
+  // A long explanation on a printed sheet goes in the book (in-book.js).
+  const room = !lines
+    ? ""
+    : claimInBook(spec)
+      ? bookNoteHtml()
+      : `<div class="h-claim-lines">${ruled}</div>`;
+  const voice =
+    claimLook(spec, widthMm) === "figure"
+      ? `<div class="h-speech-turn h-speech-left h-claim-figure">
+        ${figureSvg(spec.speaker)}
+        <span class="h-speech-bubble h-speech-given">
+          <p class="h-speech-says">${esc(spec.says || "")}</p>
+        </span>
+      </div>`
+      : `<div class="h-claim-panel" style="max-width:${panelMm.toFixed(1)}mm">
         ${spec.speaker ? `<p class="h-claim-who">${esc(spec.speaker)} says</p>` : ""}
         <p class="h-claim-says">${esc(spec.says || "")}</p>
-      </div>
+      </div>`;
+
+  const { above, under } = claimWords(spec);
+  // The question's number goes beside the question, not beside the speaker
+  // (chrome.js moves it to the part flagged here).
+  return `
+    <div class="h-claim">
+      ${above ? `<p class="h-claim-stem">${promptHtml(above)}</p>` : ""}
+      ${voice}
+      ${under ? `<p class="h-claim-ask" data-number-here>${promptHtml(under)}</p>` : ""}
       ${wantsTickOrCross(spec) ? judgeBoxHtml() : ""}
-      ${lines ? `<div class="h-claim-lines">${ruled}</div>` : ""}
+      ${room}
     </div>`;
 }
 
 function measureNamedClaim(spec, widthMm) {
   const lineMm = writingLineMm(spec);
-  const stemMm = spec.text ? linesFor(spec.text, widthMm) * LINE_MM + SPACE.tight : 0;
+  const { above, under } = claimWords(spec);
+  const stemMm =
+    (above ? linesFor(above, widthMm) * LINE_MM + SPACE.tight : 0) +
+    (under ? linesFor(under, widthMm) * LINE_MM + SPACE.tight : 0);
   const judgeMm = wantsTickOrCross(spec) ? JUDGE_BOX_MM + SPACE.item : 0;
   const lines = claimLines(spec);
-  const linesMm = lines ? lines * lineMm + SPACE.tight : 0;
+  const linesMm = !lines
+    ? 0
+    : (claimInBook(spec) ? BOOK_NOTE_MM : lines * lineMm) + SPACE.tight;
   return stemMm + claimSaysMm(spec, widthMm) + judgeMm + linesMm;
+}
+
+// A speech scene whose only turn is printed is one person saying one thing,
+// which is this helper's job under another name. It is drawn here, so the two
+// ways of writing it print as one drawing and take the same fallback.
+function sceneIsOneClaim(spec) {
+  const turns = spec.turns || [];
+  return turns.length === 1 && Boolean(turns[0] && turns[0].says);
+}
+
+function sceneAsClaim(spec) {
+  const [turn] = spec.turns;
+  return {
+    helper: "named-claim",
+    text: spec.text,
+    ask: spec.ask,
+    tickOrCross: spec.tickOrCross,
+    speaker: turn.speaker,
+    says: turn.says,
+    lines: 0,
+    phase: spec.phase,
+    look: spec.look,
+  };
 }
 
 function needsNamedClaim(spec) {
@@ -299,7 +412,7 @@ function needsNamedClaim(spec) {
 // and the judge box are a sentence and a box and gain nothing from more page.
 function enoughNamedClaim(spec, widthMm) {
   const growthMm = writingLineMm(spec) * (WRITING_LINE_GROWN_RATIO - 1);
-  return measureNamedClaim(spec, widthMm) + claimLines(spec) * growthMm;
+  return measureNamedClaim(spec, widthMm) + (claimInBook(spec) ? 0 : claimLines(spec)) * growthMm;
 }
 
 // ─── fact-file ───────────────────────────────────────────────────────────
@@ -406,7 +519,7 @@ function renderFactFile(spec) {
       const bank =
         wordBank && wordBank.length
           ? `<div class="h-ff-bank">
-              <span class="h-ff-bank-title">Word bank</span>
+              <span class="h-ff-bank-title">${esc(BANK_HEADING)}</span>
               <span class="h-ff-bank-choices">${esc(bankText(wordBank))}</span>
             </div>`
           : "";
@@ -477,32 +590,72 @@ function frameOutline(shape) {
     </svg>`;
 }
 
-function renderWritingFrame(spec) {
+// How much taller than its measured height a frame may be drawn before the
+// cap below stops it: the browser's own rounding of a few lines of print.
+const WF_CAP_SLACK_MM = 2;
+
+function renderWritingFrame(spec, widthMm, page) {
   const lineMm = writingLineMm(spec);
   const shape = spec.shape === "tag" ? "tag" : "plain";
+  // A line grows to half again its height and stops, and the frame stops with
+  // it, exactly as a written answer's lines and their block do. Without the
+  // pair a frame beside something taller was handed the row's height and
+  // spread its lines to fill it: the same two-line conclusion printed with its
+  // lines 7.8mm apart on one level and 18.7mm apart on the next (a Year 6
+  // planning sheet, the stress test of 7 October 2026). Room past the cap stays
+  // blank paper under the frame.
+  const grownMm = lineMm * WRITING_LINE_GROWN_RATIO;
+  const capMm =
+    typeof widthMm === "number" && widthMm > 0 && !spec.slip
+      ? (page && page.usefulMm ? page.usefulMm() : enoughWritingFrame(spec, widthMm)) +
+        WF_CAP_SLACK_MM
+      : null;
+
+  // Three ways a frame prints (in-book.js, and `frameIsBare` below): in the
+  // book, where its starters stay and its lines go; bare, where it is only
+  // lines and so is drawn as only lines; and as a frame.
+  const inBook = frameInBook(spec, starterLinesCount);
+  const bare = frameIsBare(spec);
+  const unruled = Boolean(spec.slip) || inBook;
+  if (inBook && bare) return `<div class="h-wf h-wf-bare">${bookNoteHtml()}</div>`;
 
   const starters = (spec.starters || [])
+    .filter((starter) => !inBook || String(starterRaw(starter) ?? "").trim() !== "")
     .map((starter) => {
       const ruled = Array.from(
-        { length: spec.slip ? 0 : starterLinesCount(starter) },
-        () => `<span class="h-wf-line" style="height:${lineMm}mm"></span>`
+        { length: unruled ? 0 : starterLinesCount(starter) },
+        () =>
+          `<span class="h-wf-line" style="height:${lineMm}mm;max-height:${grownMm.toFixed(2)}mm"></span>`
       ).join("");
       return `
         <li class="h-wf-starter">
-          <span class="h-wf-text">${esc(starterText(starter, spec.slip))}</span>
+          <span class="h-wf-text">${esc(starterText(starter, unruled))}</span>
           ${ruled}
         </li>`;
     })
     .join("");
 
   return `
-    <div class="h-wf h-wf-${shape}">
-      ${frameOutline(shape)}
+    <div class="h-wf h-wf-${bare ? "bare" : shape}"${capMm ? ` style="max-height:${capMm.toFixed(2)}mm"` : ""}>
+      ${bare ? "" : frameOutline(shape)}
       <div class="h-wf-inner">
         ${spec.text ? `<p class="h-wf-stem">${promptHtml(spec.text)}</p>` : ""}
         <ul class="h-wf-starters">${starters}</ul>
+        ${inBook ? bookNoteHtml() : ""}
       </div>
     </div>`;
+}
+
+// A frame with no heading and no starter is ruled lines and nothing else, so
+// it is drawn as ruled lines: no outline and no inset. Left as a frame it was a
+// second way to print "lines to write on", boxed where a written answer's are
+// not, and the same question printed in a box on one level and without one on
+// the next (a Year 5 history sheet, the stress test of 7 October 2026). The
+// teacher's ruling (9 October 2026): no box round lines to write on. A frame
+// that carries a starter or a heading keeps its outline, which is its point.
+function frameIsBare(spec) {
+  if (spec.text || spec.shape === "tag") return false;
+  return (spec.starters || []).every((starter) => String(starterRaw(starter) ?? "").trim() === "");
 }
 
 // One or the other. A starter the child completes IN the sentence ("Children
@@ -551,21 +704,32 @@ const WF_PAD_H_MM = INSET.panel.h;
 function measureWritingFrame(spec, widthMm) {
   const lineMm = writingLineMm(spec);
   const shape = spec.shape === "tag" ? "tag" : "plain";
-  const innerMm =
-    widthMm - WF_PAD_H_MM * 2 - (shape === "tag" ? widthMm * TAG_POINT_FRACTION : 0);
+  const inBook = frameInBook(spec, starterLinesCount);
+  const bare = frameIsBare(spec);
+  if (inBook && bare) return BOOK_NOTE_MM;
+  const unruled = Boolean(spec.slip) || inBook;
+  const innerMm = bare
+    ? widthMm
+    : widthMm - WF_PAD_H_MM * 2 - (shape === "tag" ? widthMm * TAG_POINT_FRACTION : 0);
   const stemMm = spec.text ? linesFor(spec.text, innerMm) * LINE_MM + 2 : 0;
 
   const body = (spec.starters || []).reduce((h, starter) => {
-    const textMm = linesFor(starterText(starter, spec.slip), innerMm) * LINE_MM;
+    if (inBook && String(starterRaw(starter) ?? "").trim() === "") return h;
+    // A starter with no words prints no line of print, only its ruled lines.
+    // Charged a line all the same, a blank frame measured 6mm taller than it
+    // drew, and the cap on its height sat that far past its last line.
+    const worded = String(starterRaw(starter) ?? "") !== "";
+    const textMm = worded ? linesFor(starterText(starter, unruled), innerMm) * LINE_MM : 0;
     // On a question slip the child writes in their book, so the frame keeps its
     // sentence starters and loses the ruled lines under them.
-    return h + textMm + (spec.slip ? 0 : starterLinesCount(starter)) * lineMm + STARTER_GAP_MM;
+    return h + textMm + (unruled ? 0 : starterLinesCount(starter)) * lineMm + STARTER_GAP_MM;
   }, 0);
 
-  return stemMm + body + WF_PAD_V_MM * 2;
+  return stemMm + body + (inBook ? BOOK_NOTE_MM : 0) + (bare ? 0 : WF_PAD_V_MM * 2);
 }
 
 function enoughWritingFrame(spec, widthMm) {
+  if (frameInBook(spec, starterLinesCount)) return measureWritingFrame(spec, widthMm);
   const lines = (spec.starters || []).reduce((n, starter) => n + starterLinesCount(starter), 0);
   return measureWritingFrame(spec, widthMm) + lines * writingLineMm(spec) * (WRITING_LINE_GROWN_RATIO - 1);
 }
@@ -841,9 +1005,9 @@ const css = `
     display: flex; align-items: stretch; gap: var(--space-tight);
     margin-bottom: ${TURN_GAP_MM}mm;
   }
-  .h-speech-turn:has(.h-speech-blank) { flex: 1 1 auto; }
+  .h-speech-turn:has(.h-speech-blank) { flex: none; }
   .h-speech-blank { display: flex; flex-direction: column; }
-  .h-speech-blank .h-speech-line { flex: 1 0 auto; }
+  .h-speech-blank .h-speech-line { flex: none; }
   .h-speech-turn:last-child { margin-bottom: 0; }
   .h-speech-right { flex-direction: row-reverse; }
   .h-speech-figure {
@@ -878,7 +1042,7 @@ const css = `
   .h-speech-blank { border: var(--rule-line) solid var(--colour-ink); }
   .h-speech-says { margin: 0; line-height: 1.35; }
   .h-speech-line {
-    display: block;
+    display: block; box-sizing: border-box;
     border-bottom: var(--rule-hair) dotted var(--colour-rule);
   }
   /* The tail, drawn as two stacked triangles so the outline shows: the back
@@ -930,14 +1094,20 @@ const css = `
   .h-speech-mark { display: block; flex: none; }
 
   /* ─── named-claim ─── */
-  /* The voice is set apart by a panel and a name, not by a drawn person. The
-     name carries the question colour, so a child scanning the page finds who
-     said it; the words carry ink, because they are the thing being judged. The
-     panel stops at a sentence's measure for the same reason a printed bubble
-     does: a short claim ruled across a full-width box reads as somewhere to
-     write. */
+  /* The voice is the speaker's figure and a printed bubble, the speech scene's
+     own drawing. Where the piece is too narrow or the page too tight for the
+     figure, it is a panel and a name instead: the name carries the question
+     colour, so a child scanning the page finds who said it; the words carry
+     ink, because they are the thing being judged. The panel stops at a
+     sentence's measure for the same reason a printed bubble does: a short
+     claim ruled across a full-width box reads as somewhere to write. */
+  .h-claim-figure { margin-bottom: 0; }
   .h-claim { font-size: var(--type-body); }
   .h-claim-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
+  .h-claim-ask { margin: var(--space-tight) 0 0; line-height: 1.35; }
+  /* Under a question the box starts where the question starts; under a bare
+     bubble it keeps the bubble's indent (the rule above). */
+  .h-claim-ask + .h-speech-judge { margin-left: 0; }
   .h-claim-panel {
     border: var(--rule-line) solid var(--colour-question);
     border-radius: 1.5mm;
@@ -952,7 +1122,7 @@ const css = `
   .h-claim-says { margin: 0; line-height: 1.35; }
   .h-claim-lines { margin-top: var(--space-tight); }
   .h-claim-line {
-    display: block;
+    display: block; box-sizing: border-box;
     border-bottom: var(--rule-hair) dotted var(--colour-rule);
   }
 
@@ -1008,35 +1178,30 @@ const css = `
     width: 100%; height: 100%;
     display: block;
   }
-  /* Writing space is the right home for spare room, so the frame takes the
-     height it claimed and puts it into the LINES rather than the gaps between
-     starters. A taller line is more room to write; a wider gap is nothing.
-     Growth is capped elsewhere at half again the natural height, so a line
-     gets roomier without turning into an invitation to write an essay. */
-  .h-wf { height: 100%; }
+  /* A frame is the height of its own starters and lines. A ruled line is the
+     year group's line height exactly (WRITING_LINE_MM in tokens.js), so the
+     frame has nothing to do with spare height and leaves it as paper. */
+  .h-wf { height: auto; }
   .h-wf-inner {
     position: relative; padding: ${WF_PAD_V_MM}mm ${WF_PAD_H_MM}mm;
-    height: 100%; box-sizing: border-box;
+    box-sizing: border-box;
     display: flex; flex-direction: column;
   }
   /* A percentage padding is measured against the container's WIDTH, which is
      exactly what is wanted here: the point is a share of the frame, so the
      room kept clear of it has to be the same share. */
   .h-wf-tag .h-wf-inner { padding-right: ${TAG_POINT_FRACTION * 100}%; }
+  .h-wf-bare .h-wf-inner { padding: 0; }
   .h-wf-stem { margin: 0 0 var(--space-tight); line-height: 1.35; }
-  .h-wf-starters { list-style: none; margin: 0; padding: 0; flex: 1; display: flex; flex-direction: column; }
-  .h-wf-starter { margin-bottom: ${STARTER_GAP_MM}mm; flex: 1 1 auto; display: flex; flex-direction: column; }
-  /* Grow from the height already on the element, not from zero. A bare
-     "flex: 1" inside a stack with nothing spare collapsed every line to its
-     own border, which is to say the child had nowhere to write and the frame
-     still looked finished. */
-  .h-wf-line { flex: 1 0 auto; }
+  .h-wf-starters { list-style: none; margin: 0; padding: 0; flex: none; display: flex; flex-direction: column; }
+  .h-wf-starter { margin-bottom: ${STARTER_GAP_MM}mm; flex: none; display: flex; flex-direction: column; }
+  .h-wf-line { flex: none; }
   /* A sentence starter is set apart by WEIGHT and by having its own line, and
      carries no colour. Colour on a worksheet means question, given material or
      vocabulary, and a scaffold is none of the three. */
   .h-wf-text { display: block; font-weight: bold; line-height: 1.35; }
   .h-wf-line {
-    display: block;
+    display: block; box-sizing: border-box;
     border-bottom: var(--rule-hair) dotted var(--colour-rule);
   }
 
@@ -1124,7 +1289,7 @@ const css = `
   }
   .h-sb-lines { display: block; margin-top: 1mm; }
   .h-sb-line {
-    display: block;
+    display: block; box-sizing: border-box;
     border-bottom: var(--rule-hair) dotted var(--colour-rule);
   }
 `;
@@ -1135,16 +1300,17 @@ const helpers = {
     render: renderSpeechScene,
     measure: measureSpeechScene,
     needs: needsSpeechScene,
-    // A bubble the child writes in gains from being taller, but a scene is
-    // mostly figures and printed speech, which do not.
-    greed: 1,
+    // Figures and printed speech are the size they are, and a bubble the
+    // child writes in is its ruled lines at the year group's line height.
+    greed: 0,
   },
   "named-claim": {
     requires: [],
+    inBook: claimInBook,
     render: renderNamedClaim,
     measure: measureNamedClaim,
     needs: needsNamedClaim,
-    greed: 3, // the explanation lines are the right home for spare room
+    greed: 0, // ruled lines are one height; spare room stays as paper
     enough: enoughNamedClaim,
   },
   "fact-file": {
@@ -1155,10 +1321,11 @@ const helpers = {
     greed: 3, // more room in each slot is the whole point of spare space here
   },
   "writing-frame": {
+    inBook: (spec) => frameInBook(spec, starterLinesCount),
     render: renderWritingFrame,
     measure: measureWritingFrame,
     needs: needsWritingFrame,
-    greed: 3, // writing space is the right home for spare room
+    greed: 0, // ruled lines are one height; spare room stays as paper
     // And only as far as its ruled lines can use it. With no ceiling a frame
     // whose answer goes in a gap in its sentence took the page's spare height
     // and printed as a box of blank paper under one line of print (the

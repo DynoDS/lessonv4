@@ -148,7 +148,10 @@ function resolveImages(node, baseDir, problems) {
 
   const out = {};
   for (const [key, value] of Object.entries(node)) {
-    out[key] = resolveImages(value, baseDir, problems);
+    // A slip's corner picture is decoration (src/slips.js). A file that cannot
+    // be read leaves the slips without it and is never a fault of the sheet,
+    // so its problems go nowhere.
+    out[key] = resolveImages(value, baseDir, key === "slipPicture" ? [] : problems);
   }
 
   if (typeof out.imagePath === "string" && !out.imageHref) {

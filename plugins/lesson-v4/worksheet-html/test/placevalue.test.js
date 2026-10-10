@@ -341,10 +341,15 @@ test("a missing row of products is still drawn as empty boxes", () => {
   assert.deepEqual(layout.grid.slice(1).map((r) => r.slice(1).map((c) => c.text)), [["", ""], ["", ""]]);
 });
 
-test("an answer marked || is revealed in green, and the marker never prints", () => {
-  const { svg } = multGrid.tightSvg({ colHeaders: ["9"], rowHeaders: ["3"], cells: [["||27"]] }, sheet());
-  assert.match(svg, /fill="#00B050">27</);
+test("an answer marked || is green on the board and ink on a pupil sheet, and the marker never prints", () => {
+  // Green is the answer colour on the board and on the teacher's answer sheet.
+  // A pupil sheet shows no answers, so a value printed on one is a given.
+  const spec = { colHeaders: ["9"], rowHeaders: ["3"], cells: [["||27"]] };
+  const { svg } = multGrid.tightSvg(spec, sheet());
+  assert.match(svg, /fill="#000000">27</);
+  assert.doesNotMatch(svg, /00B050/i);
   assert.doesNotMatch(svg, /\|\|/);
+  assert.match(multGrid.tightSvg(spec, profileFor("slides", { widthPt: 300 })).svg, /fill="#00B050">27</);
 });
 
 test("a 12 x 12 grid needs far more width than a 3 x 3", () => {

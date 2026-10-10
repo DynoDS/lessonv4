@@ -1,5 +1,9 @@
 "use strict";
 
+// A fraction in any drawing's label is stacked: installed before a drawing is
+// taken hold of (shared/visuals/stacked-fraction-labels.js).
+require("../../../shared/visuals/stacked-fraction-labels").installOnSharedDrawings();
+
 // Helpers: the things that go IN a zone.
 //
 // This is the worksheet equivalent of a slide's content objects. A helper knows
@@ -23,6 +27,8 @@
 
 // Each file exports { helpers, css }: the helpers it provides and the styling
 // they need. Adding a helper touches one file and nothing else.
+const { boldMarkedInHtml } = require("./shared");
+const { stackFractionsInHtml } = require("../../../shared/text/stacked-fractions");
 const { legibleWidthMm } = require("./shared");
 const { withoutTaughtMarks } = require("../../../shared/text/criteria-marks");
 const { PRIMITIVES } = require("../../../shared/visual-parity");
@@ -105,7 +111,15 @@ function reachableHeightMm(helper, spec, stated, minWidthMm) {
 // prints a taught word's braces as written, so every figure the parity
 // manifest lists for the sheet is handed its spec without them: inside a
 // picture the word prints plain (the colours release's third check).
-const FIGURE_HELPERS = new Set(PRIMITIVES.flatMap((p) => [].concat(p.worksheets || [])).filter(Boolean));
+//
+// A chip bank is the exception, as it is on the board (builder/src/
+// figure-marks.js): its chips are words a child reads, not words inside a
+// picture, and the braces are how it learns which chip is a taught word. It
+// takes them off itself.
+const READS_OWN_MARKS = new Set(["chip-bank"]);
+const FIGURE_HELPERS = new Set(
+  PRIMITIVES.flatMap((p) => [].concat(p.worksheets || [])).filter((name) => name && !READS_OWN_MARKS.has(name))
+);
 
 function withPlainFigureWords(helper) {
   const out = { ...helper };
@@ -140,16 +154,17 @@ const {
   describeContent,
   inspectContent,
 } = makeCompose({
-  render: (spec, widthMm) => entry(spec.helper).render(spec, widthMm),
+  render: renderHelper,
   measure,
-  needs: (spec, widthMm) => entry(spec.helper).needs(spec, widthMm),
+  needs: leafNeeds,
+  byArithmetic,
   greed,
   fills,
   enough,
 });
 
 // Every helper's CSS, gathered for the renderer to drop into the page.
-const helperCss = [...FILES.map((f) => f.css || ""), composeCss].join("\n");
+const helperCss = [...FILES.map((f) => f.css || ""), composeCss, require("./in-book").css].join("\n");
 
 function entry(name) {
   const found = REGISTRY[name];
@@ -161,13 +176,120 @@ function entry(name) {
   return found;
 }
 
+// The third argument lets a helper that grows ask where its growing stops, in
+// the same millimetres the layout used (the browser's where it measured), so
+// a cap it draws on itself can never sit below what the page really needs.
+//
+// Every piece's finished words pass through the stacked fraction here, so a
+// fraction typed with a slash in any helper's text prints top and bottom, and
+// the browser measures the piece as it will print (shared/text/stacked-fractions.js).
+// The same for words typed **like this**, which print bold (helpers/shared.js).
 function renderHelper(spec, widthMm) {
-  return entry(spec.helper).render(spec, widthMm);
+  return stackFractionsInHtml(
+    boldMarkedInHtml(
+      entry(spec.helper).render(spec, widthMm, {
+        usefulMm: () => enough(spec, widthMm),
+      })
+    )
+  );
+}
+
+// The heights a browser reported for pieces it was shown (src/browser-measure.js
+// fills this before a real page is laid out; it is empty in the unit tests and
+// on a machine with no browser, where every height is the helper's arithmetic).
+const browserHeights = new Map();
+let recording = null;
+
+// A photograph is held as its whole file in the spec. Its two ends and its
+// length name it well enough, and a key the size of the picture, built on
+// every measurement, is what made a sheet of photographs slow to lay out.
+function shortened(key, value) {
+  return typeof value === "string" && value.length > 400
+    ? `${value.length}:${value.slice(0, 60)}${value.slice(-60)}`
+    : value;
+}
+
+function measureKey(spec, widthMm) {
+  return `${Math.round(widthMm * 10)}|${JSON.stringify(spec, shortened)}`;
+}
+
+// A piece's smallest usable height is its own arithmetic. Once the browser has
+// measured the piece, the two are no longer in the same units: a line of words
+// the arithmetic calls 20mm, minimum 20mm, drawn at 19.6mm, would be refused as
+// too short for itself. So the minimum comes down by exactly what the browser
+// took off the piece's height, which leaves the question the check was asking
+// (is this piece, by its own arithmetic, big enough to use?) with the answer it
+// had before.
+function leafNeeds(spec, widthMm) {
+  const found = entry(spec.helper);
+  const stated = found.needs(spec, widthMm);
+  if (!browserHeights.size || !Number.isFinite(widthMm) || !stated.minHeightMm) return stated;
+  const lowered = found.measure(spec, widthMm) - measure(spec, widthMm);
+  if (!(lowered > 0)) return stated;
+  return { ...stated, minHeightMm: Math.max(0, stated.minHeightMm - lowered) };
+}
+
+function recordMeasures(run) {
+  // A recording may start inside another (the narrow page asks which pieces
+  // it measures while the browser check is listing every piece of the sheet).
+  // The outer one keeps what the inner one saw, so those pieces are measured
+  // in the browser too.
+  const outer = recording;
+  const mine = new Map();
+  recording = mine;
+  try {
+    run();
+    return mine;
+  } finally {
+    recording = outer;
+    if (outer) for (const [key, value] of mine) outer.set(key, value);
+  }
+}
+
+function setBrowserHeight(key, heightMm) {
+  browserHeights.set(key, heightMm);
+}
+
+function hasBrowserHeight(key) {
+  return browserHeights.has(key);
+}
+
+function clearBrowserHeights() {
+  browserHeights.clear();
+}
+
+let arithmeticOnly = 0;
+
+function byArithmetic(run) {
+  arithmeticOnly += 1;
+  try {
+    return run();
+  } finally {
+    arithmeticOnly -= 1;
+  }
 }
 
 function measure(spec, widthMm) {
   const found = REGISTRY[spec.helper];
-  return found ? found.measure(spec, widthMm) : 20;
+  if (!found) return 20;
+  const estimate = found.measure(spec, widthMm);
+  if (arithmeticOnly || (!recording && !browserHeights.size)) return estimate;
+  const key = measureKey(spec, widthMm);
+  if (recording) recording.set(key, { spec, widthMm });
+  const drawn = browserHeights.get(key);
+  if (drawn === undefined) return estimate;
+  // A piece that grows into spare height (writing lines, a drawing box) has a
+  // height that was CHOSEN, and drawn alone it shows only its smallest self, so
+  // the browser may raise it and never lower it. Anything else is as tall as
+  // the browser drew it.
+  return greed(spec.helper) > 0 || found.fills ? Math.max(estimate, drawn) : drawn;
+}
+
+// Whether this piece holds an answer the child writes in their book although
+// the sheet is printed (helpers/in-book.js).
+function holdsBookAnswer(spec) {
+  const found = spec && REGISTRY[spec.helper];
+  return Boolean(found && typeof found.inBook === "function" && found.inBook(spec));
 }
 
 function greed(helperName) {
@@ -349,8 +471,13 @@ module.exports = {
   describeContent,
   inspectContent,
   renderHelper,
+  holdsBookAnswer,
   fits,
   measure,
+  recordMeasures,
+  setBrowserHeight,
+  hasBrowserHeight,
+  clearBrowserHeights,
   greed,
   fills,
   requiredSets,

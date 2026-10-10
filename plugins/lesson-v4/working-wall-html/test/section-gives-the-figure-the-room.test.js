@@ -164,7 +164,21 @@ test("a part that promises a figure the builder cannot draw fails loudly", async
   );
 });
 
-test("one part on its own is not a section", async () => {
-  const card = sectionCard([{ heading: "Rounding", visual: NUMBER_LINE }]);
-  await assert.rejects(async () => render(card), /needs 2-4 parts/);
+// One idea, one sheet (the teacher, 10 October 2026): a part on its own is a
+// sheet holding one drawing, and two such sheets in one wall take different
+// colours, title bar and all, so they read as two different things.
+test("one part on its own is a sheet for one idea, and two such sheets differ in colour", async () => {
+  const first = sectionCard([{ heading: "Rounding", visual: NUMBER_LINE, notes: ["346 is nearer 350"] }]);
+  const second = sectionCard([{ heading: "Rounding again", visual: NUMBER_LINE, notes: ["342 is nearer 340"] }]);
+  const svgImages = await preRenderSvgs({ cards: [first, second] }, __dirname);
+  const ctx = { svgImages, cards: [first, second] };
+  const titleFill = (html) => html.match(/background:(#[0-9A-Fa-f]{6})/)[1].toUpperCase();
+  const a = renderDiagramSection(first, style, __dirname, ctx);
+  const b = renderDiagramSection(second, style, __dirname, ctx);
+  assert.equal(titleFill(a), "#0070C0");
+  assert.equal(titleFill(b), "#E46C0A");
+  assert.match(a, /<img /, "the one part draws its figure");
+
+  const five = sectionCard(Array.from({ length: 5 }, (_, i) => ({ heading: `Part ${i + 1}`, visual: NUMBER_LINE })));
+  await assert.rejects(async () => render(five), /needs 1-4 parts/);
 });

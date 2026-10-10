@@ -73,7 +73,8 @@ test("the wall draws it: the picture grows sideways to hold the circles", async 
     items: [{ label: "Worked example", text: "247 + 135 = 382" }, { label: "Step 1", text: "Start with the ones." }], visual: { ...SUM, callouts } });
   const { pickVisual } = require("../src/visuals");
   const pinnedCard = card([{ part: "ones number 1", step: 1 }]);
-  const pinned = pickVisual(pinnedCard.visual, { svgImages: await preRenderSvgs({ cards: [pinnedCard] }, __dirname) });
+  // The sheet draws the card's picture with each step's colour on it.
+  const pinned = pickVisual(require("../src/step-colours").methodVisual(pinnedCard), { svgImages: await preRenderSvgs({ cards: [pinnedCard] }, __dirname) });
   const plainCard = card(undefined);
   const plain = pickVisual(plainCard.visual, { svgImages: await preRenderSvgs({ cards: [plainCard] }, __dirname) });
   assert.ok(pinned && pinned.buf, "the pinned drawing renders");

@@ -76,61 +76,134 @@ if (fileArg) {
   // printed the paper's printable area, 180mm by 267mm, where a sheet's work
   // gets 174mm by 239mm once the trim strip is off. It now numbers the content
   // exactly as the build does and prints the zone sizes the check itself uses.
+  //
+  // And until 9 October 2026 it printed only FLOORS: each piece at the smallest
+  // it could ever be, which for words is their height at the widest zone there
+  // is. A claim question came back 34mm and prints 59mm at the page's real
+  // width, a shape 43mm for 80mm, a match-up 124mm for 151mm, so three plans
+  // that read as fitting did not (the stress test of 7 October 2026). A plan
+  // is priced at the width it will print at, so that is what this prints: the
+  // height of every entry and part at each width a sheet really gives, measured
+  // in the browser where there is one. One entry that cannot be measured says
+  // why on its own line and the rest are still measured: it used to stop the
+  // whole report with a stack trace.
   if (process.argv.includes("--measure")) {
-    const { withPhase, phaseFor, numbered } = require("../src/worksheet");
-    const { needsContent, describeContent } = require("../src/helpers");
-    const { contentArea, zoneContentMm } = require("../src/render");
-    const { isStack, isRow } = (() => {
-      const has = (c, key) => !!c && typeof c === "object" && c[key] !== undefined;
-      return { isStack: (c) => has(c, "stack"), isRow: (c) => has(c, "row") };
-    })();
-    let entries;
-    try {
-      entries = numbered(items.map((item) => withPhase(item, phaseFor(yearGroup))));
-    } catch (error) {
-      if (error && error.signal) {
-        console.log(`${error.signal}: ${error.message}`);
-        process.exitCode = 1;
-        return;
-      }
-      throw error;
-    }
-    const size = (content) => {
-      const need = needsContent(content);
-      return `${Math.round(need.minWidthMm)}mm wide x ${Math.round(need.minHeightMm)}mm tall at least`;
-    };
-    for (const orientation of ["portrait", "landscape"]) {
-      const area = contentArea({ orientation });
-      const whole = zoneContentMm({ w: 1, h: 1 }, area);
-      const half = zoneContentMm({ w: 0.5, h: 1 }, area);
-      console.log(
-        `A ${orientation} sheet's work area: ${Math.round(whole.wMm)}mm wide x ` +
-          `${Math.round(whole.hMm)}mm tall. Two columns side by side get ` +
-          `${Math.round(half.wMm)}mm each.`
-      );
-    }
-    console.log("");
-    entries.forEach((item, index) => {
-      console.log(`Entry ${index + 1}: ${describeContent(item)}: ${size(item)}`);
-      const parts = isStack(item) ? item.stack : isRow(item) ? item.row : null;
-      if (Array.isArray(parts) && parts.length > 1) {
-        parts.forEach((part, partIndex) => {
-          console.log(`  part ${partIndex + 1}: ${describeContent(part)}: ${size(part)}`);
-        });
-      }
+    measureMode(items, yearGroup).catch((error) => {
+      console.error(error);
+      process.exitCode = 1;
     });
-    console.log(
-      "\nThese are floors for this content as worded, never targets: a zone smaller " +
-        "than an entry's floor refuses it, and a zone bigger lets it grow. A stack's " +
-        "height adds its parts and the gaps between them; a row's width does the same across. " +
-        "Anything marked `question: true` is measured with its printed number, which takes " +
-        "10mm of width beside it. The check measures height at the width a zone really " +
-        "gets and can come out a few millimetres taller than these floors, so a plan that " +
-        "lands within about 10mm of the page's height is not yet a plan that fits."
-    );
     return;
   }
 
+  suggestMode(items, yearGroup).catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+  return;
+}
+
+async function measureMode(items, yearGroup) {
+  const { withPhase, phaseFor, numbered } = require("../src/worksheet");
+  const { needsContent, measureContent, describeContent } = require("../src/helpers");
+  const { contentArea, zoneContentMm } = require("../src/render");
+  const { NARROW_SPARE_MM } = require("../src/page");
+  const { calibrate } = require("../src/browser-measure");
+  const has = (c, key) => !!c && typeof c === "object" && c[key] !== undefined;
+  const isStack = (c) => has(c, "stack");
+  const isRow = (c) => has(c, "row");
+
+  let entries;
+  try {
+    entries = numbered(items.map((item) => withPhase(item, phaseFor(yearGroup))));
+  } catch (error) {
+    if (error && error.signal) {
+      console.log(`${error.signal}: ${error.message}`);
+      process.exitCode = 1;
+      return;
+    }
+    throw error;
+  }
+
+  // The widths a sheet really gives its work, widest first.
+  const places = [];
+  for (const orientation of ["portrait", "landscape"]) {
+    const area = contentArea({ orientation });
+    const whole = zoneContentMm({ w: 1, h: 1 }, area);
+    const half = zoneContentMm({ w: 0.5, h: 1 }, area);
+    console.log(
+      `A ${orientation} sheet's work area: ${Math.round(whole.wMm)}mm wide x ` +
+        `${Math.round(whole.hMm)}mm tall. Two columns side by side get ` +
+        `${Math.round(half.wMm)}mm each.`
+    );
+    places.push({ name: `${orientation}, full width`, wMm: whole.wMm });
+    if (orientation === "portrait") {
+      places.push({ name: "portrait, one column kept narrow", wMm: whole.wMm - NARROW_SPARE_MM });
+    }
+    places.push({ name: `${orientation}, one of two columns`, wMm: half.wMm });
+  }
+  places.sort((a, b) => b.wMm - a.wMm);
+  console.log("");
+
+  const sizeLines = (content) => {
+    const need = needsContent(content);
+    const minMm = Math.round(need.minWidthMm);
+    const lines = [`needs at least ${minMm}mm of width.`];
+    for (const place of places) {
+      lines.push(
+        place.wMm + 0.5 < need.minWidthMm
+          ? `${Math.round(place.wMm)}mm wide (${place.name}): too narrow for it`
+          : `${Math.round(place.wMm)}mm wide (${place.name}): ${Math.ceil(measureContent(content, place.wMm))}mm tall`
+      );
+    }
+    return lines;
+  };
+  const report = (label, content, indent) => {
+    let lines;
+    try {
+      lines = sizeLines(content);
+    } catch (error) {
+      const message = String((error && error.message) || error).split(String.fromCharCode(10))[0];
+      console.log(`${indent}${label}: cannot be measured as written. ${message}`);
+      return;
+    }
+    console.log(`${indent}${label}: ${describeContent(content)}: ${lines[0]}`);
+    for (const line of lines.slice(1)) console.log(`${indent}    ${line}`);
+  };
+  const everything = () => {
+    entries.forEach((item) => {
+      for (const content of [item, ...((isStack(item) ? item.stack : isRow(item) ? item.row : null) || [])]) {
+        try {
+          sizeLines(content);
+        } catch {
+          // reported by name below
+        }
+      }
+    });
+  };
+
+  const calibration = await calibrate(everything);
+  entries.forEach((item, index) => {
+    report(`Entry ${index + 1}`, item, "");
+    const parts = isStack(item) ? item.stack : isRow(item) ? item.row : null;
+    if (Array.isArray(parts) && parts.length > 1) {
+      parts.forEach((part, partIndex) => report(`part ${partIndex + 1}`, part, "  "));
+    }
+  });
+  console.log(
+    "\nEach height is this content, as worded, at the width named" +
+      (calibration.available
+        ? ", measured in the browser that prints the sheet."
+        : ", estimated (no browser on this machine, so allow a few millimetres).") +
+      // The gaps are read from the engine: this sentence said 8mm between
+      // questions for as long as the page printed 6mm (7 October 2026).
+      " " +
+      require("../src/page-figures").measureFooter()
+  );
+}
+
+async function suggestMode(items, yearGroup) {
+  const { calibrate } = require("../src/browser-measure");
+  await calibrate(() => suggestLayouts(items, { yearGroup }));
   // Said before the answers, because it is the one thing that makes the whole
   // answer wrong rather than merely unwelcome.
   console.log(
@@ -155,7 +228,6 @@ if (fileArg) {
       "Neither is wrong. A strip at the foot of the page gets trimmed; half a\n" +
       "page missing usually means the wrong shape was chosen."
   );
-  return;
 }
 
 const EXAMPLES = [

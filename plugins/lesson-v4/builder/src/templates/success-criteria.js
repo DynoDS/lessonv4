@@ -11,6 +11,7 @@ function drawSuccessCriteria(pptx, slide, data, ctx) {
     title: data.title || 'Success Criteria',
     instruction: data.instruction,
     signal: data.signal,
+    doSign: data.doSign,
     lo: data.lo,
     heading: data.heading
   }, ctx);

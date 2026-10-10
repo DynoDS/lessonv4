@@ -628,12 +628,12 @@ class MakeLessonStaticContractTests(unittest.TestCase):
         # back for a decision that was always the designer's.
         designer = component_text("Generated worksheet")
         self.assertIn("Price the protected set against the page", designer)
-        self.assertIn("225mm", designer)
+        self.assertIn("248mm", designer)
         self.assertIn("preAuthorisedRemoval: []", designer)
         preferences = (ROOT / "references" / "preferences.md").read_text(encoding="utf-8")
         worksheets = preferences.split("## Worksheets", 1)[1].split("\n## ", 1)[0]
         self.assertIn("Price the protected set against the page", worksheets)
-        self.assertIn("about 225mm of stacked height", worksheets)
+        self.assertIn("248mm of stacked height", worksheets)
 
     def test_lesson_designer_does_not_read_slide_designer_presentation_rules(self):
         designer = self._designer_text()

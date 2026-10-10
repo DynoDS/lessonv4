@@ -88,7 +88,11 @@
 //   callouts the working wall's step numbers and pointers (its own field, drawn
 //            by the wall). A callout whose `part` names a mark's id, or any
 //            words of the passage as printed ("moon", ","), is given a place:
-//            a step number gets room left for it just above its word.
+//            a step number gets room left for it just above its word. `nth`
+//            picks a later occurrence of the words, counting from 1, as a
+//            mark's does. An arrow into the same word lands clear of the
+//            number, and the number moves to the word's other end when the
+//            word is too short to hold both.
 //   space    "annotate" leaves wide empty margins and roomy lines for the child
 //            to mark the text by hand: the write-on form.
 //   title    an optional heading printed above the passage.
@@ -131,9 +135,14 @@ const RING_CLEAR = 0.06; // the least air between a ring's end and the next word
 const LOOP_RADIUS = 0.5; // the loop's rounded corners; a box's are BOX_RADIUS
 const BOX_RADIUS = 0.1;
 const HIGHLIGHT_REACH = 0.16; // how far past a highlighted line an arrow starts
-// A step number the wall pins above a word: the circle, and the air under it.
-const PIN_R = 0.6;
+// A step number the wall pins above a word: the circle, and the air under it
+// and over it. The circle is about the size of the step's own circle in the
+// list beneath the picture: at 0.6 it competed with the words it stood on
+// (the teacher, from pictures of two real walls, 10 October 2026).
+const PIN_R = 0.36;
 const PIN_GAP = 0.15;
+// The least air between a step number and an arrow coming down beside it.
+const PIN_CLEAR = 0.3;
 const HEAD_LEN = 0.42;
 const HEAD_W = 0.36;
 const WRITE_LINE_H = 1.6; // a ruled note line for the child, in note ems
@@ -280,8 +289,10 @@ function normalise(spec = {}) {
   const pins = [];
   for (const c of Array.isArray(spec.callouts) ? spec.callouts : []) {
     const part = c && typeof c.part === 'string' ? c.part.trim() : '';
-    if (!part || pins.some((p) => p.part === part)) continue;
-    pins.push({ part, step: Number.isInteger(c.step) && c.step > 0 });
+    const nth = Number.isInteger(c && c.nth) && c.nth > 1 ? c.nth : 1;
+    const key = pinKey(part, nth);
+    if (!part || pins.some((p) => p.key === key)) continue;
+    pins.push({ part, nth, key, step: Number.isInteger(c.step) && c.step > 0 });
   }
   return { blocks, marks, links, brackets, pins, hasCounts, countColour, space, title: str(spec.title).trim(), stem: str(spec.text).trim() };
 }
@@ -295,6 +306,12 @@ function normalise(spec = {}) {
 // Marks with the same note keep one colour ("fronted adverbial" twice is one
 // kind of thing), and so do the two ends of an arrow, whose shared colour is
 // the link. Only the colour changes, never the kind of mark.
+// The name a callout's place goes by: its words, and which occurrence when it
+// is not the first.
+function pinKey(part, nth) {
+  return Number.isInteger(nth) && nth > 1 ? `${part} #${nth}` : part;
+}
+
 function ownNoteColours(marks, rawLinks) {
   const linked = new Set();
   for (const l of Array.isArray(rawLinks) ? rawLinks : []) {
@@ -527,11 +544,35 @@ function layoutAt(n, profile, pt) {
   const pins = [];
   for (const pin of n.pins) {
     const mark = markById.get(pin.part);
-    const hit = mark ? null : locate({ find: pin.part, nth: 1 }, words);
+    const hit = mark ? null : locate({ find: pin.part, nth: pin.nth }, words);
     const piece = mark ? mark.pieces[0] : hit ? piecesOf(hit, pt, bold, textX)[0] : null;
-    if (piece) pins.push({ ...pin, line: piece.line, x: (piece.x1 + piece.x2) / 2 });
+    if (piece) pins.push({ ...pin, line: piece.line, x: (piece.x1 + piece.x2) / 2, x1: piece.x1, x2: piece.x2 });
   }
-  const pinRoom = (li) => (pins.some((p) => p.step && p.line === li) ? (2 * PIN_R + PIN_GAP) * pt : 0);
+  // Room above the line for the circle, with air under it and over it, so an
+  // arrow running along the gap above never brushes the circle's top.
+  const pinRoom = (li) => (pins.some((p) => p.step && p.line === li) ? (2 * PIN_R + 2 * PIN_GAP) * pt : 0);
+  // Where an arrow meets the top of its words: the middle, unless a step
+  // number stands there. Then it takes the end of the words further from the
+  // numbers, and a number on words too short to hold both moves to their
+  // other end. A number on the arrow's head hid which word the arrow was for
+  // (a Year 4 fronted adverbials wall, 10 October 2026).
+  const topX = (piece) => {
+    const near = pins.filter((p) => p.step && p.line === piece.line);
+    const mid = (piece.x1 + piece.x2) / 2;
+    if (!near.length) return mid;
+    const need = (PIN_R + PIN_CLEAR) * pt;
+    const clear = (x) => Math.min(...near.map((p) => Math.abs(p.x - x)));
+    if (clear(mid) >= need) return mid;
+    const inset = Math.min(0.3 * pt, (piece.x2 - piece.x1) / 2);
+    const ends = [piece.x2 - inset, piece.x1 + inset];
+    const x = clear(ends[0]) >= clear(ends[1]) ? ends[0] : ends[1];
+    if (clear(x) >= need) return x;
+    for (const p of near) {
+      if (Math.abs(p.x - x) >= need || p.x1 !== piece.x1 || p.x2 !== piece.x2) continue;
+      p.x = x > mid ? Math.min(p.x, x - need) : Math.max(p.x, x + need);
+    }
+    return x;
+  };
 
   // Vertical placement: a gap above the first line too, so an arrow pointing
   // up into the first line has somewhere to run, and room above any line a
@@ -603,8 +644,9 @@ function layoutAt(n, profile, pt) {
     const b = markById.get(l.to);
     const pa = a.pieces[0];
     const pb = b.pieces[0];
-    const ax = (pa.x1 + pa.x2) / 2;
-    const bx = (pb.x1 + pb.x2) / 2;
+    // Only the end that meets the top of its words can meet a step number.
+    const ax = pb.line < pa.line ? topX(pa) : (pa.x1 + pa.x2) / 2;
+    const bx = pb.line > pa.line ? topX(pb) : (pb.x1 + pb.x2) / 2;
     let aY;
     let bY;
     let gA;
@@ -905,7 +947,7 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   // a step number's circle in the room left above its word.
   if (L.pins.length) {
     out.anchors = {};
-    for (const p of L.pins) out.anchors[p.part] = p.step ? [(p.x / L.usedW) * 100, (p.y / h) * 100, ((PIN_R * pt) / h) * 100] : [(p.x / L.usedW) * 100, (p.y / h) * 100];
+    for (const p of L.pins) out.anchors[p.key] = p.step ? [(p.x / L.usedW) * 100, (p.y / h) * 100, ((PIN_R * pt) / h) * 100] : [(p.x / L.usedW) * 100, (p.y / h) * 100];
   }
   return out;
 }
@@ -915,4 +957,4 @@ function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   return `annotated-text:${T.profileKey(p)}:${JSON.stringify(normalise(spec))}`;
 }
 
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, STYLES, COLOURS: Object.keys(COLOURS), MAX_MARKS, MAX_LINKS };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, pinKey, STYLES, COLOURS: Object.keys(COLOURS), MAX_MARKS, MAX_LINKS };

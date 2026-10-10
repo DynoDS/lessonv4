@@ -41,8 +41,6 @@
 // references/helper-authoring.md (the no-deadspace principle).
 
 // ─── CONSTANTS (SVG user units; rescaled per engine by aspect) ───────────────
-const FONT   = 'Arial';
-const CHAR_W = 0.58;       // Arial-bold character-width estimate (× font size)
 
 // Number line: a wide, faint baseline with an empty band above for jumps.
 //
@@ -76,7 +74,8 @@ const END_COL = '#333333';
 const END_GAP = 18;        // gap below the baseline to the end label
 // ─── END CONSTANTS ───────────────────────────────────────────────────────────
 
-const { INK_TONES, printsInInk } = require('./surface-profiles');
+const { INK_TONES, FONT, printsInInk } = require('./surface-profiles');
+const { textWidthEm } = require('../text/comic-glyph-width');
 
 // The colours above, and what each becomes on the photocopied stick-in pack.
 const COLOURS = { NL_COL: NL_COL, BAR_COL: BAR_COL, END_COL: END_COL };
@@ -84,8 +83,12 @@ const INK = { NL_COL: INK_TONES.mid, BAR_COL: INK_TONES.dark, END_COL: INK_TONES
 
 function f(n) { return Number(n).toFixed(2); }
 
+// Set in the face of everything else on the board and the sheet, and measured
+// with its real letter widths. It was Arial, priced at a flat 0.58em a letter,
+// until 9 October 2026: a drawing in a plain typeface beside one in the
+// handwriting face was two typefaces on one page (stress test, 7 October 2026).
 function textWidth(s, fs) {
-  return String(s == null ? '' : s).length * fs * CHAR_W;
+  return textWidthEm(String(s == null ? '' : s), true) * fs;
 }
 
 function esc(s) {

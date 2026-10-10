@@ -51,7 +51,7 @@ const SHAPE_FILL     = '#CCE2F5';   // pale blue starting shape
 const REFLECT_OUTLINE = '#00B050';  // house answer-green reflected outline
 const REFLECT_FILL    = '#D5F5E3';  // pale green reflected shape (answer)
 
-const { INK_TONES, printsInInk } = require('./surface-profiles');
+const { INK_TONES, printsInInk, answerColour } = require('./surface-profiles');
 // The photocopied pack's version. The mirror line is told from the grid by its
 // dashes, and the reflected answer from the starting shape by which side of the
 // mirror it is on and its paler fill, so none of them needs its colour.
@@ -140,7 +140,7 @@ function tightSvg(data, profile) {
   if (data.showReflection && shape.length >= 2) {
     const reflected = shape.map(function (p) { return reflectPoint(p, mirror); });
     const d = polyPoints(reflected);
-    parts.push(`<polygon points="${d}" fill="${C.reflectFill}" stroke="${C.reflectOutline}" stroke-width="${f(SHAPE_W)}" stroke-linejoin="round" stroke-linecap="round"/>`);
+    parts.push(`<polygon points="${d}" fill="${answerColour(profile, C.reflectFill, C.fill)}" stroke="${answerColour(profile, C.reflectOutline, C.outline)}" stroke-width="${f(SHAPE_W)}" stroke-linejoin="round" stroke-linecap="round"/>`);
   }
 
   // Dot grid.

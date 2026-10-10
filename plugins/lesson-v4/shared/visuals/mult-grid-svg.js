@@ -30,7 +30,7 @@
 // paper a cell never drops below the 12mm a child's two-digit product needs.
 
 const { textWidthEm } = require('../text/comic-glyph-width');
-const { profileFor } = require('./surface-profiles');
+const { profileFor, answerColour } = require('./surface-profiles');
 const { fitUnit, insetProfile } = require('./fit-unit');
 
 // ─── CONSTANTS (in points unless named otherwise) ───────────────────────────
@@ -150,7 +150,7 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
       const y = r * L.cell;
       parts.push(`<rect x="${f2(x)}" y="${f2(y)}" width="${f2(L.cell)}" height="${f2(L.cell)}" fill="${c.header ? pal.header : pal.body}" stroke="${pal.line}" stroke-width="${LINE_W}"/>`);
       if (c.text) {
-        parts.push(`<text x="${f2(x + L.cell / 2)}" y="${f2(y + L.cell / 2 + L.font * 0.35)}" text-anchor="middle" font-family="${profile.font}" font-size="${f2(L.font)}" font-weight="bold" fill="${c.answer ? pal.answer : pal.text}">${esc(c.text)}</text>`);
+        parts.push(`<text x="${f2(x + L.cell / 2)}" y="${f2(y + L.cell / 2 + L.font * 0.35)}" text-anchor="middle" font-family="${profile.font}" font-size="${f2(L.font)}" font-weight="bold" fill="${c.answer ? answerColour(profile, pal.answer, pal.text) : pal.text}">${esc(c.text)}</text>`);
       }
     })
   );

@@ -206,7 +206,7 @@ function frameBox(W0, H0, frame) {
   return { W, H, dx: (W - W0) / 2, dy: (H - H0) / 2 };
 }
 
-function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN, frame = null, fontSize = null, reserve = null, rule = null, sides = 'both' }) {
+function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN, frame = null, fontSize = null, reserve = null, rule = null, sides = 'both', snug = false }) {
   // W and H are the box everything is laid out around; W0 and H0 the picture
   // inside it. With no frame they are the same, and the drawing is unchanged.
   const W0 = width, H0 = height;
@@ -410,6 +410,25 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
     MXR = bandFor(rightW);
     MX = Math.max(MXL, MXR);
     MY = Math.max(ratioMY, Math.round(blockHalf));
+    // `snug` (the working wall): the band above and below is only as deep as
+    // a label really reaches past the picture. Half the tallest label was
+    // kept at the top AND the bottom wherever that label stood, so one
+    // five-line label beside the middle of a bar chart put a blank band a
+    // sixth of the chart's height above and below it, and the chart printed
+    // 128mm tall in a 187mm space (stress test, 7 October 2026).
+    if (snug) {
+      let reach = 0;
+      const measure = (group, plan) => group.forEach((o, k) => {
+        const centre = plan.restacked ? plan.centres[k]
+          : group.length === 1 ? picDY + (o.c.anchor[1] / 100) * H0
+          : H * 0.12 + H * 0.76 * (k / (group.length - 1));
+        const half = blockHeight(o) / 2;
+        reach = Math.max(reach, half - centre, centre + half - H);
+      });
+      measure(leftGroup, leftPlan);
+      measure(rightGroup, rightPlan);
+      MY = Math.max(ratioMY, Math.ceil(Math.max(0, reach) + fsize * 0.25));
+    }
     // A restacked side that is taller than the picture needs the drawing to be
     // taller too, or its first and last labels are cut off at the edge.
     for (const plan of [leftPlan, rightPlan]) {
@@ -417,6 +436,14 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
       const beyond = Math.max(-plan.top, plan.bottom - H);
       if (beyond > 0) MY = Math.max(MY, Math.ceil(beyond + fsize * 0.25));
     }
+  }
+  // A snug picture with nothing to label keeps no bands at all: it is the
+  // picture, and a band round it prints as a white frame.
+  if (snug && !list.length) {
+    MXL = 0;
+    MXR = 0;
+    MX = 0;
+    MY = 0;
   }
   const CW = W + MXL + MXR, CH = H + MY * 2;
   const ox = MXL, oy = MY;
@@ -651,6 +678,7 @@ function tightSvg(spec = {}) {
     frame: spec.frame || null,
     fontSize: spec.fontSize > 0 ? spec.fontSize : null,
     reserve: spec.reserve || null,
+    snug: spec.snug === true,
   });
 }
 

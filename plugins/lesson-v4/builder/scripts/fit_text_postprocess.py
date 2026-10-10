@@ -148,7 +148,18 @@ FONT_REGULAR = _FONTS["regular"]  # kept for the mixed-run measurement path
 # box, so measuring against 1.394em calls text overflowing that PowerPoint
 # would show comfortably. Measure against the rendered 1.2em line height;
 # LINE_HEIGHT_SAFETY still adds headroom so a deck never quietly overflows.
-MEASUREMENT_LINE_HEIGHT_EM = 1.2
+#
+# 1.2em was itself cautious. Measured against PowerPoint on 8 October 2026
+# (TextRange.BoundHeight over 349 boxes in four finished decks), the height
+# worked out here ran 8% over what PowerPoint drew, almost box for box, so
+# text stopped a size short of what fitted: a Year 6 advice card sat at 19pt,
+# 77% full, when 20pt fitted at 96%, and the teacher saw the gap ("text for
+# both boxes could be bigger"). At 1.145em the estimate still runs about 3%
+# over. Eight finished decks rebuilt both ways and measured the same way: 249
+# of 1,107 boxes a size or two bigger, none smaller, none past its box, the
+# fullest at 99%. He chose it from the rebuilt slides. Before lowering it
+# again, measure again: the 3% left is what keeps a card from spilling.
+MEASUREMENT_LINE_HEIGHT_EM = 1.145
 
 
 def _real_line_height_emu(font_file, pt):
@@ -191,6 +202,101 @@ def pick_font_file(bold, italic):
 # whitespace, so measuring with it would count breaks the renderer never makes
 # and leave the box under-shrunk; the measurer splits on ASCII whitespace only.
 _BREAKABLE_WS = re.compile(r'[ \t\r\n\f\v]+')
+
+# A fraction is written top and bottom, on the board as on paper.
+#
+# Slide text is typed, so "1/2" was drawn with a slash on the same slide as a
+# fraction wall of stacked fractions (stress test, 7 October 2026; the teacher,
+# 9 October 2026: "fractions should always be top and bottom"). Paper stacks a
+# typed fraction in its page (shared/text/stacked-fractions.js, whose pattern
+# this one copies). A PowerPoint text box cannot be styled that way, but it can
+# hold PowerPoint's own fraction inside a line of words: an equation of one
+# fraction, set upright in the run's own typeface, colour and size. That is
+# what `stack_fractions` writes, once every box has its size, with the slash
+# kept as the fallback another program shows.
+#
+# A line holding one is taller, and the fit has to know before it chooses a
+# size or the fraction is cut off at the foot of its card. Measured in
+# PowerPoint (TextRange.BoundHeight, 9 October 2026): a line with a stacked
+# fraction is 2.06 to 2.09 of its type size where an ordinary line is 1.2, at
+# 27pt and at 40pt alike. `fraction_extra_em` is that difference with a little
+# headroom.
+FRACTION_RE = re.compile(
+    '(^|[^\\d/.,])(\\d{1,3}|\\?|[\u25A1\u25A2\u2610\u25FB\u25AB])/'
+    '(\\d{1,3}|\\?|[\u25A1\u25A2\u2610\u25FB\u25AB])(?![\\d/]|[.,]\\d)'
+)
+# How big the fraction is. A stacked fraction at the size of its words makes
+# its line nearly twice as tall, and a card planned for plain lines can only
+# hold that by shrinking every word on it (a Teach slide's three cards went
+# from 27pt to about 14pt). So each box takes the biggest of these sizes that
+# leaves its words the size they would have been with no fraction in them, and
+# the smallest when none does. The teacher's choice from the real slides,
+# 9 October 2026 ("biggest fraction that doesn't shrink the words").
+#
+# The smallest is the size at which the pair stands inside an ordinary line
+# with a little room over: no card changes size for it and no words shrink.
+FRACTION_SCALES = (1.0, 0.75, 0.55)
+# Two fractions one under the other never overlap (PowerPoint gives a line the
+# height of the tallest thing on it), but once the fraction is what sets the
+# line's height, the denominator above and the numerator below all but touch
+# (the teacher, from the trial slides: "would they be touching?"). So a box
+# whose fractions are bigger than the smallest size has every paragraph that
+# holds one set this much looser (of a line), which reads as a clear gap. At
+# the smallest size the line already has that room.
+FRACTION_AIR = 0.15
+
+
+def fraction_needs_air(scale):
+    return bool(scale) and scale > FRACTION_SCALES[-1]
+
+
+def fraction_extra_em(scale):
+    """How much taller than an ordinary line a line holding a fraction is."""
+    if not scale:
+        return 0.0
+    return max(0.0, 2.09 * scale - 1.2) + (0.04 if fraction_needs_air(scale) else 0.0)
+
+
+# The size the box being measured would give its fractions (0 measures the
+# words alone), and the size each fitted box settled on, by its XML element.
+_measuring_scale = FRACTION_SCALES[-1]
+_shape_scales = {}
+_M_NS = "http://schemas.openxmlformats.org/officeDocument/2006/math"
+_A14_NS = "http://schemas.microsoft.com/office/drawing/2010/main"
+_MC_NS = "http://schemas.openxmlformats.org/markup-compatibility/2006"
+_A_URI = "http://schemas.openxmlformats.org/drawingml/2006/main"
+
+
+def has_fraction(text):
+    return bool(text) and '/' in text and FRACTION_RE.search(text) is not None
+
+
+def fraction_lines(runs, width_emu, pt):
+    """How many of the lines this run of words wraps onto hold a fraction.
+
+    Wrapped a word at a time, each in its own run's font, as wrap_runs does for
+    mixed runs. A sentence of three lines with one fraction has one taller
+    line, not three.
+    """
+    if not any(has_fraction(text) for text, _ in runs):
+        return 0
+    space_w, _ = _rendered_size(" ", pt, FONT_REGULAR)
+    held = 0
+    cur = 0
+    line_has = False
+    for text, ff in runs:
+        use = ff or FONT_REGULAR
+        for w in breakable_words(text):
+            ww, _ = _rendered_size(w, pt, use)
+            add = ww if cur == 0 else space_w + ww
+            if cur and cur + add > width_emu:
+                held += 1 if line_has else 0
+                cur, line_has = ww, False
+            else:
+                cur += add
+            if has_fraction(w):
+                line_has = True
+    return held + (1 if line_has else 0)
 
 
 def breakable_words(text):
@@ -303,15 +409,23 @@ def best_fit_size(paragraphs_info, width_emu, height_emu, font_file, max_pt, flo
     # a slide worth looking at.
     def used_height(pt):
         base_line_h = _real_line_height_emu(font_file, pt)
+        fraction_extra = int(pt * fraction_extra_em(_measuring_scale) / 72.0 * 914400)
         total_h = 0
         for lines, ls, spacing_pt in paragraphs_info:
             n = 0
+            taller = 0
             for runs in lines:
                 if widest_unbroken_word(runs, pt) > usable_w:
                     return None
                 n += wrap_runs(runs, usable_w, pt)
+                taller += fraction_lines(runs, usable_w, pt)
             n = max(n, 1)
-            para_h = base_line_h + (n - 1) * int(base_line_h * ls)
+            # A paragraph holding a bigger fraction is drawn looser, every line of it.
+            if taller and fraction_needs_air(_measuring_scale):
+                ls = ls + FRACTION_AIR
+                para_h = int(base_line_h * (1 + FRACTION_AIR)) + (n - 1) * int(base_line_h * ls) + taller * fraction_extra
+            else:
+                para_h = base_line_h + (n - 1) * int(base_line_h * ls) + taller * fraction_extra
             total_h += int(para_h * LINE_HEIGHT_SAFETY) + points_to_emu(spacing_pt)
         return total_h
 
@@ -341,6 +455,121 @@ def points_to_emu(pt):
 # A line PowerPoint has to start whatever the width allows: an <a:br/> element,
 # or a newline character sitting inside a run's own text. Both reach a slide the
 # same way and both are invisible to word-splitting.
+def _fraction_xml(rpr_xml, top, bottom):
+    def part(text):
+        return '<m:r><m:rPr><m:nor/></m:rPr>%s<m:t>%s</m:t></m:r>' % (rpr_xml, text)
+    return (
+        '<mc:AlternateContent xmlns:mc="%s" xmlns:a="%s" xmlns:a14="%s" xmlns:m="%s">'
+        '<mc:Choice Requires="a14"><a14:m><m:oMath><m:f><m:fPr><m:ctrlPr>%s</m:ctrlPr></m:fPr>'
+        '<m:num>%s</m:num><m:den>%s</m:den></m:f></m:oMath></a14:m></mc:Choice>'
+        '<mc:Fallback><a:r>%s<a:t>%s/%s</a:t></a:r></mc:Fallback></mc:AlternateContent>'
+        % (_MC_NS, _A_URI, _A14_NS, _M_NS, rpr_xml, part(top), part(bottom), rpr_xml, top, bottom)
+    )
+
+
+def _slide_text_paragraphs(prs):
+    """Every paragraph of words on a slide: a text box's, and a table cell's.
+
+    A table cell is not one of the boxes the fit sizes, so it has no size of
+    its own on record and takes the smallest fraction, the one that stands
+    inside an ordinary line and so leaves the row the height it was.
+    """
+    bodies = (
+        "{http://schemas.openxmlformats.org/presentationml/2006/main}txBody",
+        _A_NS + "txBody",
+    )
+    for slide in prs.slides:
+        for paragraph in slide._element.iter(_A_NS + "p"):
+            if paragraph.getparent().tag in bodies:
+                yield paragraph
+
+
+def give_fractions_air(prs):
+    """Loosen the line spacing of a paragraph whose fractions set its line height.
+
+    Done once every box has its size and just before the fractions are stacked:
+    the fit has already counted this spacing for the size it chose. A paragraph
+    whose fractions are already stacked (a deck fitted twice) has no typed
+    fraction left and is not loosened again.
+    """
+    from lxml import etree
+    for paragraph in _slide_text_paragraphs(prs):
+        texts = [t.text for r in paragraph.findall(_A_NS + "r") for t in r.findall(_A_NS + "t")]
+        if not any(has_fraction(text) for text in texts):
+            continue
+        if not fraction_needs_air(_shape_scales.get(paragraph.getparent().getparent(), FRACTION_SCALES[-1])):
+            continue
+        ppr = paragraph.find(_A_NS + "pPr")
+        if ppr is None:
+            ppr = etree.SubElement(paragraph, _A_NS + "pPr")
+            paragraph.remove(ppr)
+            paragraph.insert(0, ppr)
+        spacing = ppr.find(_A_NS + "lnSpc")
+        if spacing is None:
+            spacing = etree.Element(_A_NS + "lnSpc")
+            ppr.insert(0, spacing)
+        pct = spacing.find(_A_NS + "spcPct")
+        if pct is None:
+            if len(spacing):
+                continue  # spaced in points: left as the template set it
+            pct = etree.SubElement(spacing, _A_NS + "spcPct")
+            pct.set("val", str(int(DEFAULT_LINE_SPACING * 100000)))
+        pct.set("val", str(int(pct.get("val")) + int(FRACTION_AIR * 100000)))
+
+
+def stack_fractions(prs):
+    """Rewrite every typed fraction in a slide's text boxes as a stacked one.
+
+    The text of shapes and of table cells. The teacher's notes keep the typed
+    form: they are read by one adult, not taught from. A run is split around each fraction
+    and every piece keeps the run's own properties, so colour, weight and size
+    carry through. Returns how many were stacked.
+    """
+    from copy import deepcopy
+    from lxml import etree
+    done = 0
+    t_tag, r_tag, rpr_tag = _A_NS + "t", _A_NS + "r", _A_NS + "rPr"
+    for paragraph in list(_slide_text_paragraphs(prs)):
+        for run in list(paragraph):
+            if run.tag != r_tag:
+                continue
+            t = run.find(t_tag)
+            text = t.text if t is not None else None
+            if not has_fraction(text):
+                continue
+            rpr = run.find(rpr_tag)
+            rpr_xml = etree.tostring(rpr, encoding="unicode") if rpr is not None else ""
+            scale = _shape_scales.get(paragraph.getparent().getparent(), FRACTION_SCALES[-1])
+            if scale != 1 and rpr is not None and rpr.get('sz'):
+                small = deepcopy(rpr)
+                small.set('sz', str(int(int(rpr.get('sz')) * scale)))
+                frac_rpr_xml = etree.tostring(small, encoding="unicode")
+            else:
+                frac_rpr_xml = rpr_xml
+            pieces = []
+
+            def plain(words):
+                if not words:
+                    return
+                piece = deepcopy(run)
+                piece.find(t_tag).text = words
+                pieces.append(piece)
+
+            at = 0
+            for m in FRACTION_RE.finditer(text):
+                plain(text[at:m.start()] + m.group(1))
+                pieces.append(etree.fromstring(_fraction_xml(frac_rpr_xml, m.group(2), m.group(3))))
+                done += 1
+                at = m.end()
+            plain(text[at:])
+            parent = run.getparent()
+            index = parent.index(run)
+            parent.remove(run)
+            for offset, piece in enumerate(pieces):
+                parent.insert(index + offset, piece)
+    return done
+
+
 HARD_BREAK_RE = re.compile("\r\n|[\r\n\x0b\u2028\u2029]")
 _A_NS = "{http://schemas.openxmlformats.org/drawingml/2006/main}"
 
@@ -365,6 +594,14 @@ def paragraph_lines(paragraph, default_font):
         if tag == _A_NS + "br":
             lines.append([])
             continue
+        if tag == "{%s}AlternateContent" % _MC_NS:
+            # A fraction already stacked (a deck fitted twice): its fallback run
+            # is the typed form, and that is what is measured.
+            fallback = child.find("{%s}Fallback/%sr" % (_MC_NS, _A_NS))
+            if fallback is None:
+                continue
+            child = fallback
+            tag = child.tag
         if tag not in (_A_NS + "r", _A_NS + "fld"):
             continue
         saw_run = True
@@ -429,6 +666,11 @@ def apply_size(tf, pt):
     for p in tf.paragraphs:
         for r in p.runs:
             r.font.size = new_size
+        # A stacked fraction's own runs sit inside its equation, where p.runs
+        # does not reach.
+        for rpr in p._p.iter(qn('a:rPr')):
+            if rpr.get('sz') is not None:
+                rpr.set('sz', sz_attr)
         end_rpr = p._p.find(qn('a:endParaRPr'))
         if end_rpr is not None:
             end_rpr.set('sz', sz_attr)
@@ -578,14 +820,34 @@ def measure_shape(shape, ceiling, floor_pt):
         )
         for paragraph in tf.paragraphs
     ]
-    best, hit_floor, fill = best_fit_size(
-        paragraphs_info,
-        shape.width,
-        shape.height,
-        font_file,
-        ceiling,
-        floor_pt,
+    global _measuring_scale
+
+    def at(scale):
+        global _measuring_scale
+        _measuring_scale = scale
+        try:
+            return best_fit_size(paragraphs_info, shape.width, shape.height, font_file, ceiling, floor_pt)
+        finally:
+            _measuring_scale = FRACTION_SCALES[-1]
+
+    holds_fraction = any(
+        has_fraction(text) for lines, _, _ in paragraphs_info for runs in lines for text, _ in runs
     )
+    if not holds_fraction:
+        best, hit_floor, fill = at(0)
+    else:
+        # What the words alone would be given, then the biggest fraction that
+        # leaves them that.
+        words_alone, _, _ = at(0)
+        chosen = FRACTION_SCALES[-1]
+        for scale in FRACTION_SCALES:
+            best, hit_floor, fill = at(scale)
+            if not hit_floor and best >= words_alone:
+                chosen = scale
+                break
+        else:
+            best, hit_floor, fill = at(chosen)
+        _shape_scales[shape._element] = chosen
     return {
         "best": best,
         "hit_floor": hit_floor,
@@ -791,6 +1053,7 @@ def place_card_signs(prs):
 
 def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
     prs = Presentation(path)
+    _shape_scales.clear()
     grown = 0
     shrunk = 0
     unchanged = 0
@@ -945,6 +1208,13 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
         settle_group(members)
 
     place_card_signs(prs)
+    # Last, once every box has its size: the fit measured each fraction as a
+    # taller line, and the runs it sized are the ones split here.
+    give_fractions_air(prs)
+    stacked = stack_fractions(prs)
+    if stacked:
+        print(f"Fit-text: {stacked} fraction(s) stacked top and bottom")
+
     prs.save(path)
     print(
         f"Fit-text: grown {grown}, shrunk {shrunk}, unchanged {unchanged}, "

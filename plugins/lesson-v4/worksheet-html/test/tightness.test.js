@@ -71,13 +71,12 @@ test("a helper is left alone while the room it was given is room it can use", ()
   );
 });
 
-test("writing lines that stopped growing do not hide the paper under them", () => {
+test("writing lines beside something taller do not hide the paper under them", () => {
   // The other half of the same rule, and the half this report used to be blind
   // to. Two ruled lines beside a tall chart are handed the chart's height. They
-  // cannot use it: a line reaches its useful size at half again its own height
-  // and stops, and the rest prints as blank paper INSIDE the block a child
-  // writes in - which is where History Sheet A's gaps came from (8 September
-  // 2026). "It can grow" was being read as "it grew".
+  // cannot use it: a line is one height (9 October 2026), so the rest prints
+  // as blank paper under them - which is where History Sheet A's gaps came
+  // from (8 September 2026).
   const result = tightnessOf(
     sheet({
       parts: [1.8, 1],
@@ -92,12 +91,12 @@ test("writing lines that stopped growing do not hide the paper under them", () =
   assert.ok(found, "two ruled lines given a chart's height should be named");
   assert.equal(
     found.overgrown,
-    true,
-    "this is a box bigger than its answer, not a hole beneath one"
+    false,
+    "ruled lines do not grow, so this is paper beneath them, not a box drawn too big"
   );
   assert.match(
     describeTightness(result),
-    /bigger than the answer it holds/,
+    /below it prints empty/,
     "the message has to say which of the two faults it found"
   );
 });

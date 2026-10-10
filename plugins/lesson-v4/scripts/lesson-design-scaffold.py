@@ -1283,6 +1283,7 @@ def build_scaffold(
             "status": "provided-by-teacher",
             "resourceMode": "per-child",
             "use": request["worksheet"]["use"],
+            "taskUnitId": PLACEHOLDER,
             "activityArchitecture": None,
             "sheetShape": None,
             "demand": None,
@@ -1301,6 +1302,7 @@ def build_scaffold(
                 request["worksheet"]["resourceMode"]
             ),
             "use": request["worksheet"]["use"],
+            "taskUnitId": PLACEHOLDER,
             "activityArchitecture": PLACEHOLDER,
             "sheetShape": {
                 "kind": (

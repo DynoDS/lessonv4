@@ -117,11 +117,10 @@ test("a table that outgrew its answer is named, not passed as writing space", ()
     named,
     "a one-row number table handed a column's height reported nothing at all"
   );
-  assert.equal(
-    named.overgrown,
-    true,
-    "and it is the box-bigger-than-its-answer fault, not blank paper beneath one"
-  );
+  // What is named is the one ruled line beside the table: a line is one
+  // height, so the column's height it was handed prints as paper under it.
+  assert.equal(named.label, "written-answers");
+  assert.equal(named.overgrown, false, "paper beneath a line, not a box drawn too big");
 });
 
 // ─── the balanced-diet sheet ─────────────────────────────────────────────
@@ -241,13 +240,12 @@ test("a ruled line's cap is a cap on the block that holds it", () => {
   );
   assert.match(
     html,
-    /<li class="h-q h-written" style="flex-grow:2">/,
-    "and spare room is shared out by how many lines each answer has, so a " +
-      "one-line answer is not handed the same extra as a four-line one"
+    /<li class="h-q h-written">/,
+    "and no answer carries a share of spare room: a ruled line is one height"
   );
 });
 
-test("what a written block may grow to is exactly what its lines may grow to", () => {
+test("a written block's useful height is its own height: ruled lines do not grow", () => {
   const spec = {
     helper: "written-answers",
     items: [
@@ -259,11 +257,10 @@ test("what a written block may grow to is exactly what its lines may grow to", (
   const naturalMm = measure(spec, 120);
   const usefulMm = enough(spec, 120);
 
-  // Five lines at the upper-phase 6mm, each allowed half again.
   assert.ok(
-    Math.abs(usefulMm - naturalMm - 5 * 3) < 0.01,
-    `the block gained ${(usefulMm - naturalMm).toFixed(2)}mm of useful room where ` +
-      "its five lines can between them use 15mm"
+    Math.abs(usefulMm - naturalMm) < 0.01,
+    `the block gained ${(usefulMm - naturalMm).toFixed(2)}mm of useful room. A ` +
+      "ruled line is one height, so there is nothing for spare room to buy."
   );
 });
 
@@ -295,7 +292,7 @@ test("the sheet's heading is aligned to the work, not to the edge of the paper",
   // from the paper's top and left, so the work area's right edge is 24mm in,
   // and the code has a line of its own there when the first line of work is
   // not a heading with an empty right-hand end.
-  assert.match(html, /body \{[^}]*padding: 10\.2[0-9]*mm 24mm 47\.7[0-9]*mm 6mm;/s);
+  assert.match(html, /body \{[^}]*padding: 10\.2[0-9]*mm 24mm 38\.7[0-9]*mm 6mm;/s);
 });
 
 // A sheet does not print the learning objective. The class has it on the board
@@ -379,9 +376,10 @@ test("a claim to judge does not need two people and two bubbles", () => {
     zones: { a: { question: true, ...claim } },
   });
 
-  assert.ok(
-    !html.includes('<span class="h-speech-figure">'),
-    "an explanation question is not a staged dialogue, and drawing one says it is"
+  assert.equal(
+    html.split('<span class="h-speech-figure">').length - 1,
+    1,
+    "one speaker, one figure: an explanation question is not a staged dialogue"
   );
   assert.match(html, /Ethan/, "the speaker keeps their name");
   assert.match(html, /hundreds digit changes/, "and their exact words");
@@ -390,6 +388,42 @@ test("a claim to judge does not need two people and two bubbles", () => {
     measure(claim, 174) < measure(asAScene, 174),
     "the same claim and the same response cost less page without the furniture"
   );
+});
+
+// One job, one look (the teacher, 9 October 2026, on a Year 4 English sheet that
+// printed the same task as a flat box on Expected and a figure with a bubble on
+// Greater Depth): the figure with the bubble first, the flat panel only where
+// room forces it, and never the designer's pick.
+test("a child's claim is the figure and bubble, however the designer wrote it", () => {
+  const { measure, renderHelper } = require("../src/helpers");
+  const says = "My sentence starts with a fronted adverbial.";
+  const claim = { helper: "named-claim", speaker: "Chidi", says, lines: 0 };
+  const oneTurnScene = { helper: "speech-scene", turns: [{ speaker: "Chidi", says }] };
+
+  const drawn = renderHelper(claim, 174);
+  assert.ok(drawn.includes('<span class="h-speech-figure">'), "the claim draws its speaker");
+  assert.match(drawn, /h-speech-bubble h-speech-given/, "and puts the words in a printed bubble");
+  assert.ok(!drawn.includes("h-claim-panel"), "with no flat panel beside it");
+  assert.equal(
+    renderHelper(oneTurnScene, 174).replace(/\s+/g, " "),
+    drawn.replace(/\s+/g, " "),
+    "a one-turn speech scene is the same drawing"
+  );
+  assert.equal(measure(oneTurnScene, 174), measure(claim, 174), "at the same price");
+});
+
+test("the flat panel stands in where the figure has no room", () => {
+  const { measure, renderHelper } = require("../src/helpers");
+  const says = "My sentence starts with a fronted adverbial.";
+  const claim = { helper: "named-claim", speaker: "Chidi", says, lines: 0 };
+
+  const narrow = renderHelper(claim, 80);
+  assert.match(narrow, /h-claim-panel/, "too narrow for a figure: the panel");
+  assert.ok(!narrow.includes("h-speech-figure"));
+
+  const tight = { ...claim, look: "panel" };
+  assert.match(renderHelper(tight, 174), /h-claim-panel/, "asked for by the layout pass: the panel");
+  assert.ok(measure(tight, 174) < measure(claim, 174), "which is what buys the page back");
 });
 
 test("the code band clears the work below it", async () => {

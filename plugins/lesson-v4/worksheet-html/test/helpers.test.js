@@ -337,7 +337,10 @@ test("suppress the numbers and the 5mm / 6mm number gutter comes out of measurem
   // measuring drop it together.
   const questions = {
     helper: "questions",
-    items: Array(8).fill("w".repeat(60) + ". Explain why this works."),
+    // A sentence that fits the line without its number and wraps beside one:
+    // words are laid out with their real letter widths, so the old run of
+    // sixty w's (one unbreakable word) no longer tells the two apart.
+    items: Array(8).fill("Explain why this works for every number."),
   };
   const withNumbers = measure(questions, 87);
   const withoutNumbers = measure({ ...questions, showNumbers: false }, 87);
@@ -349,8 +352,8 @@ test("suppress the numbers and the 5mm / 6mm number gutter comes out of measurem
   const written = {
     helper: "written-answers",
     items: [
-      { text: "w".repeat(60) + ". Explain why this works.", lines: 8 },
-      { text: "w".repeat(120) + ".", lines: 8 },
+      { text: "Explain why this works for every number.", lines: 8 },
+      { text: "Explain how you know that it always works.", lines: 8 },
     ],
   };
   assert.ok(

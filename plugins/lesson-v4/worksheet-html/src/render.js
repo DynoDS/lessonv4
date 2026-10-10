@@ -13,10 +13,11 @@
 // nobody had subtracted. A rectangle placed at a millimetre offset has neither
 // problem, and it is exactly what the gallery already draws.
 
+const { STACKED_FRACTION_CSS } = require("../../shared/text/stacked-fractions");
 const { pageSize, printableArea, DEFAULT_MARGIN_MM, edgeShiftMm, narrowSpareMm, footSpareMm, rightSpareMm } = require("./page");
 const { renderDecorationLayers } = require("./decorations");
 const { cssVariables, SPACE, TYPE } = require("./tokens");
-const { NOTE_LINE_MM, linesFor, esc } = require("./helpers/shared");
+const { NOTE_LINE_MM, linesFor, esc, tieHtmlText } = require("./helpers/shared");
 const { LAYOUTS, VARIANTS, flatten } = require("./layouts");
 const { isStack } = require("./helpers/compose");
 const { recordingIcon, opensWithHeading } = require("./slips");
@@ -29,6 +30,8 @@ const {
   describeContent,
   fits,
   helperCss,
+  measure,
+  recordMeasures,
 } = require("./helpers");
 
 // The gutter between zones. Without it, content in one zone runs straight up
@@ -449,8 +452,8 @@ function zoneRules(placed) {
 // apart only by the gutter between them, so a question in the left column ran
 // on, to the eye, into whatever sat level with it on the right (the teacher,
 // 4 October 2026: "can there always be a line down the middle to separate the
-// 2 columns too?"). Drawn in the middle of the gutter, for as far down as the
-// two zones are both there.
+// 2 columns too?"). Drawn in the middle of the gutter, down to the end of the
+// longer of the two.
 function columnRules(placed) {
   const zones = placed.filter((p) => p.content);
   const near = (a, b) => Math.abs(a - b) < 0.01;
@@ -459,7 +462,11 @@ function columnRules(placed) {
     for (const q of zones) {
       if (q === p || !near(q.x, p.x + p.w)) continue;
       const top = Math.max(p.y, q.y);
-      const bottom = Math.min(p.y + p.h, q.y + q.h);
+      // To the end of the LONGER column. Drawn only as far as both went, it
+      // stopped beside the middle of a question, a stub that reads as a
+      // mistake (the teacher, 9 October 2026). Two zones side by side share a
+      // row, so the longer one ends before anything beneath them begins.
+      const bottom = Math.max(p.y + p.h, q.y + q.h);
       if (!(bottom - top > 1)) continue;
       out.push(
         `<div class="zone-rule zone-rule--down" style="left:${q.x - GUTTER_MM / 2}mm;top:${top}mm;height:${bottom - top}mm"></div>`
@@ -660,6 +667,29 @@ function checkFit(spec) {
 }
 
 // Reported alongside the HTML so a caller can show it without re-measuring.
+// How tall each piece that holds a write-in blank comes out on this page, in
+// the order the page meets them. A sentence with a blank in it is the one kind
+// of text that reads worse the moment it wraps: "Tell us when: ...... the owl /
+// swooped down." leaves the end of the child's own sentence on a line by
+// itself. The narrow page compares these with the full-width ones (sheetsOf).
+const HOLDS_BLANK = /_{2,}/;
+
+function blankPieceHeights(spec) {
+  const { tree, sheet } = sheetGeometry(spec);
+  const area = contentArea(spec);
+  const measured = recordMeasures(() => {
+    for (const zone of flatten(tree)) {
+      const content = sheet.zones[zone.id];
+      if (content) measureContent(content, zoneContentMm(zone, area).wMm);
+    }
+  });
+  return [...measured.values()]
+    .filter((piece) => HOLDS_BLANK.test(JSON.stringify(piece.spec)))
+    // The browser's height where it has measured the piece: the arithmetic
+    // called "quarter past ......" two lines under a clock that printed it on one.
+    .map((piece) => measure(piece.spec, piece.widthMm));
+}
+
 function measureFill(spec) {
   const { tree, sheet } = sheetGeometry(spec);
   const area = contentArea(spec);
@@ -769,7 +799,7 @@ function renderSheet(spec, opts = {}) {
   const codeMm = codeLineMm(spec, placed);
   const zones = placed
     .map((p) => {
-      const inner = p.content ? renderContent(p.content, p.w - GUTTER_MM) : "";
+      const inner = p.content ? tieHtmlText(renderContent(p.content, p.w - GUTTER_MM)) : "";
       // The zone id travels into the DOM so the browser check can name the
       // zone a clipped child actually sits in. Calculated fit is an estimate
       // made before any font loaded; what the page DOES is the only thing a
@@ -794,6 +824,9 @@ ${cssVariables()}
   body {
     font-family: var(--font);
     color: var(--colour-ink);
+    /* No word alone on a last line (see tieSentenceStarts in helpers/shared.js
+       for the other end of a sentence). It never adds a line. */
+    text-wrap: pretty;
     width: ${page.widthMm}mm;
     height: ${page.heightMm}mm;
     /* The heading's band is padding, so the work below it starts under the
@@ -869,6 +902,7 @@ ${cssVariables()}
   }
 
 ${helperCss}
+${STACKED_FRACTION_CSS}
 </style></head>
 <body data-worksheet-page>
   ${decorationLayers.low}
@@ -904,11 +938,23 @@ function drawnZoneHeights(spec) {
   return byId;
 }
 
+// Every zone as it is drawn: where it is, how big, and what it holds. For a
+// check that has to know which column a question landed in.
+function drawnZones(spec) {
+  const { tree, sheet } = sheetGeometry(spec);
+  const area = contentArea(spec);
+  const measured = measureTree(tree, sheet, area.widthMm);
+  growToFit(measured, area.heightMm);
+  return placeTree(measured, 0, 0, area.widthMm).filter((zone) => zone.content);
+}
+
 module.exports = {
   NOT_ON_SHEETS,
+  drawnZones,
   criteriaPanelsOn,
   renderSheet,
   checkFit,
+  blankPieceHeights,
   getLayout,
   measureFill,
   zoneContentMm,

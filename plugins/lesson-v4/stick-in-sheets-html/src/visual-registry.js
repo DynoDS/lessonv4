@@ -339,7 +339,7 @@ const VISUALS = {
   "fraction-wall": sharedPiece(fractionWall, 130),
   // 130mm: coins at life size, as on the sheet, with the row wrapping only if
   // there are more than a strip holds.
-  money: sharedPiece(money, 130),
+  money: sharedPiece(money, 130, { trueSize: true }),
   // The pictures below reached the pack on 13 September 2026, when every
   // picture became one shared drawing on all four surfaces. Each prints at the
   // size it lays itself out at in the pack's ink profile, inside the width here.

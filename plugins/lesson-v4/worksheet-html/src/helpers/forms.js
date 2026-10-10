@@ -7,7 +7,7 @@
 // method is the exception: it is the shared drawing the board and the wall
 // place, so a child meets one column sum in all three places.
 
-const { LINE_MM, NOTE_LINE_MM, esc, promptHtml, linesFor } = require("./shared");
+const { LINE_MM, NOTE_LINE_MM, BANK_HEADING, esc, promptHtml, linesFor } = require("./shared");
 const { SPACE } = require("../tokens");
 const { MM_TO_PT } = require("../../../shared/visuals/surface-profiles");
 const { atPrintedWidth } = require("./at-printed-width");
@@ -101,7 +101,7 @@ function renderSortGrid(spec) {
       ${
         entries.length
           ? `<div class="h-sortgrid-bank">
-              <p class="h-sortgrid-bank-title">Word bank</p>
+              <p class="h-sortgrid-bank-title">${esc(BANK_HEADING)}</p>
               <div class="h-sortgrid-bank-choices">${entries
                 .map(
                   (e) =>
@@ -278,8 +278,38 @@ function drawSurfaceMm(spec) {
   return Math.min(DRAW_DERIVED_MAX_MM, derived);
 }
 
+// One line across the box, with the name of what lies under it: the soil a
+// plant grows in, the ground, the sea, a horizon. A child draws above and below
+// one line on one surface. Until 10 October 2026 the only way to show it was
+// two boxes with a gap between, so the plant's stem had to jump the gap (stress
+// test, 7 October 2026, a Year 1 sheet).
+//
+//   line     the name printed just under the line ("soil"); "" for a bare line
+//   lineAt   how far down the box the line sits, as a share from 0.2 to 0.8
+//            (default 0.6: more room above the line than below)
+const DRAW_LINE_AT = 0.6;
+
+function drawLine(spec) {
+  if (spec.line === undefined || spec.line === null || spec.line === false) return null;
+  if (drawAreas(spec).some(Boolean)) {
+    throw new Error(
+      "drawing-space has both `areas` and `line`. Areas sit side by side and a line " +
+        "runs across the whole box, so a box has one or the other."
+    );
+  }
+  const at = spec.lineAt === undefined ? DRAW_LINE_AT : Number(spec.lineAt);
+  if (!Number.isFinite(at) || at < 0.2 || at > 0.8) {
+    throw new Error(
+      `drawing-space lineAt is ${spec.lineAt}. It is how far down the box the line sits, ` +
+        "as a share from 0.2 to 0.8, so there is room to draw on both sides of it."
+    );
+  }
+  return { name: spec.line === true ? "" : String(spec.line).trim(), at };
+}
+
 function renderDrawingSpace(spec) {
   checkDrawingFrame(spec);
+  const line = drawLine(spec);
   const areas = drawAreas(spec);
   const cells = areas
     .map(
@@ -292,7 +322,16 @@ function renderDrawingSpace(spec) {
   return `
     <div class="h-draw">
       ${spec.text ? `<p class="h-draw-stem">${esc(spec.text)}</p>` : ""}
-      <div class="h-draw-surface">${cells}</div>
+      <div class="h-draw-surface">${cells}${
+        line
+          ? // The name is the line's neighbour, not its child: a line has no
+            // height, and words inside it would be read as spilling out of it.
+            `<div class="h-draw-line" style="top:${(line.at * 100).toFixed(1)}%"></div>` +
+            (line.name
+              ? `<span class="h-draw-line-name" style="top:${(line.at * 100).toFixed(1)}%">${esc(line.name)}</span>`
+              : "")
+          : ""
+      }</div>
     </div>`;
 }
 
@@ -300,6 +339,7 @@ function measureDrawingSpace(spec, widthMm) {
   // Refused while measuring as well, so a sheet is turned back before it is
   // drawn rather than after.
   checkDrawingFrame(spec);
+  drawLine(spec);
   const stemMm = spec.text ? linesFor(spec.text, widthMm) * LINE_MM + SPACE.tight : 0;
   return stemMm + drawSurfaceMm(spec);
 }
@@ -394,13 +434,24 @@ const css = `
      exactly the reading the sorting grid gave this task and exactly the one to
      lose. */
   .h-draw-surface {
-    flex: 1; display: flex; min-height: 0;
+    flex: 1; display: flex; min-height: 0; position: relative;
     border: var(--rule-hair) solid var(--colour-rule);
     border-radius: 1.5mm;
   }
   .h-draw-area { flex: 1; min-width: 0; position: relative; }
   .h-draw-area + .h-draw-area {
     border-left: var(--rule-hair) solid var(--colour-rule);
+  }
+  /* The line across: a little heavier than the box's own hairline, so it reads
+     as part of the picture and not as the edge of a second box. */
+  .h-draw-line {
+    position: absolute; left: 0; right: 0;
+    border-top: var(--rule-line) solid var(--colour-quiet);
+  }
+  .h-draw-line-name {
+    position: absolute;
+    margin-top: var(--inset-cell-v); left: var(--inset-card-h);
+    font-size: var(--type-note); color: var(--colour-quiet);
   }
   .h-draw-name {
     position: absolute;

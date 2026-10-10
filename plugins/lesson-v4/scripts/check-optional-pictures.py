@@ -1038,6 +1038,20 @@ def drawings_on_ink(lesson: object, room_record: object) -> tuple[list[str], boo
                 continue
             name = decoration.get("concept") or decoration.get("id") or "a drawing"
             kinds = [on_figure[cell] for cell in cells if cell in on_figure]
+            if len(kinds) / len(cells) > ON_FIGURE_SHARE and kinds[0] == "answer space":
+                # Nothing is printed after an open sum, so neither ink nor a
+                # figure's lines protect it. The teacher moved twelve drawings
+                # out of that blank on one column addition deck: "they were
+                # touching or in the space of where if I wrote on the board I
+                # would have wrote the answer" (8 October 2026).
+                failures.append(
+                    f"slide {number}: the `{name}` drawing sits in the blank "
+                    "beside a sum left open, where the teacher writes the "
+                    "answer on the board. Move it off that part of the card: "
+                    "the card above the sum, the strip beside the title, a "
+                    "margin or the corner of another panel is still open"
+                )
+                continue
             if len(kinds) / len(cells) > ON_FIGURE_SHARE:
                 failures.append(
                     f"slide {number}: the `{name}` drawing sits on the "

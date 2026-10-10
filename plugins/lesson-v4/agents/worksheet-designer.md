@@ -280,6 +280,8 @@ picture folders: a published picture belongs to the picture stage, and a test
 copy left over one prints the wrong photograph under the right caption. The content-gap rule below is only for a ref genuinely absent
 from that contract.
 
+If your viewer refuses a picture you open, read `[PLUGIN_ROOT]/references/picture-you-cannot-see.md` before deciding anything that depends on what is in it: the cause is the file's layout, not its size, and that file says what to do.
+
 When a required visual has no approved request, do not put the word or question
 on the page bare and do not redesign the task as text. Omit the affected sheet
 and return:
@@ -385,8 +387,9 @@ left-to-right, and turned on its side, so if your biggest item is second,
 a shape whose biggest zone is second already exists and has already been
 tried.
 
-The gate and build share layout estimates. The fixed builder then measures
-the browser output, corrects fit where possible and refuses unresolved clipping.
+The preflight measures every piece in the browser that prints the sheet, then
+draws each sheet whole the way the build will, so a page it passes is a page
+the build passes and a refusal is about the printed page, not an estimate.
 Use the preflight here; do not build a page yourself to measure it.
 
 **Name a layout yourself when the teaching or the page's faithful presentation
@@ -401,7 +404,7 @@ node "[PLUGIN_ROOT]/worksheet-html/scripts/suggest.js" "<content.json>" "<YEAR_G
 
 with the same zone entries in a JSON file (a bare array, or
 `{ "items": [...] }`) to see every shape that holds them, ranked. Always pass
-the year group - a writing line is 8mm for Years 1 to 3 and 6mm for Years 4
+the year group - a writing line is 10mm for Years 1 to 3 and 8mm for Years 4
 to 6, so an answer measured without it is a different sheet's - and keep
 `question: true` on the content you pass, because a printed number has a real
 left gutter and the tool measures the final numbered width. The reply names
@@ -417,9 +420,9 @@ once, the removals that clear the whole shortfall in fit-priority order; a cut
 that clears part of it costs another check and the next cut after that. A
 sheet that came back 32mm over, then 19mm, then 5mm, then 2mm was four checks
 for one decision. For widths, or a part's own parts, add `--measure`
-to the same command and it prints the real smallest width and height of every
-entry, and of each part inside it, for its actual wording - the numbers the
-preflight and the build use. That answers what is too big, and by how much,
+to the same command and it prints, for every entry and each part inside it,
+the least width it needs and its measured height at each width a sheet gives,
+for its actual wording - the numbers the preflight and the build use. That answers what is too big, and by how much,
 without reading the engine's source or writing a script of your own to find
 out. The adaptation's page budget is an estimate made before the wording
 existed; where this disagrees with it, this is right, and a protected set that
@@ -483,12 +486,19 @@ output even when every word on it is right. Six habits keep a page composed:
   never for parallel cases fused into one block of prose. A poem's lines are
   part of what the child reads, so a poem is a `poem`, with `boxes` where each
   line takes a count, never a table whose cells wrap a line in half. What a
-  named child says is a `named-claim`, the bubble with their name on it, not a
-  sentence of prose beginning `Kofi says:`: shown the same claim both ways the
-  teacher chose the bubble, because a page of unbroken print reads as "so
-  texty" and the bubble shows at a glance whose idea is being judged (4 October
-  2026). The question about the claim prints under the bubble and above the
-  lines it is answered on.
+  named child says is a `named-claim` on every level, not a sentence of prose
+  beginning `Kofi says:`: a page of unbroken print reads as "so texty", and
+  the drawn child with a speech bubble shows at a glance whose idea is being
+  judged. The engine chooses how the claim is drawn (the figure with its
+  bubble, or a flat panel with the name where the column or the page is too
+  tight for the figure), so the same task looks the same on all three sheets
+  unless room forced a difference; there is no look to pick and nothing to
+  repair when the build says it used the panel. The question about the claim
+  goes in its `ask`, which prints under the words and above the box and lines
+  it is answered on; a tick-or-cross box the plan asks for is `tickOrCross:
+  true`, with the question's wording left as the plan wrote it. A child's own
+  sentence that is only there to be looked at (`Ben wrote this sentence.`) is
+  not a claim and stays as plain print.
 - **Shared structure appears once.** When the parts of a question-group share
   the same response columns, they are one table: one header, one row per part,
   the engine's `(1a)` `(1b)` numbering marking the parts. Repeating an
@@ -497,7 +507,27 @@ output even when every word on it is right. Six habits keep a page composed:
 - **Response space matches the thinking, column by column.** Choose each answer
   space - a recording-table's `writing`, a written-answer's `lines` - from the
   most demanding thing the `response` field asks for, not the least. "Explain"
-  or "what makes it work" is never a word-size cell. Size a recording table per
+  or "what makes it work" is never a word-size cell. Ruled lines for an answer
+  are `written-answers`, which prints them with no box; a `writing-frame` is
+  for sentence starters or a named part of a planner (`Conclusion: what I
+  think`), never a way to get more lines. A question printed word for word on
+  two levels is the same answer, so it gets the same number of lines on both
+  (the preflight refuses a mismatch as `SAME_QUESTION_DIFFERENT_ROOM`); the
+  count differs only where the task itself does. A long answer, four lines or
+  more, is written in the child's book even on a `"sheet"` sheet: the engine
+  prints the question with `Write your answer in your book.` in place of the
+  lines and marks each question with a book or a pencil, so ask for the lines
+  the answer needs and budget that question at its prompt plus one line. A
+  ruled line is one height for the year group (10mm in Years 1 to 3, 8mm in
+  Years 4 to 6) and never stretches, so the count you ask for is what prints
+  and every answer in the pack is spaced alike. The count tells a child how
+  much to write, so it comes from the question: room left over stays as paper
+  at the foot of the sheet and is never a reason for another line. A task with
+  no short answer to write on the page - a drawing or diagram the child makes
+  themselves - says where it goes instead: `"answerInBook": true` on its
+  `questions` set, or a `drawing-space` when the book will not do
+  (`books-or-sheet.md`); left with neither on a `"sheet"` sheet it is refused
+  as `NOWHERE_TO_ANSWER`. Size a recording table per
   column (`"writing": ["word", "tick", "word", "sentence"]`), because one size
   for the whole table has to be wrong somewhere: all-sentence spends width the
   tick columns never use and can cost the page its layout, all-word prints a
@@ -545,7 +575,11 @@ keeps its own number run.
 
 For an Expected `lesson-design.json` content block whose `kind` is `question-group`, every generated Part's outer `question: true` object must carry `questionGroupId` equal byte-for-byte to the enclosing content block `id`, for example `ws-qg-001`. Every Part in that group uses that same value. Ordinary `question` blocks carry no `questionGroupId`. Do not invent, normalise or renumber another grouping identity. Below and Greater Depth continue to derive grouping from `adaptation.md`'s explicit `Question group` / `Part` structure under the existing adaptation rules.
 
-For a `question-group`, preserve its part order. A group's shared task line - an Expected non-null `groupPrompt`, or the line an adaptation writes above its lettered parts - goes on the first Part's outer object as `"groupPrompt"`, verbatim, and in no Part's own text. The engine prints it once, unnumbered, above all the Parts: `Write each number as Roman numerals.`, with `(2a) 62`, `(2b) 85` underneath. Put inside the first Part it printed as `(2a) Write each number as Roman numerals. 62`, which reads as part a's task alone.
+For a `question-group`, preserve its part order. A group's shared task line - an Expected non-null `groupPrompt`, or the line an adaptation writes above its lettered parts - goes on the first Part's outer object as `"groupPrompt"`, verbatim, and in no Part's own text. The engine prints it once, unnumbered, above all the Parts: `Write each number as Roman numerals.`, with `(2a) 62`, `(2b) 85` underneath. Keep its line breaks: lines that start `- ` are the task's rules and print as short points under the direction (`preferences.md` → A task line is one direction, then its rules). Put inside the first Part it printed as `(2a) Write each number as Roman numerals. 62`, which reads as part a's task alone.
+
+**Keep a question's parts together, and give what the sheet shares its own place.** A child who finishes (1a) looks for (1b) under it. When a picture and a word bank fill the first column, the parts get pushed apart: a Year 2 sheet printed (1a) under its photograph and (1b) to (1d) at the top of the next column, away from the instruction and the bank (the teacher, 9 October 2026: "confusing because it goes 1a, then 1b and c are on next column"). Material every question draws on - the scene, the picture, the word bank - goes in a band across the top (`band-two-cols`: zone `a` a `row` of the words and bank beside the picture with stated `parts`, such as `[1, 1]`, because a row left to share by shape gives a picture most of the width and squeezes the words into a strip; zones `b` and `c` the questions). The band takes the height of what is in it, the questions start level under one rule, and no line runs down beside the picture. A question that still will not fit one column may run on once most of it is down; the preflight refuses one that leaves a single part behind (`QUESTION_SPLIT_ACROSS_COLUMNS`).
+
+**A one-line answer after a short prompt sits beside it.** Under `sky`, `clouds`, `grass`, a full ruled line each doubles the height of the question and parts the answer from its word. Give a one-line `written-answers` item `"answerLetters"` (the letters and spaces in the model answer, so `the tall, leafy tree` is 20) and the engine prints the line on the prompt's own row when the answer fits there at this year group's handwriting, and underneath when it does not, which is the child's extra room (the teacher, 9 October 2026). Give every part of one question the same figure, the longest model answer among them, so the parts are set out alike. Leave it off a prompt that is a sentence, and off any answer of more than one line. Where the adaptation asks for more support, the phrase started for the child (`the ______ , ______ sky`) is an `instruction` with blanks: right for a Below sheet or the first part on Expected, and never a quiet replacement for an answer the level is meant to write whole.
 
 For `frame`, `stimulus-set` and `child-generated`, honour that structured shape directly; do not convert it into a question list.
 
@@ -596,8 +630,7 @@ never talk yourself into a smaller picture to get past it.
 **When no layout in the library holds it, the brief is bigger than a page and
 that is the finding.** Not a puzzle to keep re-cutting: three or four refusals
 on the same sheet means you are past the point where a different shape helps,
-and the refusal message tells you plainly - a sheet's zones get about
-239mm of height in portrait, and 180mm of height by 239mm of width in
+and the refusal message tells you plainly - a sheet's work gets 248mm of height in portrait, and 180mm of height by 242mm of width in
 landscape, so content asking for 500mm is not a layout problem. That is less
 than the paper: a strip 43mm deep is left clear for the teacher to trim off,
 along the foot of a portrait sheet and down the right of a landscape one, so
@@ -624,9 +657,13 @@ first, and it is often not the one that looks biggest in the brief.
 
 When the complete content does not fit, read the measured failing block and available width/height before choosing a repair. Change the geometry that caused the failure (for example, the column allocation or a repeated support), then rebuild and compare the resulting measurements. Removing a wrapper that preserves the same width and height is not a fit repair. Preserve readable text, usable response space and all required learning; follow the priorities below rather than repeating an unchanged build:
 
-1. **Compose faithfully.** Reuse one required stimulus across connected prompts
-   or choose another arrangement only when the task relationships remain
-   unchanged.
+1. **Compose faithfully.** Draw a figure smaller while it is plainly still
+   usable at that size (a photograph's stated height, a grid at its smaller
+   square), reuse one required stimulus across connected prompts, or choose
+   another arrangement, only when the task relationships remain unchanged.
+   The teacher's order when a page is over is a smaller drawing first, then
+   another arrangement, and a removal last (9 October 2026), because a child
+   loses nothing from the first two.
 2. **Remove optional context only.** An optional context picture may disappear
    when it does not change the learning.
 3. **Drop a printed reference the child already has in front of them.** A
@@ -1159,3 +1196,8 @@ like the helper is not the helper: it carries none of its sizing or fitting
 behaviour, and the sheet ships a substitute for a visual the lesson depends on.
 Repair it by using the named helper, here, where it is still a composition
 decision of yours. Do not edit `helper-check.json`, which is not yours.
+
+A `HELPER_RECORD_STALE:` line is different: the lesson was revised after that
+record was written, so the record is behind and your sheet is not at fault.
+Build what `lesson-design.json` asks for now, change nothing to answer the
+line, and copy it into your return so the orchestrator can refresh the record.

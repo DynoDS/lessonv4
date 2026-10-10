@@ -84,7 +84,7 @@ When the finding is a capacity or layout overrun, confirm your repair cleared it
 node "[PLUGIN_ROOT]/working-wall-html/build.js" "[WORKING_DIR]/working-wall.json" --validate-only
 ```
 
-`WORKING_WALL_LAYOUT_OK` means the wall will build. A second `Layout validation failed:` line means the repair did not reach the budget the message names, and it is cheaper to keep going here than to hand the builder a spec that will fail again.
+`WORKING_WALL_LAYOUT_OK` means the drawn page is sound. A second `Layout validation failed:` line means the repair did not reach the budget the message names, and it is cheaper to keep going here than to hand the builder a spec that will fail again.
 
 A panel too tall for its page, or a second three-line sticky fact, is a layout fault you can repair without touching a word: put the card's items, in their order, on two cards of the same type and title, when the wall holds only one teaching card (it takes two). `check-repair-scope.py` accepts a list split that way. An item over its own character budget is different: it needs its card's room first (a list over a second card), then a shorter whole sentence, the picture never off; all are the wall designer's, not this round's, so leave that finding unrepaired and say it needs the wall designer. A success-criteria step is never reworded by anyone, so for one of those say instead that its card needs room (its list over two cards; its picture never comes off).
 

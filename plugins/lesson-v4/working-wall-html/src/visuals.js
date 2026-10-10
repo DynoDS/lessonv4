@@ -247,6 +247,17 @@ const PICTURE_GIVES_WAY = [0.65, 0.7];
 // second goes on a second card.
 const PHOTO_AT_A_THIRD = { share: 0.7, floorLines: 3, factsOnThreeLines: 1 };
 
+// A sticky fact and the picture beside it get a real half of the sheet each,
+// whenever the fact fits its half at the wall's 36pt or bigger, over as many
+// lines as the layout allows any item. The teacher chose this from pictures
+// of his own Year 6 poster (10 October 2026, "way better"): a grid 165mm wide
+// beside a five-line sentence, against the 105mm it printed at. It replaces
+// the count of lines as what decides the picture's share: the rule above
+// narrowed that picture to a third because the fact "would not fit" in two
+// lines at the floor, and the fact then printed at 60pt over five. Only a
+// fact that does not fit its half at the floor falls to the shares above.
+const STICKY_HALF = { share: 0.5, floorLines: MAX_LINES_PER_ITEM };
+
 function panelFractionThatFits(base, fitsAt) {
   if (base !== 0.6 || fitsAt(base)) return base;
   const roomier = PICTURE_GIVES_WAY.find((fraction) => fitsAt(fraction));
@@ -281,7 +292,12 @@ function panelFractionFor(card, ctx, hasPhoto) {
 // give up: `bodyFitsAtFloor` steps the reserve back until the body fits at its
 // floor, never below the fifth that was always guaranteed. Nothing shrinks,
 // and no card can be pushed under its text floor by construction.
-const WIDE_VISUAL_SHARE_GENEROUS = 1 / 3;
+//
+// The offer was a third until 10 October 2026, when the teacher chose, from
+// pictures of his own posters, the drawing taking the room and the words at
+// their readable floor. It is now a half, still stepped back by the same
+// probe, so the words keep their floor exactly as before.
+const WIDE_VISUAL_SHARE_GENEROUS = 1 / 2;
 // A card whose picture IS the sheet (`visualScale: "full"`: a model text the
 // class writes from) offers the picture almost all of it, the panel above
 // keeping only the line or two it says. Beside the panel, as `dominant`, a
@@ -341,12 +357,19 @@ function pickVisual(marked, ctx) {
   if (!ctx || !ctx.svgImages) return null;
   const keyFn = VISUAL_KEY_FNS[visual.type];
   if (!keyFn) return null;
-  const entry = ctx.svgImages[keyFn(visual) + calloutKeySuffix(visual)];
+  const suffix = calloutKeySuffix(visual);
+  // A drawing the build has sized for its card is filed under that size
+  // (svg-renderer.js `sharedAtWidth`, `labelDiagramWall`).
+  const size = ctx.widths && ctx.widths[keyFn(visual) + suffix];
+  const sized = size > 0 ? { ...visual, [visual.type === "label-diagram" ? "_wallLabelPx" : "_wallWidthMm"]: size } : visual;
+  const entry = ctx.svgImages[keyFn(sized) + suffix];
   if (!entry) return null;
   // Marked as a lesson drawing, so the size it prints at is checked.
-  markDrawn(Buffer.isBuffer(entry) ? entry : entry.png, visual);
+  markDrawn(Buffer.isBuffer(entry) ? entry : entry.png, visual, entry.words);
   if (Buffer.isBuffer(entry)) return { buf: entry, aspect: 1 };
-  return entry.anchors ? { buf: entry.png, aspect: entry.aspect || 1, anchors: entry.anchors } : { buf: entry.png, aspect: entry.aspect || 1 };
+  const drawn = entry.anchors ? { buf: entry.png, aspect: entry.aspect || 1, anchors: entry.anchors } : { buf: entry.png, aspect: entry.aspect || 1 };
+  if (entry.pictureAspect) drawn.pictureAspect = entry.pictureAspect;
+  return drawn;
 }
 
 function defaultVisualLabel(visual) {
@@ -381,6 +404,7 @@ module.exports = {
   panelFractionThatFits,
   PICTURE_GIVES_WAY,
   PHOTO_AT_A_THIRD,
+  STICKY_HALF,
   wideVisualReserveInches,
   stackedFigureInches,
   pickVisual,

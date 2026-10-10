@@ -294,6 +294,15 @@ def figure_cells(image, Image, ImageChops, figure: dict) -> set[tuple[int, int]]
     columns, rows = right - left, bottom - top
     if columns <= 0 or rows <= 0:
         return set()
+    # The blank beside a sum left open is kept whole. Nothing is drawn after
+    # the equals sign, so there is no drawn edge to read it by: that blank is
+    # where the teacher writes the answer.
+    if figure.get("whole") is True:
+        return {
+            (row, column)
+            for row in range(top, bottom)
+            for column in range(left, right)
+        }
     px_w = image.width / float(GRID_W)
     px_h = image.height / float(GRID_H)
     crop = image.crop((
@@ -352,10 +361,13 @@ def measure_page(path: Path, figures: list[dict] | None = None) -> dict:
             continue
         for row, column in cells:
             grid[row][column] = False
-        kept.append({
+        entry = {
             "type": str(figure.get("type") or "figure"),
             "x": figure["x"], "y": figure["y"], "w": figure["w"], "h": figure["h"],
-        })
+        }
+        if figure.get("whole") is True:
+            entry["whole"] = True
+        kept.append(entry)
     clear_cells = sum(1 for row in grid for cell in row if cell)
     areas = clear_areas(grid)
     largest = largest_clear_rectangle(grid)

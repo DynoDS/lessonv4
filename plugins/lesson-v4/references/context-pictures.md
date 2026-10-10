@@ -296,6 +296,10 @@ cannot say what the search returned, you have not made the choice yet.
 - No drawing goes on a figure itself: the empty middle of a chart, the inside
   of a shape, a blank table cell. That is where the teaching happens, whatever
   the drawing is of, and the check refuses it. Beside the figure is open.
+- No drawing goes in the blank beside a sum left open (`2,347 + 126 =`). That
+  is where the teacher writes the answer on the board, and the check refuses
+  it from the sum's line down. The card above the sum and the space after a
+  question that is answered aloud are ordinary room.
 - No decoration is a pencil, a tick, a lightning bolt or a sheet of paper,
   anywhere in the deck. Those are the signs children act on, and a decoration
   that looks like one is a sign in the wrong place.

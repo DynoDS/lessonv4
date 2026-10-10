@@ -37,6 +37,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
+from picture_plain import plain_bytes
 
 USER_AGENT = "lesson-resources-image-scout/2.0 (https://github.com/DynoDS/lessonv4; educational lesson-generation tool)"
 DEFAULT_OUTPUT = os.path.expanduser("~/Pictures/web-fetch")
@@ -189,7 +190,8 @@ def download_image(url, dest_path):
         raise SourceFailure(f"could not reach {url}: {exc.reason}", "transport") from exc
     if len(data) > MAX_BYTES:
         raise SourceFailure(f"{url} is larger than the {MAX_BYTES // (1024 * 1024)} MB ceiling")
-    _atomic_write(dest_path, data)
+    # Rewritten plain, so the worker who looks at it can open it (picture_plain.py).
+    _atomic_write(dest_path, plain_bytes(data))
 
 
 def decode_info(path):

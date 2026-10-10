@@ -286,7 +286,10 @@ test("slips follow the sheet's reading order and keep its question numbers", () 
   assert.equal((html.match(/class="slip[ "]/g) || []).length, 4);
   assert.equal((html.match(/data-worksheet-zone="slip-/g) || []).length, 4);
   assert.match(html, /<div class="slip-code">E<svg class="sheet-recording"[^>]*aria-label="books"/);
-  const firstSlip = html.slice(html.indexOf('class="slip '), html.indexOf('data-worksheet-zone="slip-2"'));
+  // A sentence's first two words are tied on the page (helpers/shared.js).
+  const firstSlip = html
+    .slice(html.indexOf('class="slip '), html.indexOf('data-worksheet-zone="slip-2"'))
+    .replaceAll(String.fromCharCode(160), " ");
   assert.ok(firstSlip.indexOf("Round to the nearest 100.") < firstSlip.indexOf("Explain your answer"));
   assert.doesNotMatch(firstSlip, /h-lines/);
   // One cut across between two rows, one cut down between two columns.

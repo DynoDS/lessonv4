@@ -30,7 +30,7 @@
 //                    label  the shape's name shown in the chip (e.g. "Square")
 
 const highlight = require('./figure-highlight');
-const { INK_TONES, printsInInk } = require('./surface-profiles');
+const { INK_TONES, printsInInk, answerColour } = require('./surface-profiles');
 
 // ─── CONSTANTS (geometry units; the whole drawing scales on placement) ────
 const CELL_W      = 440;         // each cell's width
@@ -140,7 +140,7 @@ function tightSvg(data, profile) {
   const ink = printsInInk(profile);
   const colLabelC = ink ? INK_TONES.ink : COL_LABEL_C;
   const rowLabelC = ink ? INK_TONES.ink : ROW_LABEL_C;
-  const chipStrokeC = ink ? INK_TONES.ink : CHIP_STROKE_C;
+  const chipStrokeC = ink ? INK_TONES.ink : answerColour(profile, CHIP_STROKE_C, '#000000');
   const gridC = ink ? INK_TONES.ink : GRID_COLOUR;
   const chipTextC = ink ? INK_TONES.ink : CHIP_TEXT_C;
   const shapes = resolveShapes(data);

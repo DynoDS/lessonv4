@@ -54,7 +54,7 @@ const ARC_COLOUR  = '#0070C0';      // angle arcs, house blue
 const SYM_COLOUR        = '#333333';    // lines of symmetry, neutral dark (question)
 const SYM_COLOUR_ANSWER = '#00B050';    // lines of symmetry, house answer green (reveal)
 
-const { INK_TONES, printsInInk } = require('./surface-profiles');
+const { INK_TONES, printsInInk, answerColour } = require('./surface-profiles');
 
 const SCALE      = 100;             // base size — bounding triangle scaled to this
 const LINE_W     = SCALE * 0.030;   // outline stroke
@@ -292,7 +292,7 @@ function tightSvg(data, profile) {
   // none, which is correct. Note their tips so the tight crop allows for the small
   // overshoot past each end.
   const symSegs = data.symmetryLines === true ? symmetryLineSegs(kind, verts) : [];
-  const symColour = ink ? INK_TONES.dark : data.symmetryLinesAnswer ? SYM_COLOUR_ANSWER : SYM_COLOUR;
+  const symColour = ink ? INK_TONES.dark : data.symmetryLinesAnswer ? answerColour(profile, SYM_COLOUR_ANSWER, SYM_COLOUR) : SYM_COLOUR;
   symSegs.forEach(function (s) {
     note({ x: s.x1, y: s.y1 }); note({ x: s.x2, y: s.y2 });
   });

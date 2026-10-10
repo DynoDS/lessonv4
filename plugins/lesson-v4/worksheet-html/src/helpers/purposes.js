@@ -25,9 +25,10 @@ module.exports = {
   instruction:
     "A quiet child-facing direction that needs no question number or answer space. With `hint: true` it is a hint for the question just above it: it prints as `If you're stuck: ...` and never comes first in a question.",
   questions:
-    "One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap.",
+    "One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap. " +
+    "`answerInBook: true` sends a drawing the child makes to their book.",
   "written-answers":
-    "A question answered in the child's own words, on up to six ruled lines (longer writing goes in their book or a `writing-frame`). " +
+    "A question answered in the child's own words on ruled lines, with no box; four lines or more go in the child's book. " +
     "Give `sentences` and the engine sizes the lines, or `lines` for an exact count.",
   "section-label":
     "The mode-of-work heading a block sits under: Fluency, Practise, Apply. Marks the kind of thinking, never the topic. Put it at the top of a stack.",
@@ -126,11 +127,11 @@ module.exports = {
   "speech-scene":
     "Turns of a CONVERSATION: a figure and a bubble each, printed to read or empty to fill. One person saying one thing is named-claim, since every turn here gets its own figure.",
   "named-claim":
-    "One person, one thing they said, and room to judge it: the claim in a panel with the speaker's name, then a tick-or-cross box and ruled lines. No figures and no bubbles.",
+    "One person, one thing they said, and room to judge it: the speaker in a speech bubble (a flat panel where tight, the engine's choice), then the question (`ask`), a tick-or-cross box (`tickOrCross`) and ruled lines.",
   "fact-file":
     "Named slots a child fills in. The field NAMES are what makes it teach: they say what counts as knowing about this thing.",
   "writing-frame":
-    "Sentence starters with room after each, inside a frame whose SHAPE says what kind of writing this is: a museum tag, a postcard, a plaque.",
+    "Sentence starters with room after each, inside a frame whose SHAPE says what kind of writing this is: a museum tag, a postcard, a plaque. For starters or a named part of a planner; plain ruled lines are written-answers.",
   storyboard:
     "Numbered boxes to draw in with writing lines beneath: a journey, a life cycle, a story retold in order.",
 
@@ -190,7 +191,7 @@ module.exports = {
   "part-whole":
     "A whole joined to its parts: partitioning, decomposition, a missing addend. Every node says whether the child is handed it, reads it or writes it, and a node that says nothing is refused.",
   "chip-bank":
-    "A set of short labels drawn as separate bordered choices, each sized to its own word, so they read as options rather than as running text. A bank titled Word bank prints in vocabulary green unless a variant overrides it.",
+    "A set of short labels drawn as separate bordered choices, each sized to its own word, so they read as options rather than as running text. A chip written {{word}} is a taught word and prints green; the rest print black.",
   "stacked-fraction":
     "A fraction written properly, numerator sitting on a rule above the denominator, with a question stem.",
   "fraction-sequence":
@@ -226,7 +227,7 @@ module.exports = {
   "continuum-line":
     "A line between two opposite ends (disagree to agree) for a child to mark a position on, with optional ticks and a question above.",
   "annotated-text":
-    "A passage in the middle with words underlined, circled, boxed or highlighted in colour, arrows between words and margin notes, or wide margins left for the child to annotate.",
+    "A passage with words underlined, circled, boxed or highlighted, arrows and margin notes, or left unmarked to mark by hand; one unmarked sentence prints large with wide gaps to write punctuation into.",
   "source-pathway":
     "Two to six separate sources joining one middle state and then one outcome, for when the shared middle is the learning.",
 

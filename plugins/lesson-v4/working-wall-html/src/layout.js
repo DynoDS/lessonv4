@@ -122,6 +122,17 @@ function boldWidthPx(text, pt) {
   return em * pt * PX_PER_PT;
 }
 
+// The same words in Comic Sans MS Regular, which a diagramSection's notes and
+// steps print in. A character only the bold list above carries keeps its bold
+// advance, which is the wider of the two.
+function regularWidthPx(text, pt) {
+  let em = 0;
+  for (const ch of String(text == null ? "" : text)) {
+    em += EXTRA_BOLD_EM[ch] !== undefined ? EXTRA_BOLD_EM[ch] : textWidthEm(ch, false) / RENDER_SAFETY;
+  }
+  return em * pt * PX_PER_PT;
+}
+
 // Where Chrome may end a line: at a space, and after a hyphen inside a word.
 // It has others (after a slash, around a dash); leaving them out only ever
 // plans a line more, never one fewer.
@@ -136,16 +147,18 @@ function breakUnits(text) {
 // The lines `text` takes in a box `widthPx` wide at `pt`, or Infinity when one
 // word is wider than a line (Chrome would print it past the edge). `leadPx` is
 // glued to the first word (a bullet and its spaces); `prefixPx` is a label the
-// line may break after, followed by a space `prefixSpacePx` wide.
+// line may break after, followed by a space `prefixSpacePx` wide. `regular`
+// measures the words in the regular weight.
 function wrappedLines(text, pt, widthPx, opts = {}) {
+  const widthOf = opts.regular ? regularWidthPx : boldWidthPx;
   const room = widthPx - 0.25;
-  const space = boldWidthPx(" ", pt);
+  const space = widthOf(" ", pt);
   let lines = 1;
   let used = opts.prefixPx || 0;
   if (used > room) return Infinity;
   breakUnits(text).forEach((unit, index) => {
     if (lines === Infinity) return;
-    const width = boldWidthPx(unit.text, pt) + (index === 0 ? opts.leadPx || 0 : 0);
+    const width = widthOf(unit.text, pt) + (index === 0 ? opts.leadPx || 0 : 0);
     if (width > room) {
       lines = Infinity;
       return;
@@ -281,6 +294,13 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
   // search and the panel check read the drawn page, and letters count only for
   // the budget.
   const page = opts.page || null;
+  // A card with no `page` may still say how many lines an item really takes at
+  // a size (`opts.linesOf(item, pt)`, the words measured and wrapped whole as
+  // the page draws them). Then the lines decide what is refused, not a count of
+  // letters at a guessed width: under a half-sheet picture the guess was 26
+  // letters a line where about 30 print, and it refused sentences of 53 and 58
+  // letters that fit their two lines (the stress test of 7 October 2026).
+  const linesOf = !page && typeof opts.linesOf === "function" ? opts.linesOf : null;
 
   const fitAt = (pt, cap = maxLinesPerItem, withHeight = true) => {
     const charsPerLine = Math.max(1, Math.floor((availWidth * 72) / (pt * charWidthRatio)));
@@ -288,6 +308,12 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
     for (const item of items) {
       const obj = (typeof item === "string") ? { text: item } : (item || {});
       const text = obj.text || "";
+      if (linesOf) {
+        const measured = linesOf(obj, pt);
+        if (!(measured <= cap)) return { fits: false, lines: measured };
+        totalLines += measured;
+        continue;
+      }
       const labelLen = obj.label ? obj.label.length + 2 : 0;
       const adjLen = text.length + labelLen;
       const longestWord = Math.max(longestWordLen(text), labelLen);
@@ -338,6 +364,19 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
       const labelLen = obj.label ? obj.label.length + 2 : 0;
       const adjLen = text.length + labelLen;
       const longestWord = Math.max(longestWordLen(text), labelLen);
+      if (linesOf) {
+        const measured = linesOf(obj, pt);
+        const quoted = `"${String(text).slice(0, 60)}${text.length > 60 ? "…" : ""}"`;
+        totalLines += Number.isFinite(measured) ? measured : 1;
+        if (measured === Infinity) {
+          problems.push(`item ${index + 1} has a word too wide for a line at ${pt}pt: ${quoted}. Split that word or shorten the item's label.`);
+          reword = true;
+        } else if (measured > cap) {
+          problems.push(`item ${index + 1} takes ${measured} lines at ${pt}pt, and ${cap} is the most one item may take: ${quoted}.`);
+          reword = true;
+        }
+        continue;
+      }
       totalLines += Math.max(1, Math.ceil(adjLen / charsPerLine));
       if (onPage) continue;
       if (longestWord > charsPerLine) {
@@ -370,7 +409,7 @@ function fitLinearBodySize(items, defaultPt, minPt, size, orientation, style, op
     }
     const panelOver = height > available;
     if (panelOver) {
-      problems.push(`${items.length} items need ${height.toFixed(1)}in of panel at ${pt}pt and ${available.toFixed(1)}in is available (${(height - available).toFixed(1)}in over). Each item may hold ${budget} characters.`);
+      problems.push(`${items.length} items need ${height.toFixed(1)}in of panel at ${pt}pt and ${available.toFixed(1)}in is available (${(height - available).toFixed(1)}in over).${linesOf ? "" : ` Each item may hold ${budget} characters.`}`);
     }
     const long = onPage ? [] : longAtFloor();
     const tooManyLong = long.length > longItemsAtFloor;
@@ -442,22 +481,13 @@ function fitReferenceTableSize(columns, rows, columnWidthsDxa, defaultPt, minPt,
   const maxLinesPerCell = opts.maxLinesPerCell || 2;
   const rowMinHeights = Array.isArray(opts.rowMinHeights) ? opts.rowMinHeights : [];
 
+  // A cell's lines as the page draws them: its bold words measured and wrapped
+  // whole across the column less its padding. Counted as letters at a guessed
+  // width, "Role of women" was a letter too long for a line it prints on, and
+  // took a second line the page never used (stress test of 7 October 2026).
   const linesInCell = (text, colWidthInches, pt) => {
     const usable = Math.max(0.1, colWidthInches - cellPaddingW);
-    const charsPerLine = Math.max(1, Math.floor((usable * 72) / (pt * charWidthRatio)));
-    if (longestWordLen(text) > charsPerLine) return Infinity;
-    const words = String(text || "").trim().split(/\s+/).filter(Boolean);
-    let lines = 1;
-    let used = 0;
-    for (const word of words) {
-      const needed = used === 0 ? word.length : word.length + 1;
-      if (used > 0 && used + needed > charsPerLine) {
-        lines += 1;
-        used = word.length;
-      } else {
-        used += needed;
-      }
-    }
+    const lines = wrappedLines(String(text || "").trim(), pt, usable * PX_PER_IN);
     if (lines > maxLinesPerCell) return Infinity;
     return lines;
   };
@@ -484,13 +514,15 @@ function fitReferenceTableSize(columns, rows, columnWidthsDxa, defaultPt, minPt,
 
   // Same reason as the linear body: one repair, so it has to know which cell
   // and by how much. Column widths differ, so the budget is per column.
+  // The refusal says what the page measured: which box, and the lines it took.
+  // It used to quote a count of letters a column "holds" (38 for a box that
+  // stays on one line only up to about 20), and a worker shortening to that
+  // count was refused again, twice (a wall trial, 10 October 2026).
   const diagnose = (pt) => {
     const headerPt = Math.max(1, Math.round(pt * headerRatio));
     const colInches = columnWidthsDxa.map((d) => d / 1440);
-    const budgetFor = (colIdx, atPt) => {
-      const usable = Math.max(0.1, colInches[colIdx] - cellPaddingW);
-      return Math.max(1, Math.floor((usable * 72) / (atPt * charWidthRatio))) * maxLinesPerCell;
-    };
+    const rawLines = (text, colIdx, atPt) => wrappedLines(String(text || "").trim(), atPt, Math.max(0.1, colInches[colIdx] - cellPaddingW) * PX_PER_IN);
+    const quoted = (text) => `"${String(text || "").slice(0, 60)}${String(text || "").length > 60 ? "…" : ""}"`;
     const where = opts.label ? `${opts.label}` : "this table";
     const cells = [
       ...columns.map((text, colIdx) => ({ text, colIdx, atPt: headerPt, at: "the header row" })),
@@ -499,19 +531,33 @@ function fitReferenceTableSize(columns, rows, columnWidthsDxa, defaultPt, minPt,
       ),
     ];
     for (const cell of cells) {
-      if (!isFinite(linesInCell(cell.text, colInches[cell.colIdx], cell.atPt))) {
-        const budget = budgetFor(cell.colIdx, cell.atPt);
-        const name = columns[cell.colIdx] ? `"${columns[cell.colIdx]}"` : `${cell.colIdx + 1}`;
-        return `${where}: the cell in ${cell.at}, column ${name}, is ${String(cell.text || "").length} characters and that column holds ${budget} in ${maxLinesPerCell} lines at ${cell.atPt}pt. Cut it to ${budget} characters or fewer, unless the table is the lesson's success criteria, which are copied word for word (the card makes room instead): "${String(cell.text || "").slice(0, 60)}${String(cell.text || "").length > 60 ? "…" : ""}".`;
+      const lines = rawLines(cell.text, cell.colIdx, cell.atPt);
+      if (lines <= maxLinesPerCell) continue;
+      const name = columns[cell.colIdx] ? `"${columns[cell.colIdx]}"` : `${cell.colIdx + 1}`;
+      if (lines === Infinity) {
+        return `${where}: the cell in ${cell.at}, column ${name}, has a word too wide for that column at ${cell.atPt}pt: ${quoted(cell.text)}. A row name the board gave cannot change, so give the table the other orientation or fewer columns; any other cell takes a shorter word.`;
       }
+      return `${where}: the cell in ${cell.at}, column ${name}, takes ${lines} lines at ${cell.atPt}pt and a cell may take ${maxLinesPerCell}: ${quoted(cell.text)}. Make it shorter, unless the table is the lesson's success criteria, which are copied word for word (the card makes room instead).`;
     }
     const measured = fitAt(pt);
-    const budgets = columns.map((c, i) => `${c || i + 1}: ${budgetFor(i, pt)}`).join(", ");
-    return `${where}: ${rows.length} rows need ${measured.height != null ? measured.height.toFixed(1) : "more"}in and ${availHeight.toFixed(1)}in is available at ${pt}pt. Remove a row, or shorten cells to their column budgets (${budgets}); a success-criteria table keeps every row and word, so its card makes room instead, or the table goes over two cards.`;
+    const long = rows.flatMap((row, rowIdx) => row
+      .map((text, colIdx) => ({ text, lines: rawLines(text, colIdx, pt), rowIdx }))
+      .filter((cell) => cell.lines > 1 && Number.isFinite(cell.lines))
+      .map((cell) => `${quoted(cell.text)} (row ${cell.rowIdx + 1}, ${cell.lines} lines)`));
+    const lever = long.length
+      ? ` These boxes run past one line, and each cut to one line gives its row a line back: ${long.join(", ")}.`
+      : "";
+    return `${where}: ${rows.length} rows need ${measured.height != null ? measured.height.toFixed(1) : "more"}in and ${availHeight.toFixed(1)}in is available at ${pt}pt.${lever} Or remove a row; a success-criteria table keeps every row and word, so its card makes room instead, or the table goes over two cards.`;
   };
 
+  // `opts.report` is told the height the rows take at the size chosen and the
+  // height there was, so a caller can hand what is left to the table's pictures.
+  const tell = (pt) => {
+    if (opts.report) Object.assign(opts.report, { height: fitAt(pt).height, available: availHeight });
+    return pt;
+  };
   for (let pt = defaultPt; pt >= minPt; pt -= 4) {
-    if (fitAt(pt).fits) return pt;
+    if (fitAt(pt).fits) return tell(pt);
   }
   const floor = fitAt(minPt);
   if (!floor.fits) {
@@ -522,7 +568,25 @@ function fitReferenceTableSize(columns, rows, columnWidthsDxa, defaultPt, minPt,
 
 // ─── Reference table ────────────────────────────────────────────────────
 
-function referenceColumnWidths(columnCount, pageSize, orientation, style) {
+// The share of the sheet the two value columns of a three-column table take
+// when they hold the same kind of thing.
+const COMPARED_COLUMNS = [0.26, 0.37, 0.37];
+const COMPARED_RATIO = 0.6;
+
+function longestInColumn(rows, index) {
+  return (rows || []).reduce((max, row) => Math.max(max, String((row && row[index]) || "").length), 0);
+}
+
+// Whether a three-column table sets two things side by side: its two value
+// columns write about as much as each other.
+function comparesTwoColumns(columnCount, rows) {
+  if (columnCount !== 3) return false;
+  const second = longestInColumn(rows, 1);
+  const third = longestInColumn(rows, 2);
+  return second > 0 && third > 0 && Math.min(second, third) / Math.max(second, third) >= COMPARED_RATIO;
+}
+
+function referenceColumnWidths(columnCount, pageSize, orientation, style, rows) {
   const dims = printableInches(pageSize, orientation, style);
   const totalDxa = Math.round(dims.width * 1440);
 
@@ -534,6 +598,17 @@ function referenceColumnWidths(columnCount, pageSize, orientation, style) {
     return [left, totalDxa - left];
   }
   if (columnCount === 3) {
+    // Name, short value, long description is the established split below. A
+    // table that sets two things side by side (Athens beside Sparta) writes as
+    // much in one column as the other, and at 28% against 45% its first held
+    // 28 letters where its second held 48: the comparison the lesson named for
+    // the wall was left off (stress test of 7 October 2026). Columns whose
+    // longest cells are near each other in length share the room equally.
+    if (comparesTwoColumns(columnCount, rows)) {
+      const left = Math.round(totalDxa * COMPARED_COLUMNS[0]);
+      const middle = Math.round(totalDxa * COMPARED_COLUMNS[1]);
+      return [left, middle, totalDxa - left - middle];
+    }
     const left = Math.round(totalDxa * 0.27);
     const middle = Math.round(totalDxa * 0.28);
     return [left, middle, totalDxa - left - middle];
@@ -592,6 +667,7 @@ module.exports = {
   fitLinearBodySize,
   fitReferenceTableSize,
   referenceColumnWidths,
+  comparesTwoColumns,
   tryReadPhoto,
   photoAspect,
   TITLE_BAR_PADDING_DXA,

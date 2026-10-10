@@ -98,6 +98,8 @@ The structured `answer` object is the canonical answer/model. The script may use
 
 **Teacher info:** Only when slide+script don't make obvious, and always on a unit that names a misconception: the validator requires `speakerNotes.teacherInfo` there. A design lists what children get wrong in `misconceptions`, and nobody downstream turns that into a note, so a Year 4 nearest-1,000 design named three wrong rules and reached the teacher with every teacher line empty (19 September 2026): the class hits `8,500` and `499` with nothing on screen or in the notes about either. Write it as what the wrong answer looks like and the one move that answers it (`An answer of 8,000 for 8,500 means halfway went the wrong way: point at the middle mark and ask which end is nearer.`), not the misconception restated. Short, precise. Allowed: specific misconception likely, what wrong looks like, one move when not obvious; subtle answer; reason step matters; warning canonical misconception. Not allowed: generic routines (circulate, cold call, thumbs up, wait time), restating slide, CPD theory, narrating job. Test: would experienced teacher learn something concrete? If not, cut.
 
+**A note names another part of the lesson by its title, never by counting slides.** You write before any slide exists, and one beat often becomes two or three slides with a word card set between them, so a count made here is wrong by the time the teacher reads it: a Year 3 rocks lesson said `on the slide after next` of a test that came four slides on (7 October 2026). A beat's label becomes its slide title and stays true however many slides are added, so name it: `Children test all five rocks themselves in "Which other rocks let water in?"`. Where labels repeat, as they do in maths, say which or what it holds (`the second Your Turn`, `the Your Turn with the L-shapes`); a task's own answers are `its answers`, and the end of the lesson is `the final task`. This holds for the script and the teacher orientation as well as teacher info, and the validator refuses a counted slide. Slides spoken of in general are fine (`From the slides: the sort runs on the board`).
+
 **Look for:** Optional, only when non-obvious feature helps. One sentence under 25 words and no more than three concrete features. Draw from SC, predictable misconception, sticky knowledge, taught surface feature. Omit for generic correctness or restating task. Don't prescribe marking. Format: `Look for: ...` Example: `Look for: "120p" left without exchanging; £ sign and decimal point; partition shown.`
 
 ---
@@ -525,6 +527,8 @@ On the scaffold route, fill the generated files in place; on the no-scaffold fal
 ```
 
 On a revision after the pictures were frozen (`phase2-initial-photo-requirements.json` exists, as on a content-gap picture wave), run it without `--initial-photo-namespace`: a lost picture's entry leaves the contract, its replacement takes a number above every id used so far, and no other picture is renumbered.
+
+If your viewer refuses a picture you open, read `[PLUGIN_ROOT]/references/picture-you-cannot-see.md` before deciding anything that depends on what is in it: the cause is the file's layout, not its size, and that file says what to do.
 
 The validator reports every fault it can reach in one run, numbered, so repair
 the whole list before running it again. A pass spent on one line of a list of

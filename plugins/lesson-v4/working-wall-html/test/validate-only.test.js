@@ -59,10 +59,12 @@ test("validate-only reports a good wall and writes no file", async () => {
   );
 });
 
-test("validate-only fails an overlong cell with the budget it has to meet", async () => {
-  // A reference table cell one character over what its column holds: the exact
-  // shape of the PSHE failure, and the message has to name the budget so the
-  // repair is a cut to a number rather than a guess.
+test("validate-only fails an overlong cell with the lines it has to meet", async () => {
+  // A reference table cell longer than its column holds: the shape of the PSHE
+  // failure. The message names the cell, the lines it takes and the lines it
+  // may take, so the repair is aimed and not a guess. It used to quote a count
+  // of letters, which sent a worker the wrong way twice once cells were
+  // measured by their real words (10 October 2026).
   const dir = scratchDir();
   const specPath = writeSpec(dir, {
     topic: "Our PSHE rules",
@@ -89,7 +91,7 @@ test("validate-only fails an overlong cell with the budget it has to meet", asyn
     () => build(specPath, dir, { validateOnly: true }),
     (error) => {
       assert.match(error.message, /Layout validation failed/);
-      assert.match(error.message, /characters/);
+      assert.match(error.message, /column "What it means", takes \d+ lines at 36pt and a cell may take \d/);
       return true;
     }
   );

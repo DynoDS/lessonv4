@@ -387,6 +387,11 @@ const TALL_CHART = {
   yInterval: 2,
 };
 
+// Six of them is more than any page holds. It was four until the chart was
+// squared (9 October 2026): squares made this chart a little shorter, and four
+// then fitted a landscape page.
+const TOO_MANY_CHARTS = [TALL_CHART, TALL_CHART, TALL_CHART, TALL_CHART, TALL_CHART, TALL_CHART];
+
 test("content that fits carries no verdict, because there is nothing to explain", () => {
   const result = suggestLayouts(THREE);
   assert.ok(result.fits.length > 0);
@@ -394,7 +399,7 @@ test("content that fits carries no verdict, because there is nothing to explain"
 });
 
 test("content nothing can hold says how far over it is, in millimetres", () => {
-  const result = suggestLayouts([TALL_CHART, TALL_CHART, TALL_CHART, TALL_CHART], {
+  const result = suggestLayouts(TOO_MANY_CHARTS, {
     orientation: "landscape",
     // Calibrated on the full page, before the 43mm trim strip (page.js).
     extra: { fullPage: true },
@@ -417,7 +422,7 @@ test("the verdict never contradicts the refusals printed under it", () => {
   // shortfall across every shape without noticing that shape had failed for a
   // different reason. A reader who believed the headline would keep trying
   // shapes against content that cannot fit on paper.
-  const result = suggestLayouts([TALL_CHART, TALL_CHART, TALL_CHART, TALL_CHART], {
+  const result = suggestLayouts(TOO_MANY_CHARTS, {
     orientation: "landscape",
     // Calibrated on the full page, before the 43mm trim strip (page.js).
     extra: { fullPage: true },
@@ -554,7 +559,7 @@ test("--measure counts the printed question number and prints the page the check
       [path.join(__dirname, "..", "scripts", "suggest.js"), file, "4", "--measure"],
       { encoding: "utf8" }
     );
-    const widths = [...out.matchAll(/^Entry \d+: .*?: (\d+)mm wide/gm)].map((m) => Number(m[1]));
+    const widths = [...out.matchAll(/^Entry \d+: .*?: needs at least (\d+)mm of width/gm)].map((m) => Number(m[1]));
     assert.equal(widths.length, 2, out);
     assert.equal(widths[0] - widths[1], 10, "a numbered part is its content plus the number's gutter");
 
@@ -566,7 +571,7 @@ test("--measure counts the printed question number and prints the page the check
         out
       );
     }
-    assert.match(out, /A portrait sheet's work area: 174mm wide x 239mm tall\./);
+    assert.match(out, /A portrait sheet's work area: 174mm wide x 248mm tall\./);
     assert.doesNotMatch(out, /267mm/);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });

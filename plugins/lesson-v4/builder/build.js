@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 'use strict';
 
+// A fraction in any drawing's label is stacked: installed before a drawing is
+// taken hold of (shared/visuals/stacked-fraction-labels.js).
+require("../shared/visuals/stacked-fraction-labels").installOnSharedDrawings();
+
 const fs = require('fs');
 const { applyDoSigns, applyAnswerTicks } = require('./src/do-signs');
 const { settlePairedHeaders } = require('./src/content/reveal-pair');
@@ -71,6 +75,7 @@ const { preRenderBlankSurfaces } = require('./src/content/blank-surface');
 const { preRenderGeographicalDescriptionFrames } = require('./src/content/geographical-description-frame');
 const { keepShapesStill } = require('./src/content/shapes-stand-still');
 const { preRenderLabelDiagrams, rasteriseLabelDiagrams, labelDiagramFindings, clearLabelDiagramFindings } = require('./src/content/label-diagram');
+const { allowHairUnder, setHairUnderSlide, clearHairUnder, hairUnderFindings } = require('../shared/visuals/hair-under');
 const { preRenderGridMaps } = require('./src/content/grid-map');
 const { preRenderTranslationShapes } = require('./src/content/translation-shape');
 const { preRenderRainforestLayers } = require('./src/content/rainforest-layers');
@@ -367,6 +372,8 @@ async function main() {
   // refused eleven slides at once. Nothing is published while any slide is
   // blank, so this changes what is reported, not what ships.
   const layoutFailedSlides = new Set();
+  // Slides the preflight could only draw with a size a hair under its floor.
+  const hairSlides = new Set(preflight.hairSlides || []);
   if (preflight.errors.length) {
     for (const error of preflight.errors) {
       if (error.slide) {
@@ -444,6 +451,7 @@ async function main() {
   clearMissingPictures();
   clearCriteriaBelowFloor();
   clearLabelDiagramFindings();
+  clearHairUnder();
 
   slides.forEach((slideData, i) => {
     const slide = pptx.addSlide();
@@ -460,6 +468,8 @@ async function main() {
     // The sums an answers slide prints blue because its task slide did
     // (src/presentation-text.js).
     setSumsFollowed(sumsTheTaskPrintedBlue(slides, i));
+    setHairUnderSlide(i + 1);
+    allowHairUnder(hairSlides.has(i + 1));
     try {
       if (!layoutFailedSlides.has(i + 1)) {
         drawSlide(pptx, slide, coreSlideData, ctx);
@@ -470,6 +480,8 @@ async function main() {
       failedSlides.push(i + 1);
       console.error(`[error] slide ${i + 1}: ${err.message}`);
       console.error(err.stack);
+    } finally {
+      allowHairUnder(false);
     }
 
     // A spec carrying `notes` instead of `speakerNotes` used to build clean and
@@ -521,6 +533,13 @@ async function main() {
       { slide: finding.slide, path: finding.field },
       finding.message
     );
+  }
+
+  // A drawing a hair under its size floor, drawn as it stood
+  // (shared/visuals/hair-under.js). A note for the report, never a fault.
+  for (const finding of hairUnderFindings()) {
+    note(`slide ${finding.slide}: ${finding.message}`);
+    diagnostic(finding.signal, 'note', { slide: finding.slide }, finding.message);
   }
 
   // What a labelled diagram's labels came to once drawn. Labels on top of each

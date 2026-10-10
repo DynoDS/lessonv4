@@ -770,13 +770,16 @@ module.exports = {
     ],
   },
   // One person, one claim, and the child judging it - which is a different
-  // shape from a conversation and used to be built as one. Wording the
-  // instruction "tick or cross" is what asks for the box, exactly as it is in a
-  // speech scene: two ways of saying it would be two ways to disagree.
+  // shape from a conversation and used to be built as one. The example is the
+  // order the page prints: the scene, what was said, the question about it,
+  // the box, the lines. Four designers copied the old example, which put the
+  // question in `text`, and each printed "Is she correct?" above her words.
   "named-claim": {
-    text: "Tick or cross, then explain how you know.",
+    text: "Ethan is adding 1,000 to 4,382.",
     speaker: "Ethan",
-    says: "If I add 1,000 to 4,382, the hundreds digit changes.",
+    says: "The hundreds digit changes.",
+    ask: "Is Ethan correct? Explain how you know.",
+    tickOrCross: true,
     lines: 3,
   },
   // Both forms of a field, so the contract tests exercise the scaffolded path

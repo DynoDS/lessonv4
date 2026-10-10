@@ -24,9 +24,13 @@
 // and nothing else. Its knowledge of what a worksheet is - three levels, one
 // file, expected always present - carries over untouched.
 
+const { unstackFractionsInHtml } = require("../../shared/text/stacked-fractions");
+const { withClaimPanels, hasFigureClaim } = require("./claim-look");
+const { withLongAnswersInBooks } = require("./helpers/in-book");
 const { plainCriteria } = require("../../shared/text/criteria-marks");
 const { checkFit, criteriaPanelsOn, NOT_ON_SHEETS } = require("./render");
-const { renderContent, requiredSets, helperNames } = require("./helpers");
+const { renderContent, requiredSets, helperNames, holdsBookAnswer } = require("./helpers");
+const { namesTheBank } = require("./helpers/shared");
 const { canonicalQuestionLabel } = require("./labels");
 
 // Any width will do: the question is whether the words are ON the page, and a
@@ -585,6 +589,9 @@ class WorksheetError extends Error {
 // order the fit check has always required.
 function resolveAutoSheet(sheet, meta) {
   if (!sheet || typeof sheet !== "object") return { sheet, choice: null };
+  // Every sheet comes through here before it is measured or drawn, so this is
+  // where a printed sheet's long answers are sent to the book (in-book.js).
+  sheet = withLongAnswersInBooks(sheet);
 
   if (Array.isArray(sheet.pages)) {
     if (sheet.pages.some((page) => page && page.layout === "auto")) {
@@ -641,7 +648,28 @@ function resolveAutoSheet(sheet, meta) {
 
   let chosen = result;
   let placed = items;
-  if (!result.fits.length) {
+  let pictureScale = null;
+  // One column that is a little too tall, holding a photograph the children
+  // look at: draw the photograph a little smaller in that same column before
+  // anything is moved (see LOOKED_AT_SCALES).
+  if (!result.fits.length && items.length === 1) {
+    for (const scale of LOOKED_AT_SCALES) {
+      const smaller = withLookedAtPictures(items, scale);
+      if (!smaller) break;
+      const tried = suggestLayouts(smaller, {
+        yearGroup: meta && meta.yearGroup,
+        orientation,
+        extra: { title: sheet.title, fullPage: Boolean(meta && meta.fullPage === true) },
+      });
+      if (tried.fits.length) {
+        chosen = tried;
+        placed = smaller;
+        pictureScale = scale;
+        break;
+      }
+    }
+  }
+  if (!chosen.fits.length) {
     const split = splitToFit(items, (candidate) =>
       suggestLayouts(candidate, {
         yearGroup: meta && meta.yearGroup,
@@ -696,10 +724,63 @@ function resolveAutoSheet(sheet, meta) {
       orientation: best.orientation,
       fillPct: best.fillPct,
       verdict: best.verdict,
-      splitFrom: placed === items ? null : items.length,
+      splitFrom: placed === items || pictureScale ? null : items.length,
       zoneCount: placed.length,
+      pictureScale,
     },
   };
+}
+
+// A photograph the children LOOK AT may be drawn a little smaller to keep a
+// sheet in one column. It is the one thing on a sheet the engine shrinks to
+// make a page fit, and it is an exception with a reason and a limit.
+//
+// The reason: left to the split below, a one-column sheet 17mm too tall was
+// set out in two columns with its photograph alone in the narrow one, about
+// 60mm wide where it had been 150mm, away from the questions about it, and the
+// build reported a clean page. The worksheet designer overruled it by hand,
+// kept the column and drew the photograph 123mm wide (Year 2 noun phrases, 9
+// October 2026); shown both, the teacher wanted the engine to do that itself.
+//
+// The limit: only a card row that is nothing but pictures, with no size the
+// designer stated. A picture children label, measure, join or write beside is
+// worked ON and is never touched, and neither is anything else on the sheet.
+// Never below two thirds of its full size: past that the split is tried, as
+// before, and a sheet that still does not fit is refused, as before.
+const LOOKED_AT_SCALES = [0.9, 0.8, 0.7, 2 / 3];
+
+function isLookedAtPicture(node) {
+  return (
+    node &&
+    node.helper === "card-row" &&
+    node.imageHeightMm === undefined &&
+    !node.writeLabel &&
+    !node.markLabel &&
+    !node.dot &&
+    Array.isArray(node.cards) &&
+    node.cards.length > 0 &&
+    node.cards.every(
+      (card) => card && (card.imageHref || card.imagePath) && !card.title && !card.caption
+    )
+  );
+}
+
+// The same content with every looked-at photograph drawn at `scale` of its
+// full size, or null when the sheet holds none.
+function withLookedAtPictures(items, scale) {
+  let found = false;
+  const walk = (node) => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (!node || typeof node !== "object") return node;
+    if (isLookedAtPicture(node)) {
+      found = true;
+      return { ...node, lookedAtScale: scale };
+    }
+    if (typeof node.helper === "string") return node;
+    return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, walk(value)]));
+  };
+  const out = walk(items);
+  return found ? out : null;
 }
 
 // A column of content too tall for any page is very often a page's worth laid
@@ -882,6 +963,25 @@ function withoutSheetCriteriaPanels(worksheet) {
   return { ...worksheet, sheets };
 }
 
+// A sheet that would be refused for height is tried once more with its
+// children's claims drawn as panels (src/claim-look.js says why), and the
+// choice is reported so the build says so.
+function resolveWithClaimLook(sheet, meta) {
+  try {
+    return resolveAutoSheet(sheet, meta);
+  } catch (error) {
+    if (!(error instanceof WorksheetError) || error.signal !== "SHEET_DOES_NOT_FIT") throw error;
+    if (!sheet || !hasFigureClaim(sheet.zones)) throw error;
+    let compact;
+    try {
+      compact = resolveAutoSheet({ ...sheet, zones: withClaimPanels(sheet.zones) }, meta);
+    } catch {
+      throw error; // the panels did not save it: refuse the sheet as designed.
+    }
+    return { ...compact, choice: compact.choice && { ...compact.choice, claimLook: "panel" } };
+  }
+}
+
 // Every auto sheet in a worksheet resolved at once, with the choices reported
 // back so a build can say out loud which shape each sheet was given. The
 // scripts call this once, right after images are resolved; sheetsOf also
@@ -905,7 +1005,7 @@ function resolveAutoLayouts(worksheet) {
   for (const [key, sheet] of Object.entries(sheets)) {
     let resolved;
     try {
-      resolved = resolveAutoSheet(sheet, meta);
+      resolved = resolveWithClaimLook(sheet, meta);
     } catch (error) {
       if (!(error instanceof WorksheetError)) throw error;
       error.message = `${SHEET_LABELS[key] || key} - ${error.message}`;
@@ -1086,12 +1186,20 @@ function sheetsOf(worksheet) {
           fullPage: meta.fullPage === true,
           // Set by the engine on a one-column portrait sheet that fits the
           // narrower working width (resolveAutoSheet).
-          zones: numberer.numberZones(
-            withPhase(page.zones || {}, phaseFor(meta.yearGroup))
-          ),
+          zones: numberer.numberZones(withPhase(page.zones || {}, phaseFor(meta.yearGroup))),
           decorations: page.decorations || [],
+          // A small picture for the corner of this level's question slips
+          // (src/slips.js). Never drawn on the sheet itself.
+          slipPicture: sheets[key].slipPicture || null,
         },
       });
+      // A sheet holding both kinds of answer says which is which, question by
+      // question (the teacher, 9 October 2026: fine, "as long as the book icon
+      // and pencil icon is clear next to what is what").
+      const drawn = out[out.length - 1].spec;
+      if (drawn.recording === "sheet" && holdsBookAnswerIn(drawn.zones)) {
+        drawn.zones = withQuestionMarks(drawn.zones);
+      }
       // One column on a portrait page takes the narrower working width when
       // the FINAL page still fits there (see NARROW_SPARE_MM in page.js). It is
       // decided here, on the numbered zones the page will print, because a
@@ -1102,8 +1210,11 @@ function sheetsOf(worksheet) {
       const made = out[out.length - 1].spec;
       if (sheet.narrowIfFits === true && pages.length === 1) {
         try {
-          const { checkFit } = require("./render");
-          if (checkFit({ ...made, narrow: true }).length === 0) made.narrow = true;
+          const zones = zonesForNarrow(made);
+          if (zones) {
+            made.zones = zones;
+            made.narrow = true;
+          }
         } catch (error) {
           // Left at the full width.
         }
@@ -1112,6 +1223,74 @@ function sheetsOf(worksheet) {
 
     numberer.finish();
   }
+  return out;
+}
+
+// The zones a one-column sheet prints at the narrower width, or null when it
+// keeps the full width.
+//
+// "Does it still fit" was the whole test, and a sheet that fitted went narrow
+// with "Tell us when: ...... the owl / swooped down." broken three times down
+// the page, where the full-width sheet beside it held each on one line (the
+// stress test of 7 October 2026). So a piece with a write-in blank may not
+// come out taller on the narrow page than on the full one. Before the sheet
+// gives the narrow width up, a blank long enough for a phrase gives a little
+// of its length: the teacher chose the narrow sheet with a shorter line over
+// the full-width one, as long as the line is still worth writing on, and with
+// no class to try it on took the cautious figure (9 October 2026), down to
+// three quarters of what the designer asked. A blank for one word is already
+// as short as a word needs and keeps its size.
+const PHRASE_BLANK_MM = 50;
+const BLANK_GIVES = [1, 0.875, 0.75];
+
+function withBlanksAt(node, share) {
+  if (Array.isArray(node)) return node.map((child) => withBlanksAt(child, share));
+  if (!node || typeof node !== "object") return node;
+  const out = {};
+  for (const [key, value] of Object.entries(node)) out[key] = withBlanksAt(value, share);
+  if (typeof node.blankWidthMm === "number" && node.blankWidthMm >= PHRASE_BLANK_MM) {
+    out.blankWidthMm = Math.round(node.blankWidthMm * share);
+  }
+  return out;
+}
+
+function zonesForNarrow(made) {
+  const { checkFit, blankPieceHeights } = require("./render");
+  const full = blankPieceHeights(made);
+  for (const share of BLANK_GIVES) {
+    const zones = share === 1 ? made.zones : withBlanksAt(made.zones, share);
+    const narrow = { ...made, zones, narrow: true };
+    if (checkFit(narrow).length !== 0) return null;
+    const heights = blankPieceHeights(narrow);
+    const kept =
+      heights.length === full.length && heights.every((mm, i) => mm <= full[i] + 0.1);
+    if (kept) return zones;
+    if (!full.length) return null;
+  }
+  return null;
+}
+
+// Which questions on a printed sheet are answered in the book. On a sheet that
+// holds a book answer, every numbered question carries a mark: "book" where it
+// holds one, "pencil" where it is answered on the sheet. A sheet with no book
+// answer carries none, and its one mark stays in the corner.
+function holdsBookAnswerIn(node) {
+  if (Array.isArray(node)) return node.some(holdsBookAnswerIn);
+  if (!node || typeof node !== "object") return false;
+  if (node.helper) return holdsBookAnswer(node);
+  return Object.values(node).some(holdsBookAnswerIn);
+}
+
+function withQuestionMarks(node) {
+  if (Array.isArray(node)) return node.map(withQuestionMarks);
+  if (!node || typeof node !== "object") return node;
+  if (node.helper) {
+    if (node.number === undefined) return node;
+    return { ...node, mark: holdsBookAnswer(node) ? "book" : "pencil" };
+  }
+  const out = {};
+  for (const [key, value] of Object.entries(node)) out[key] = withQuestionMarks(value);
+  if (out.number !== undefined) out.mark = holdsBookAnswerIn(out) ? "book" : "pencil";
   return out;
 }
 
@@ -1300,6 +1479,16 @@ function bankEntriesIn(node) {
     if (Array.isArray(node.wordBank)) return node.wordBank;
   }
   if (helper === "chip-bank" && Array.isArray(node.chips)) return node.chips;
+  // A row of picture cards, each with its word, is the bank that carries
+  // pictures (references/worksheet-helpers/shared.md says so, and a Year 1
+  // sheet had one). Until 10 October 2026 only a bank of words alone was
+  // counted, so that sheet was refused as having no word bank and a second,
+  // words-only bank was added to pass (stress test, 7 October 2026). Every
+  // card must carry a word: a row of bare pictures is not a bank of words.
+  if (helper === "card-row" && Array.isArray(node.cards)) {
+    const words = node.cards.map((card) => (card && typeof card.title === "string" ? card.title.trim() : ""));
+    if (words.length && words.every(Boolean)) return words;
+  }
   // A fact-file carries a bank per field rather than one for the helper.
   if (helper === "fact-file" && Array.isArray(node.fields)) {
     const collected = [];
@@ -1375,7 +1564,7 @@ function comparableText(value) {
 }
 
 function comparableHtml(html) {
-  return String(html)
+  return unstackFractionsInHtml(html)
     .replace(/<[^>]*>/g, "")
     .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
@@ -1443,6 +1632,19 @@ function unprintedTextProblems(sheet) {
       continue;
     }
 
+    // A task's rules are written as lines starting "- " and printed as points
+    // without the mark (helpers/text.js), so such a text is looked for a line
+    // at a time.
+    const RULE_MARK = /^[-•]\s+/;
+    const isPrinted = (value) => {
+      const lines = String(value).split(/\r\n|\r|\n/).map((line) => line.trim());
+      if (!lines.some((line) => RULE_MARK.test(line))) return printed.includes(comparableText(value));
+      return lines.every((line) => {
+        const words = comparableText(line.replace(RULE_MARK, ""));
+        return !words || printed.includes(words);
+      });
+    };
+
     const walk = (node) => {
       if (Array.isArray(node)) {
         node.forEach(walk);
@@ -1455,7 +1657,9 @@ function unprintedTextProblems(sheet) {
           PUPIL_TEXT_FIELDS.has(key) &&
           value.trim() &&
           comparableText(value) &&
-          !printed.includes(comparableText(value))
+          // A bank's name is printed as the house heading, not as typed.
+          !((node.helper === "chip-bank" || node.helper === "card-row") && namesTheBank(value)) &&
+          !isPrinted(value)
         ) {
           problems.push(
             `TEXT_NOT_PRINTED: zone "${id}" (${helperName(node)}) sets ${key} to ` +

@@ -327,7 +327,7 @@ function needsInequalityWithBoxes(spec) {
 const NS_PT = TYPE.sectionLabel; // displayed, like an inequality
 const NS_CELL_MM = 8; // one digit in a nine-year-old's hand
 const NS_BOX_MIN_MM = 12;
-const NS_BOX_H_MM = WRITING_LINE_MM.lower; // a box written in, not a box read
+const NS_BOX_H_MM = 8; // a box one number is written in, not a sentence line
 const NS_TILE_MIN_MM = 10;
 const NS_GAP_MM = SPACE.tight;
 const NS_PAD_MM = INSET.card.v;
@@ -968,7 +968,7 @@ const css = `
     font-size: var(--type-body); color: var(--colour-ink);
     line-height: 1.35;
   }
-  .h-cq-line { display: block; border-bottom: var(--rule-hair) dotted var(--colour-rule); }
+  .h-cq-line { display: block; box-sizing: border-box; border-bottom: var(--rule-hair) dotted var(--colour-rule); }
 
   /* Values handed to the child, in both tables: the same orange a data table
      already uses, because that is what they are. The row labels take the one

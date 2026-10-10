@@ -48,7 +48,8 @@ function drawMathsMtotytSc(pptx, slide, data, ctx) {
     headerStyle: 'title',
     title: data.title || '',
     instruction: data.instruction,
-    signal: data.signal
+    signal: data.signal,
+    doSign: data.doSign
   }, ctx);
 
   drawColumnLabel(slide, MT_X, MT_LABEL_Y, HALF_COL_W, 'My Turn');

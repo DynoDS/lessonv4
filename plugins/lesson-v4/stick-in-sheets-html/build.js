@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 "use strict";
 
+// A fraction in any drawing's label is stacked: installed before a drawing is
+// taken hold of (shared/visuals/stacked-fraction-labels.js).
+require("../shared/visuals/stacked-fraction-labels").installOnSharedDrawings();
+
 // Stick-in Sheets HTML/PDF builder entry point.
 // Usage: node build.js <stick-in-sheets.json> [output-dir]
 //
@@ -20,6 +24,7 @@
 // horizontal guide still runs straight across the full page (cut the strips
 // first), and only the short vertical snips within a strip vary.
 
+const { stackFractionsInHtml, STACKED_FRACTION_CSS } = require("../shared/text/stacked-fractions");
 const fs = require("fs");
 const path = require("path");
 const { sanitizeHouseStyle } = require("../shared/text/house-style");
@@ -27,11 +32,11 @@ const { sixSevenNumbers, sixSevenMessage } = require("../shared/text/no-six-seve
 const { safeFilenameComponent } = require("../shared/text/filename");
 const { pieceHandle, A4, CLASS_SIZE, HANDLE_BAND_MM } = require("./src/layout-rules");
 const { selectContextPictureSet } = require("../shared/context-picture-set");
-const { renderPieceHtml, esc } = require("./src/render-piece-html");
+const { renderPieceHtml, letterMarks, esc } = require("./src/render-piece-html");
 const { withoutTaughtMarks } = require("../shared/text/criteria-marks");
 const { normaliseCardSet, renderKitPages, renderSheetPages } = require("./src/render-card-set");
 const { normaliseSourceText, renderSourceTextPagesMeasured } = require("./src/render-source-text");
-const { figurePages, normaliseTaskSheet, taskSheetPages } = require("./src/render-activity-page");
+const { figurePages, sheetPages, promptsOf, normaliseTaskSheet, taskSheetPages, taskOf, hasPartsToBreak } = require("./src/render-activity-page");
 
 const GREY = "#999999";
 
@@ -252,8 +257,11 @@ function pageDiv(caption, body) {
 const PORTRAIT_W_MM = A4.widthMm - 2 * A4.marginMm;        // 210 - 20 = 190
 const PORTRAIT_H_MM = A4.heightMm - 2 * A4.marginMm - 5;   // 297 - 20 - 5 = 272
 
+// A fraction typed with a slash prints top and bottom, as on every other
+// printed surface (shared/text/stacked-fractions.js). Every page the pack
+// prints or measures is wrapped here.
 function wrapDocument(pageDivs, portrait = false) {
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
+  return stackFractionsInHtml(`<!doctype html><html><head><meta charset="utf-8"><style>
 @page { size: A4 ${portrait ? "portrait" : "landscape"}; margin: 0; }
 html, body { margin: 0; padding: 0; }
 body { font-family: "Comic Sans MS", "Segoe Print", cursive; }
@@ -263,7 +271,8 @@ body { font-family: "Comic Sans MS", "Segoe Print", cursive; }
   overflow: hidden; page-break-after: always;
 }
 .caption { color: ${GREY}; font-size: 9pt; height: 5mm; }
-</style></head><body>${pageDivs.join("")}</body></html>`;
+${STACKED_FRACTION_CSS}
+</style></head><body>${pageDivs.join("")}</body></html>`);
 }
 
 // The card kits: each `card-set` item becomes its own run of pages (sets of
@@ -440,6 +449,15 @@ async function layOutSourceTexts(sourceTextItems, classSize, measureMm) {
   return { pageDivs, summaries, dropped, perItem };
 }
 
+// Which sheet a figure piece prints on: the one it names in `sheet`, else the
+// one for its beat, so two figures of one task are one sheet without anyone
+// asking. A piece naming neither prints alone.
+function sheetKey(item) {
+  if (typeof item.sheet === "string" && item.sheet.trim()) return `sheet:${item.sheet.trim()}`;
+  if (typeof item.sourceUnitId === "string" && item.sourceUnitId.trim()) return `unit:${item.sourceUnitId.trim()}`;
+  return null;
+}
+
 async function build(specPath, outDir) {
   const spec = sanitizeHouseStyle(JSON.parse(fs.readFileSync(specPath, "utf8")));
   const sixSeven = sixSevenNumbers(spec);
@@ -492,6 +510,7 @@ async function build(specPath, outDir) {
   let pages = 0;
   let totalSlips = 0;
   const prints = [];
+  const onASheet = new Set();
   for (const item of items) {
     const moment = moments.find((m) => m.item === item);
     if (moment && item.layout === "slips") {
@@ -503,16 +522,51 @@ async function build(specPath, outDir) {
       continue;
     }
     if (moment) {
-      // A whole page under its task, one between two, two to a page when the
-      // figure is small enough to keep its size.
-      const plain = Object.assign({}, item);
-      delete plain.tag;
-      const laid = await figurePages(item, moment.piece,
-        (widthMm) => renderPieceHtml(Object.assign({}, plain, { widthMm }), { baseDir }), {
+      // The figures of one task print on one sheet: every figure piece that
+      // names the same beat, or the same `sheet`. A lone figure with nothing
+      // to write under it keeps a whole page under its task, two to a page
+      // when it keeps its size.
+      if (onASheet.has(item)) continue;
+      const together = moments.filter((m) => !onASheet.has(m.item) && m.item.layout !== "slips" && sheetKey(m.item) === sheetKey(item));
+      const group = sheetKey(item) == null ? [moment] : together;
+      group.forEach((m) => onASheet.add(m.item));
+      const parts = [];
+      for (const m of group) {
+        const plain = Object.assign({}, m.item);
+        delete plain.tag;
+        const render = (widthMm, zoom) => renderPieceHtml(Object.assign({}, plain, { widthMm }), { baseDir, page: true, zoom });
+        const marks = letterMarks(m.item);
+        // A picture marked with letters is drawn without its pointer lines on
+        // a page, so its shape there is the picture's own.
+        // A row of figures wraps at three on a slip and runs up to five across
+        // a page, so its shape on a page is asked for too.
+        const isRow = Boolean(m.item.spec && Array.isArray(m.item.spec.figures));
+        const natural = marks || isRow ? await render(m.piece.widthMm) : m.piece;
+        parts.push({ item: m.item, natural, render, marks });
+      }
+      const label = item.sheet || item.label || item.visual;
+      if (parts.length === 1 && promptsOf(item, parts[0].marks).length === 0 && !hasPartsToBreak(taskOf(item))) {
+        const laid = await figurePages(item, parts[0].natural, parts[0].render, {
           printableWMm: PRINTABLE_W_MM, printableHMm: PRINTABLE_H_MM, classSize, pageHtml: pageDiv,
         });
+        pages += laid.pages.length;
+        prints.push({ label, pageDivs: laid.pages });
+        continue;
+      }
+      const laid = await sheetPages(parts, {
+        pages: [
+          { printableWMm: PRINTABLE_W_MM, printableHMm: PRINTABLE_H_MM },
+          { printableWMm: PORTRAIT_W_MM, printableHMm: PORTRAIT_H_MM, portrait: true },
+        ],
+        classSize, pageHtml: pageDiv,
+      });
+      if (laid.error) {
+        console.warn(`[stick-in] sheet "${label}": ${laid.error} - this sheet is NOT in the pack.`);
+        allDropped.push(label);
+        continue;
+      }
       pages += laid.pages.length;
-      prints.push({ label: item.label || item.visual, pageDivs: laid.pages });
+      prints.push({ label, pageDivs: laid.pages, portrait: laid.portrait });
       continue;
     }
     const built = [...sourcesBuilt.perItem, ...kitsBuilt.perItem, ...taskSheets].find((p) => p.item === item);

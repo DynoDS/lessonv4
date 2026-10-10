@@ -173,6 +173,50 @@ class FiguresAreNotClearSpaceTests(unittest.TestCase):
             self.assertEqual(self.refused(room, drawing("ladybird", 2.8, 2.9)), [])
 
 
+# The blank beside "2,347 + 126 =", from the sum's line down, as the builder
+# reports it. Nothing is printed there, which is the whole difficulty.
+ANSWER_SPACE = {
+    "slide": 1, "type": "answer-space", "whole": True,
+    "x": 0.5, "y": 6.2, "w": 8.0, "h": 1.0,
+}
+
+
+class TheBlankBesideAnOpenSumIsNotClearSpaceTests(FiguresAreNotClearSpaceTests):
+    """Twelve drawings on a column addition deck sat after an equals sign, and
+    the teacher moved every one: "although they werent touching any text, they
+    were touching or in the space of where if I wrote on the board I would have
+    wrote the answer" (8 October 2026)."""
+
+    def test_the_blank_after_an_open_sum_is_not_offered_and_a_drawing_there_is_refused(self):
+        with TemporaryDirectory() as tmp:
+            room = self.measured(Path(tmp), [CHART, SHAPE, ANSWER_SPACE])
+            inside = [
+                area for area in room["slides"][0]["areas"]
+                if area["yInches"] + area["heightInches"] > 6.4
+                and area["xInches"] < 8.3
+            ]
+            self.assertEqual(inside, [])
+            failures = self.refused(room, drawing("abacus", 5.0, 6.3))
+            self.assertEqual(len(failures), 1, failures)
+            self.assertIn("beside a sum left open", failures[0])
+
+    def test_the_same_blank_is_room_when_no_sum_is_open_there(self):
+        with TemporaryDirectory() as tmp:
+            room = self.measured(Path(tmp), [CHART, SHAPE])
+            self.assertEqual(self.refused(room, drawing("abacus", 5.0, 6.3)), [])
+
+    def test_resting_on_the_card_above_the_sum_stays_open(self):
+        # The teacher's own placing: on the top corner of the question card,
+        # clear of the line the answer is written on.
+        with TemporaryDirectory() as tmp:
+            room = self.measured(Path(tmp), [CHART, SHAPE, ANSWER_SPACE])
+            self.assertEqual(self.refused(room, drawing("abacus", 5.6, 5.45, size=0.7)), [])
+
+    def test_the_decorator_is_told_why(self):
+        brief = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
+        self.assertIn("The blank beside an open sum is the teacher's writing space", brief)
+
+
 class DecorationsDoNotCopyTheSignsTests(unittest.TestCase):
     def lookalikes(self, *decorations: dict) -> list[str]:
         lesson = {"slides": [{"title": "t", "decorations": list(decorations)}]}

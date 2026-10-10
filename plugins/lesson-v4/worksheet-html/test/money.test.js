@@ -303,7 +303,9 @@ test("every chip reaches the page as its own bordered choice", () => {
   for (const chip of chips) {
     assert.ok(html.includes(`>${chip}<`), `"${chip}" never reached the page`);
   }
-  assert.ok(html.includes("Word bank"));
+  // A word bank prints the one house heading, whatever it was titled.
+  assert.ok(html.includes("Words you could use:"));
+  assert.ok(!html.includes("Word bank"));
 });
 
 test("the three variants are three different colours, all from the token system", () => {
@@ -349,14 +351,29 @@ test("a chip bank in a narrow column wraps to more rows, and says so", () => {
   );
 });
 
-test("a bank titled Word bank prints in vocabulary green unless told otherwise", () => {
-  // The teacher's colour system: green IS what a bank of taught words means on
-  // paper. A designer who leaves `variant` off a word bank has not chosen blue.
+test("a bank titled Word bank is the board's word bank, and green only where a chip is a taught word", () => {
+  // It used to turn green from its title alone, and on a pupil sheet green
+  // words read as answers (seven lessons of twenty, 7 October 2026). The
+  // teacher's ruling of 9 October: the sheet follows the slide.
   const bank = helpers["chip-bank"].render({
     title: "Word bank",
-    chips: ["energy", "variety"],
+    chips: ["at bedtime", "{{adverbial}}"],
   });
-  assert.ok(bank.includes("h-chipbank--vocab"), "a word bank came out blue");
+  assert.ok(bank.includes("h-chipbank--given"), "a word bank is ink on cream with an orange edge");
+  assert.ok(!bank.includes("h-chipbank--vocab"));
+  assert.equal((bank.match(/h-chip--taught/g) || []).length, 1, "only the taught word is green");
+  assert.ok(bank.includes(">adverbial<") && !bank.includes("{{"), "the braces never print");
+  assert.equal(
+    helpers["chip-bank"].measure({ chips: ["{{adverbial}}"] }, FULL_WIDTH_MM),
+    helpers["chip-bank"].measure({ chips: ["adverbial"] }, FULL_WIDTH_MM),
+    "and never change the size"
+  );
+
+  // In the cream and green variants the card carries the colour and the words
+  // are ink; only a taught word is green.
+  assert.match(css, /\.h-chipbank--given \.h-chip \{[^}]*color: var\(--colour-ink\)/);
+  assert.match(css, /\.h-chipbank--vocab \.h-chip \{[^}]*color: var\(--colour-ink\)/);
+  assert.match(css, /\.h-chip--taught \.h-chip-word \{ color: var\(--colour-vocab\)/);
 
   // An explicit variant still wins: a bank can genuinely be something else.
   const given = helpers["chip-bank"].render({
@@ -553,4 +570,32 @@ test("text reaching the page is escaped, so a stray bracket cannot break it", ()
     parts: [{ label: "<x>" }, { label: "y" }],
   });
   assert.ok(model.includes("&amp;") && model.includes("&lt;x&gt;"));
+});
+
+// Two headings for one thing (stress test, 7 October 2026): a bank titled
+// "Word bank" whose instruction line said "Words you can use:" printed both,
+// on every slip. The teacher's wording for the one heading, 10 October 2026:
+// "words you could use".
+test("a word bank has one heading, and a line that only names it again is not printed", () => {
+  const chips = ["rotates", "so", "because"];
+  const twice = helpers["chip-bank"].render({ title: "Word bank", text: "Words you can use:", chips });
+  assert.equal(countOf(twice, "Words you could use:"), 1);
+  assert.ok(!twice.includes("Word bank") && !twice.includes("Words you can use:"));
+  // Named only in the line above: still the one heading, and the word-bank look.
+  const lineOnly = helpers["chip-bank"].render({ text: "Words you can use:", chips });
+  assert.equal(countOf(lineOnly, "Words you could use:"), 1);
+  assert.ok(lineOnly.includes("h-chipbank--given"));
+  assert.equal(
+    helpers["chip-bank"].measure({ title: "Word bank", text: "Words you can use:", chips }, 170),
+    helpers["chip-bank"].measure({ title: "Word bank", chips }, 170),
+    "the dropped line takes no room"
+  );
+});
+
+test("a line that tells the child what to do still prints, and another kind of bank keeps its own title", () => {
+  const chips = ["rotates", "so", "because"];
+  const told = helpers["chip-bank"].render({ title: "Word bank", text: "Choose a word from the bank.", chips });
+  assert.ok(told.includes("Choose a word from the bank.") && told.includes("Words you could use:"));
+  const other = helpers["chip-bank"].render({ title: "Fronted adverbials", chips });
+  assert.ok(other.includes("Fronted adverbials") && !other.includes("Words you could use:"));
 });

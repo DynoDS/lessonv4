@@ -45,6 +45,8 @@ Its fetch commands use the internet. On Codex, when your sandbox says network ac
 
 Read `[PLUGIN_ROOT]/references/image-scout-generation.md` only immediately before the first legal generation action.
 
+Read `[PLUGIN_ROOT]/references/image-scout-stand-in.md` when `image_generation` is `unavailable`.
+
 Read `[PLUGIN_ROOT]/references/image-scout-recovery-repair.md` only when an AI ledger or durable search summary already exists, or when `repair` is non-null.
 
 ## Work order
@@ -62,6 +64,8 @@ Read `[PLUGIN_ROOT]/references/image-scout-recovery-repair.md` only when an AI l
 
 ## Visual acceptance
 
+Read `[PLUGIN_ROOT]/references/image-scout-choosing.md` before you accept any picture.
+
 For every accepted real or generated image, check:
 
 - exact subject, not a close substitute;
@@ -78,7 +82,6 @@ For every accepted real or generated image, check:
 - no generated text, labels, logos, or branding when forbidden;
 - no invented detail that changes the teaching meaning;
 - age appropriateness, cultural care, and classroom safety;
-- no watermark, signature, or accidental branding;
 - every shared visual invariant for a coherent group.
 
 A true image can still be wrong when it argues against the lesson, shows an exceptional case as typical, or adds detail that conflicts with the simplified model being taught.

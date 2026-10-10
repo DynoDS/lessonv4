@@ -480,6 +480,7 @@ def valid_shared_frame_contract():
     worksheet = design["worksheet"]
     worksheet["resourceMode"] = "shared-frame"
     worksheet["use"] = "required-task-resource"
+    worksheet["taskUnitId"] = "lesson-section/teaching-sequence/unit-003"
     worksheet["sheetShape"] = {"kind": "frame", "reason": "The printed resource is the same frame the teacher models."}
     worksheet["successCriteriaRefs"] = []
     worksheet["stickyKnowledgeRefs"] = []
@@ -558,6 +559,26 @@ def test_image_team_cap_is_authoritative_and_current_aware():
     assert "P2 and P3 are outside the lesson's 16" in context_pictures
 
 
+def test_the_sheet_that_is_a_task_names_which_task():
+    """The slides draw the sheet sign on the task the worksheet is, so a
+    required task resource says which one (the teacher, 8 October 2026)."""
+    design, photos = valid_shared_frame_contract()
+    module.validate_design(design, photos)
+
+    del design["worksheet"]["taskUnitId"]
+    assert_invalid_contract(design, photos, "worksheet.taskUnitId must name the task this sheet is")
+
+    # An Our Turn is worked with the teacher, a My Turn is watched.
+    for not_a_task in ("lesson-section/teaching-sequence/unit-002", "lesson-section/teaching-sequence/unit-001", "the Your Turn"):
+        design["worksheet"]["taskUnitId"] = not_a_task
+        assert_invalid_contract(design, photos, "worksheet.taskUnitId must name the task children do on the sheet")
+
+    # Fresh practice beside a Your Turn that keeps its own questions names none.
+    design, photos = valid_contract()
+    design["worksheet"]["taskUnitId"] = None
+    module.validate_design(design, photos)
+
+
 def test_valid_skill_contract_passes():
     design, photos = valid_contract()
     module.validate_design(design, photos)
@@ -631,6 +652,43 @@ def test_em_and_en_dashes_are_rejected_wherever_they_sit():
 
     design, photos = valid_contract()
     design["vocabulary"][0]["term"] = "compare - thousands first"
+    module.validate_design(design, photos)
+
+
+def test_notes_name_another_part_of_the_lesson_and_never_count_slides():
+    """No slide exists when the design is written, so a count made here is
+    wrong once a beat becomes several slides (the teacher, 8 October 2026)."""
+    counted = (
+        "Children test all five rocks themselves on the slide after next.",
+        "Do not settle it here: the next slide does.",
+        "You'll see both on the next slides.",
+        "The worksheet takes the place of the last slide task.",
+        "Leave it for two slides later.",
+        "The table on slide 9 shows it.",
+    )
+    for sentence in counted:
+        design, photos = valid_contract()
+        design["teachingSequence"][2]["speakerNotes"]["teacherInfo"] = sentence
+        assert_invalid_contract(design, photos, "find another slide by counting")
+
+    design, photos = valid_contract()
+    design["teachingSequence"][2]["speakerNotes"]["script"] = "Say to children: Look at the next slide."
+    assert_invalid_contract(design, photos, "find another slide by counting")
+
+    named = (
+        'Children test all five rocks themselves in "Which other rocks let water in?"',
+        "Going through its answers, say both meanings again.",
+        "Every slide but the starter shows the same blank grid.",
+        "The slides carry the sort on the board.",
+    )
+    for sentence in named:
+        design, photos = valid_contract()
+        design["teachingSequence"][2]["speakerNotes"]["teacherInfo"] = sentence
+        module.validate_design(design, photos)
+
+    # A note to the slide designer may talk about slides: it places them.
+    design, photos = valid_contract()
+    design["slideDesignNotes"] = ["Keep the grid on the next slide as well."]
     module.validate_design(design, photos)
 
 

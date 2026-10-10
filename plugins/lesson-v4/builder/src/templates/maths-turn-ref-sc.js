@@ -48,7 +48,8 @@ function drawMathsTurnRefSc(pptx, slide, data, ctx) {
     headerStyle: 'title',
     title: titleOverride,
     instruction: data.instruction,
-    signal: data.signal
+    signal: data.signal,
+    doSign: data.doSign
   }, ctx);
 
   const questions = Array.isArray(data.questions) ? data.questions : [];

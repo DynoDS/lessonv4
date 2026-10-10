@@ -4,7 +4,8 @@
 // read. Nothing here is subject-specific. A source is a history source, a
 // science explanation or an RE text depending only on what is put in it.
 
-const { LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, PT_MM, BLANK_MM, esc, escWithDigitBoxes, promptHtml, linesFor } = require("./shared");
+const { textWidthEm } = require("../../../shared/text/comic-glyph-width");
+const { BODY_PT, LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, PT_MM, BLANK_MM, esc, escWithDigitBoxes, promptHtml, linesFor } = require("./shared");
 const { SPACE, TYPE, INSET } = require("../tokens");
 const { formatQuestionLabel } = require("../labels");
 
@@ -38,6 +39,23 @@ const { formatQuestionLabel } = require("../labels");
 // reads as one direction. Three is where it stops being arguable.
 const INSTRUCTION_MAX_LINES = 2;
 
+// A task's rules are the one kind of list an instruction does carry.
+//
+// "Write an expanded noun phrase for each noun. Use two adjectives. Use the
+// word bank to help you. Not every word is true in this picture." printed as
+// one block, and the teacher's own version of it (9 October 2026) was one
+// instruction with the rules as short points under it: "Use two adjectives
+// each time", "Use each adjective only once". A rule is a condition every
+// answer has to meet, which is why it is worth a child's second look and why
+// it is not the lists refused above: success criteria and a method's steps say
+// HOW, and stay on the board.
+//
+// Written upstream as lines that start "- ", after the direction they belong
+// to. Kept few on purpose: past three, the rules are a method.
+const RULE_LINE = /^[-\u2022]\s+/;
+const INSTRUCTION_MAX_RULES = 3;
+const RULE_INDENT_MM = 4;
+
 function instructionLines(spec) {
   return String(spec.text == null ? "" : spec.text)
     .split(/\r\n|\r|\n/)
@@ -45,8 +63,41 @@ function instructionLines(spec) {
     .filter((line) => line !== "");
 }
 
-function checkInstruction(spec) {
+// The direction, and the rules under it.
+function instructionParts(spec) {
   const lines = instructionLines(spec);
+  const at = lines.findIndex((line) => RULE_LINE.test(line));
+  if (at === -1) return { direction: lines, rules: [] };
+  return {
+    direction: lines.slice(0, at),
+    rules: lines.slice(at).map((line) => line.replace(RULE_LINE, "")),
+    // A plain line after the first rule is a rule that lost its mark, or a
+    // second direction: either way the list is not one the page can set out.
+    ragged: lines.slice(at).some((line) => !RULE_LINE.test(line)),
+  };
+}
+
+function checkInstruction(spec) {
+  const { direction, rules, ragged } = instructionParts(spec);
+  if (rules.length) {
+    if (ragged || direction.length === 0) {
+      throw new Error(
+        "INSTRUCTION_RULES_MISPLACED: an instruction's rules (the lines that " +
+          'start "- ") come after the direction they belong to, with nothing ' +
+          "but rules after the first one."
+      );
+    }
+    if (rules.length > INSTRUCTION_MAX_RULES) {
+      throw new Error(
+        `INSTRUCTION_IS_A_LIST: this instruction carries ${rules.length} rules. ` +
+          `A task has at most ${INSTRUCTION_MAX_RULES}: a rule is a condition every ` +
+          "answer has to meet (how many, which words, use each once). Steps of a " +
+          "method and the lesson's success criteria say how to do it, and stay on " +
+          "the board."
+      );
+    }
+  }
+  const lines = direction;
   if (lines.length <= INSTRUCTION_MAX_LINES) return;
   throw new Error(
     `INSTRUCTION_IS_A_LIST: this instruction carries ${lines.length} lines, ` +
@@ -75,6 +126,14 @@ function renderInstruction(spec) {
   if (spec.hint === true) {
     return `<p class="h-instruction h-hint"><span class="h-hint-lead">${esc(HINT_LEAD)}</span> ${esc(String(spec.text))}</p>`;
   }
+  const { direction, rules } = instructionParts(spec);
+  if (rules.length) {
+    const points = rules.map((rule) => `<li>${promptHtml(rule, spec.blankWidthMm)}</li>`).join("");
+    return `<div class="h-instruction h-instruction--ruled"><p class="h-instruction-direction">${promptHtml(
+      direction.join("\n"),
+      spec.blankWidthMm
+    )}</p><ul class="h-rules">${points}</ul></div>`;
+  }
   return `<p class="h-instruction">${promptHtml(withItsAnswerLine(spec.text), spec.blankWidthMm)}</p>`;
 }
 
@@ -95,7 +154,42 @@ function measureInstruction(spec, widthMm) {
   // is still choosing a layout rather than after it has been drawn.
   checkInstruction(spec);
   if (spec.hint === true) return linesFor(`${HINT_LEAD} ${spec.text}`, widthMm) * LINE_MM;
+  const { direction, rules } = instructionParts(spec);
+  if (rules.length) {
+    const ruleLines = rules.reduce(
+      (n, rule) => n + linesFor(rule, widthMm - RULE_INDENT_MM, spec.blankWidthMm),
+      0
+    );
+    return (
+      (linesFor(direction.join("\n"), widthMm, spec.blankWidthMm) + ruleLines) * LINE_MM +
+      SPACE.hair +
+      SPACE.tight
+    );
+  }
   return linesFor(withItsAnswerLine(spec.text), widthMm, spec.blankWidthMm) * LINE_MM;
+}
+
+// The narrowest column a line of words is still usable in.
+//
+// Every instruction asked for 45mm, whatever it said. Under a small picture
+// that is far more than a short answer line uses: "quarter ___ ___" under a
+// clock made each clock question 55mm wide with its number, so four across
+// needed 232mm of a 174mm page, the sheet was refused three times, and the
+// lesson was rewritten to three clocks a row (Year 2, 7 October 2026; the
+// teacher, shown the page: four across with a short line under each is
+// usable). So a line short enough to sit on one or two lines in less than
+// 45mm asks only for that. A sentence keeps the 45mm: nobody reads one a word
+// at a time down a column.
+const INSTRUCTION_MIN_MM = 45;
+const SHORT_LINE_MIN_MM = 25;
+
+function instructionMinWidthMm(spec) {
+  if (spec.hint === true) return INSTRUCTION_MIN_MM;
+  const text = withItsAnswerLine(spec.text);
+  for (let mm = SHORT_LINE_MIN_MM; mm < INSTRUCTION_MIN_MM; mm += 1) {
+    if (linesFor(text, mm, spec.blankWidthMm) <= 2) return mm;
+  }
+  return INSTRUCTION_MIN_MM;
 }
 
 // ─── short questions ─────────────────────────────────────────────────────
@@ -356,7 +450,10 @@ function renderQuestions(spec, widthMm = 100) {
   // The answer's line is printed further down the same question with its unit
   // ("___ books" under the calculation): src/worksheet.js marks the set, and
   // the question keeps no second line of its own.
-  const elsewhere = spec.answerBlank === false;
+  // Or it is answered in the child's book although the sheet is printed
+  // (src/answer-place.js): no blank, and one line under the set says where.
+  const inBook = questionsInBook(spec);
+  const elsewhere = spec.answerBlank === false || inBook;
   const pictures = selectContextPictures(
     spec.items,
     questionTextWidths(widthMm, false, showNumbers)
@@ -389,7 +486,17 @@ function renderQuestions(spec, widthMm = 100) {
     spec.items.every((q) => typeof q === "string" && q.length <= 16 && !/_{2,}/.test(q));
   return `
     ${stem(spec)}
-    <ol class="h-questions${inline ? " h-questions--inline" : ""}">${items}</ol>`;
+    <ol class="h-questions${inline ? " h-questions--inline" : ""}">${items}</ol>${
+      inBook ? `<div class="h-questions-book${showNumbers ? " h-questions-book--numbered" : ""}">${bookNoteHtml()}</div>` : ""
+    }`;
+}
+
+// A set of questions answered in the book on a printed sheet: `answerInBook`,
+// set by the designer for a drawing or a long answer a child makes in their
+// book, or by the build for a question left with nowhere to answer. A slip is
+// answered in the book already and says so once for the whole sheet.
+function questionsInBook(spec) {
+  return Boolean(spec) && spec.answerInBook === true && spec.slip !== true;
 }
 
 function measureQuestions(spec, widthMm) {
@@ -401,6 +508,7 @@ function measureQuestions(spec, widthMm) {
   );
   return (
     stemMm(spec, widthMm) +
+    (questionsInBook(spec) ? BOOK_NOTE_MM : 0) +
     spec.items.reduce((h, q, i) => {
       const picture = pictures && pictures[i];
       const { belowMm, inlineMm } = questionTextWidths(widthMm, picture, showNumbers);
@@ -409,7 +517,7 @@ function measureQuestions(spec, widthMm) {
       // costs its own height AND the row gap above it - the gap was missed, so
       // every question with a dropped blank was measured 2mm short.
       // An answer placed in the words has no blank of its own to drop.
-      const elsewhere = spec.answerBlank === false;
+      const elsewhere = spec.answerBlank === false || questionsInBook(spec);
       const inWords = elsewhere ? null : answerInTheWords(questionText(q), widthMm, picture, showNumbers);
       const below = !elsewhere && !inWords && blankBelow(questionText(q), widthMm, picture, showNumbers);
       // An image picture is taller than a text line and stretches its flex
@@ -441,6 +549,8 @@ function stemMm(spec, widthMm) {
 // A question the child answers in their own words, with ruled lines under it.
 // `lines` is capped rather than stretched: fifteen lines for one question does
 // not read as spare room to a child, it reads as "write fifteen lines".
+
+const { answerInBook, bookNoteHtml, BOOK_NOTE_MM } = require("./in-book");
 
 const MAX_WRITING_LINES = 6;
 
@@ -488,6 +598,42 @@ function writingLinesFor(q, widthMm) {
   return Math.min(q.lines || 3, MAX_WRITING_LINES);
 }
 
+// A short answer after a short prompt is written on the same line as the
+// prompt: "sky ____________". It halves the height of a list of one-line
+// answers and keeps each answer beside the word it is about. The teacher's
+// ruling (9 October 2026, on a Year 2 noun phrase sheet): the line beside is
+// the first choice, and the line underneath is what gives the child more room
+// when the answer would not fit beside.
+//
+// Whether it fits is asked of the answer, so the designer states how long the
+// answer is (`answerLetters`, counted from the model answer, spaces included)
+// and the engine does the sum at this zone's real width. With no length given
+// the line goes underneath, as it always has: a line the engine cannot size is
+// a line that may be too short to write on.
+//
+// A phrase written along a line is written smaller than one word on a label.
+// The teacher judged "the tall, leafy tree" (20) to fit a Year 2 child's hand
+// on a 95mm line, which is where the lower figure comes from.
+const ANSWER_LETTER_MM = { lower: 4.5, upper: 3.5 };
+// The room a short prompt is allowed, whatever its own length: "sky" and
+// "clouds" are both a short prompt, and sized each by its own width one took
+// its line beside and the next took it underneath, three parts of one question
+// set out two ways. Every prompt this short is given the same allowance, so
+// parts that ask the same thing are set out the same way; a prompt longer than
+// this is not a short prompt and keeps its line underneath.
+const SHORT_PROMPT_MM = 14; // about six letters of print
+
+function lineBesideMm(q, lines, textWidthMm, phase, picture) {
+  const letters = Number(q && q.answerLetters);
+  if (!(letters > 0) || lines !== 1 || picture) return 0;
+  const words = String(q.text ?? "");
+  if (words === "" || /[\r\n]/.test(words)) return 0;
+  const promptMm = textWidthEm(words, false) * BODY_PT * PT_MM;
+  const needMm = letters * ANSWER_LETTER_MM[phase];
+  if (promptMm > SHORT_PROMPT_MM) return 0;
+  return SHORT_PROMPT_MM + SPACE.tight + needMm <= textWidthMm ? needMm : 0;
+}
+
 function renderWrittenAnswers(spec, widthMm = 100) {
   const showNumbers = spec.showNumbers !== false;
   const numberGutterMm = showNumbers ? 6 : 0;
@@ -522,25 +668,46 @@ function renderWrittenAnswers(spec, widthMm = 100) {
       // entirely - and `measure` below leaves out the same line, or the
       // estimate and the page stop agreeing.
       const hasPrompt = String(q.text ?? "") !== "";
+      const inBookHere = answerInBook(spec, q);
+      const besideMm =
+        spec.slip === true || inBookHere
+          ? 0
+          : lineBesideMm(q, lines, widthMm - numberGutterMm, phase, pictures && pictures[i]);
+      if (besideMm) {
+        return `
+      <li class="h-q h-written">
+        ${showNumbers ? `<span class="h-num">${esc(formatQuestionLabel(i + (spec.startAt || 1)))}</span>` : ""}
+        <div class="h-body">
+          <div class="h-written-beside" style="height:${lineMm}mm">
+            <span class="h-text" data-number-here>${escWithDigitBoxes(q.text)}</span>
+            <span class="h-line h-line--beside" style="min-width:${besideMm.toFixed(1)}mm"></span>
+          </div>
+        </div>
+      </li>`;
+      }
       const prompt = hasPrompt
         ? `<div class="h-written-prompt">
             ${pictureMarkup(pictures && pictures[i])}
             <span class="h-text">${escWithDigitBoxes(q.text)}</span>
           </div>`
         : "";
-      // Spare room is shared out in proportion to how much of it each item can
-      // actually use, and what an item can use is its own line count. Shared
-      // equally, a one-line answer and a four-line answer take the same extra,
-      // so one overflows its cap and leaves a hole while the other is still
-      // short of its own useful size.
       // A question slip leaves the ruled lines off: the answer is written in
       // the child's book. See src/slips.js.
+      // A long answer on a printed sheet is written in the child's book: the
+      // question stays and a line says where the answer goes (in-book.js).
+      const inBook = answerInBook(spec, q);
+      const room =
+        spec.slip === true
+          ? ""
+          : inBook
+            ? bookNoteHtml()
+            : `<div class="h-lines" style="max-height:${linesCapMm}mm">${ruled}</div>`;
       return `
-      <li class="h-q h-written" style="flex-grow:${lines}">
+      <li class="h-q h-written${inBook ? " h-q--book" : ""}">
         ${showNumbers ? `<span class="h-num">${esc(formatQuestionLabel(i + (spec.startAt || 1)))}</span>` : ""}
         <div class="h-body">
           ${prompt}
-          ${spec.slip === true ? "" : `<div class="h-lines" style="max-height:${linesCapMm}mm">${ruled}</div>`}
+          ${room}
         </div>
       </li>`;
     })
@@ -572,7 +739,7 @@ function enoughWrittenAnswers(spec, widthMm) {
   const lineMm = WRITING_LINE_MM[phase];
   const growthMm = lineMm * (WRITING_LINE_GROWN_RATIO - 1);
   const lines = spec.items.reduce(
-    (total, q) => total + writingLinesFor(q, baseTextWidth),
+    (total, q) => total + (answerInBook(spec, q) ? 0 : writingLinesFor(q, baseTextWidth)),
     0
   );
   return measureWrittenAnswers(spec, widthMm) + lines * growthMm;
@@ -597,7 +764,16 @@ function measureWrittenAnswers(spec, widthMm) {
       String(q.text ?? "") === "" && !picture
         ? 0
         : Math.max(linesFor(q.text, textWidth) * LINE_MM, pictureHeightMm(picture));
-    return h + promptMm + lines * lineMm + gapMm;
+    const roomMm = answerInBook(spec, q) ? BOOK_NOTE_MM : lines * lineMm;
+    // Beside its prompt, the answer's line and the prompt are one row.
+    if (
+      spec.slip !== true &&
+      !answerInBook(spec, q) &&
+      lineBesideMm(q, lines, baseTextWidth, phase, picture)
+    ) {
+      return h + Math.max(lineMm, LINE_MM) + gapMm;
+    }
+    return h + promptMm + roomMm + gapMm;
   }, 0);
 }
 
@@ -722,6 +898,15 @@ const css = `
     font-size: var(--type-body);
     line-height: 1.35;
   }
+  /* A task's rules: short points under the direction, each hung from its own
+     mark so a rule that wraps stays one rule. */
+  .h-instruction--ruled .h-instruction-direction { margin: 0; }
+  /* A little air under the last rule, so the first part does not read as a
+     fourth one. */
+  .h-instruction--ruled { margin-bottom: var(--space-tight); }
+  .h-rules { list-style: none; margin: var(--space-hair) 0 0; padding: 0; }
+  .h-rules li { position: relative; padding-left: ${RULE_INDENT_MM}mm; }
+  .h-rules li::before { content: "•"; position: absolute; left: 0.5mm; }
   /* A write-in blank inside prompt text, swapped in for a designer's run of
      underscores. One uniform width everywhere: wide enough for a real written
      word, and never hinting by its length at which word it wants. */
@@ -888,59 +1073,39 @@ const css = `
     margin-left: ${QUESTION_NUMBER_COL_MM}mm;
   }
 
+  /* Where a set of questions is answered when it is not on the sheet: under
+     the last of them, in line with their words. */
+  .h-questions-book--numbered { margin-left: ${QUESTION_NUMBER_COL_MM}mm; }
+
   .h-written { align-items: flex-start; }
   .h-body { flex: 1; }
   .h-lines { margin-top: var(--space-hair); }
   .h-line {
-    display: block;
+    display: block; box-sizing: border-box;
     border-bottom: var(--rule-hair) dotted var(--colour-rule);
   }
 
-  /* Written answers claim spare height (greed 3). This is what makes that
-     true. Without it the engine hands the zone extra height, the lines stay
-     where they were, and the difference becomes a hole underneath: leftover
-     pooling between two blocks instead of collecting at the foot of the page.
-     The extra goes into the writing LINES, not the gaps between questions,
-     because a taller line is more room to write and a wider gap is nothing.
-     Growth is capped elsewhere at half again the natural height, so a line can
-     get roomier but never turns into an invitation to write an essay. */
-  .h-answers-block { height: 100%; display: flex; flex-direction: column; }
-  .h-answers { flex: 1; display: flex; flex-direction: column; }
-  /* Grow from the height each item already measured at, not from zero, and by
-     the share the markup states rather than one share each. */
-  .h-answers .h-written { flex: 1 1 auto; }
+  /* Written answers are the size they measure at and no taller. A ruled line
+     is the year group's line height exactly (WRITING_LINE_MM in tokens.js): it
+     does not grow into spare room and it does not shrink to make room, because
+     either one prints the same answer at two spacings in one pack. Room the
+     zone has left over stays under the last question, as paper. */
+  .h-answers-block { display: flex; flex-direction: column; }
+  .h-answers { flex: none; display: flex; flex-direction: column; }
+  .h-answers .h-written { flex: none; }
   .h-answers .h-written:last-child { margin-bottom: 0; }
   .h-answers .h-body { display: flex; flex-direction: column; }
-  .h-answers .h-lines { flex: 1; display: flex; flex-direction: column; }
-  /* Grow, but start from the line height already set on the element. A plain
-     "flex: 1" sets the starting height to zero, and inside a stack that had
-     nothing spare to hand out the lines collapsed to their own border: two
-     ruled lines came out as 0.3mm each, which is to say a child had nowhere
-     to write and the sheet still looked finished. */
-  /* A composed stack can be a few millimetres tighter in the browser than the
-     arithmetic estimate because a question wraps one line earlier. Allow all
-     ruled lines to yield that tiny discrepancy together; keeping shrink at
-     zero clipped the final requested line completely. */
-  .h-answers .h-line { flex: 1 1 auto; }
-  /* The link that made none of the rule above true.
-     .h-q aligns on the BASELINE so a question number sits on the first line of
-     its text rather than floating at the top of a tall block, and that is right.
-     But baseline alignment stops the body stretching, so the height the engine
-     handed a written-answers block stopped at the body and never reached the
-     ruled lines. Every claim above was accurate about intent and inert in fact:
-     a Year 4 Greater Depth sheet printed three tight lines under each prompt
-     with 45mm of blank paper below them, and the room report stayed silent
-     because a greedy block is assumed to have used what it was given.
-     Stretch the body and put the number back on the first line by hand: the
-     number and the body's first line share a font size and a line height, so a
-     number sitting at the top of a stretched box lands on the same baseline it
-     did before. Scoped to written answers, so an ordinary question row - where
-     baseline alignment is doing real work against inline blanks - is untouched.
-     The cap is what keeps this from overcorrecting. Room a line cannot use is
-     better left as paper than turned into a two-centimetre gap between rules
-     that reads as a mistake; how many lines a question deserves is the
-     designer's decision, made with the sentences field, not something to reach by
-     stretching three of them. */
+  .h-answers .h-lines { flex: none; display: flex; flex-direction: column; }
+  .h-answers .h-line { flex: none; }
+  /* The answer on the prompt's own line: the words sit on the ruled line's
+     level and the line takes the rest of the row. */
+  .h-written-beside { display: flex; align-items: flex-end; gap: var(--space-tight); }
+  .h-written-beside .h-text { flex: none; line-height: 1.35; }
+  .h-answers .h-line.h-line--beside { flex: 1 1 auto; height: 100%; }
+  /* .h-q aligns on the BASELINE so a question number sits on the first line of
+     its text. Written answers stretch the body across instead and pin the
+     number to the top by hand: the number and the body's first line share a
+     font size and a line height, so it lands on the same baseline. */
   .h-answers .h-written { align-items: stretch; }
   .h-answers .h-written > .h-num { align-self: flex-start; }
 
@@ -1008,10 +1173,14 @@ const helpers = {
   instruction: {
     render: renderInstruction,
     measure: measureInstruction,
-    needs: heightFromContent(measureInstruction, 45),
+    needs: (spec) => ({
+      minWidthMm: instructionMinWidthMm(spec),
+      minHeightMm: measureInstruction(spec, WIDEST_ZONE_MM),
+    }),
     greed: 0,
   },
   questions: {
+    inBook: questionsInBook,
     requires: ["items"],
     render: renderQuestions,
     measure: measureQuestions,
@@ -1021,13 +1190,12 @@ const helpers = {
     greed: 0, // never stretch the gaps between questions
   },
   "written-answers": {
+    inBook: (spec) => (spec.items || []).some((item) => answerInBook(spec, item)),
     requires: ["items"],
     render: renderWrittenAnswers,
     measure: measureWrittenAnswers,
     needs: heightFromContent(measureWrittenAnswers, 70),
-    greed: 3, // writing space is the right home for spare room
-    // Up to the point where a roomier line stops being room to write in. Past
-    // that the sheet is asking for an essay the question never set.
+    greed: 0, // ruled lines are one height; spare room stays as paper
     enough: enoughWrittenAnswers,
   },
   "section-label": {

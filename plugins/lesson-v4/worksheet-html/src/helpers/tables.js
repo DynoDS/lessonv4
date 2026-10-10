@@ -51,7 +51,7 @@ function dataColumns(spec) {
 function renderDataTable(spec) {
   const columns = dataColumns(spec);
   const head = columns.length
-    ? `<thead><tr>${columns.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead>`
+    ? `<thead><tr>${columns.map((c) => `<th>${headingHtml(c)}</th>`).join("")}</tr></thead>`
     : "";
   const body = spec.rows
     .map((r) => `<tr>${r.map((cell) => `<td>${esc(cell)}</td>`).join("")}</tr>`)
@@ -90,6 +90,18 @@ function cellTextWidthMm(columnMm) {
 // runs one way the page passed its fit check and then clipped in the browser.
 // The flat height stays the floor, so a blank or tick row is unchanged; the
 // extra lines are what is added, at the height of a line of body text.
+// A column heading may carry a second line: what the heading means, or what to
+// write under it ("Appearance", then "What does it look like?"). It is typed
+// as a line break in the heading and prints under it, small and quiet, where a
+// child looks when deciding what goes in the column. Until 10 October 2026 a
+// heading was one line, so that help went in a note under the whole table, away
+// from the columns it explained (stress test, 7 October 2026).
+function headingHtml(heading) {
+  const [name, ...rest] = String(heading ?? "").split(/\r\n|\r|\n/);
+  const under = rest.map((line) => line.trim()).filter(Boolean).join(" ");
+  return esc(name) + (under ? `<span class="h-th-under">${esc(under)}</span>` : "");
+}
+
 function rowHeightMm(cells, columnWidthsMm, flatRowMm) {
   let lines = 1;
   cells.forEach((cell, i) => {
@@ -243,7 +255,7 @@ function renderRecordingTable(spec) {
   const head = spec.columns
     .map(
       (c, i) =>
-        `<th style="width:${((sizes[i].columnMm / totalMm) * 100).toFixed(1)}%">${esc(c)}</th>`
+        `<th style="width:${((sizes[i].columnMm / totalMm) * 100).toFixed(1)}%">${headingHtml(c)}</th>`
     )
     .join("");
   const body = recordingRows(spec)
@@ -386,6 +398,10 @@ const css = `
     padding: var(--inset-cell); text-align: center; vertical-align: middle;
   }
   .h-table thead th { background: var(--colour-tint); }
+  .h-th-under {
+    display: block; font-weight: normal;
+    font-size: var(--type-note); color: var(--colour-quiet); line-height: 1.35;
+  }
 
   /* Values handed to the child: given material, so orange, and single line. */
   .h-data td { color: var(--colour-given); }

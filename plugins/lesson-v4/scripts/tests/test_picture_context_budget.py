@@ -17,6 +17,7 @@ class PictureContextBudgetTests(unittest.TestCase):
         limits = {
             ROOT / "agents" / "image-scout.md": 8000,
             ROOT / "references" / "image-scout-search.md": 10000,
+            ROOT / "references" / "image-scout-choosing.md": 5000,
             ROOT / "references" / "image-scout-generation.md": 9000,
             ROOT / "references" / "image-scout-recovery-repair.md": 5000,
         }

@@ -227,18 +227,23 @@ test("a long sticky fact keeps its photo and its whole sentence, and nothing pri
   }
 });
 
-// His first answer comes before his second: a fact a few letters over its budget
-// gives up only a little of its photo (65% of the sheet for its words), and
-// only a fact that still does not fit narrows the photo to a third (70%).
-test("a fact a few letters over its budget narrows its photo only a little", async () => {
-  const { printableInches } = require("../src/layout.js");
+// His answer of 10 October 2026, from pictures of his own Year 6 poster: a
+// fact and the picture beside it take a real half of the sheet each ("way
+// better"). Until then a fact a few letters over two lines narrowed its photo
+// to 35% of the sheet and a longer one to under a third (his answers of 26
+// September), and the words were then printed far larger than the room they
+// had been given needed. A fact of either length now keeps half.
+test("a fact and the photo beside it take half the sheet each", async () => {
+  const { printableInches, photoAspect } = require("../src/layout.js");
+  const PIZZA_ASPECT = photoAspect(fs.readFileSync(path.join(__dirname, "..", "test-fixtures-a3", "photos", "pizza.jpg")));
   const style = require("../style.json");
   const shareMm = (share) => Math.round(printableInches("A3", "landscape", style).width * share * 25.4 * 100) / 100;
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "wall-give-way-"));
   try {
     const cases = [
-      ["Most tropical rainforests grow near the Equator, where it is warm.", 0.65],
-      ["Rainforests grow close to the Equator, in places that are warm and wet.", 0.7],
+      ["Most tropical rainforests grow near the Equator, where it is warm.", 0.5],
+      ["Rainforests grow close to the Equator, in places that are warm and wet.", 0.5],
+      ["On the x-axis, negative numbers are to the left of zero. On the y-axis, they are below zero.", 0.5],
     ];
     for (const [text, share] of cases) {
       const htmlPath = await buildCard(root, `a fact of ${text.length} letters`, {
@@ -246,6 +251,9 @@ test("a fact a few letters over its budget narrows its photo only a little", asy
       });
       const width = Number(fs.readFileSync(htmlPath, "utf8").match(/<div style="width:([\d.]+)mm;flex:none;display:flex;"><div class="wall-panel"/)[1]);
       assert.equal(width, shareMm(share), `a ${text.length}-letter fact's words should take ${share * 100}% of the sheet`);
+      // And the photo is drawn at its own shape, not squeezed into a square.
+      const [, w, h] = fs.readFileSync(htmlPath, "utf8").match(/<img [^>]*style="display:block;width:([\d.]+)mm;height:([\d.]+)mm/);
+      assert.ok(Math.abs(Number(w) / Number(h) - PIZZA_ASPECT) < 0.02, `the photo beside a ${text.length}-letter fact is ${w}mm by ${h}mm, not its own shape`);
     }
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

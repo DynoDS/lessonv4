@@ -57,14 +57,26 @@ const NARROW_SPARE_MM = 30;
 // designer's instructions and no helper catalogue.
 const TRIM_STRIP_MM = 43;
 
+// The strip is measured from the paper's edge, and the sheet's work starts
+// EDGE_MM from the top and left where the printable margin used to be
+// DEFAULT_MARGIN_MM, so the work area is longer by the difference. When the
+// sheet moved up and left (6 October 2026) that 9mm was left to join the strip,
+// which made it 52mm where the teacher had asked for 43, and sheets were being
+// refused for 3mm and 8mm they would have had. Shown the same sheet both ways,
+// he gave it back to the work (9 October 2026), so the strip is the 43mm he
+// ruled and no more.
+function stripSpareMm(spec) {
+  return TRIM_STRIP_MM - DEFAULT_MARGIN_MM - (DEFAULT_MARGIN_MM - EDGE_MM);
+}
+
 function footSpareMm(spec) {
   if (spec && spec.fullPage === true) return 0;
-  return (spec && spec.orientation) === "landscape" ? 0 : TRIM_STRIP_MM - DEFAULT_MARGIN_MM;
+  return (spec && spec.orientation) === "landscape" ? 0 : stripSpareMm(spec);
 }
 
 function rightSpareMm(spec) {
   if (spec && spec.fullPage === true) return 0;
-  return (spec && spec.orientation) === "landscape" ? TRIM_STRIP_MM - DEFAULT_MARGIN_MM : 0;
+  return (spec && spec.orientation) === "landscape" ? stripSpareMm(spec) : 0;
 }
 
 function narrowSpareMm(spec) {
@@ -79,8 +91,9 @@ function narrowSpareMm(spec) {
 // to trim off as well. The teacher printed a Year 4 pack at 6mm on the school
 // printer (6 October 2026): "It's much better, and looks like 2 trims is all
 // that is neccessary now." The work area keeps the size every measurement in
-// the engine was taken against: the whole sheet moves up and left, and the
-// 9mm it leaves joins the strips at the right and the foot.
+// the engine was taken against at the top and left: the whole sheet moves up
+// and left, and the 9mm it leaves at the foot of a portrait sheet and the
+// right of a landscape one is given to the work (see `stripSpareMm`).
 //
 // A `fullPage` fixture stays where it was printed.
 const EDGE_MM = 6;

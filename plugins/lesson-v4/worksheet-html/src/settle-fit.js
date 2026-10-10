@@ -28,6 +28,11 @@
 //    already measured and accepted.
 // 3. Still clipped after both: report it. The sheet is refused and the
 //    designer decides what changes. Nothing is ever shrunk to make a page pass.
+//
+// One exception sits upstream of this loop and is not made here: when an
+// automatic layout chooses a shape, a photograph the children only look at may
+// be drawn down to two thirds of its size to keep a sheet in one column
+// (LOOKED_AT_SCALES in worksheet.js, with its reason and its limit).
 
 // How many roomier arrangements are worth drawing before a clipped sheet is
 // refused for real. Each one costs a browser render, and a sheet that three
@@ -76,7 +81,15 @@ function measuredCorrections(fitProblems, already) {
       // small nudge is worth one try before the reshape spends a render.
       mm = 2;
     }
-    wanted[problem.zone] = Math.min(MAX_CORRECTION_MM, has + mm);
+    // The largest any of the zone's problems asks for. One zone is often
+    // reported twice (the zone overflowing, and a box inside it), and the
+    // second report's 2mm nudge used to overwrite the first's measured
+    // shortfall, so a zone 3.5mm short grew 2mm a round and never caught up
+    // (a Year 5 shape sheet, 7 October 2026).
+    wanted[problem.zone] = Math.max(
+      wanted[problem.zone] || 0,
+      Math.min(MAX_CORRECTION_MM, has + mm)
+    );
   }
   return Object.keys(wanted).length ? wanted : null;
 }

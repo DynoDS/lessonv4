@@ -17,6 +17,9 @@
 const test = require("node:test");
 const assert = require("node:assert");
 const path = require("node:path");
+const fs = require("node:fs");
+const os = require("node:os");
+const sharp = require("sharp");
 
 const style = require("../style.json");
 const { renderVocabChips } = require("../src/render-grids");
@@ -68,17 +71,73 @@ test("a fuller card still fits, so the picture shrinks as rows are added", () =>
   );
 });
 
-test("the pictures stay square and the words keep their own room", () => {
-  const html = renderVocabChips(chipsCard(4), style, FIXTURES_DIR, { svgImages: {} });
-  const images = imageSidesInches(html);
-  for (const img of images) {
-    assert.ok(Math.abs(img.w - img.h) < 0.01, "a chip picture should stay square");
+// His answers of 10 October 2026, from pictures of an Athens and Sparta word
+// sheet. Every chip photograph had been drawn in a square whatever its shape,
+// so a wide hillside was squeezed thin and a tall statue squashed fat (the
+// fault a fact sheet had too, stress test of 7 October 2026), and the chips
+// stopped two thirds of the way down the sheet.
+const PILL_INNER_INCHES = (Math.floor((16.54 - 2 * (1.6 / 2.54)) * 1440 / 2) - 240) / 1440;
+
+// A folder of plain photographs of the shapes named, made for the test.
+async function photosOfShapes(shapes) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "wall-chip-shapes-"));
+  for (const [name, w, h] of shapes) {
+    await sharp({ create: { width: w, height: h, channels: 3, background: "#7799bb" } }).jpeg().toFile(path.join(dir, `${name}.jpg`));
   }
-  // The word is what a child reads first; the picture may not crowd it out.
-  const pillInnerInches = (Math.floor((16.54 - 2 * (1.6 / 2.54)) * 1440 / 2) - 240) / 1440;
-  assert.ok(
-    images[0].w <= pillInnerInches * 0.5,
-    `the picture takes ${((images[0].w / pillInnerInches) * 100).toFixed(0)}% of the chip's width, ` +
-      `leaving too little for the word`
-  );
+  return dir;
+}
+
+function shapesCard(words, photos) {
+  return {
+    type: "vocabChips",
+    page: { size: "A3", orientation: "landscape" },
+    title: "Athens and Sparta words",
+    chips: words.map((word, i) => ({ word, ...(photos[i] ? { photo: `${photos[i]}.jpg` } : {}) })),
+  };
+}
+
+const wordPt = (html) => Number(html.match(/font-size:([\d.]+)pt;color:#[0-9A-Fa-f]{6};">citizen</)[1]);
+
+test("a wide photograph and a tall one both print at their own shape", async () => {
+  const dir = await photosOfShapes([["wide", 1920, 1137], ["tall", 2142, 2949], ["square", 1000, 1000]]);
+  try {
+    const html = renderVocabChips(shapesCard(["citizen", "warrior", "valley", "leader"], ["wide", "tall", "square", "wide"]), style, dir, { svgImages: {} });
+    const [wide, tall, square] = imageSidesInches(html);
+    assert.ok(Math.abs(wide.w / wide.h - 1920 / 1137) < 0.02, `a wide photograph is drawn ${wide.w.toFixed(2)}in by ${wide.h.toFixed(2)}in, not its own shape`);
+    assert.ok(Math.abs(tall.w / tall.h - 2142 / 2949) < 0.02, `a tall photograph is drawn ${tall.w.toFixed(2)}in by ${tall.h.toFixed(2)}in, not its own shape`);
+    assert.ok(Math.abs(square.w - square.h) < 0.01, "a square photograph stays square");
+    // A wide photograph spreads into the room beside its word.
+    assert.ok(wide.w > square.w, `a wide photograph should be wider than a square one (${wide.w.toFixed(2)}in against ${square.w.toFixed(2)}in)`);
+    // The word is what a child reads first; the picture may not crowd it out.
+    for (const img of [wide, tall, square]) {
+      assert.ok(img.w <= PILL_INNER_INCHES * 0.55 + 0.01, `the picture takes ${((img.w / PILL_INNER_INCHES) * 100).toFixed(0)}% of the chip's width, leaving too little for the word`);
+    }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("a long word is never shrunk to make a photograph wider", async () => {
+  const dir = await photosOfShapes([["wide", 1920, 1137], ["square", 1000, 1000]]);
+  try {
+    const words = ["citizen", "philosophers", "valley", "leader"];
+    const besideSquare = wordPt(renderVocabChips(shapesCard(words, ["square", "square", "square", "square"]), style, dir, { svgImages: {} }));
+    const besideWide = wordPt(renderVocabChips(shapesCard(words, ["wide", "wide", "wide", "wide"]), style, dir, { svgImages: {} }));
+    assert.ok(
+      besideWide >= Math.min(40, besideSquare),
+      `the words print at ${besideWide}pt beside wide photographs and ${besideSquare}pt beside square ones`
+    );
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("the chips share the whole page and are all one size", () => {
+  const html = renderVocabChips(chipsCard(4), style, FIXTURES_DIR, { svgImages: {} });
+  assert.match(html, /<div class="wall-body" style="[^"]*flex-direction:column/, "the rows should be the page's growing body");
+  const rows = html.match(/<div style="display:flex;align-items:stretch;width:100%;flex:1 1 0;min-height:0;">/g) || [];
+  assert.strictEqual(rows.length, 2, "each of the two rows takes an equal share of the page");
+  const cells = html.match(/padding:[\d.]+mm [\d.]+mm;display:flex;align-items:(stretch|center);/g) || [];
+  assert.strictEqual(cells.length, 4);
+  assert.ok(cells.every((cell) => cell.includes("align-items:stretch")), "a chip is as tall as its row, so its neighbour's photograph cannot make it a different size");
 });

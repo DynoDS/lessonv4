@@ -341,8 +341,11 @@ def test_the_role_reads_the_packet_and_falls_back_only_when_it_is_absent() -> No
     # to read it in pages (22 September 2026).
     # The frontmatter line that trims the helper's toolbox on Claude Code is a
     # host setting, not guidance, so it is left out of the count (4 October 2026).
+    # Raised from 51 KiB for what the designer does with a layout check that now
+    # reads the drawn page: what each measured overrun means and which change
+    # clears it. That is judgement, so it stays in the role (10 October 2026).
     guidance = "\n".join(line for line in text.splitlines() if not line.startswith("disallowedTools:"))
-    assert len(guidance.encode("utf-8")) < 51 * 1024, "the role is judgement now; contracts live in the packet"
+    assert len(guidance.encode("utf-8")) < 52 * 1024, "the role is judgement now; contracts live in the packet"
 
 
 def test_the_contracts_file_is_the_one_owner_of_the_moved_material() -> None:
@@ -654,3 +657,39 @@ def test_a_method_frame_on_the_board_offers_the_digit_cards() -> None:
     design = {"representations": [], "lesson": {}}
     assert "digit-cards" in packet.triggers_for(design, with_frame, [], primitives)["primitives"]
     assert "digit-cards" not in packet.triggers_for(design, without, [], primitives)["primitives"]
+
+
+def test_a_wall_table_may_cut_the_boards_sentences_to_a_few_words(tmp_path: Path) -> None:
+    """The stress test of 7 October 2026 (Year 5 Athens and Sparta).
+
+    The board's comparison table held full sentences, which do not fit a wall
+    table, and the check wanted them cell for cell, so the table the lesson
+    named for the wall was left off. A sentence may be cut; the row names stay,
+    and the board's answer marks and small print are not part of the comparison.
+    """
+    publish(tmp_path, "sparta.jpg")
+    table = {"type": "table", "headers": ["", "Athens", "Sparta"],
+             "rows": [["Government\n[[Who ran the city?]]","The citizens voted on what the city did.",
+                       "||The kings and the Elders were in charge. Everyone obeyed the laws."]]}
+    card = {"type": "referenceTable", "title": "Athens and Sparta", "columns": table["headers"],
+            "rows": [["", {"photo": "unsplash/sparta.jpg"}, {"photo": "unsplash/sparta.jpg"}],
+                     ["Government", "The citizens voted", "Kings and Elders"]]}
+    result = run_check(tmp_path, wall_with([card]), {"slides": [{"body": table}]})
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_a_wall_table_keeps_the_boards_names_and_numbers(tmp_path: Path) -> None:
+    publish(tmp_path, "sparta.jpg")
+    table = {"type": "table", "headers": ["", "Sparta"],
+             "rows": [["Education", "Boys left home at 7 to train, with no shoes and very little food."]]}
+    picture = ["", {"photo": "unsplash/sparta.jpg"}]
+    lesson = {"slides": [{"body": table}]}
+    renamed = {"type": "referenceTable", "title": "Sparta", "columns": table["headers"],
+               "rows": [picture, ["Schooling", "Boys trained from age 7"]]}
+    result = run_check(tmp_path, wall_with([renamed]), lesson)
+    assert result.returncode == 1 and "the board's \"education\" is not on it" in result.stdout, result.stdout + result.stderr
+    no_number = {"type": "referenceTable", "title": "Sparta", "columns": table["headers"],
+                 "rows": [picture, ["Education", "Boys trained from an early age"]]}
+    result = run_check(tmp_path, wall_with([no_number]), lesson)
+    assert result.returncode == 1 and "changes the source rows" in result.stdout, result.stdout + result.stderr
+

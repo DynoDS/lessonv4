@@ -70,8 +70,12 @@ test("a tall file no longer takes half the page to say so", () => {
   const boxes = viewports(renderHelper({ helper: "card-row", cards: [tudor] }, COLUMN_MM));
   const drawn = boxes[0].heightMm / boxes[0].widthMm;
 
+  // The picture keeps its own proportions (the test above), so the guard shows
+  // as a picture drawn SHORTER than the file would be at the card's full width.
+  // This compared `drawn` with `before`, which are the same ratio, and passed
+  // or failed on the second decimal place of the printed millimetres.
   assert.ok(
-    drawn < before,
+    boxes[0].heightMm < (COLUMN_MM - 10) * before,
     "one very tall photograph in one card is still a file deciding a page"
   );
   assert.ok(

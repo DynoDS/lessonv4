@@ -73,6 +73,47 @@ and it adds trimming the teacher has to do. Each level (Below, Expected, Greater
 Depth) is decided on its own sheet and often differs: a Below sheet with a partly
 filled model is `"sheet"` while the Expected calculations beside it are `"books"`.
 
+## A long answer on a printed sheet still goes in the book
+
+The mark is one
+per sheet, and a sheet that holds a table to fill in is `"sheet"`. That does
+not put the extended answer under it on paper: a child writes a paragraph in
+their book, and ten ruled lines on the sheet are room the book already has
+(Daniel, 9 October 2026, on a Year 5 history sheet: "it shouldn't have a box to
+write in because they can write in their books"). So the engine does this by
+itself on every `"sheet"` sheet: an answer of four lines or more prints as its
+question and `Write your answer in your book.`, a short answer keeps its lines,
+and each numbered question carries a small book or pencil under its number so a
+child and a teacher can see which is which. Sentence starters stay printed as
+the support and lose only their lines. A named part of a planner (a
+`writing-frame` with its own heading) is written on the sheet. Nothing here is
+yours to set; it is why a long question costs the page so little.
+
+## A drawing a child can make goes in the book too
+
+The pencil at the head of a `"sheet"` sheet tells a child that what is asked
+here is answered here, so every question on it shows its place to answer:
+lines, a blank, a box, something printed to tick, circle, join or mark, or the
+book mark and `Write your answer in your book.` A Year 4 Greater Depth sheet
+printed "Draw your own river... label all six features" under the pencil with
+none of these, while Expected gave the same task an 80mm box (the stress test
+of 7 October 2026).
+
+Where it goes follows the table below. A drawing or diagram a child that age
+can make themselves is drawn in the book, where there is more room than a box
+on the sheet gives (Daniel, 9 October 2026, on that river: "I think it can be
+drawn in the book"): put `"answerInBook": true` on the `questions` set that
+asks for it, and the engine prints the book mark under its number and the line
+under its words. A `drawing-space` box is for when the book will not do: the
+drawing has to sit beside something printed on the sheet, or the child cannot
+yet set it out alone. The same task takes the same place on every level.
+
+The preflight refuses a `questions` set on a `"sheet"` sheet whose answer space
+is switched off (`"answerBlank": false`) with nothing else in the question to
+write, draw or mark on (`NOWHERE_TO_ANSWER`). The build never withholds a pack
+over it: it prints the question sent to the book and says so
+(`ANSWER_SENT_TO_BOOK`).
+
 ## What children can make in their books, by age
 
 The same activity changes with age and with the size of what must be drawn. This
@@ -141,6 +182,34 @@ A figure the child works on, or one that has to be in front of them and cannot
 be read any smaller, makes the sheet `"sheet"`. Never reword or cut a question
 to make it fit. A books sheet whose slips still cannot be made prints as the
 sheet instead, so the class always gets something.
+
+## A small picture in the corner of a slip: `slipPicture`
+
+A slip of words alone is complete. The teacher, shown a slip with and without a
+picture (10 October 2026), called the plain one "absolutely fine" and said a
+small picture "does make the stick-in sheet look a bit nicer". So a books sheet
+may name one picture the lesson already has, and the build prints it about 22mm
+wide in the bottom right corner of every slip, beside the last thing on it:
+
+```json
+"slipPicture": { "imagePath": "unsplash/hand-turning-globe.jpg" }
+```
+
+It is decoration, and that sets its limits. Choose it only from pictures already
+in the photo contract and published, whatever surface their `use` names: never
+ask for a new picture for this. Choose one a child would recognise at the size
+of a postage stamp and in black and white: one clear object on a light ground,
+not a scene, and not anything dark. Leave the field out when nothing fits; a
+lesson with no such picture is the ordinary case, and no check asks for one.
+
+A picture the child reads an answer from, counts in or labels is part of a
+question. It goes in the sheet's zones at a size they can read, never here.
+
+The build protects the paper for you. It leaves the picture off, and says so in
+a `SLIP_PICTURE_LEFT_OFF:` line that needs no repair, when the picture would
+mean fewer slips on the page, when it is mostly dark and would photocopy as a
+black box, when the slips run across the page in two columns, or when the file
+cannot be read.
 
 ## What the build checks
 

@@ -26,6 +26,7 @@
 const { printableInches, fitTitleSize, titleBarHeightInches, TITLE_BAR_LINE_HEIGHT, lineBoxPx, boldWidthPx, wrappedLines, tryReadPhoto, photoAspect } = require("./layout");
 const { pickVisual, isStepLabel } = require("./visuals");
 const { badgeKey } = require("./svg-renderer");
+const { methodVisual, stepTheme } = require("./step-colours");
 const { esc, mm, hash, imgTag, titleBarHtml } = require("./shared");
 const { criteriaSegments, plainCriteria } = require("../../shared/text/criteria-marks");
 
@@ -50,6 +51,11 @@ const SIDE_FIGURE_SHARE = 0.45;
 const PAD_IN = 0.25;
 const GAP_IN = 0.18;
 const ROW_GAP_IN = 0.14;
+// Each step is its own card in its own colour, so the eye finds where one
+// step ends and which working is whose (the teacher, 10 October 2026).
+const ROW_PAD_X_IN = 0.12;
+const ROW_PAD_Y_IN = 0.06;
+const ROW_LINE_IN = 0.03;
 const WORK_PAD_X_IN = 0.14;
 const WORK_PAD_Y_IN = 0.05;
 const SAFETY_IN = 0.3;
@@ -70,7 +76,7 @@ function cardName(card) {
 // pinned on it) or a lesson photograph.
 function figureFor(card, specDir, ctx) {
   if (card.visual) {
-    const v = pickVisual(card.visual, ctx);
+    const v = pickVisual(methodVisual(card), ctx);
     if (!v || !v.buf) {
       throw new Error(`${cardName(card)} is picture-first but its ${card.visual.type || "visual"} could not be drawn.`);
     }
@@ -95,14 +101,14 @@ function measureRows(steps, pt, widthIn, workPt = Math.round(pt * WORKING_SCALE)
   const workWIn = Math.max(0, ...workings.map((w) => (w ? boldWidthPx(w, workPt) / PX + 2 * WORK_PAD_X_IN : 0)));
   if (workWIn > widthIn * WORKING_MAX_SHARE) return null;
   const badgeIn = lineBoxPx(pt) / PX;
-  const textWIn = widthIn - badgeIn - GAP_IN - (workWIn ? workWIn + GAP_IN : 0);
+  const textWIn = widthIn - 2 * (ROW_PAD_X_IN + ROW_LINE_IN) - badgeIn - GAP_IN - (workWIn ? workWIn + GAP_IN : 0);
   const rows = [];
   for (const step of steps) {
     const lines = wrappedLines(plainCriteria(step.text), pt, textWIn * PX);
     if (!Number.isFinite(lines)) return null;
     const textH = (lines * lineBoxPx(pt)) / PX;
     const workH = step.working ? lineBoxPx(workPt) / PX + 2 * WORK_PAD_Y_IN : 0;
-    rows.push(Math.max(textH, workH, badgeIn));
+    rows.push(Math.max(textH, workH, badgeIn) + 2 * (ROW_PAD_Y_IN + ROW_LINE_IN));
   }
   const heightIn = rows.reduce((sum, h) => sum + h, 0) + ROW_GAP_IN * Math.max(0, rows.length - 1);
   return { pt, workPt, workWIn, badgeIn, heightIn };
@@ -145,17 +151,20 @@ function rowsHtml(steps, m, style, ctx) {
   const font = `font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};font-weight:bold;`;
   return steps
     .map((step) => {
-      const badge = ctx.svgImages ? ctx.svgImages[badgeKey(step.number)] : null;
+      const theme = stepTheme(step.number);
+      const badge = ctx.svgImages ? ctx.svgImages[badgeKey(step.number, theme.main)] || ctx.svgImages[badgeKey(step.number)] : null;
       const badgeHtml = badge
         ? imgTag(badge, mm(m.badgeIn), mm(m.badgeIn), "flex:none;")
         : `<div style="flex:none;width:${mm(m.badgeIn)}mm;${font}font-size:${m.pt}pt;color:${hash(style.colours.workedExampleLabel)};">${step.number}.</div>`;
       const working = step.working
         ? `<div data-part="working" style="flex:none;box-sizing:border-box;width:${mm(m.workWIn)}mm;background:#FFFFFF;border-radius:${mm(0.12)}mm;` +
           `padding:${mm(WORK_PAD_Y_IN)}mm ${mm(WORK_PAD_X_IN)}mm;text-align:center;white-space:nowrap;${font}font-size:${m.workPt}pt;` +
-          `color:${hash(style.colours.body)};">${marked(step.working)}</div>`
+          `color:${hash(theme.main)};">${marked(step.working)}</div>`
         : "";
       return (
-        `<div data-part="step" style="display:flex;align-items:center;gap:${mm(GAP_IN)}mm;">` +
+        `<div data-part="step" style="box-sizing:border-box;display:flex;align-items:center;gap:${mm(GAP_IN)}mm;` +
+        `background:${hash(theme.fill)};border:${mm(ROW_LINE_IN)}mm solid ${hash(theme.main)};border-radius:${mm(0.14)}mm;` +
+        `padding:${mm(ROW_PAD_Y_IN)}mm ${mm(ROW_PAD_X_IN)}mm;">` +
         badgeHtml +
         `<div style="flex:1 1 auto;min-width:0;text-align:left;${font}font-size:${m.pt}pt;color:${hash(style.colours.body)};">${marked(step.text)}</div>` +
         working +

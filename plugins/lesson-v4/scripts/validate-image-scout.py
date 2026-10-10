@@ -14,6 +14,17 @@ import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 SCRIPT_DIR = Path(__file__).resolve().parent
 SCHEMA_VERSION = 2
 RESULT_FIELDS = {"filename", "status", "selection", "staging_path", "reason"}
+# One more field a `sourced` row may carry: `stand_in`, the scout's own words
+# for what the photograph it took does NOT show. See `validate_stand_in`.
+STAND_IN_FIELD = "stand_in"
+STAND_IN_MAX_CHARS = 200
+# Two more a row with a file may carry (see `validate_kept_picture_notes`):
+# `trim`, the strip the finaliser cuts off the edge before publishing, and
+# `blemish`, what is still wrong with a picture that was kept anyway.
+TRIM_FIELD = "trim"
+BLEMISH_FIELD = "blemish"
+BLEMISH_MAX_CHARS = 200
+OPTIONAL_RESULT_FIELDS = {STAND_IN_FIELD, TRIM_FIELD, BLEMISH_FIELD}
 STATUSES = {"sourced", "generated", "omitted", "unsatisfied"}
 REASONS = {
     "optional_omission", "authorised_alternative", "no_faithful_real_match",
@@ -127,7 +138,9 @@ def validate_assignment_shape(assignment: dict, requirements_path: Path, working
         if not isinstance(row, dict):
             raise ValidationError("assignment entry is not an object")
         required = {"entry_key", "filename", "subject", "pedagogical_constraint", "teaching_requirement", "load_bearing_evidence", "use", "essential", "acquisition_mode", "fallback_action", "coherent_group", "coherent_mode", "coherent_visual_invariants", "initial_route", "search_schedule", "generation_prompt_file", "generation_prompt_sha256", "ai_ledger_path"}
-        if set(row) != required:
+        # `avoid` is absent from an assignment compiled before the field
+        # existed, and a run resumed across the upgrade still has to validate.
+        if set(row) - {"avoid"} != required:
             raise ValidationError(f"{row.get('filename')}: assignment entry must contain only compiled fields")
         photo = by_name.get(row["filename"])
         if photo is None:
@@ -135,6 +148,8 @@ def validate_assignment_shape(assignment: dict, requirements_path: Path, working
         for field in ("subject", "pedagogical_constraint", "teaching_requirement", "load_bearing_evidence", "use", "essential", "acquisition_mode", "fallback_action", "coherent_group", "coherent_mode", "coherent_visual_invariants"):
             if row[field] != photo[field]:
                 raise ValidationError(f"{row['filename']}: compiled field {field} changed")
+        if "avoid" in row and row["avoid"] != compiler.avoid_list(photo):
+            raise ValidationError(f"{row['filename']}: compiled field avoid changed")
         if row["entry_key"] != compiler.entry_key(row["filename"]):
             raise ValidationError(f"{row['filename']}: unstable entry_key")
         expected_route = compiler.initial_route(photo)
@@ -390,6 +405,91 @@ def step_stayed_unreachable(step: dict, label: str) -> bool:
 
 
 
+def validate_kept_picture_notes(row: dict, label: str) -> None:
+    """`trim` and `blemish`: a picture kept although something is wrong with it.
+
+    The teacher looked at seven pictures the 7 October 2026 stress test let
+    through (an archive stamp, a museum label, modern shop signs) and ruled on
+    each (10 October 2026) that it was better fixed but never worth a blank. So
+    the scout keeps the picture, cuts a mark off the edge where that leaves a
+    picture that still looks right, and says in one sentence what is still
+    there, which the finaliser prints for the run report. Both belong only on a
+    row that delivers a file.
+    """
+    has_file = row["status"] in {"sourced", "generated"}
+    if TRIM_FIELD in row:
+        if not has_file:
+            raise ValidationError(f"{label}: trim belongs only on a row that delivers a picture")
+        try:
+            load_trim().checked(row[TRIM_FIELD])
+        except Exception as exc:  # TrimError, named by the module that owns the rule
+            raise ValidationError(f"{label}: {exc}") from exc
+    if BLEMISH_FIELD in row:
+        note = row[BLEMISH_FIELD]
+        if not has_file:
+            raise ValidationError(f"{label}: blemish belongs only on a row that delivers a picture")
+        if not isinstance(note, str) or not note.strip() or len(note) > BLEMISH_MAX_CHARS:
+            raise ValidationError(
+                f"{label}: blemish is one plain sentence, at most {BLEMISH_MAX_CHARS} characters, saying "
+                "what a teacher will see on the picture (\"The archive's stamp is in the bottom corner.\")"
+            )
+
+
+def load_trim():
+    spec = importlib.util.spec_from_file_location("picture_trim_for_validation", SCRIPT_DIR / "picture_trim.py")
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def validate_stand_in(row: dict, compiled: dict, generation_available: bool, label: str) -> bool:
+    """Is this row a stand-in, and was the scout entitled to take one?
+
+    A stand-in is a plainer photograph of the same thing, taken when the exact
+    picture cannot be found and cannot be made: a dry kitchen sponge where the
+    lesson asked for water being poured onto one. The teacher's ruling (10
+    October 2026) is that it beats a blank, because the teacher can describe
+    what is missing. In the 7 October 2026 stress test the scout found that
+    sponge, large and free to use, and had to refuse it; the slide went out
+    with nothing beside the word.
+
+    It is the last resort, never a shortcut, so three things hold:
+
+    - only an `ordinary-real` picture. `authentic-real` means a substitute
+      would misteach (another street is not this street), and that contract
+      still ends in nothing rather than in something untrue.
+    - never where a generated picture is still owed. With a generator and
+      `fallback_action: ai` the exact picture can be made, so it is made.
+    - the whole ladder was walked first (checked by the caller, which holds
+      the schedule).
+
+    The scout says what the photograph lacks, in the teacher's words, because
+    that sentence is what the run report prints.
+    """
+    if STAND_IN_FIELD not in row:
+        return False
+    note = row[STAND_IN_FIELD]
+    if row["status"] != "sourced":
+        raise ValidationError(f"{label}: stand_in belongs only on a sourced row")
+    if not isinstance(note, str) or not note.strip() or len(note) > STAND_IN_MAX_CHARS:
+        raise ValidationError(
+            f"{label}: stand_in is one plain sentence, at most {STAND_IN_MAX_CHARS} characters, "
+            "saying what the photograph does not show (\"no water on the sponge\")"
+        )
+    if compiled["acquisition_mode"] != "ordinary-real":
+        raise ValidationError(
+            f"{label}: a stand-in is only for an ordinary-real picture; an authentic-real one "
+            "names a particular thing, and a different one would misteach"
+        )
+    if generation_available and compiled["fallback_action"] == "ai":
+        raise ValidationError(
+            f"{label}: this picture can still be generated, so generate it; a stand-in is for "
+            "a picture that can be neither found nor made"
+        )
+    return True
+
+
 def prior_step_kind(step: dict) -> str:
     """How a rung the scout walked past stayed shut, in the outage note."""
     primary_path, _ = step_summary_paths(step)
@@ -553,13 +653,15 @@ def validate_result(args) -> None:
     outage_notes: list[str] = []
     for row, compiled in zip(rows, assignment_entries):
         label = row.get("filename") if isinstance(row, dict) else "<invalid>"
-        if not isinstance(row, dict) or set(row) != RESULT_FIELDS:
+        if not isinstance(row, dict) or set(row) - OPTIONAL_RESULT_FIELDS != RESULT_FIELDS:
             raise ValidationError(f"{label}: result row has forbidden or missing fields")
         if row["filename"] != compiled["filename"] or row["status"] not in STATUSES:
             raise ValidationError(f"{label}: invalid result row identity or status")
         status = row["status"]; selection = row["selection"]; staged = row["staging_path"]; reason = row["reason"]
         if reason is not None and reason not in REASONS:
             raise ValidationError(f"{label}: invalid terminal reason")
+        stand_in = validate_stand_in(row, compiled, generation_available, label)
+        validate_kept_picture_notes(row, label)
         if status == "sourced":
             if compiled["initial_route"] != "real":
                 raise ValidationError(f"{label}: controlled AI cannot report a sourced result")
@@ -622,10 +724,34 @@ def validate_result(args) -> None:
             candidate = summary_candidate(summary, selection["candidate_id"], summary_root, label)
             if step is not None and candidate["source"] != step["source"]:
                 raise ValidationError(f"{label}: candidate source does not match compiled step")
-            if step is not None:
+            if stand_in:
+                # A stand-in is chosen after the ladder, from anything the
+                # ladder turned up, so later searches are expected here and an
+                # unwalked rung is the fault: the exact picture may be on it.
+                for index, walked in enumerate(schedule):
+                    if walked.get("standby_only") and not standby_is_owed(schedule, index, label):
+                        continue
+                    if step_has_final_operational_failure(walked, label):
+                        continue
+                    try:
+                        completed_step_summary(walked, label)
+                    except ValidationError as unwalked:
+                        raise ValidationError(
+                            f"{label}: a stand-in is taken only after every compiled search step "
+                            f"has been walked ({unwalked})"
+                        ) from None
+            elif step is not None and not (TRIM_FIELD in row or BLEMISH_FIELD in row):
+                # A clean winner ends the search, so a search after one is a
+                # search nobody needed. A picture with a mark on it is not yet
+                # a winner: the scout is told to look further for a clean one
+                # and to come back to this one only if there is none, and the
+                # `trim` or `blemish` it then writes is what says so.
                 for later in schedule[step_index + 1:]:
                     if any(candidate.exists() for candidate in step_summary_paths(later)):
-                        raise ValidationError(f"{label}: later search exists after an earlier selected winner")
+                        raise ValidationError(
+                            f"{label}: later search exists after an earlier selected winner; a picture gone "
+                            "back to after looking further carries a `trim` or a `blemish` saying what is wrong with it"
+                        )
         elif status == "generated":
             if selection is not None or not isinstance(staged, str) or reason is not None:
                 raise ValidationError(f"{label}: generated requires a staged path and no selection")

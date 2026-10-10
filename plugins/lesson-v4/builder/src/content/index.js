@@ -3,7 +3,7 @@
 const { FONT, COLOURS, SIZE_CEILINGS, FIT, SAFE, CARD, CARD_COMPACT } = require('../styles');
 const { categoryColourFor } = require('../category-colours');
 const { warn } = require('../warnings');
-const { watchFigure } = require('./_figure-boxes');
+const { watchFigure, noteAnswerSpace } = require('./_figure-boxes');
 const { CONTENT_W } = require('../layout');
 const { drawText, measureText } = require('./text');
 const { drawBullets } = require('./bullets');
@@ -439,6 +439,7 @@ function drawContent(pptx, slide, zone, data, ctx) {
   }
 
   let inner = zone;
+  let cardRect = null;
   const categoryLine = categoryColourFor(data.categoryColor);
   const hasCard = wantsCard(zone, type, data, ctx);
   if (hasCard) {
@@ -500,6 +501,7 @@ function drawContent(pptx, slide, zone, data, ctx) {
         }
       }
       if (!noCardAfterAll) {
+        cardRect = rect;
         slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
           x: rect.x, y: rect.y, w: rect.w, h: rect.h,
           fill: { color: P.fill },
@@ -527,6 +529,10 @@ function drawContent(pptx, slide, zone, data, ctx) {
   // A figure's place on the slide is noted for the decoration check, which
   // cannot tell a chart's empty middle from the blank half of a card.
   const figure = watchFigure(slide, type, ctx);
+  // So is the blank after a sum left open, where the teacher writes the answer.
+  if (type === 'text') {
+    noteAnswerSpace(ctx, cardRect || zone, String(data.value || data.text || '').split('\n'));
+  }
   try {
     const drawn = fn(pptx, figure.slide, inner, data, ctx);
     figure.done();

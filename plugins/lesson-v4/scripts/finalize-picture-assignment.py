@@ -23,6 +23,54 @@ class FinalizeError(ValueError):
     pass
 
 
+def load_trim():
+    spec = importlib.util.spec_from_file_location("picture_trim_for_finalize", Path(__file__).resolve().parent / "picture_trim.py")
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def record_unsplash_use(selected, status: str) -> None:
+    """Tell Unsplash about the one photograph that was published.
+
+    Sent here, once per published photograph, instead of once per candidate a
+    search looked at: that spent three or four calls of the hourly 50 on every
+    search. Best effort, and it never holds or fails the picture.
+    """
+    if status != "sourced" or not isinstance(selected, dict):
+        return
+    try:
+        candidate = next(c for c in read_json(Path(selected["summary_path"]), "summary")["results"]
+                         if c.get("candidate_id") == selected["candidate_id"])
+        if candidate.get("source") != "unsplash":
+            return
+        subprocess.run(
+            [sys.executable, str(Path(__file__).resolve().parent / "unsplash_fetch.py"),
+             "--record-use", str(selected["candidate_id"])],
+            capture_output=True, timeout=30,
+        )
+    except Exception:
+        pass
+
+
+def allowance_was_spent(entry: dict) -> bool:
+    """Did any search for this picture meet a spent hourly allowance?
+
+    Read from the search summaries the scout left, so a lost picture can be
+    reported as "the photo site's allowance ran out" and not as "no such
+    photograph exists": the first is worth a rebuild later, the second is not.
+    """
+    for step in entry.get("search_schedule") or []:
+        try:
+            summary = json.loads(Path(step["summary_path"]).read_text(encoding="utf-8"))
+        except (OSError, ValueError, KeyError, TypeError):
+            continue
+        if isinstance(summary, dict) and summary.get("complete") is not True and summary.get("failure_kind") == "rate_limit":
+            return True
+    return False
+
+
 def read_json(path: Path, label: str):
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -190,6 +238,103 @@ def low_resolution_of(published: Path) -> str | None:
     return None
 
 
+def live_filenames(working: Path, assignment: dict) -> set[str]:
+    """Every picture the lesson is asking for now: this wave's contract and the
+    lesson's current one. A picture a design revision retired is in neither, so
+    its replacement may be the same photograph under a new name."""
+    names: set[str] = set()
+    for path in (Path(str(assignment.get("requirements", {}).get("path", ""))), working / "photo-requirements.json"):
+        try:
+            photos = json.loads(path.read_text(encoding="utf-8")).get("photos")
+        except (OSError, ValueError, AttributeError):
+            continue
+        if isinstance(photos, list):
+            names.update(photo["filename"] for photo in photos if isinstance(photo, dict) and isinstance(photo.get("filename"), str))
+    return names
+
+
+# The picture libraries whose candidate id names one photograph.
+CATALOGUE_SOURCES = {"unsplash", "wikimedia", "openverse"}
+
+
+def catalogue_entry(provenance: dict) -> tuple[str, str] | None:
+    if provenance.get("kind") != "sourced" or provenance.get("source") not in CATALOGUE_SOURCES or not provenance.get("candidateId"):
+        return None
+    return provenance["source"], provenance["candidateId"]
+
+
+def same_photograph_as(working: Path, receipt: dict, live: set[str]) -> str | None:
+    """The other live picture that is this same photograph, if there is one.
+
+    Batches search apart and never see each other's choices, so two requests
+    for the same kind of thing can both land on the best photograph of it. A
+    Year 4 rivers lesson (7 October 2026) asked for an estuary to teach from
+    and "a different estuary the class has not seen" for the last task, and two
+    batches each published the same aerial photograph: the unseen river was the
+    one just labelled. Same means the same file, or the same catalogue entry of
+    the same picture library, which also catches one photograph fetched at two
+    sizes. An open-web picture is compared by file only: its candidate id names
+    the website and a position, so two different pictures from one site share
+    it. A look-alike from another website is not caught.
+    """
+    filename = receipt["filename"]
+    mine = receipt.get("provenance") or {}
+    my_hashes = {value for value in (receipt.get("publication", {}).get("canonicalSha256"), mine.get("candidateSha256")) if value}
+    my_entry = catalogue_entry(mine)
+    for path in sorted((working / "orchestration-receipts" / "picture-terminal").glob("*.json")):
+        try:
+            other = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(other, dict) or other.get("terminalState") != "published":
+            continue
+        name = other.get("filename")
+        if not isinstance(name, str) or name == filename or name not in live:
+            continue
+        if not (working / PurePosixPath(name)).is_file():
+            continue
+        theirs = other.get("provenance") if isinstance(other.get("provenance"), dict) else {}
+        publication = other.get("publication") if isinstance(other.get("publication"), dict) else {}
+        their_hashes = {value for value in (publication.get("canonicalSha256"), theirs.get("candidateSha256")) if value}
+        if my_hashes & their_hashes or (my_entry is not None and my_entry == catalogue_entry(theirs)):
+            return name
+    return None
+
+
+def announce_same_photograph(filename: str, twin: str, receipt: dict, finding_dir: Path, repair_spent: bool) -> None:
+    """Send the second arrival back for a different photograph, once.
+
+    The picture stays published meanwhile, so nothing downstream is worse off
+    than before if the repair is never run. The line carries its own
+    instruction because the run's playbook is at its size limit.
+    """
+    if repair_spent:
+        print(
+            f"PICTURE_SAME_AS: {filename} is the same photograph as {twin}, and its one "
+            "repair is spent. Tell the teacher in the picture results of the run report, "
+            "in plain words, naming the slides or sheets the two are on."
+        )
+        return
+    chosen = (receipt.get("provenance") or {}).get("candidateId")
+    finding = finding_dir / f"same-photograph-{hashlib.sha256(filename.encode('utf-8')).hexdigest()[:12]}.md"
+    finding.parent.mkdir(parents=True, exist_ok=True)
+    finding.write_text(
+        f"{filename} was published as the same photograph the lesson already shows as {twin}"
+        + (f" ({chosen})" if chosen else "") + ".\n\n"
+        "The lesson asked for these as two different pictures, so children would see one "
+        "photograph twice where the teaching needs two. Choose a different photograph that "
+        "meets this request's full contract. Do not choose that photograph again, at any size "
+        "or from any source.\n",
+        encoding="utf-8",
+    )
+    print(
+        f"PICTURE_SAME_AS: {filename} is the same photograph as {twin}, so one photograph "
+        "would answer two different requests. Take the known-wrong published picture repair "
+        f"for {filename} only (remove its canonical file, one focused repair slice, one fresh "
+        f"image scout, finalise with --replace yes), with this finding file: {finding}"
+    )
+
+
 def publish_one(script_dir: Path, working: Path, source: Path, filename: str, replace: str) -> tuple[bool, str, int]:
     # publish-picture.py intentionally accepts only its staging namespace. The
     # unified worker's durable root is the source of truth, so copy one proved
@@ -235,6 +380,8 @@ def assignment_command(args) -> int:
         "errors": [],
     }
     lost_essential: list[str] = []
+    lost_to_allowance: list[str] = []
+    live = live_filenames(working, assignment)
     for row in rows:
         filename = row["filename"]; entry = compiled[filename]; canonical = (working / PurePosixPath(filename)).resolve()
         if not inside(canonical, working): raise FinalizeError(f"canonical path escapes working directory: {filename}")
@@ -280,9 +427,22 @@ def assignment_command(args) -> int:
             else:
                 raise FinalizeError(f"existing terminal receipt does not match {filename}")
         publication = None; canonical_hash = None; terminal_state = status if status in {"omitted", "unsatisfied"} else "unsatisfied"; reason = row.get("reason")
+        trimmed = None
+        if source_path is not None and row.get("trim"):
+            # The scout asked for a strip to be cut off the edge (a stamp, a
+            # label, a ruler), having looked at the result. Cut here, once, so
+            # the slide, the sheet, the wall and the cards all get the same
+            # picture. A cut that cannot be made is never worth the picture: it
+            # is published whole and the summary says the mark is still there.
+            try:
+                trimmed = work_root / "_trimmed" / (hashlib.sha256(filename.encode("utf-8")).hexdigest()[:12] + source_path.suffix)
+                load_trim().trim_file(source_path.resolve(), trimmed, row["trim"])
+            except Exception as exc:
+                print(f"PICTURE_TRIM_SKIPPED: {filename} - published whole, the trim could not be made: {exc}")
+                trimmed = None
         if source_path is not None:
-            ok, publication, _ = publish_one(Path(__file__).resolve().parent, working, source_path.resolve(), filename, args.replace)
-            if ok and canonical.is_file(): terminal_state = "published"; canonical_hash = sha256(canonical); summary["releasedFilenames"].append(filename)
+            ok, publication, _ = publish_one(Path(__file__).resolve().parent, working, (trimmed or source_path).resolve(), filename, args.replace)
+            if ok and canonical.is_file(): terminal_state = "published"; canonical_hash = sha256(canonical); summary["releasedFilenames"].append(filename); record_unsplash_use(selected, status)
             else: terminal_state = "picture_publish_failed"; reason = "picture_publish_failed"; summary["ok"] = False; summary["errors"].append(f"{filename}: publication failed")
             low_resolution = low_resolution_of(canonical) if terminal_state == "published" else None
             if low_resolution:
@@ -298,8 +458,43 @@ def assignment_command(args) -> int:
         if source_path is None:
             summary["releasedFilenames"].append(filename)
         entry_summary = {"filename": filename, "action": "published" if terminal_state == "published" else "terminalized", "terminalState": terminal_state}
+        twin = same_photograph_as(working, receipt, live) if terminal_state == "published" else None
+        if twin:
+            entry_summary["sameAs"] = twin
+            announce_same_photograph(filename, twin, receipt, Path(args.summary_output).resolve().parent, "repair" in assignment)
         if source_path is not None and terminal_state == "published" and low_resolution:
             entry_summary["lowResolution"] = low_resolution
+        stand_in = row.get("stand_in")
+        if terminal_state == "published" and isinstance(stand_in, str) and stand_in.strip():
+            # The exact photograph could be neither found nor made, and the
+            # scout took a plainer one of the same thing. The teacher asked to
+            # be told (10 October 2026), so it is said where the orchestrator
+            # reads, in the scout's own words for what is missing. The line
+            # carries its own instruction because the run's playbook is at its
+            # size limit and has no room for one.
+            entry_summary["standIn"] = stand_in.strip()
+            print(
+                f"PICTURE_STAND_IN: {filename} - a plainer photograph was used: {stand_in.strip()} "
+                "Say this to the teacher in the run report's picture results, in plain words, "
+                "naming the slide or sheet it is on."
+            )
+        if terminal_state == "published" and row.get("trim"):
+            entry_summary["trimmed"] = bool(trimmed)
+        blemish = row.get("blemish")
+        if terminal_state == "published" and isinstance(blemish, str) and blemish.strip():
+            # The best picture to be had has something on it the teacher will
+            # see (a stamp, a label, a shop sign). He ruled that it is kept and
+            # that he is told (10 October 2026). Like the stand-in line above,
+            # this one carries its own instruction for the same reason.
+            entry_summary["blemish"] = blemish.strip()
+            print(
+                f"PICTURE_BLEMISH: {filename} - kept as the best picture available: {blemish.strip()} "
+                "Say this to the teacher in the run report's picture results, in plain words, "
+                "naming the slide or sheet it is on."
+            )
+        if terminal_state in {"unsatisfied", "omitted"} and allowance_was_spent(entry):
+            entry_summary["allowanceSpent"] = True
+            lost_to_allowance.append(filename)
         summary["entries"].append(entry_summary)
         if terminal_state in {"unsatisfied", "omitted"} and entry.get("essential"):
             lost_essential.append(filename)
@@ -317,6 +512,19 @@ def assignment_command(args) -> int:
             "design marked these essential and they are terminal. This is the "
             "content-gap picture wave, not a reconcile: revise the design and "
             "re-review it before any track re-points these references."
+        )
+    if lost_to_allowance:
+        # Not waited for and not retried: on 30 September 2026 a run sat out an
+        # hour for this. The run finishes without, and the teacher is told the
+        # cause, because a picture lost to the allowance is one a later build
+        # would probably find.
+        summary["lostToAllowance"] = lost_to_allowance
+        print(
+            "PICTURE_ALLOWANCE_SPENT: " + ", ".join(lost_to_allowance) + " - not "
+            "found while the photo site's hourly allowance was spent. The other "
+            "sources were searched. A rebuild later would probably find these. Say "
+            "this to the teacher in the run report's picture results, in plain words, "
+            "so it is not read as no such photograph existing."
         )
     atomic_json(Path(args.summary_output).resolve(), summary)
     print(json.dumps(summary, indent=2))

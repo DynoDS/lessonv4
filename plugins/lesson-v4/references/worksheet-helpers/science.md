@@ -59,6 +59,14 @@ a sheet a child reads and a sheet a child works on. Any cell can be given (a row
 label, a worked first row, a result handed over), and the rest stay blank and
 tall enough to write in.
 
+A column heading can carry a second line saying what it means or what to write
+under it: put a line break in the heading
+(`"Appearance\nWhat does it look like?"`) and the second line prints small and
+quiet under the first. That is
+where a child looks when deciding what goes in a column, so prefer it to a
+`note` under the table that explains every column at once. Keep the `note` for
+something about the whole table. `data-table` headings take the same.
+
 Use `data-table` when the values are HANDED to the child to work from, and
 `recording-table` when the child fills them in. Confusing the two gives a child
 a table of the answers they were supposed to find out.

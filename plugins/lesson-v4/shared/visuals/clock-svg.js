@@ -27,6 +27,10 @@
 //                 digital readout under the face ("3" red, ":", "40" blue), so
 //                 a child glancing up sees the long blue hand is the blue
 //                 minutes. The readout replaces a caption.
+//   pastTo        the face shaded in two halves: the right half, where the
+//                 minute hand is "past" the hour, in pale blue, and the left
+//                 half, where it is coming up "to" the next, in pale orange
+//                 (pale grey and white where a surface prints without colour)
 //   minuteRing    ":00 :05 ... :55" outside the numerals at every five-minute
 //                 mark, for a lesson teaching minutes past, so the child reads
 //                 the minute value rather than multiplying by five in their head
@@ -52,6 +56,11 @@ const NUM_TICK_GAP = 0.03; // clear air between the ticks and the numerals
 // numerals: this much of a numeral's size inside their centres, which clears
 // the widest of them (10, 11, 12) on a face that enlarged its numerals too.
 const HAND_CLEAR_EM = 0.72;
+// The past half and the to half of a `pastTo` face: tints of the board's blue
+// and orange, pale enough that black numerals and hands read on them; grey and
+// white where the surface prints in black.
+const PAST_TO_TINTS = ['#D9EAF8', '#FCE3CC'];
+const PAST_TO_MONO = ['#ECECEC', '#FFFFFF'];
 const HOUR_OF_MINUTE = 0.62; // the short hand, as a share of the long one
 const FACE_W = 0.014; const FACE_W_MIN = 1.2; // pt
 const MAJOR_W = 0.009; const MAJOR_W_MIN = 1; // pt
@@ -114,6 +123,7 @@ function normaliseFace(raw, inherit) {
     hands: hands && time != null,
     colourCoded: (face.colourCoded != null ? face.colourCoded : inherit.colourCoded) === true,
     minuteRing: (face.minuteRing != null ? face.minuteRing : inherit.minuteRing) === true,
+    pastTo: (face.pastTo != null ? face.pastTo : inherit.pastTo) === true,
   };
 }
 
@@ -181,7 +191,7 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
   return { w, h, r, numPt, ringPt, readoutH, letterBand, T, faces, letters, centres, profile, slot };
 }
 
-function facePart(face, cx, cy, L, parts) {
+function facePart(face, cx, cy, L, parts, points, prefix = '') {
   const { r, numPt, ringPt, profile } = L;
   const c = profile.colours;
   const font = profile.font;
@@ -190,6 +200,14 @@ function facePart(face, cx, cy, L, parts) {
     `<text x="${f2(x)}" y="${f2(y + pt * 0.35)}" text-anchor="middle" font-family="${font}" font-size="${f2(pt)}"${weight} fill="${fill}">${s}</text>`;
 
   parts.push(`<circle cx="${f2(cx)}" cy="${f2(cy)}" r="${f2(r)}" fill="${c.paper}" stroke="${c.ink}" stroke-width="${f2(Math.max(FACE_W * r, FACE_W_MIN))}"/>`);
+  if (face.pastTo) {
+    // Two half discs inside the rim, under the ticks, numerals and hands.
+    const inner = r - Math.max(FACE_W * r, FACE_W_MIN) / 2;
+    const mono = c.jump === c.ink;
+    const half = (sweep, fill) => `<path d="M ${f2(cx)} ${f2(cy - inner)} A ${f2(inner)} ${f2(inner)} 0 0 ${sweep} ${f2(cx)} ${f2(cy + inner)} Z" fill="${fill}"/>`;
+    parts.push(half(1, mono ? PAST_TO_MONO[0] : PAST_TO_TINTS[0]));
+    parts.push(half(0, mono ? PAST_TO_MONO[1] : PAST_TO_TINTS[1]));
+  }
   for (let i = 0; i < 60; i++) {
     const rad = toRad(i * 6 - 90);
     const major = i % 5 === 0;
@@ -205,6 +223,7 @@ function facePart(face, cx, cy, L, parts) {
   for (let n = 1; n <= 12; n++) {
     const rad = toRad(n * 30 - 90);
     parts.push(text(n, cx + numberR * Math.cos(rad), cy + numberR * Math.sin(rad), numPt, c.ink));
+    if (points) points[`${prefix}number ${n}`] = { cx: cx + numberR * Math.cos(rad), cy: cy + numberR * Math.sin(rad), halfW: numPt * (n > 9 ? 0.6 : 0.32), halfH: numPt * 0.45, written: true };
   }
   if (face.minuteRing) {
     const ringR = r * (1 + RING_GAP) + ringPt;
@@ -246,6 +265,13 @@ function facePart(face, cx, cy, L, parts) {
 function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const L = describeLayout(spec, profileOrSurface, box);
   const parts = [];
+  // A clock face is full of its own numbers, so a step's number never sits on
+  // it: two green circles on a face read as part of the clock (the teacher,
+  // 10 October 2026). The face names its numerals as places to point at
+  // (`anchors.pointAt`), and a surface stands the circle outside with an arrow
+  // to the number a hand has reached. The hands are not named: an arrow from
+  // outside to a hand has to cross the ring of numerals to get there.
+  const points = {};
   L.faces.forEach((face, i) => {
     const { x, y } = L.centres[i];
     if (L.letters) {
@@ -254,12 +280,17 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
         `<text x="${f2(x)}" y="${f2(L.r * PAD + L.letterBand * 0.7)}" text-anchor="middle" font-family="${L.profile.font}" font-size="${f2(pt)}" font-weight="bold" fill="${L.profile.colours.ink}">(${String.fromCharCode(97 + i)})</text>`
       );
     }
-    facePart(face, x, y, L, parts);
+    facePart(face, x, y, L, parts, points, L.faces.length > 1 ? `clock ${i + 1} ` : '');
   });
   const w = f2(L.w);
   const h = f2(L.h);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${parts.join('')}</svg>`;
-  return { svg, w: L.w, h: L.h, aspect: L.w / L.h, layout: L };
+  const pointAt = {};
+  Object.keys(points).forEach((name) => {
+    const q = points[name];
+    pointAt[name] = [(q.cx / L.w) * 100, (q.cy / L.h) * 100, (q.halfW / L.w) * 100, (q.halfH / L.h) * 100, q.written ? 1 : 0];
+  });
+  return { svg, w: L.w, h: L.h, aspect: L.w / L.h, layout: L, anchors: { pointAt } };
 }
 
 // The narrowest box in which every face still shows readable numerals (and a

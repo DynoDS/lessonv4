@@ -92,7 +92,7 @@ const TICK_COLOUR    = '#000000';   // equal-side dashes, drawn on the outline (
 const MARK_COLOUR    = '#0070C0';   // chevrons + right-angle squares, house blue
 // House answer green is '#00B050' / fill '#D5F5E3' — set per shape for an answer.
 
-const { INK_TONES, printsInInk, inkGrey } = require('./surface-profiles');
+const { INK_TONES, printsInInk, inkGrey, answerColour } = require('./surface-profiles');
 // ─── END CONSTANTS ────────────────────────────────────────────────────────
 
 function clampInt(v, dflt) {
@@ -304,7 +304,7 @@ function tightSvg(data, profile) {
   });
   const emphasise = data.emphasiseVertices === true;
   const symLines = resolveSymmetryLines(data);
-  const symColour = ink ? INK_TONES.dark : data.symmetryLinesAnswer ? SYM_COLOUR_ANSWER : SYM_COLOUR;
+  const symColour = ink ? INK_TONES.dark : data.symmetryLinesAnswer ? answerColour(profile, SYM_COLOUR_ANSWER, SYM_COLOUR) : SYM_COLOUR;
   const pegC = ink ? INK_TONES.mid : PEG_COLOUR;
   const markC = ink ? INK_TONES.ink : MARK_COLOUR;
   const tickC = ink ? INK_TONES.ink : TICK_COLOUR;

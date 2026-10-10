@@ -19,8 +19,8 @@
 // at the point size the design system states, whatever width the zone gives
 // it, so the problem cannot arise here in the first place.
 
-const { BODY_PT, PT_MM, LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, esc, promptHtml, linesFor } = require("./shared");
-const { SPACE, INSET } = require("../tokens");
+const { BODY_PT, PT_MM, LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, BANK_HEADING, namesTheBank, esc, promptHtml, linesFor } = require("./shared");
+const { SPACE, INSET, RULE } = require("../tokens");
 
 // The widest a zone can ever be, so a minimum height can be stated as the
 // SHORTEST the content could come out. Same reasoning as text.js.
@@ -265,9 +265,13 @@ function cardImageAspect(card) {
   return natural * ((1 - crop.top - crop.bottom) / (1 - crop.left - crop.right));
 }
 
+// The card's border is inside its width (`box-sizing: border-box`), so it comes
+// off the room for the picture along with the padding. Left out, three cards
+// were each two rules wider than their share and the row printed 2mm past its
+// zone, which only the browser saw (a rivers sheet, 7 October 2026).
 function cardInnerWidthMm(widthMm, columns) {
   const gaps = (columns - 1) * CARD_GAP_MM;
-  return Math.max(10, (widthMm - gaps) / columns - CARD_PAD_H_MM * 2);
+  return Math.max(10, (widthMm - gaps) / columns - CARD_PAD_H_MM * 2 - RULE.line * 2);
 }
 
 function cardColumns(spec) {
@@ -333,7 +337,12 @@ function sharedImageMm(cards, innerMm, spec) {
   // comparison where the difference in size is the evidence.
   if (spec && spec.imageFit === "canvas") return Math.max(...atFullWidth);
 
-  return Math.min(innerMm * CARD_IMAGE_MAX_ASPECT, ...atFullWidth);
+  const full = Math.min(innerMm * CARD_IMAGE_MAX_ASPECT, ...atFullWidth);
+  // A photograph the children look at, drawn a little smaller so its sheet
+  // stays in one column. Set by the engine's automatic layout and by nothing
+  // else, and never below two thirds (LOOKED_AT_SCALES in worksheet.js).
+  const scale = Number(spec && spec.lookedAtScale);
+  return scale >= 0.66 && scale < 1 ? full * scale : full;
 }
 
 // Where one picture actually lands inside that viewport: as wide as its own
@@ -398,7 +407,7 @@ function cardImageHtml(card, innerMm, viewportMm) {
     `left:${((-crop.left * 100) / keptWide).toFixed(3)}%`,
     `top:${((-crop.top * 100) / keptTall).toFixed(3)}%`,
   ].join(";");
-  return `<span class="h-card-view" style="width:${box.widthMm.toFixed(2)}mm;height:${box.heightMm.toFixed(2)}mm"><img class="h-card-img" style="${style}" src="${esc(card.imageHref)}" alt=""></span>`;
+  return `<span class="h-card-view" style="width:${box.widthMm.toFixed(2)}mm;height:${box.heightMm.toFixed(2)}mm" data-trim-viewport><img class="h-card-img" style="${style}" src="${esc(card.imageHref)}" alt=""></span>`;
 }
 
 // A card that is ONLY a picture hugs its picture instead of spanning its share
@@ -478,7 +487,7 @@ function renderCardRow(spec, widthMm) {
 
   return `
     <div class="h-cardrow">
-      ${spec.text ? `<p class="h-cardrow-stem">${esc(spec.text)}</p>` : ""}
+      ${spec.text ? `<p class="h-cardrow-stem">${esc(namesTheBank(spec.text) ? BANK_HEADING : spec.text)}</p>` : ""}
       <ul class="h-cardrow-list${cardsArePictureOnly(spec) ? " h-cardrow-list--hug" : ""}" style="--h-card-cols:${columns}">${cards}</ul>
     </div>`;
 }

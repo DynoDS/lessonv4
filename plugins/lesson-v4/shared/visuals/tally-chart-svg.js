@@ -45,7 +45,6 @@ const highlight = require('./figure-highlight');
 const FS          = 30;    // body / cell font size
 const HEADER_FS   = 30;    // header-row font size
 const TITLE_FS    = 36;    // chart title font size
-const FONT        = 'Arial';
 
 const CELL_PAD_X  = 18;    // left/right padding inside every cell
 const CELL_PAD_Y  = 14;    // top/bottom padding inside header/label cells
@@ -67,19 +66,30 @@ const TITLE_COLOUR = '#1F4E79';   // house deep blue for the heading
 const HEADER_FILL  = '#DEEAF6';   // light house blue for the header row
 const CELL_FILL    = '#FFFFFF';
 
-const { INK_TONES, printsInInk } = require('./surface-profiles');
+const { INK_TONES, FONT, printsInInk, answerColour } = require('./surface-profiles');
+const { textWidthEm } = require('../text/comic-glyph-width');
 
 // The colours above, and what each becomes on the photocopied stick-in pack.
 const COLOURS = { GRID_COLOUR: GRID_COLOUR, MARK_COLOUR: MARK_COLOUR, TEXT_COLOUR: TEXT_COLOUR, ANSWER_COLOUR: ANSWER_COLOUR, TITLE_COLOUR: TITLE_COLOUR, HEADER_FILL: HEADER_FILL };
 const INK = { GRID_COLOUR: INK_TONES.ink, MARK_COLOUR: INK_TONES.ink, TEXT_COLOUR: INK_TONES.ink, ANSWER_COLOUR: INK_TONES.ink, TITLE_COLOUR: INK_TONES.ink, HEADER_FILL: INK_TONES.pale };
 
-const CHAR_W      = 0.58;  // Arial-bold character-width estimate (× font size)
 // ─── END CONSTANTS ──────────────────────────────────────────────────────────
 
 function f(n) { return Number(n).toFixed(2); }
 
-function textWidth(s, fs) {
-  return String(s == null ? '' : s).length * fs * CHAR_W;
+// Real Comic Sans widths, the table every newer drawing measures with. The
+// chart was set in Arial and priced at a flat 0.58em a letter until 9 October
+// 2026: on a sheet it was the one thing in a plain typeface, beside a bar chart
+// in the face of everything else (stress test, 7 October 2026).
+function textWidth(s, fs, bold = true) {
+  return textWidthEm(String(s == null ? '' : s), bold) * fs;
+}
+
+// On paper the row names and totals print in the ordinary weight, as the words
+// of every other table on a sheet do, under bold headings. The board and the
+// wall are read across a room and stay bold throughout.
+function onPaper(profile) {
+  return Boolean(profile && typeof profile === 'object' && (profile.palette === 'sheet' || profile.palette === 'ink'));
 }
 
 function tallyCount(row) {
@@ -163,6 +173,8 @@ function tightSvg(data, profile) {
   const title = data.title || '';
   const showTotals = showTotalsResolved(data);
   const blank = data.blank === true;
+  const boldBody = !onPaper(profile);
+  const bodyWeight = boldBody ? ' font-weight="bold"' : '';
 
   // ── Column widths ──────────────────────────────────────────────────────
   const labelHeader = headers[0] != null ? headers[0] : '';
@@ -170,7 +182,7 @@ function tightSvg(data, profile) {
   const totalHeader = headers[2] != null ? headers[2] : 'Total';
 
   let labelTextW = textWidth(labelHeader, HEADER_FS);
-  for (const row of rows) labelTextW = Math.max(labelTextW, textWidth(row && row.label, FS));
+  for (const row of rows) labelTextW = Math.max(labelTextW, textWidth(row && row.label, FS, boldBody));
   const labelColW = Math.max(labelTextW + 2 * CELL_PAD_X, 90);
 
   // The tally column is sized to the widest row's marks (so every empty box in
@@ -188,7 +200,7 @@ function tightSvg(data, profile) {
   if (showTotals) {
     let totalTextW = textWidth(totalHeader, HEADER_FS);
     for (const row of rows) {
-      totalTextW = Math.max(totalTextW, textWidth(resolveTotal(row).text, FS));
+      totalTextW = Math.max(totalTextW, textWidth(resolveTotal(row).text, FS, boldBody));
     }
     totalColW = Math.max(totalTextW + 2 * CELL_PAD_X, 90);
   }
@@ -200,7 +212,22 @@ function tightSvg(data, profile) {
   // ── Row heights ────────────────────────────────────────────────────────
   const headerH = HEADER_FS + 2 * CELL_PAD_Y;
   const bodyRowH = Math.max(MARK_H + 2 * MARK_PAD_Y, FS + 2 * CELL_PAD_Y);
-  const titleH = title ? TITLE_FS + TITLE_GAP : 0;
+  // The title prints at the surface's one title size where the surface has one
+  // and says how wide (and at most how tall) the chart will print: the chart is
+  // drawn in its own units and scaled to that box, so the size is worked back
+  // through the scale. Anywhere else it keeps its own size. Either way it is
+  // set smaller rather than run past the table.
+  let titleFs = TITLE_FS;
+  if (title && profile && profile.titlePt > 0 && profile.widthPt > 0) {
+    const tableBoxH = headerH + rows.length * bodyRowH + GRID_W;
+    for (let pass = 0; pass < 3; pass++) {
+      const boxH = tableBoxH + titleFs + TITLE_GAP;
+      const scale = Math.min(profile.widthPt / (tableW + GRID_W), profile.maxHeightPt > 0 ? profile.maxHeightPt / boxH : Infinity);
+      titleFs = profile.titlePt / scale;
+    }
+  }
+  if (title) titleFs = Math.min(titleFs, tableW / textWidthEm(String(title), true));
+  const titleH = title ? titleFs + TITLE_GAP : 0;
 
   const gridTop = titleH;
   const tableH = headerH + rows.length * bodyRowH;
@@ -210,7 +237,7 @@ function tightSvg(data, profile) {
 
   // ── Title ──
   if (title) {
-    parts.push(`<text x="${f(tableW / 2)}" y="${f(TITLE_FS * 0.82)}" text-anchor="middle" font-family="${FONT}" font-size="${TITLE_FS}" font-weight="bold" fill="${C.TITLE_COLOUR}">${escapeXml(title)}</text>`);
+    parts.push(`<text x="${f(tableW / 2)}" y="${f(titleFs * 0.82)}" text-anchor="middle" font-family="${FONT}" font-size="${f(titleFs)}" font-weight="bold" fill="${C.TITLE_COLOUR}">${escapeXml(title)}</text>`);
   }
 
   // ── Header row cells ──
@@ -232,7 +259,7 @@ function tightSvg(data, profile) {
     }
 
     // Label cell — left-aligned text.
-    parts.push(`<text x="${f(CELL_PAD_X)}" y="${f(rowTop + bodyRowH / 2)}" text-anchor="start" dy="0.36em" font-family="${FONT}" font-size="${FS}" font-weight="bold" fill="${C.TEXT_COLOUR}">${escapeXml(row && row.label != null ? row.label : '')}</text>`);
+    parts.push(`<text x="${f(CELL_PAD_X)}" y="${f(rowTop + bodyRowH / 2)}" text-anchor="start" dy="0.36em" font-family="${FONT}" font-size="${FS}"${bodyWeight} fill="${C.TEXT_COLOUR}">${escapeXml(row && row.label != null ? row.label : '')}</text>`);
 
     // Tally cell — bundles of five (skipped when blank: the box stays empty).
     if (!blank) {
@@ -247,8 +274,8 @@ function tightSvg(data, profile) {
     // Total cell — a revealed answer shows green, a given stays black.
     if (showTotals && !blank) {
       const { text, isAnswer } = resolveTotal(row);
-      const fill = isAnswer ? C.ANSWER_COLOUR : C.TEXT_COLOUR;
-      parts.push(`<text x="${f(colXs[2] + colWs[2] / 2)}" y="${f(rowTop + bodyRowH / 2)}" text-anchor="middle" dy="0.36em" font-family="${FONT}" font-size="${FS}" font-weight="bold" fill="${fill}">${escapeXml(text)}</text>`);
+      const fill = isAnswer ? answerColour(profile, C.ANSWER_COLOUR, C.TEXT_COLOUR) : C.TEXT_COLOUR;
+      parts.push(`<text x="${f(colXs[2] + colWs[2] / 2)}" y="${f(rowTop + bodyRowH / 2)}" text-anchor="middle" dy="0.36em" font-family="${FONT}" font-size="${FS}"${bodyWeight} fill="${fill}">${escapeXml(text)}</text>`);
     }
   }
 

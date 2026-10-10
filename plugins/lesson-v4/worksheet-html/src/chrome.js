@@ -140,6 +140,10 @@ const RENDERED_FIT_PROBE = `(() => {
     for (const child of zone.querySelectorAll("*")) {
       const style = getComputedStyle(child);
       if (style.display === "none" || style.visibility === "hidden") continue;
+      // A photograph trimmed on purpose is a box cutting off part of its own
+      // picture: that is the trim, not lost work. Marked by the helper that
+      // draws it, so nothing else is excused by looking like one.
+      if (child.hasAttribute("data-trim-viewport")) continue;
       const clipsX = CLIPS.has(style.overflowX);
       const clipsY = CLIPS.has(style.overflowY);
       if (!clipsX && !clipsY) continue;
@@ -313,7 +317,9 @@ const PLACE_QUESTION_NUMBERS = `(() => {
       return null;
     };
     const own = (el) => el && owner(el) === block;
-    const flagged = Array.from(block.querySelectorAll("[data-number-here]")).find(own);
+    // The innermost one: a part flagged inside its material may itself hold the
+    // line its words sit on (an answer beside its prompt), and the number goes there.
+    const flagged = Array.from(block.querySelectorAll("[data-number-here]")).filter(own).pop();
     const within = flagged || block;
     const ask = Array.from(within.querySelectorAll(".h-ask")).find(own);
     const target = ask || flagged;
@@ -323,6 +329,8 @@ const PLACE_QUESTION_NUMBERS = `(() => {
     if (down > 2) {
       label.style.position = "relative";
       label.style.top = down + "px";
+      // The book or pencil mark under the number goes down with it (in-book.js).
+      block.style.setProperty("--mark-down", down + "px");
     }
   }
 })()`;
@@ -381,4 +389,5 @@ module.exports = {
   downloadedCandidates,
   PINNED_CHROME_VERSION,
   PLACE_QUESTION_NUMBERS,
+  RENDERED_FIT_PROBE,
 };

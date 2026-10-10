@@ -35,7 +35,7 @@ const TEXT_COLOUR = '#1A1A1A';
 const LINE_COLOUR = '#718096';
 const ANSWER_COLOUR = '#00B050';
 
-const { INK_TONES, printsInInk } = require('./surface-profiles');
+const { INK_TONES, printsInInk, answerColour } = require('./surface-profiles');
 
 // The colours above, and what each becomes on the photocopied stick-in pack.
 const COLOURS = { PANEL_STROKE_COLOUR: PANEL_STROKE_COLOUR, HEADER_FILL: HEADER_FILL, HEADING_COLOUR: HEADING_COLOUR, TEXT_COLOUR: TEXT_COLOUR, LINE_COLOUR: LINE_COLOUR, ANSWER_COLOUR: ANSWER_COLOUR };
@@ -172,7 +172,7 @@ function tightSvg(data = {}, profile) {
     parts.push(textBlock(panel.prompt.x, panel.prompt.y, panel.prompt, C.TEXT_COLOUR, 'bold'));
 
     if (panel.answer && panel.answerWrap) {
-      parts.push(textBlock(panel.response.x, panel.response.y + 4, panel.answerWrap, C.ANSWER_COLOUR, 'bold'));
+      parts.push(textBlock(panel.response.x, panel.response.y + 4, panel.answerWrap, answerColour(profile, C.ANSWER_COLOUR, C.TEXT_COLOUR), 'bold'));
     } else {
       const count = panel.responseLines;
       const top = panel.response.y + 14;

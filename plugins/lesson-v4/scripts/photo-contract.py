@@ -310,12 +310,39 @@ def cmd_freeze_initial(args) -> int:
     return 0
 
 
+def design_photo_base(initial: dict, canonical_path: Path | None) -> tuple[dict, str]:
+    """The lesson's own pictures as the design names them now.
+
+    The frozen Phase 2 contract is what the lesson asked for when the picture
+    stage began. A design revision after that (a lost picture replaced, a beat
+    redesigned) rewrites canonical `photo-requirements.json`: entries leave,
+    replacements arrive under new numbers. Adaptation pictures merged onto the
+    frozen file then failed the design validator on the first replacement id
+    (`unknown id photo-010`, Great Fire of London, 7 October 2026), and the
+    run's answer to a failed adaptation is to deliver no Below or Greater
+    Depth sheet. The canonical file is the only one every revision keeps in
+    step with the design, so it is the base; the adaptation entries a previous
+    promotion appended to it are taken off, because this merge adds them.
+    """
+    if canonical_path is None or not canonical_path.is_file():
+        return initial, "initial"
+    canonical = require_schema2(read_json(canonical_path, "canonical photo requirements"), "canonical photo requirements")
+    base = json.loads(json.dumps(canonical))
+    base["photos"] = [
+        photo for photo in base["photos"]
+        if not (isinstance(photo, dict) and isinstance(photo.get("id"), str) and PHOTO_ID_RE.fullmatch(photo["id"]))
+    ]
+    return base, "canonical"
+
+
 def cmd_build_provisional(args) -> int:
     initial_path = Path(args.initial)
     adaptation_path = Path(args.adaptation)
     initial = require_schema2(read_json(initial_path, "initial photo requirements"), "initial photo requirements")
+    canonical_arg = getattr(args, "canonical", None)
+    base, base_source = design_photo_base(initial, Path(canonical_arg) if canonical_arg else None)
     additions = adaptation_photos(adaptation_path)
-    merged, new_ids, new_filenames = merge_photos(initial, additions)
+    merged, new_ids, new_filenames = merge_photos(base, additions)
     output = Path(args.output)
     atomic_write_json(output, merged)
     run_photo_cap(output)
@@ -324,6 +351,7 @@ def cmd_build_provisional(args) -> int:
     receipt = {
         "schemaVersion": 1,
         "baseInitialPhotoSha256": sha256_file(initial_path),
+        "basePhotoSource": base_source,
         "adaptationSha256": sha256_file(adaptation_path),
         "provisionalPhotoSha256": sha256_file(output),
         "provisionalPath": str(output.resolve()),
@@ -580,6 +608,10 @@ def parser() -> argparse.ArgumentParser:
     provisional = sub.add_parser("build-provisional")
     provisional.add_argument("--initial", required=True)
     provisional.add_argument("--adaptation", required=True)
+    # The live contract, which every design revision keeps in step with the
+    # lesson. Required on the command line so a run cannot merge onto the
+    # frozen Phase 2 file by leaving it off.
+    provisional.add_argument("--canonical", required=True)
     provisional.add_argument("--output", required=True)
     provisional.add_argument("--lesson-design")
     provisional.add_argument("--receipt", required=True)

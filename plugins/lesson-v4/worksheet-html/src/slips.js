@@ -27,11 +27,13 @@
 // checked or computed: wording that may need the page (a prompt to look
 // again), and how many slips fit on a page.
 
+const { STACKED_FRACTION_CSS } = require("../../shared/text/stacked-fractions");
+const { withClaimPanels, hasFigureClaim } = require("./claim-look");
 const { cssVariables, SPACE } = require("./tokens");
 const { PX_PER_MM, EDGE_MM } = require("./page");
 const { isRow, isStack } = require("./helpers/compose");
 const { renderContent, measureContent, needsContent, helperCss } = require("./helpers");
-const { esc } = require("./helpers/shared");
+const { esc, tieHtmlText } = require("./helpers/shared");
 
 const RECORDING_CHOICES = ["books", "sheet"];
 
@@ -271,7 +273,104 @@ function recordingProblems(worksheet, { required = false } = {}) {
       }
     }
   }
+  return problems.concat(slipPictureProblems(worksheet));
+}
+
+// ─── the corner picture ──────────────────────────────────────────────────
+//
+// A slip may carry one small picture in its bottom right corner, beside the
+// last thing on it: `"slipPicture": { "imagePath": "unsplash/globe.jpg" }` on a
+// books sheet. Daniel, 10 October 2026, looking at a Year 5 day and night slip
+// with and without one: the slip with no picture "is absolutely fine", the
+// picture "does make the stick-in sheet look a bit nicer", and it "doesn't
+// actually need to be that size". So it is decoration, and it is held to that:
+//
+//   - small and in the corner, never a block across the slip;
+//   - never worth paper: it is left off when it would mean fewer slips a page;
+//   - left off when it would photocopy as a dark box (a photograph of the Earth
+//     against black space was the first one tried);
+//   - a slip without one is never a fault, so nothing here refuses a sheet.
+//
+// A picture a child has to read, count or label is part of a question and
+// belongs in the sheet's zones, not here.
+const SLIP_PICTURE_MM = 22;
+const SLIP_PICTURE_GAP_MM = 3;
+// The share of a picture that is near black before it is called a dark box.
+const SLIP_PICTURE_DARK_SHARE = 0.5;
+
+function slipPictureOf(sheetSpec) {
+  const picture = sheetSpec && sheetSpec.slipPicture;
+  if (!picture || typeof picture !== "object" || typeof picture.imageHref !== "string") return null;
+  const aspect =
+    picture.imageWidth > 0 && picture.imageHeight > 0 ? picture.imageHeight / picture.imageWidth : 1;
+  // The longer side is the stated size, so nothing is cropped or stretched.
+  const widthMm = aspect > 1 ? SLIP_PICTURE_MM / aspect : SLIP_PICTURE_MM;
+  return { href: picture.imageHref, widthMm, heightMm: widthMm * aspect };
+}
+
+function slipPictureVars(picture) {
+  if (!picture) return "";
+  return (
+    `--slip-picture-w:${picture.widthMm.toFixed(2)}mm;--slip-picture-h:${picture.heightMm.toFixed(2)}mm;` +
+    `--slip-picture-room:${(picture.widthMm + SLIP_PICTURE_GAP_MM).toFixed(2)}mm;`
+  );
+}
+
+function slipPictureProblems(worksheet) {
+  const problems = [];
+  for (const [key, sheet] of Object.entries((worksheet && worksheet.sheets) || {})) {
+    if (!sheet || typeof sheet !== "object" || sheet.slipPicture === undefined || sheet.slipPicture === null) continue;
+    const picture = sheet.slipPicture;
+    const ok =
+      typeof picture === "object" && !Array.isArray(picture) &&
+      typeof picture.imagePath === "string" && picture.imagePath.trim() &&
+      Object.keys(picture).every((name) => ["imagePath", "imageHref", "imageWidth", "imageHeight"].includes(name));
+    if (!ok) {
+      problems.push({
+        signal: "SLIP_PICTURE_INVALID",
+        sheet: key,
+        message:
+          `sheets.${key}.slipPicture must be { "imagePath": "a contract filename" } and nothing else: ` +
+          `one small picture for the corner of each question slip. Leave the field out when no picture ` +
+          `the lesson already has would stay clear that small. See references/books-or-sheet.md.`,
+      });
+    }
+  }
   return problems;
+}
+
+// Whether the picture is mostly near black, read from its own pixels.
+async function slipPictureIsDark(browser, picture) {
+  const page = await browser.newPage();
+  try {
+    await page.setContent("<!doctype html><html><body></body></html>", { waitUntil: "load" });
+    const share = await page.evaluate(async (href) => {
+      const img = new Image();
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = () => reject(new Error("picture did not load"));
+        img.src = href;
+      });
+      const side = 48;
+      const canvas = document.createElement("canvas");
+      canvas.width = side;
+      canvas.height = side;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, side, side);
+      ctx.drawImage(img, 0, 0, side, side);
+      const data = ctx.getImageData(0, 0, side, side).data;
+      let dark = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        const light = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        if (light < 64) dark += 1;
+      }
+      return dark / (side * side);
+    }, picture.href);
+    return share > SLIP_PICTURE_DARK_SHARE;
+  } finally {
+    await page.close();
+  }
 }
 
 // ─── slip content ────────────────────────────────────────────────────────
@@ -662,6 +761,7 @@ const SLIP_CSS = `
   body {
     font-family: var(--font);
     color: var(--colour-ink);
+    text-wrap: pretty;
     width: ${PAGE_W_MM}mm;
     height: ${PAGE_H_MM}mm;
     position: relative;
@@ -760,6 +860,28 @@ const SLIP_CSS = `
     border-left: var(--rule-hair) solid var(--colour-rule);
   }
 
+  /* The corner picture, and the room the last thing on the slip leaves for it:
+     that part is narrowed by the picture's width and is never shorter than the
+     picture, so the picture sits beside it and over nothing. */
+  .slip-picture {
+    position: absolute;
+    right: ${EDGE_PAD_MM}mm;
+    bottom: ${CUT_PAD_MM}mm;
+    width: var(--slip-picture-w);
+    height: var(--slip-picture-h);
+    display: block;
+    /* No frame: Daniel, 10 October 2026, asked for the picture with nothing
+       round it. A box drew the eye to what is only decoration. */
+  }
+  .slip--left .slip-picture { right: ${CUT_PAD_MM}mm; }
+  .slip-item--beside-picture > .h-stack > .h-stack-item:last-child,
+  .slip-item--beside-picture > .h-numbered > .h-numbered-body > .h-stack > .h-stack-item:last-child,
+  .slip-item--beside-picture-whole {
+    box-sizing: border-box;
+    padding-right: var(--slip-picture-room);
+    min-height: var(--slip-picture-h);
+  }
+
   .cut { position: absolute; border: 0 dashed #9a9a9a; }
   .cut--across { left: 0; right: 0; border-top-width: 0.3mm; }
   .cut--down { top: 0; bottom: 0; border-left-width: 0.3mm; }
@@ -772,12 +894,18 @@ const SLIP_CSS = `
   }
 `;
 
-function bodyHtml(nodes, cols) {
+function bodyHtml(nodes, cols, picture = null) {
   const widthMm = contentWidthMm(cols);
   return nodes
     .map((node, i) => {
       const ruled = i > 0 && !opensWithHeading([node]);
-      return `<div class="slip-item${ruled ? " slip-item--ruled" : ""}">${renderContent(node, widthMm)}</div>`;
+      // The last thing on the slip makes room for the corner picture: its last
+      // part when it is a stack of parts, the whole of it otherwise.
+      const beside =
+        picture && i === nodes.length - 1
+          ? isStack(node) ? " slip-item--beside-picture" : " slip-item--beside-picture-whole"
+          : "";
+      return `<div class="slip-item${ruled ? " slip-item--ruled" : ""}${beside}">${tieHtmlText(renderContent(node, widthMm))}</div>`;
     })
     .join("");
 }
@@ -789,6 +917,7 @@ function documentHtml(title, body) {
 ${cssVariables()}
 ${SLIP_CSS}
 ${helperCss}
+${STACKED_FRACTION_CSS}
 </style></head>
 <body data-worksheet-page>
 ${body}
@@ -796,10 +925,10 @@ ${body}
 }
 
 // One slip's content alone, at its printed width, for the browser to measure.
-function measureHtml(nodes, cols) {
+function measureHtml(nodes, cols, picture = null) {
   return documentHtml(
     "Slip measure",
-    `<div class="slip-measure" style="width:${contentWidthMm(cols)}mm">${bodyHtml(nodes, cols)}</div>`
+    `<div class="slip-measure" style="width:${contentWidthMm(cols)}mm;${slipPictureVars(picture)}">${bodyHtml(nodes, cols, picture)}</div>`
   );
 }
 
@@ -813,16 +942,18 @@ function measureHtml(nodes, cols) {
 // under the explain, and then have to make another trim to the top of the next
 // slip. So all that is just wasted trimming motions and wasted dead space." It
 // does not change how many slips fit; that is settled before this is called.
-function renderSlipsPage({ nodes, cols, rows, code, title, slipMm, codeBeside = true }) {
-  const inner = bodyHtml(nodes, cols);
+function renderSlipsPage({ nodes, cols, rows, code, title, slipMm, codeBeside = true, picture = null }) {
+  const inner = bodyHtml(nodes, cols, picture);
+  const pictureHtml = picture ? `<img class="slip-picture" src="${esc(picture.href)}" alt="">` : "";
   const cells = [];
   for (let i = 0; i < cols * rows; i += 1) {
     const classes = ["slip"];
     if (cols === 2) classes.push(i % 2 === 0 ? "slip--left" : "slip--right");
     if (!codeBeside) classes.push("slip--code-above");
     cells.push(
-      `<div class="${classes.join(" ")}"><div class="slip-code">${esc(code || "")}${recordingIcon("books")}</div>` +
-        `<div class="slip-body" data-worksheet-zone="slip-${i + 1}">${inner}</div></div>`
+      `<div class="${classes.join(" ")}"${picture ? ` style="${slipPictureVars(picture)}"` : ""}>` +
+        `<div class="slip-code">${esc(code || "")}${recordingIcon("books")}</div>` +
+        `<div class="slip-body" data-worksheet-zone="slip-${i + 1}">${inner}</div>${pictureHtml}</div>`
     );
   }
   const rowMm = slipMm || (PAGE_H_MM - PAGE_TOP_INSET_MM) / rows;
@@ -921,10 +1052,10 @@ async function widePlan(laid, heightOf) {
 }
 
 // The browser's own height for one slip's content, in millimetres.
-async function measuredContentMm(browser, nodes, cols) {
+async function measuredContentMm(browser, nodes, cols, picture = null) {
   const page = await browser.newPage();
   try {
-    await page.setContent(measureHtml(nodes, cols), { waitUntil: "load" });
+    await page.setContent(measureHtml(nodes, cols, picture), { waitUntil: "load" });
     return await page.evaluate(async (pxPerMm) => {
       if (document.fonts && document.fonts.ready) await document.fonts.ready;
       const box = document.querySelector(".slip-measure");
@@ -946,6 +1077,49 @@ async function measuredContentMm(browser, nodes, cols) {
 async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
   const nodes = slipContentOf(sheetSpec);
   if (!nodes.length) return { skipped: "the sheet has nothing left to print once its answer spaces are taken out" };
+  const perPage = (plan) => (plan.skipped ? 0 : (plan.wide ? 1 : plan.cols) * plan.rows);
+  let chosen = await planSlips({ nodes, sheetSpec, title, browser, htmlToPdf });
+  let chosenNodes = nodes;
+  // A child's claim keeps its figure and bubble unless that costs slips on the
+  // page: a slip exists to save paper, so there the panel stands in.
+  if (hasFigureClaim(nodes)) {
+    const compactNodes = withClaimPanels(nodes);
+    const compact = await planSlips({ nodes: compactNodes, sheetSpec, title, browser, htmlToPdf });
+    if (perPage(compact) > perPage(chosen)) {
+      chosen = { ...compact, claimLook: "panel" };
+      chosenNodes = compactNodes;
+    }
+  }
+  return withCornerPicture({ chosen, nodes: chosenNodes, sheetSpec, title, browser, htmlToPdf, perPage });
+}
+
+// The corner picture is tried last, against the slips already settled, and is
+// kept only when it costs no paper. Every way it can fail leaves those slips
+// exactly as they were, with the reason said.
+async function withCornerPicture({ chosen, nodes, sheetSpec, title, browser, htmlToPdf, perPage }) {
+  if (!sheetSpec || !sheetSpec.slipPicture) return chosen;
+  const leftOff = (reason) => ({ ...chosen, pictureLeftOff: reason });
+  const picture = slipPictureOf(sheetSpec);
+  if (!picture) return leftOff("its file could not be read");
+  if (chosen.skipped) return chosen;
+  if (chosen.wide) return leftOff("these slips run across the page in two columns, which has no corner for it");
+  // Without a browser nothing can check the picture clears the words.
+  if (!browser) return leftOff("this machine could not draw the page to check the picture clears the words");
+  try {
+    if (await slipPictureIsDark(browser, picture)) {
+      return leftOff("it is mostly dark and would photocopy as a black box");
+    }
+    const pictured = await planSlips({ nodes, sheetSpec, title, browser, htmlToPdf, picture });
+    if (pictured.skipped || pictured.wide || perPage(pictured) < perPage(chosen)) {
+      return leftOff("it would have meant fewer slips on the page");
+    }
+    return { ...pictured, claimLook: chosen.claimLook, picture: true };
+  } catch (error) {
+    return leftOff(`it could not be placed (${String(error.message || error).split("\n")[0]})`);
+  }
+}
+
+async function planSlips({ nodes, sheetSpec, title, browser, htmlToPdf, picture = null }) {
   const code = sheetSpec.code || "";
   // The book mark always prints, so the code line is only shared with a
   // heading that leaves its right-hand end empty.
@@ -963,7 +1137,7 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
   let contentMm;
   try {
     contentMm = browser
-      ? await measuredContentMm(browser, laid, cols)
+      ? await measuredContentMm(browser, laid, cols, picture)
       : estimatedContentMm(laid, cols);
   } catch (error) {
     return { skipped: `its slip could not be measured (${String(error.message || error).split("\n")[0]})` };
@@ -999,7 +1173,7 @@ async function buildSlips({ sheetSpec, title, browser, htmlToPdf }) {
   if (rows < 1) return { skipped: "its questions are too long to fit a slip shorter than a page" };
 
   while (rows >= 1) {
-    const html = renderSlipsPage({ nodes: laid, cols, rows, code, title, slipMm, codeBeside });
+    const html = renderSlipsPage({ nodes: laid, cols, rows, code, title, slipMm, codeBeside, picture });
     if (!browser) return { html, cols, rows };
     const { pdf, fitProblems } = await htmlToPdf(html, { browser, inspectFit: true });
     if (!fitProblems.length) return { html, pdf, cols, rows };
@@ -1014,6 +1188,8 @@ module.exports = {
   opensWithHeading,
   recordingProblems,
   recordingAdvisories,
+  slipPictureProblems,
+  slipPictureOf,
   sheetOnlyWording,
   sheetOnlyWordings,
   forSlip,

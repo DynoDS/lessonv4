@@ -62,13 +62,35 @@ class PicturePublisherTests(unittest.TestCase):
             "--working-dir", str(self.working),
         )
 
-    def test_publishes_matching_encoding_byte_for_byte(self):
+    def test_publishes_a_plain_picture_byte_for_byte(self):
+        """A picture a fetcher already rewrote plain is published untouched, so
+        the hash taken of the candidate still describes the published file."""
+        sys.path.insert(0, str(ROOT))
+        from picture_plain import plain_bytes
+
         staged = self.write_image(self.real_staging / "winner.jpg", fmt="JPEG")
+        staged.write_bytes(plain_bytes(staged.read_bytes()))
         out = self.publish(staged, "unsplash/a.jpg")
         self.assertEqual(out.returncode, 0, out.stdout)
         published = self.working / "unsplash" / "a.jpg"
         self.assertEqual(published.read_bytes(), staged.read_bytes())
         self.assertEqual(json.loads(out.stdout)["action"], "copied")
+
+    def test_publishes_an_oddly_laid_out_file_in_plain_form(self):
+        """A geranium photograph beginning FF D8 FF FF (one legal fill byte)
+        printed on five slides and could be opened by no worker (stress test,
+        7 October 2026). Whatever route a file takes to publication, the
+        published one is the same picture rewritten plain."""
+        staged = self.write_image(self.real_staging / "winner.jpg", fmt="JPEG", size=(64, 48))
+        raw = staged.read_bytes()
+        staged.write_bytes(raw[:2] + b"\xff" + raw[2:])
+        out = self.publish(staged, "unsplash/a.jpg")
+        self.assertEqual(out.returncode, 0, out.stdout)
+        published = (self.working / "unsplash" / "a.jpg").read_bytes()
+        self.assertNotEqual(published[:4], b"\xff\xd8\xff\xff")
+        with PILImage.open(self.working / "unsplash" / "a.jpg") as image:
+            self.assertEqual(image.size, (64, 48))
+            self.assertEqual(image.format, "JPEG")
 
     def test_a_small_copy_publishes_and_says_so(self):
         """A 400 px archive preview of a classroom shipped for children to
@@ -147,7 +169,8 @@ class PicturePublisherTests(unittest.TestCase):
         repaired = self.write_image(self.ai_staging / "a" / "repair.jpg", colour=(240, 240, 10))
         out = self.publish(repaired, "unsplash/a.jpg", replace="yes")
         self.assertEqual(out.returncode, 0, out.stdout)
-        self.assertEqual((self.working / "unsplash" / "a.jpg").read_bytes(), repaired.read_bytes())
+        with PILImage.open(self.working / "unsplash" / "a.jpg") as now, PILImage.open(repaired) as wanted:
+            self.assertEqual(now.convert("RGB").tobytes(), wanted.convert("RGB").tobytes())
         self.assertEqual((self.working / "unsplash" / "b.jpg").read_bytes(), sibling_before)
 
     def test_failed_repair_leaves_the_target_absent(self):

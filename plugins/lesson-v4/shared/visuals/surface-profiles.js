@@ -15,8 +15,9 @@
 //               and refuses by name rather than going under this
 //   bold        the board and the wall are read across a room
 //   grow        how far a drawing may enlarge into spare room (the board only)
-//   palette     `colour` everywhere except the stick-in pack, which is
-//               photocopied, so its drawing stays in ink
+//   palette     `colour` on the board and the wall; `sheet` on a pupil sheet,
+//               the same colours with nothing painted as an answer; `ink` on
+//               the stick-in pack, which is photocopied
 //
 // A drawing's shape, proportions, colours and marks are the same on all four.
 // Nothing here may change what a picture shows.
@@ -33,6 +34,21 @@ const PALETTES = Object.freeze({
     jump: '#0070C0',
     highlight: '#C65911',
     answer: '#00B050',
+    label: '#0070C0',
+    paper: '#FFFFFF',
+  }),
+  // A pupil sheet: the board's colours with one difference. Nothing on a sheet
+  // a child is about to work on has been worked out yet, so a value a drawing
+  // would paint answer green prints in the ink of everything else handed to
+  // the child. Green on the teacher's answer sheet means "this is the answer"
+  // (30 September 2026), and a Greater Depth subtraction sheet whose given
+  // digits printed green read as already marked (stress test, 7 October 2026).
+  sheet: Object.freeze({
+    ink: '#000000',
+    arrow: '#CC0000',
+    jump: '#0070C0',
+    highlight: '#C65911',
+    answer: '#000000',
     label: '#0070C0',
     paper: '#FFFFFF',
   }),
@@ -69,6 +85,20 @@ function printsInInk(profile) {
   return Boolean(profile && typeof profile === 'object' && profile.palette === 'ink');
 }
 
+// The colour a drawing gives something worked out: its own answer colour on
+// the board and the wall, and `plain` (what the same thing looks like when it
+// is simply given) on a pupil sheet, where nothing is an answer. Every drawing
+// with an answer colour of its own asks here, so one drawing cannot keep the
+// habit the column sum had. A ring or a highlight that points at something is
+// not an answer and does not ask.
+function answerColour(profile, answer, plain) {
+  return profile && typeof profile === 'object' && profile.palette === 'sheet' ? plain : answer;
+}
+
+// What an older drawing, which takes a profile only to learn how to colour
+// itself, is handed on a pupil sheet.
+const SHEET_COLOURING = Object.freeze({ surface: 'worksheets', palette: 'sheet' });
+
 // The grey a colour becomes on a photocopier, for a drawing whose colours are
 // chosen per part (a lesson's own fill, a rainforest band, a food group). Two
 // fills that differed in brightness stay different; `lightest` and `darkest`
@@ -89,7 +119,12 @@ const PROFILES = Object.freeze({
   // holds every other piece of board text to (builder/src/styles.js MIN_FONT_PT).
   slides: Object.freeze({ surface: 'slides', fontPt: 24, minFontPt: 18, bold: true, grow: 1.6, palette: 'colour' }),
   // A little under the sheet's 12pt body, as the axis numbers always were.
-  worksheets: Object.freeze({ surface: 'worksheets', fontPt: 10.5, minFontPt: 9, bold: false, grow: 1, palette: 'colour' }),
+  // `titlePt` is the one size a drawing's own title prints at on a sheet. Each
+  // drawing used to size its title from however far it had been stretched, so a
+  // tally chart and the bar chart beside it carried the same words at 17pt and
+  // 20pt (stress test, 7 October 2026). A title too wide for its drawing is
+  // still set smaller by that drawing.
+  worksheets: Object.freeze({ surface: 'worksheets', fontPt: 10.5, minFontPt: 9, titlePt: 20, bold: false, grow: 1, palette: 'sheet' }),
   // A wall card is read from across the room, all term: the size the wall's
   // own number line had, as a share of a card-wide drawing.
   wall: Object.freeze({ surface: 'wall', fontPt: 28, minFontPt: 20, bold: true, grow: 1, palette: 'colour' }),
@@ -118,4 +153,4 @@ function profileFor(surface, box = {}) {
   });
 }
 
-module.exports = { PROFILES, PALETTES, INK_TONES, FONT, MM_TO_PT, profileFor, printsInInk, inkGrey };
+module.exports = { PROFILES, PALETTES, INK_TONES, FONT, MM_TO_PT, profileFor, printsInInk, inkGrey, answerColour, SHEET_COLOURING };

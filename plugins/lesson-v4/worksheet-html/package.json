@@ -26,6 +26,7 @@
     "worksheet": "node scripts/build-worksheet.js",
     "ensure-chrome": "node scripts/ensure-chrome.js",
     "catalogue": "node scripts/build-catalogue.js",
+    "page-prices": "node scripts/build-page-prices.js",
     "layouts": "node scripts/build-layouts-doc.js"
   },
   "dependencies": {

@@ -2390,7 +2390,7 @@
     },
     {
      "file": "references/working-wall-card-contracts.md",
-     "text": "**Colour marks carry over.** Words copied from the board keep its colour marks, and the renderer draws them in the board's colours: a taught word written `{{word}}` is green in a worked example's steps and lines, a sticky fact, a vocabulary definition, a misconception's two sides, a sentence stem, a reference-table cell and a section's notes and steps, as it is on the board, and `((part))` and `<<decide>>` keep theirs. On a title, a heading, a coloured strip or inside a figure (a labelled diagram's labels, a Venn's items) the word prints plain, and a taught word's braces never print on any card or in any figure. Every other colour on the wall is the renderer's, in the board's meanings.",
+     "text": "**Colour marks carry over.** Words copied from the board keep its colour marks, and the renderer draws them in the board's colours: a taught word written `{{word}}` is green in a worked example's steps and lines, a sticky fact, a vocabulary definition, a misconception's two sides, a sentence stem, a reference-table cell, a section's notes and steps and a step-by-step sheet's headings and words (a step headed by the taught word is `{{source}}`), as it is on the board, and `((part))` and `<<decide>>` keep theirs. On a title, any other card's heading, a coloured strip or inside a figure (a labelled diagram's labels, a Venn's items) the word prints plain, and a taught word's braces never print on any card or in any figure. Every other colour on the wall is the renderer's, in the board's meanings.",
      "section": {
       "heading": "## Every card",
       "occurrence": 0,
@@ -2462,7 +2462,7 @@
     },
     {
      "file": "shared/visuals/place-value-chart-svg.js",
-     "text": "fill: worked ? pal.worked : (picked || revealed) ? pal.ring : pal.text, picked });",
+     "text": "fill: worked ? pal.worked : (picked || revealed) ? pal.answer : pal.text, picked });",
      "section": null
     },
     {
@@ -2576,7 +2576,7 @@
     },
     {
      "file": "references/working-wall-card-contracts.md",
-     "text": "On a title, a heading, a coloured strip or inside a figure (a labelled diagram's labels, a Venn's items) the word prints plain, and a taught word's braces never print on any card or in any figure.",
+     "text": "On a title, any other card's heading, a coloured strip or inside a figure (a labelled diagram's labels, a Venn's items) the word prints plain, and a taught word's braces never print on any card or in any figure.",
      "section": {
       "heading": "## Every card",
       "occurrence": 0,

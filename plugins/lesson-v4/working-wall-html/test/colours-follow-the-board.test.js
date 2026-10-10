@@ -296,6 +296,9 @@ test("a card with colour marks fits its words at the size the same words fit wit
     [4, renderMisconception, (w) => ({ type: "misconception", page: A3_LANDSCAPE, title: "Look out for", items: [{ label: "Don't", text: w("enamel") }, { label: "Do", text: w("dentine") }] })],
     [7, renderSentenceStem, (w) => ({ type: "sentenceStem", page: A3_LANDSCAPE, title: "Say it", items: [{ text: w("enamel"), filled: w("dentine") }] })],
     [3, renderReferenceTable, (w) => ({ type: "referenceTable", page: A3_LANDSCAPE, title: "Layers", columns: ["Layer", "What it does"], rows: [[w("enamel"), w("dentine")], [w("pulp"), w("root")]] })],
+    // A section's notes sit at their floor so its drawing has the room (10
+    // October 2026), so here the fit shows as a refusal: a note of this
+    // length takes two lines, and four more characters a mark take a third.
     [8, renderDiagramSection, (w) => ({ type: "diagramSection", page: A3_LANDSCAPE, title: "Rounding", parts: [
       { heading: "Nearer ten", visual: { type: "numberLine", start: 340, end: 350, interval: 5, labels: "all" }, notes: [w("halfway")] },
       { heading: "Strategy", steps: [w("ones"), w("round")] }] })],
@@ -304,7 +307,14 @@ test("a card with colour marks fits its words at the size the same words fit wit
     const drawn = async (open, close) => {
       const card = cardFor(many(n, open, close));
       const svgImages = await preRenderSvgs({ cards: [card] }, FIXTURES_DIR);
-      return sizes(render(card, style, FIXTURES_DIR, { svgImages }));
+      const warn = console.warn;
+      let refused = 0;
+      console.warn = () => { refused += 1; };
+      try {
+        return [...sizes(render(card, style, FIXTURES_DIR, { svgImages })), refused ? "refused" : "fits"];
+      } finally {
+        console.warn = warn;
+      }
     };
     const plain = await drawn("", "");
     const type = cardFor(many(n, "", "")).type;

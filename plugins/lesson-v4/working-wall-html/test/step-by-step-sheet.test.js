@@ -136,9 +136,9 @@ test("what the sheet refuses, and says why", async () => {
   landscape.page = { size: "A3", orientation: "landscape" };
   await assert.rejects(render(landscape), /read down the page/);
 
-  const six = columnSum();
-  six.steps.push({ heading: "Check", visual: sum("382", { Tens: "1" }) });
-  await assert.rejects(render(six), /needs 2-5 steps and has 6/);
+  const seven = columnSum();
+  seven.steps.push({ heading: "Check", visual: sum("382", { Tens: "1" }) }, { heading: "Check again", visual: sum("382", { Tens: "1" }) });
+  await assert.rejects(render(seven), /needs 2-6 steps and has 7[\s\S]*evenly over two sheets with the same title/);
 
   const words = columnSum();
   words.steps = words.steps.map(({ visual, note, point, ...rest }) => rest);

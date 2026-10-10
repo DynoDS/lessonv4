@@ -678,6 +678,15 @@ def build_view(
     lines.extend(["## Photographs", ""])
     if not photos:
         lines.append("(the contract promises no photographs)")
+    if photos:
+        # The role file is at its size limit, and this is where the designer
+        # meets the photographs, so the pointer rides with the list.
+        lines.extend([
+            "If your viewer refuses one of these when you open it, read "
+            "`[PLUGIN_ROOT]/references/picture-you-cannot-see.md` before deciding anything that "
+            "depends on what is in it: the cause is the file's layout, not its size.",
+            "",
+        ])
     for photo in photos:
         filename = photo.get("filename")
         state = states.get(filename)
@@ -968,6 +977,50 @@ def card_carries_a_picture(card: dict) -> bool:
 NUMBER_RE = re.compile(r'-?\d[\d,]*(?:\.\d+)?')
 
 
+# A wall table keeps the board's facts and may shorten its sentences.
+#
+# The check used to want the board's rows cell for cell, so a comparison table
+# whose boxes were full sentences could not go up at all: the sentences do not
+# fit a wall table at a size read across the room, and the few words a child
+# writes in the same box ("the citizens voted") were refused as a changed row
+# (Year 5 Athens and Sparta, stress test of 7 October 2026). What must not
+# change is a lookup fact: a name, a term, a number. So a board cell of a few
+# words is found on the wall as written, a number in a longer cell is found
+# somewhere on the wall, and a sentence is otherwise the wall designer's to cut.
+# The board's own marks (an answer's "||", a small-print "[[...]]" line, taught
+# and key word brackets) are not part of what is compared.
+SENTENCE_WORDS = 5
+
+
+def plain_cell(cell: object) -> str:
+    if not isinstance(cell, str):
+        return ""
+    text = re.sub(r"\[\[.*?\]\]", " ", cell, flags=re.S)
+    text = re.sub(r"\|\||\{\{|\}\}|<<|>>", "", text)
+    return " ".join(text.split()).casefold()
+
+
+def changed_source_cell(card: dict, table: dict) -> str:
+    """The first board cell this wall table has changed, or "" when it keeps them all."""
+    wall_cells = [plain_cell(cell) for row in card.get("rows") or [] for cell in (row if isinstance(row, list) else [row])]
+    wall_numbers = {number for cell in wall_cells for number in NUMBER_RE.findall(cell)}
+    for row in table.get("rows") or []:
+        for cell in row if isinstance(row, list) else [row]:
+            if isinstance(cell, dict):
+                if cell not in [c for r in card.get("rows") or [] for c in (r if isinstance(r, list) else [r])]:
+                    return "picture cell"
+                continue
+            plain = plain_cell(cell)
+            if not plain:
+                continue
+            if len(plain.split()) < SENTENCE_WORDS:
+                if plain not in wall_cells:
+                    return plain
+            elif any(number not in wall_numbers for number in NUMBER_RE.findall(plain)):
+                return plain
+    return ""
+
+
 def round_trip_example(text: str) -> bool:
     """Does this worked example finish on the number it started from?
 
@@ -1062,8 +1115,14 @@ def check(args) -> int:
                 "Name what that column holds instead, so the widest line on the sheet earns its space."
             )
         matching = [table for table in source_tables if card.get("columns") == table["headers"]]
-        if matching and not any(card.get("rows") == table["rows"] for table in matching):
-            raise PacketError("Working-wall reference table changes the source rows; preserve the teaching reference.")
+        if matching:
+            lost = [changed_source_cell(card, table) for table in matching]
+            if all(lost):
+                raise PacketError(
+                    f"Working-wall reference table changes the source rows: the board's \"{lost[0]}\" is not on it. "
+                    "A name, a number or a short fact is copied as the board has it; only a full sentence may be "
+                    "cut to the few words a child would write in that box."
+                )
     print("WORKING_WALL_DESIGN_OK")
     return 0
 

@@ -73,7 +73,8 @@ test("the figure comes before the steps and keeps real room on the sheet", async
 test("the step numbers are drawn on the picture, so the drawing grows to hold them", async () => {
   const card = fridayCard();
   const svgImages = await preRenderSvgs({ cards: [card] }, __dirname);
-  const pinned = pickVisual(card.visual, { svgImages });
+  // The sheet draws its picture with each step's colour on it (10 October 2026).
+  const pinned = pickVisual(require("../src/step-colours").methodVisual(card), { svgImages });
   const plain = pickVisual({ ...card.visual, callouts: undefined }, { svgImages: await preRenderSvgs({ cards: [{ ...card, visual: { ...card.visual, callouts: undefined } }] }, __dirname) });
   assert.ok(pinned && pinned.buf, "the pinned drawing renders");
   assert.ok(pinned.aspect < plain.aspect, "circles above the jump labels add height rather than covering them");
@@ -82,9 +83,10 @@ test("the step numbers are drawn on the picture, so the drawing grows to hold th
   const { data, info } = await sharp(pinned.buf).raw().toBuffer({ resolveWithObject: true });
   let green = 0;
   for (let i = 0; i < data.length; i += info.channels) {
-    if (data[i] < 40 && data[i + 1] > 150 && data[i + 1] < 200 && data[i + 2] > 60 && data[i + 2] < 110) green += 1;
+    // Step 2's orange (E46C0A): its circle, and the jump it is pinned to.
+    if (data[i] > 200 && data[i + 1] > 90 && data[i + 1] < 125 && data[i + 2] < 40) green += 1;
   }
-  assert.ok(green > 1000, "the green step circles are on the picture");
+  assert.ok(green > 1000, "the step circles are on the picture, each in its step's colour");
 });
 
 test("a step pinned to a place the drawing does not name stops the build", async () => {

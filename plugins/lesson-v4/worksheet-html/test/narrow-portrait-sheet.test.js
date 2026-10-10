@@ -72,3 +72,59 @@ test("the designer can keep the full width by saying so", () => {
   const { sheet } = resolveAutoSheet({ ...short(), narrow: false }, { yearGroup: 4 });
   assert.notStrictEqual(sheet.narrow, true);
 });
+
+// A sentence with a write-in blank reads worse the moment it wraps, so the
+// narrow page is refused when it breaks one the full page held (the stress
+// test of 7 October 2026: "...... the owl / swooped down." three times).
+const stems = (blankWidthMm) => ({
+  layout: "auto",
+  orientation: "portrait",
+  zones: [
+    {
+      stack: ["when", "where", "how"].map((word) => ({
+        question: true,
+        helper: "instruction",
+        text: `Tell us ${word}: ___ the owl swooped down.`,
+        blankWidthMm,
+      })),
+    },
+  ],
+});
+
+const blanksOn = (sheet) => [...JSON.stringify(sheet.zones).matchAll(/"blankWidthMm":(\d+)/g)].map((m) => Number(m[1]));
+
+test("a sentence the narrow page would break keeps the sheet at full width", () => {
+  const { sheet } = resolveAutoSheet(stems(80), { yearGroup: 4 });
+  assert.notStrictEqual(sheet.narrow, true);
+  assert.deepStrictEqual(blanksOn(sheet), [80, 80, 80], "the writing line is not shortened for nothing");
+});
+
+test("a phrase line gives a little of its length to keep the sheet narrow", () => {
+  const { sheet } = resolveAutoSheet(stems(64), { yearGroup: 4 });
+  assert.strictEqual(sheet.narrow, true);
+  const widths = blanksOn(sheet);
+  assert.ok(widths.every((mm) => mm < 64 && mm >= 48), `lines came out at ${widths.join(", ")}mm`);
+  assert.strictEqual(new Set(widths).size, 1, "every line on the sheet is the same length");
+});
+
+test("a blank for one word keeps its size, and the sheet goes full width instead", () => {
+  const sheetSpec = {
+    layout: "auto",
+    orientation: "portrait",
+    zones: [
+      {
+        stack: [
+          {
+            question: true,
+            helper: "instruction",
+            text: "______ and ______ were together for hardness in our test.",
+            blankWidthMm: 36,
+          },
+        ],
+      },
+    ],
+  };
+  const { sheet } = resolveAutoSheet(sheetSpec, { yearGroup: 3 });
+  assert.notStrictEqual(sheet.narrow, true);
+  assert.deepStrictEqual(blanksOn(sheet), [36]);
+});

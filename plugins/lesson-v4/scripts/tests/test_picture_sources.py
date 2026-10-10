@@ -476,6 +476,41 @@ class CommonsAndsEveryWordTests(unittest.TestCase):
                     f"{form!r} is not the words of {query!r} with some removed",
                 )
 
+    def test_candidates_come_back_in_commons_rank_order_not_file_name_order(self):
+        """Commons sends its pages in file-name order with the ranking in
+        `index`. Read as sent, the three downloaded were the first three in
+        the alphabet and Commons' first choice was never fetched."""
+        def page(title, index):
+            row = {
+                "title": title,
+                "imageinfo": [{
+                    "url": f"https://example.test/{title}",
+                    "descriptionurl": f"https://commons.wikimedia.org/wiki/{title}",
+                    "extmetadata": {"LicenseShortName": {"value": "CC BY 4.0"}},
+                }],
+            }
+            if index is not None:
+                row["index"] = index
+            return row
+
+        as_sent = [
+            page("File:646px-Cartesian coordinates 2D.png", 7),
+            page("File:A Quadrant.jpg", 16),
+            page("File:Basadur Quadrants.png", 21),
+            page("File:Cartesian-coordinate-system-directed.svg", None),
+            page("File:Cartesian-coordinate-system-with-quadrant.svg", 1),
+            page("File:Cartesian coordinates 2D PL.svg", 2),
+        ]
+        titles = [row["title"] for row in wikimedia.candidates_in_rank_order(as_sent)]
+        self.assertEqual(titles, [
+            "File:Cartesian-coordinate-system-with-quadrant.svg",
+            "File:Cartesian coordinates 2D PL.svg",
+            "File:646px-Cartesian coordinates 2D.png",
+            "File:A Quadrant.jpg",
+            "File:Basadur Quadrants.png",
+            "File:Cartesian-coordinate-system-directed.svg",
+        ])
+
     def test_the_summary_records_every_candidate_the_search_returned(self):
         """A scout that finds the top three unusable could not see there was a
         fourth: the summary held only what was downloaded, so a rank-eight

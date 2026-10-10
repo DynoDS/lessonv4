@@ -50,8 +50,9 @@ test("scaffold carries no colour of its own", () => {
 });
 
 test("writing lines are tall enough for primary handwriting", () => {
-  assert.ok(WRITING_LINE_MM.lower >= 8, "lower phase lines must be at least 8mm");
-  assert.ok(WRITING_LINE_MM.upper >= 6, "upper phase lines must be at least 6mm");
+  // The teacher's sizes, chosen from true-size pages (9 October 2026).
+  assert.equal(WRITING_LINE_MM.lower, 10, "Years 1 to 3 write on 10mm lines");
+  assert.equal(WRITING_LINE_MM.upper, 8, "Years 4 to 6 write on 8mm lines");
   assert.ok(WRITING_LINE_MM.lower > WRITING_LINE_MM.upper);
 });
 

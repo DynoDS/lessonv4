@@ -1,9 +1,17 @@
 'use strict';
 
 // THE bar chart. One drawing, placed by the board, the worksheet, the working
-// wall and the stick-in pack: a y-axis carrying a numbered scale with
-// horizontal gridlines, house-blue bars rising from a category x-axis, and the
-// optional axis titles.
+// wall and the stick-in pack: a y-axis carrying a numbered scale, a squared
+// grid behind house-blue bars rising from a category x-axis, and the optional
+// axis titles.
+//
+// The grid is squared paper wherever squares leave the chart about the size it
+// would be without them: one square up for each step of the scale, bars one or
+// two squares wide with a square between (the teacher's choice from real pages,
+// 9 October 2026; a Year 3 child drawing bars had only pale lines across).
+// Squares tie the plot's depth to its width, so where they would make the chart
+// clearly smaller, or too small to number, it keeps its lines across and its
+// own shape. Nothing is refused for want of squares.
 //
 // The board drew its own until 13 September 2026, in PowerPoint shapes with
 // 11pt scale numbers, and never printed the chart title the sheet and the wall
@@ -48,7 +56,10 @@ const { textWidthEm } = require('../text/comic-glyph-width');
 const BAR_FILL     = '#2E74B5';   // house blue
 const BAR_STROKE   = '#1F4E79';   // house deep blue
 const AXIS_COLOUR  = '#000000';
-const GRID_COLOUR  = '#DDDDDD';
+// Mid grey, the same step the photocopied pack's greys use (INK_TONES.mid): the
+// old #DDDDDD hairline was pale enough to vanish on a photocopier, and the pack
+// only darkens colours, never greys.
+const GRID_COLOUR  = '#8C8C8C';
 const TEXT_COLOUR  = '#000000';
 const TITLE_COLOUR = '#1F4E79';
 const FONT = "'Comic Sans MS', 'Comic Sans', 'Comic Neue', sans-serif";
@@ -79,6 +90,14 @@ const MARGIN     = STROKE_W + 3;
 // Scale numbers are stacked up the axis a line apart at the least; closer and
 // the "2" of one line prints into the "4" of the next.
 const TICK_LEADING = 1.15;
+// Squares: a bar is this many squares wide, tried in this order of preference
+// only as a tie-break; the width that leaves the chart nearest its usual size
+// wins. A squared chart may be this much smaller or larger than the unsquared
+// one in either direction before the squares are given up.
+const SQUARE_BAR_WIDTHS = [1, 2];
+const SQUARES_SMALLEST = 0.85;
+const SQUARES_TALLEST  = 1.3;
+const SQUARES_NAME_GAP = 0.4;   // of SLOT_PAD, the least clear space between two names
 // ─── END CONSTANTS ───────────────────────────────────────────────────────────
 
 function f(n) { return Number(n).toFixed(2); }
@@ -152,7 +171,7 @@ function measureAt(s, u, tiers = 1, widthCap = null) {
   const plotW = Math.max(slotW, s.categories.length * slotW);
   // A title wider than the box is set smaller on its own; it never pulls the
   // scale numbers down with it.
-  let titleFs = TITLE_FS * u;
+  let titleFs = s.titlePt > 0 ? s.titlePt : TITLE_FS * u;
   if (s.title && widthCap) titleFs = Math.min(titleFs, (widthCap - 2 * MARGIN * u) / textWidthEm(s.title, true));
   const titleW = s.title ? textW(s.title, titleFs, true) : 0;
   // The top scale number is centred on the top gridline, so half of it stands
@@ -161,8 +180,43 @@ function measureAt(s, u, tiers = 1, widthCap = null) {
   const catH = labelFs + 18 * u + (tiers - 1) * labelFs * 1.2;
   const xTitleH = s.xLabel ? AXIS_TITLE_FS * u * 1.3 + AXIS_TITLE_GAP * u : 0;
   const margin = MARGIN * u;
-  const naturalW = Math.max(padLeft + plotW + PAD_RIGHT * u, titleW) + 2 * margin;
+  // A title at the surface's own size does not grow or shrink with the chart,
+  // and is already held to the box, so it has no say in how wide the chart
+  // wants to be: counted, a long title stopped the bars and their names from
+  // growing into a wide zone.
+  const bodyW = padLeft + plotW + PAD_RIGHT * u;
+  const naturalW = (s.titlePt > 0 && widthCap ? bodyW : Math.max(bodyW, titleW)) + 2 * margin;
   return { u, tiers, tickFs, labelFs, titleFs, steps, padLeft, slotW, plotW, titleW, padTop, catH, xTitleH, margin, naturalW, maxCatW };
+}
+
+// The squared grid for a plot of this width and depth, or null where squares
+// would cost the chart its size. Across: a square of gap, then each bar and the
+// square after it. `fixedDepth` is a box that sets the depth (the board), where
+// the squares take the smaller of the two fits and the plot is drawn inside the
+// room it had; on paper the plot keeps its width and its depth follows.
+function squareGrid(s, m, plotW, plotH, fixedDepth) {
+  const n = s.categories.length;
+  let best = null;
+  for (const barSquares of SQUARE_BAR_WIDTHS) {
+    const across = (barSquares + 1) * n + 1;
+    const g = fixedDepth ? Math.min(plotW / across, plotH / m.steps) : plotW / across;
+    const w = g * across;
+    const h = g * m.steps;
+    if (w < plotW * SQUARES_SMALLEST || h < plotH * SQUARES_SMALLEST || h > plotH * SQUARES_TALLEST) continue;
+    // The scale numbers a line apart, and each name clear of the next on its
+    // row. A bar and its gap are a little narrower than the chart's own columns
+    // (one square of the width is the gap before the first bar), so two names
+    // come that much closer; they are measured as the pair they are, not as two
+    // of the longest name, and must still not meet.
+    if (g < m.tickFs * TICK_LEADING) continue;
+    const pitch = (barSquares + 1) * g * m.tiers;
+    const clear = SLOT_PAD * m.u * SQUARES_NAME_GAP;
+    const nameW = s.categories.map((c) => textW(c, m.labelFs));
+    if (nameW.some((wd, i) => i + m.tiers < n && (wd + nameW[i + m.tiers]) / 2 + clear > pitch)) continue;
+    const off = Math.abs(h - plotH) + Math.abs(w - plotW);
+    if (!best || off < best.off - 0.01) best = { g, barSquares, across, plotW: w, plotH: h, off };
+  }
+  return best;
 }
 
 function refuse(code, message) {
@@ -179,6 +233,8 @@ function layout(data, profile) {
   if (!s.categories.length) {
     refuse('BAR_CHART_EMPTY', 'a bar chart needs at least one category with a value; nothing was drawn in its place.');
   }
+  // A surface with one size for every drawing's title (a pupil sheet) sets it.
+  s.titlePt = profile.titlePt || 0;
   const W = profile.widthPt;
   const floorU = profile.minFontPt / TICK_FS;
   let u = profile.fontPt / TICK_FS;
@@ -232,11 +288,14 @@ function layout(data, profile) {
   } else {
     plotH = Math.max((W - 2 * m.margin - m.padLeft - PAD_RIGHT * u) * PLOT_H_PER_W, need(m));
   }
-  return { s, m, W, plotW: W - 2 * m.margin - m.padLeft - PAD_RIGHT * u, plotH };
+  const plotW = W - 2 * m.margin - m.padLeft - PAD_RIGHT * u;
+  const squares = squareGrid(s, m, plotW, plotH, Boolean(profile.heightPt));
+  if (squares) return { s, m, W, plotW: squares.plotW, plotH: squares.plotH, squares };
+  return { s, m, W, plotW, plotH, squares: null };
 }
 
 function draw(L) {
-  const { s, m, W, plotW, plotH } = L;
+  const { s, m, W, plotW, plotH, squares } = L;
   const u = m.u;
   const contentW = W - 2 * m.margin;
   const h = m.padTop + plotH + m.catH + m.xTitleH + 2 * m.margin;
@@ -255,7 +314,14 @@ function draw(L) {
   const n = s.categories.length;
   const slotW = n ? plotW / n : plotW;
   const stretch = Math.max(1, slotW / m.slotW);
-  const barW = Math.min(slotW * BAR_FRAC, Math.min(m.slotW * BAR_FRAC, BAR_W_MAX * u) * stretch);
+  const barW = squares
+    ? squares.barSquares * squares.g
+    : Math.min(slotW * BAR_FRAC, Math.min(m.slotW * BAR_FRAC, BAR_W_MAX * u) * stretch);
+  // On squares a bar starts on a line: one square in from the axis, then every
+  // bar-and-a-gap along.
+  const barLeft = (i) => (squares
+    ? plotLeft + squares.g * (1 + (squares.barSquares + 1) * i)
+    : plotLeft + i * slotW + (slotW - barW) / 2);
   const yFor = (v) => plotBottom - (v / s.max) * plotH;
   const pct = (x, y) => [Number((100 * x / w).toFixed(2)), Number((100 * y / h).toFixed(2))];
   const anchors = { title: null, scale: null, gridline: null, rows: {} };
@@ -280,6 +346,12 @@ function draw(L) {
     parts.push(text(plotLeft - TICK_GAP * u, y, v, m.tickFs, `text-anchor="end" dy="0.36em" fill="${TEXT_COLOUR}"`));
     if (midGridY === null && v >= s.max / 2) midGridY = y;
   }
+  if (squares) {
+    for (let k = 1; k <= squares.across; k++) {
+      const x = plotLeft + k * squares.g;
+      parts.push(`<line x1="${f(x)}" y1="${f(plotTop)}" x2="${f(x)}" y2="${f(plotBottom)}" stroke="${GRID_COLOUR}" stroke-width="${f(1.4 * u)}"/>`);
+    }
+  }
   anchors.scale = pct(plotLeft - 56 * u * 0.45, plotTop + plotH * 0.5);
   anchors.gridline = pct(plotLeft + plotW * 0.92, midGridY != null ? midGridY : plotTop + plotH * 0.4);
 
@@ -291,12 +363,12 @@ function draw(L) {
   for (let i = 0; i < n; i++) {
     const v = Number(s.values[i]) || 0;
     const by = yFor(v);
-    const bx = plotLeft + i * slotW + (slotW - barW) / 2;
+    const bx = barLeft(i);
     const bh = plotBottom - by;
     if (bh > 0.01) {
       parts.push(`<rect x="${f(bx)}" y="${f(by)}" width="${f(barW)}" height="${f(bh)}" fill="${BAR_FILL}" stroke="${BAR_STROKE}" stroke-width="${f(STROKE_W * u)}"/>`);
     }
-    const cx = plotLeft + i * slotW + slotW / 2;
+    const cx = bx + barW / 2;
     parts.push(text(cx, plotBottom + m.labelFs + (i % m.tiers) * m.labelFs * 1.2, s.categories[i], m.labelFs, `text-anchor="middle" dominant-baseline="alphabetic" fill="${TEXT_COLOUR}"`));
     anchors.rows[s.categories[i]] = pct(cx, by);
   }

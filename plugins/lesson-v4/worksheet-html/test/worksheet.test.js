@@ -1379,3 +1379,31 @@ test("a group's task line goes above the row its first Part sits in, never into 
   assert.deepEqual(whole.stack[1].row.map((n) => n.number), ["1a", "1b"]);
   assert.equal(whole.stack[1].row.length, 2);
 });
+
+// A word bank made of picture cards (stress test, 7 October 2026): a Year 1
+// sheet said "Use the word bank" beside a row of picture cards, each with its
+// word, and was refused as having no word bank, so a second bank of words alone
+// was added that nobody asked for.
+test("a row of picture cards with a word on each is a word bank", () => {
+  const sheet = (cards) => ({
+    meta: { lesson: "X", yearGroup: 1 },
+    sheets: {
+      expected: {
+        layout: "full",
+        zones: {
+          a: {
+            stack: [
+              { helper: "instruction", text: "Label the plant. Use the word bank to help you." },
+              { helper: "card-row", text: "Word bank", columns: 1, cards },
+            ],
+          },
+        },
+      },
+    },
+  });
+  const words = [{ title: "roots" }, { title: "stem" }, { title: "leaves" }];
+  assert.deepEqual(checkWorksheet(sheet(words)), []);
+  // Bare pictures are not a bank of words.
+  const bare = checkWorksheet(sheet([{ caption: "A" }, { caption: "B" }]));
+  assert.match(bare[0].wordBanks.join(" "), /WORD_BANK_MISSING/);
+});

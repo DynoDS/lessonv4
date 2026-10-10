@@ -14,6 +14,7 @@ const {
   photoAspect,
   stackedCaptionInches,
   panelPage,
+  wrappedLines,
 } = require("./layout");
 const {
   panelFractionFor,
@@ -31,6 +32,7 @@ const {
   accentLabelPtFor,
   isStepLabel,
   PHOTO_AT_A_THIRD,
+  STICKY_HALF,
 } = require("./visuals");
 const { badgeKey } = require("./svg-renderer");
 const { renderPictureFirstWorkedExample } = require("./render-method");
@@ -124,9 +126,12 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
   // How many lines a fact may take at the floor size: the card's usual two,
   // unless its photo has narrowed to about a third (visuals.js).
   let factLines = null;
+  // And when it has a real half of the sheet instead (visuals.js STICKY_HALF).
+  let halfLines = null;
   const bodyOpts = (fraction) => ({
     ...stackedBodyOpts(card, fraction, style),
     ...(factLines ? { floorLinesPerItem: factLines, longItemsAtFloor: PHOTO_AT_A_THIRD.factsOnThreeLines } : {}),
+    ...(halfLines ? { floorLinesPerItem: halfLines, maxLinesPerItem: halfLines + 1 } : {}),
   });
   const fitsAt = (fraction, extra) =>
     linearBodyFitsAtFloor(
@@ -140,7 +145,21 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
   const fitsBeside = (fraction) => fitsAt(fraction, bodyOpts(fraction));
   let panelFraction = panelFractionThatFits(panelFractionFor(card, ctx, pictureBeside), fitsBeside);
   let photoOff = false;
-  if (pictureBeside && !fitsBeside(panelFraction)) {
+  // A real half each when the fact fits its half at the floor size, measured
+  // by the room and not by a count of lines (visuals.js STICKY_HALF).
+  // A card still holds one long fact (his answer of 26 September 2026, kept):
+  // two facts that each run past two lines there go the older way, below.
+  const halfWidthPx = (dims.width * STICKY_HALF.share - 0.6) * 96;
+  const longInHalf = items.filter((item) => wrappedLines(item.text, minBodyPt(card, style), halfWidthPx) > 2).length;
+  // Nor does the picture let a fact run longer than a card with no picture
+  // would hold: what the designer may write is unchanged, only where it sits.
+  const halfEach = pictureBeside && longInHalf <= PHOTO_AT_A_THIRD.factsOnThreeLines
+    && fitsAt(1, {})
+    && fitsAt(STICKY_HALF.share, { floorLinesPerItem: STICKY_HALF.floorLines });
+  if (halfEach) {
+    panelFraction = STICKY_HALF.share;
+    halfLines = STICKY_HALF.floorLines;
+  } else if (pictureBeside && !fitsBeside(panelFraction)) {
     panelFraction = PHOTO_AT_A_THIRD.share;
     factLines = PHOTO_AT_A_THIRD.floorLines;
     // His rule allows one fact on three lines beside the photo, and the next
@@ -226,11 +245,14 @@ function renderStickyKnowledge(card, style, specDir, ctx = {}) {
   if (imagePath && !photoOff) {
     const photoBuf = tryReadPhoto(specDir, imagePath);
     if (photoBuf) {
-// No aspect is passed for this photo path, so panelWithVisualHtml uses its
-  // square default. Preserve that existing behaviour.
+      // The photograph at its own shape, no taller than the card's body. It
+      // was fitted into a square whatever its shape, which squeezed a wide
+      // photograph and stretched a tall statue by about 40 percent (stress
+      // test, 7 October 2026).
+      const aspect = photoAspect(photoBuf) || 1;
       return (
         titleBarEl +
-        panelWithVisualHtml(panelChildrenHtml, { buf: photoBuf, aspect: 1 }, null, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction })
+        panelWithVisualHtml(panelChildrenHtml, { buf: photoBuf, aspect }, null, fillColour, borderColour, style, card.page.size, card.page.orientation, { panelFraction, aspect, bodyHeightIn: dims.height - titleBarHeightInches(titlePt) })
       );
     }
   }

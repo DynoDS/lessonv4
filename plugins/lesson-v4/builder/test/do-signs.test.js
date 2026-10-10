@@ -42,6 +42,54 @@ test('a printed beat shows the sheet, every board task the lightning bolt, a Tea
   assert.deepStrictEqual(lesson.slides.map((s) => s.doSign), ['sheet', undefined, 'quick', 'quick', undefined]);
 });
 
+// 8 October 2026: the bolt is for the task children do on their own, and the
+// lesson's worksheet earns the sheet only on the task it is.
+test('an Our Turn carries no badge, and the task that is the worksheet shows the sheet', () => {
+  const design = {
+    teachingSequence: [
+      { sourceUnitId: 'u1', kind: 'our-turn', minutes: 4, levels: BOARD },
+      { sourceUnitId: 'u2', kind: 'your-turn', minutes: 8, levels: BOARD },
+      { sourceUnitId: 'u3', kind: 'your-turn', minutes: 10, levels: BOARD },
+    ],
+    ending: { included: true, beat: { sourceUnitId: 'u4', kind: 'apply', minutes: 5 } },
+    worksheet: { use: 'required-task-resource', taskUnitId: 'u3' },
+  };
+  const slides = () => ({ slides: [
+    { title: 'Our Turn', designUnitId: 'u1' },
+    { title: 'Your Turn', designUnitId: 'u2' },
+    { title: 'Your Turn - Plan your argument', designUnitId: 'u3' },
+    { title: 'Your Turn - Plan your argument - check', designUnitId: 'u3' },
+    { title: 'Apply', designUnitId: 'u4' },
+  ] });
+  const lesson = slides();
+  applyDoSigns(lesson, folderWith(design));
+  assert.deepStrictEqual(lesson.slides.map((s) => s.doSign), [undefined, 'quick', 'sheet', undefined, undefined]);
+
+  // A worksheet of fresh practice names no task, so the Your Turn it could
+  // stand in for keeps its own questions and its bolt.
+  const fresh = slides();
+  applyDoSigns(fresh, folderWith(Object.assign({}, design, { worksheet: { use: 'separate-fresh-worksheet', taskUnitId: null } })));
+  assert.deepStrictEqual(fresh.slides.map((s) => s.doSign), [undefined, 'quick', 'quick', undefined, undefined]);
+
+  // The final task printed as the sheet has no `levels` of its own.
+  const ending = slides();
+  applyDoSigns(ending, folderWith(Object.assign({}, design, { worksheet: { use: 'separate-fresh-worksheet', taskUnitId: 'u4' } })));
+  assert.strictEqual(ending.slides[4].doSign, 'sheet');
+});
+
+// Eleven layouts built their own header and left the badge out of it, so a
+// Your Turn on a maths layout showed no bolt while the same task on a free
+// layout did (the long multiplication deck of the 7 October 2026 test).
+test('every layout that draws a header hands the badge on to it', () => {
+  const dir = path.join(__dirname, '..', 'src', 'templates');
+  const dropped = fs.readdirSync(dir).filter((file) => {
+    const source = fs.readFileSync(path.join(dir, file), 'utf8');
+    const own = source.match(/drawHeader\(slide, \{[\s\S]*?\}, ctx\)/g) || [];
+    return own.some((call) => !/doSign: data\.doSign/.test(call));
+  });
+  assert.deepStrictEqual(dropped, []);
+});
+
 test('a badge the slide names is kept, and a deck with no design beside it carries none', () => {
   const kept = { slides: [{ title: 'Sort', designUnitId: 'u2', doSign: 'quick' }] };
   applyDoSigns(kept, folderWith(DESIGN));

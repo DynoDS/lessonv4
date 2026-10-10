@@ -643,10 +643,34 @@ def reference_scopes(value, path=""):
             yield from reference_scopes(child, f"{path}/{index}")
 
 
-def run_delivery(verdict_path: Path, spec_path: Path, surface: str) -> int:
+def current_uses(verdict_path: Path, design_path: Path | None) -> dict | None:
+    """What the lesson requires now, or None when no design can be read.
+
+    The record is written once, at the helper check. The design can be revised
+    after that (a picture that never arrived, a sheet that would not fit), and
+    the record then describes a lesson that no longer exists. On 7 October 2026
+    three of twenty runs met it: a worksheet picture the revised design had
+    dropped, and a row of four clocks the revised design had made three, each
+    refused a sheet that drew the revised lesson correctly. So delivery reads
+    the design that sits beside the record and holds the specification only to
+    what the lesson still asks for.
+    """
+    path = design_path or verdict_path.parent / "lesson-design.json"
+    if not path.is_file():
+        return None
+    try:
+        return {use_key(item): item for item in load_uses(path)}
+    except CoverageError as exc:
+        print(f"HELPER_RECORD_NOTE: the lesson design could not be read, so the record was not compared with it: {exc}")
+        return None
+
+
+def run_delivery(verdict_path: Path, spec_path: Path, surface: str, design_path: Path | None = None) -> int:
     if surface not in SPEC_KEY_FIELDS:
         raise CoverageError(f"unknown surface {surface!r}")
     decisions = read_decisions(verdict_path)
+    required = current_uses(verdict_path, design_path)
+    stale: list[str] = []
     spec = load_json(spec_path, "built specification")
     occurrences = list(helper_occurrences(spec, SPEC_KEY_FIELDS[surface]))
     scopes = list(reference_scopes(spec))
@@ -655,14 +679,33 @@ def run_delivery(verdict_path: Path, spec_path: Path, surface: str) -> int:
     for decision in decisions:
         if not isinstance(decision, dict) or decision.get("requiredSurface") != surface or decision.get("decision") != "covered":
             continue
-        checked += 1
         rep, config, _ = use_key(decision)
         helper = decision.get("helperKey")
         label = f"{rep}/{config} ({helper})"
         checks = decision.get("featureChecks")
+        if required is not None and use_key(decision) not in required:
+            # The revised lesson no longer asks for this visual, so its
+            # absence from the specification is the specification being right.
+            stale.append(f"{label}: the lesson no longer requires this use; remove its decision")
+            continue
+        checked += 1
         if not valid_checks(checks):
             failures.append(f"{label}: missing or malformed featureChecks; rerun the capability verdict")
             continue
+        if required is not None:
+            wanted = set(required[use_key(decision)]["requiredFeatures"])
+            recorded = {check["feature"] for check in checks}
+            if wanted != recorded:
+                # The helper must still be bound, which is what catches a
+                # hand-built lookalike. Only the assertions written for
+                # features the lesson has since changed are set aside: they
+                # describe the old figure and would refuse the new one.
+                stale.append(
+                    f"{label}: the lesson's required features changed after this decision was "
+                    f"recorded (no longer required: {sorted(recorded - wanted)}; not yet recorded: "
+                    f"{sorted(wanted - recorded)}); record its featureChecks again"
+                )
+                checks = [check for check in checks if check["feature"] in wanted]
         matches = [(node, path) for key, refs, node, path in occurrences
                    if key == helper and len(refs) == 1 and any(isinstance(r, dict) and r.get("ref") == rep and r.get("configuration") == config for r in refs)]
         if not matches:
@@ -682,6 +725,21 @@ def run_delivery(verdict_path: Path, spec_path: Path, surface: str) -> int:
                 expected = json.dumps(check["equals"], sort_keys=True)
                 if not values or any(json.dumps(v, sort_keys=True) != expected for v in values):
                     failures.append(f"{label} at {path}: required feature {check['feature']!r} failed {check['path']}")
+    if required is not None:
+        recorded_keys = {use_key(d) for d in decisions if isinstance(d, dict)}
+        for key in sorted(required):
+            if key[2] == surface and key not in recorded_keys:
+                stale.append(f"{key[0]}/{key[1]}: the lesson requires this use on {surface} and no decision is recorded for it")
+    # A stale line is for whoever owns the record, never for the designer whose
+    # specification this is: nothing in the specification can answer it.
+    for line in stale:
+        print(f"HELPER_RECORD_STALE: {line}")
+    if stale:
+        print(
+            "HELPER_RECORD_STALE: the lesson was revised after helper-check.json was written. "
+            "This is not a fault in the specification and no designer repair answers it: the "
+            "orchestrator follows references/records-after-a-revision.md, then runs this check again."
+        )
     if failures:
         print("HELPER_DELIVERY_FAILED", file=sys.stderr)
         for line in failures:
@@ -732,7 +790,12 @@ def main(argv=None) -> int:
 
     if not args.verdict or not args.spec or not args.surface:
         raise CoverageError("delivery needs --verdict, --spec and --surface")
-    return run_delivery(Path(args.verdict), Path(args.spec), args.surface)
+    return run_delivery(
+        Path(args.verdict),
+        Path(args.spec),
+        args.surface,
+        Path(args.lesson_design) if args.lesson_design else None,
+    )
 
 
 if __name__ == "__main__":

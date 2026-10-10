@@ -159,7 +159,10 @@ usually what somebody means when they say a sheet looks generated. Big empty
 rectangles are not generosity: they are the page's arithmetic showing through.
 
 Spare room goes to whatever is still gaining from it, and what is left over is
-paper, not an excuse for two enormous boxes and tiny type elsewhere.
+paper, not an excuse for two enormous boxes and tiny type elsewhere. Ruled
+lines gain nothing from it: a line is one height for the year group, so that
+the same answer is spaced the same everywhere in a pack, and extra lines would
+tell a child to write more than the question asks.
 
 **A picture narrower than its zone is an invitation, not a frame.** A photograph
 is drawn at the width its own proportions allow, so a landscape picture given a

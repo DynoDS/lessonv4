@@ -213,6 +213,7 @@ test("room goes to the box, not to the writing lines beside it", async () => {
           {
             question: true,
             helper: "written-answers",
+            phase: "upper",
             items: [{ text: "Is Dev right? Explain.", lines: 2 }],
           },
           {
@@ -252,16 +253,18 @@ test("room goes to the box, not to the writing lines beside it", async () => {
     });
 
     assert.ok(
-      drawn.drawing > drawn.explain * 2,
+      drawn.drawing > drawn.explain,
       `the drawing block took ${Math.round(drawn.drawing)}px beside an ` +
         `explain-in-two-lines block of ${Math.round(drawn.explain)}px. Spare ` +
         "room belongs to the box that keeps gaining from it."
     );
+    // A ruled line takes none of it: it is the year group's line height
+    // exactly (8mm in Year 4), whatever the column has left over.
+    const lineMm = (drawn.line * 25.4) / 96;
     assert.ok(
-      drawn.line < 40,
-      `a ruled line came out ${Math.round(drawn.line)}px tall. A line gets ` +
-        "roomier and then stops; past that it is an invitation to write an " +
-        "essay the question never asked for."
+      Math.abs(lineMm - 8) < 0.2,
+      `a ruled line came out ${lineMm.toFixed(1)}mm tall in a column with room ` +
+        "to spare. A line is one height; spare room stays as paper."
     );
   } finally {
     await browser.close();
@@ -396,7 +399,7 @@ test("a growing stack item is reported at the height the stack gives it", () => 
   const stack = {
     stack: [
       { helper: "section-label", text: "Going Deeper" },
-      { helper: "written-answers", items: [{ text: "Write a rule.", sentences: 3 }] },
+      { helper: "fact-file", title: "My animal", fields: ["Name", "Where it lives", "What it eats"] },
     ],
   };
   const widthMm = 174;
@@ -408,7 +411,7 @@ test("a growing stack item is reported at the height the stack gives it", () => 
   const label = grown.parts[0];
 
   assert.ok(answers.gotHeightMm > answers.needHeightMm + 50,
-    `the answers block should carry the stack's spare, got ${answers.gotHeightMm} needing ${answers.needHeightMm}`);
+    `the block that grows should carry the stack's spare, got ${answers.gotHeightMm} needing ${answers.needHeightMm}`);
   assert.ok(answers.heightImposed, "a height the stack handed over is imposed, not chosen");
   assert.ok(Math.abs(label.gotHeightMm - label.needHeightMm) < 0.01,
     "a heading gains nothing from spare height and must not be reported as taller than it is");
@@ -419,11 +422,11 @@ test("a growing stack item is reported at the height the stack gives it", () => 
     "a stack with no spare must report every item at its natural height");
 });
 
-test("a written answer line grows into spare room but only so far", () => {
-  // Growth that never reached the rules was the fault; growth without a
-  // ceiling is the overcorrection. A two-centimetre gap between ruled lines
-  // reads as a mistake, and how many lines a question deserves belongs to the
-  // designer's sentences field, not to stretching three of them.
+test("a written answer line is the year group's line height and takes no spare room", () => {
+  // Lines that stretched into spare room printed the same answer at two
+  // spacings in one pack (12mm and 8.3mm on a Year 2 sheet, the stress test of
+  // 7 October 2026). A line is one height; how many lines a question gets
+  // belongs to the designer's sentences field, and spare room stays as paper.
   const { renderSheet } = require("../src/render.js");
   const { WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO } = require("../src/tokens");
   const html = renderSheet({
@@ -431,8 +434,13 @@ test("a written answer line grows into spare room but only so far", () => {
     zones: { a: { stack: [{ question: true, helper: "written-answers", phase: "upper", items: [{ text: "Write a rule.", sentences: 3 }] }] } },
   });
   const expected = (WRITING_LINE_MM.upper * WRITING_LINE_GROWN_RATIO).toFixed(2);
-  assert.ok(html.includes(`max-height:${expected}mm`),
-    `every ruled line should carry its growth ceiling (${expected}mm)`);
-  assert.match(html, /\.h-answers \.h-written \{ align-items: stretch; \}/,
-    "the body must be allowed to stretch, or the height never reaches the rules");
+  assert.equal(WRITING_LINE_GROWN_RATIO, 1, "a ruled line does not grow");
+  assert.ok(html.includes(`height:${WRITING_LINE_MM.upper}mm;max-height:${expected}mm`),
+    `every ruled line is exactly ${expected}mm`);
+  assert.match(html, /\.h-answers \.h-line \{ flex: none; \}/,
+    "a ruled line neither grows into spare room nor shrinks to make room");
+  assert.match(html, /\.h-answers \.h-written \{ flex: none; \}/,
+    "and the answer holding it does not grow either, or the gaps between questions would");
+  assert.ok(!/class="h-q h-written[^"]*" style="flex-grow/.test(html),
+    "no answer carries a share of spare room");
 });

@@ -34,6 +34,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
+from picture_plain import plain_bytes
 
 USER_AGENT = "lesson-resources-image-scout/2.0 (https://github.com/DynoDS/lessonv4; educational lesson-generation tool)"
 DEFAULT_OUTPUT = os.path.expanduser("~/Pictures/openverse-fetch")
@@ -275,7 +276,8 @@ def download_image(url, dest_path):
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS) as response:
         data = response.read()
-    _atomic_write(dest_path, data)
+    # Rewritten plain, so the worker who looks at it can open it (picture_plain.py).
+    _atomic_write(dest_path, plain_bytes(data))
 
 
 def decode_info(path):

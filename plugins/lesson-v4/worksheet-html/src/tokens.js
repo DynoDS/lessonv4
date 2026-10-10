@@ -12,12 +12,18 @@ const FONT = "Comic Sans MS";
 const COLOUR = {
   navy: "#17365D", // page/product identity: titles and structural rules.
   question: "#0070C0", // the question or focus. Matches the deck's title blue.
-  vocab: "#00B050", // a word that matters. This is the deck's green, carrying
-  // the deck's OTHER meaning. On slides green means both a revealed answer and
-  // a vocabulary headword; a worksheet never reveals an answer (the child
-  // writes it, the board reveals it), so only the vocabulary meaning can arise
-  // here and green is unambiguous on paper.
-  given: "#E46C0A", // material handed to the child: word banks, supplied values.
+  vocab: "#00B050", // a taught word. This is the deck's green, which on the
+  // board and on the teacher's answer sheet ALSO means a revealed answer. A
+  // pupil sheet never shows an answer, so here green is kept to a taught word
+  // and the steps panel, and nothing else may wear it: not a word bank because
+  // of its title, not a digit handed to the child inside a drawing (the shared
+  // drawings print those in ink on a sheet; see `answerColour` in
+  // shared/visuals/surface-profiles.js). A sheet that breaks this looks already
+  // marked (stress test, 7 October 2026: seven lessons of twenty).
+  given: "#E46C0A", // material handed to the child: supplied values, choices,
+  // and the edge of a word-bank card.
+  givenCard: "#FFF2CC", // the cream ground of a word-bank card, the board's own
+  // word-bank fill, so the bank on the sheet is the bank on the slide.
   worked: "#7030A0", // a worked example's frame: the edge and title of a method
   // frame that shows worked numbers, the title being words a child reads. The
   // deck's sticky and worked-example purple (the teacher's rule of 24 September
@@ -44,7 +50,8 @@ const COLOUR = {
   // ordinary prose, which would make green decoration.
 };
 
-// Deliberately absent: an `answer` colour (a worksheet never shows one) and a
+// Deliberately absent: an `answer` colour (a pupil sheet never shows one; the
+// teacher's answer sheet takes its green from the shared palette) and a
 // `scaffold` colour (scaffold carries no colour).
 
 // Point sizes. Print, so points rather than pixels.
@@ -71,6 +78,9 @@ const TYPE = {
   // worksheet goes below that, and 10 is one step clear of it.
   questionNumber: 10,
   sectionLabel: 14,
+  // A sentence a child writes a mark into (a comma, a capital letter): a size
+  // up from the words around it, so the place for the mark is easy to find.
+  writeIn: 14,
   pageTitle: 16,
 };
 
@@ -131,21 +141,27 @@ const RULE = {
   heavy: 0.8,
 };
 
-// The floor for a line a child writes on, by phase. These are the numbers a
-// zone's floor is built from, so they are deliberately generous: a line too
-// short to write on makes the whole question useless.
+// The height of a line a child writes a sentence on, by phase. It is THE
+// height, not a floor: every ruled line in a pack is this far from the next,
+// under a question, in a frame, under a claim or in a speech bubble.
+//
+// Until 9 October 2026 these were floors (8 and 6) and a line stretched to half
+// as much again whenever its block was handed spare height, so the spacing a
+// child got was decided by how much paper happened to be left under that
+// question: 12mm and 8.3mm on one Year 2 sheet, 9mm and 7.5mm on one Year 4
+// sheet (the stress test of 7 October 2026, 5 of 20 lessons). The teacher chose
+// both sizes from true-size pages of those sheets.
 const WRITING_LINE_MM = {
-  lower: 8, // Years 1 to 3
-  upper: 6, // Years 4 to 6
+  lower: 10, // Years 1 to 3
+  upper: 8, // Years 4 to 6
 };
 
-// The tallest a ruled line may grow to when a block is handed spare height.
-// A line exists to be written on, and past about half as much again the gap
-// between rules stops reading as generous and starts reading as a fault - so
-// room beyond this is left as paper rather than pushed into the rules. A sheet
-// that keeps hitting the cap is telling the designer its questions want more
-// lines, which is `sentences`, not a rendering decision.
-const WRITING_LINE_GROWN_RATIO = 1.5;
+// A ruled line does not grow. Spare height stays as paper at the foot of the
+// page, and it never becomes extra lines either: how many lines a question
+// gets says how much to write, so it comes from the question (`sentences`,
+// `lines`) and never from leftover room (the teacher, 9 October 2026). Kept as
+// a named 1 so the helpers that cap a line at its own height say why.
+const WRITING_LINE_GROWN_RATIO = 1;
 
 function cssVariables() {
   const lines = [":root {"];

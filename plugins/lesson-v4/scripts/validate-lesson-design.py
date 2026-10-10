@@ -570,6 +570,66 @@ def reject_long_dashes(node: Any, path: str) -> None:
     )
 
 
+# Words that find another slide by counting. The design is written before any
+# slide exists, and one beat becomes two or three slides with a word card set
+# between them, so a count made here is wrong by the time the teacher reads it:
+# a Year 3 rocks lesson told the teacher children would test the rocks "on the
+# slide after next", and the test was four slides on (13 of the 20 lessons in
+# the 7 October 2026 test counted slides somewhere in their notes). A beat's
+# label becomes its slides' title and stays true however many slides are added,
+# so the notes name it (the teacher, 8 October 2026: "title").
+SLIDE_POSITION = re.compile(
+    r"\b(?:next|previous|following|last|final)\s+(?:(?:one|two|three|four|few)\s+)?slides?\b"
+    r"|\bslides?\s+after\s+(?:next|this|that|it)\b"
+    r"|\bslides?\s+before\b"
+    r"|\b(?:\d+|two|three|four|five|a\s+few|a\s+couple\s+of)\s+slides\s+(?:later|on|ago|back|earlier|from\s+now)\b"
+    r"|\bin\s+(?:\d+|two|three|four|five|a\s+few)\s+slides\b"
+    r"|\bslide\s+\d+\b",
+    re.IGNORECASE,
+)
+
+
+def reject_slide_positions(root: dict[str, Any]) -> None:
+    """Notes and scripts name another part of the lesson, never count to it.
+
+    Read where the words reach a teacher or the class: every beat's
+    `speakerNotes`, the teacher orientation, and any `script`. Notes to the
+    slide designer are left alone, since that reader places the slides.
+    """
+    found: list[str] = []
+
+    def walk(value: Any, where: str, spoken: bool) -> None:
+        if isinstance(value, str):
+            # Every count in the note, so one repair pass can mend them all.
+            counts = [match.group(0) for match in SLIDE_POSITION.finditer(value)] if spoken else []
+            if counts:
+                found.append(f"{where} ({', '.join(repr(count) for count in counts)})")
+        elif isinstance(value, dict):
+            for key, item in value.items():
+                walk(item, f"{where}.{key}" if where else key,
+                     spoken or key in {"speakerNotes", "teacherOrientation", "script"})
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                walk(item, f"{where}[{index}]", spoken)
+
+    walk(root, "", False)
+    if not found:
+        return
+    shown = found[:PLACEHOLDER_REPORT_LIMIT]
+    remainder = len(found) - len(shown)
+    tail = f", and {remainder} more" if remainder else ""
+    raise ContractError(
+        f"{len(found)} note(s) or script(s) find another slide by counting. No slide exists yet, "
+        "and a beat often becomes several slides with a word card between them, so the count is "
+        "wrong by the time the teacher reads it. Name the part of the lesson by its beat label in "
+        "quotation marks, which becomes its slide title (Children test all five rocks themselves "
+        "in \"Which other rocks let water in?\"); where two beats share a label, say which (the "
+        "second Your Turn) or what it holds (the Your Turn with the L-shapes); for the end of the "
+        "lesson say the final task. The answers to a task are 'its answers'. "
+        f"At: {', '.join(shown)}{tail}"
+    )
+
+
 # The colour marks a success criterion may carry (shared/text/criteria-marks.js
 # draws them): ((a picture part)) in that part's own colour, {{a taught word}}
 # in green, <<the part to look at or decide>> in orange, **bold**. A picture
@@ -4073,6 +4133,7 @@ def run_design_checks(
     reject_unresolved_scaffold_placeholders(design, "lesson-design.json")
     reject_long_dashes(design, "lesson-design.json")
     reject_six_seven_numbers(design, "lesson-design.json")
+    reject_slide_positions(design)
     reject_unresolved_scaffold_placeholders(photos, "photo-requirements.json")
 
     root = expect_dict(design, "lesson-design.json")
@@ -4531,7 +4592,9 @@ def run_design_checks(
             "demand", "successCriteriaRefs", "stickyKnowledgeRefs", "fitPriority",
             "centralWriteOnVisualException", "contentBlocks", "answerKeyMode", "providedWorksheet",
         }
-        expect_exact_keys(worksheet, worksheet_fields, worksheet_fields, "worksheet")
+        # `taskUnitId` is optional in the schema, like a unit's `levels`, so a
+        # saved design still reads; the scaffold writes it on every new design.
+        expect_exact_keys(worksheet, worksheet_fields | {"taskUnitId"}, worksheet_fields, "worksheet")
         status = expect_string(worksheet["status"], "worksheet.status")
         mode = expect_string(worksheet["resourceMode"], "worksheet.resourceMode")
         use = expect_string(worksheet["use"], "worksheet.use")
@@ -4540,6 +4603,35 @@ def run_design_checks(
         expect(mode in WORKSHEET_RESOURCE_MODES, f"worksheet.resourceMode invalid: {mode}")
         expect(use in WORKSHEET_USES, f"worksheet.use invalid: {use}")
         expect(answer_key_mode in {"required", "not-applicable"}, f"worksheet.answerKeyMode invalid: {answer_key_mode}")
+        # Which task the sheet IS. The worksheet is planned apart from the
+        # beats, so nothing but a sentence in `demand` said which task children
+        # do on it, and the slides showed that task as a board task: a Year 6
+        # planning grid a child could only fill in on paper carried the
+        # lightning bolt (7 October 2026 test). The teacher's ruling, 8 October:
+        # the sheet sign belongs to the task that is the worksheet, and a Your
+        # Turn with its own questions on the board keeps the bolt even when the
+        # sheet may be done in its place, so that sheet names no task.
+        task_unit = worksheet.get("taskUnitId")
+        if task_unit is not None:
+            task_unit = expect_string(task_unit, "worksheet.taskUnitId")
+            tasks = {
+                unit.get("sourceUnitId")
+                for unit in sequence
+                if isinstance(unit, dict) and unit.get("kind") in LEVEL_KINDS - {"our-turn"}
+            }
+            if isinstance(ending.get("beat"), dict):
+                tasks.add(ending["beat"].get("sourceUnitId"))
+            expect(
+                task_unit in tasks,
+                f"worksheet.taskUnitId must name the task children do on the sheet, a beat they work "
+                f"on themselves or the final task, by its sourceUnitId: {task_unit}",
+            )
+        expect(
+            use != "required-task-resource" or task_unit is not None,
+            "worksheet.taskUnitId must name the task this sheet is when worksheet.use is "
+            "required-task-resource: the slides show the sheet sign on that task, and with no task "
+            "named they show it as a board task",
+        )
         validate_ref_list(worksheet["successCriteriaRefs"], "worksheet.successCriteriaRefs", set(sc_by_id))
         # The teacher, 23 September 2026: "I don't want any success criteria on
         # worksheets." They stay on the board, where children consult them.

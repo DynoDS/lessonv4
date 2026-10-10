@@ -439,3 +439,87 @@ class EssentialPictureLossIsAnnouncedTests(FinalizerFixture):
             )
         self.assertEqual(code, 0)
         self.assertIn("PICTURE_ESSENTIAL_LOST:", out.getvalue())
+
+
+class SamePhotographTwiceTests(FinalizerFixture):
+    """Two requests answered by one photograph: the second is sent back.
+
+    A Year 4 rivers lesson (7 October 2026) asked for an estuary to teach from
+    and a different one "the class has not seen"; two batches searching apart
+    each published the same aerial photograph and nothing compared them.
+    """
+
+    def sourced(self, filename, data=b"real-image-bytes", candidate_id=None):
+        selection = self.source_row(filename)
+        summary_path = Path(selection["summary_path"]); summary = json.loads(summary_path.read_text())
+        candidate = summary["results"][0]
+        Path(candidate["path"]).write_bytes(data)
+        candidate["sha256"] = hashlib.sha256(data).hexdigest(); candidate["byte_count"] = len(data)
+        if candidate_id: candidate["candidate_id"] = candidate_id; selection["candidate_id"] = candidate_id
+        summary_path.write_text(json.dumps(summary) + "\n", encoding="utf-8")
+        return {"filename": filename, "status": "sourced", "selection": selection, "staging_path": None, "reason": None}
+
+    def finalise(self, assignment, path, rows, replace="no", summary_name="summary.json"):
+        out = io.StringIO()
+        with mock.patch("sys.stdout", out), mock.patch.object(finalizer, "record_unsplash_use"):
+            code, _, summary = self.run_assignment(assignment, path, rows, replace=replace, publisher=self.publish_copy([]), summary_name=summary_name)
+        return code, out.getvalue(), json.loads(summary.read_text())
+
+    def test_the_second_arrival_of_one_photograph_is_sent_back(self):
+        req, assignment, path, photos = self.make_assignment(("unsplash/taught.jpg", "unsplash/unseen.jpg"))
+        code, text, summary = self.finalise(assignment, path, [self.sourced("unsplash/taught.jpg"), self.sourced("unsplash/unseen.jpg")])
+        self.assertEqual(code, 0)
+        self.assertEqual([entry.get("sameAs") for entry in summary["entries"]], [None, "unsplash/taught.jpg"])
+        line = next(line for line in text.splitlines() if line.startswith("PICTURE_SAME_AS: "))
+        self.assertIn("unsplash/unseen.jpg is the same photograph as unsplash/taught.jpg", line)
+        finding = Path(line.rsplit("finding file: ", 1)[1])
+        self.assertIn("unsplash/taught.jpg", finding.read_text(encoding="utf-8"))
+        # Still published: a run that never takes the repair is no worse off.
+        self.assertTrue((self.working / "unsplash/unseen.jpg").is_file())
+
+    def test_one_catalogue_photograph_at_two_sizes_is_still_the_same(self):
+        req, assignment, path, photos = self.make_assignment(("unsplash/taught.jpg", "unsplash/unseen.jpg"))
+        rows = [self.sourced("unsplash/taught.jpg", b"large-copy", "File:Estuary.jpg"), self.sourced("unsplash/unseen.jpg", b"small-copy", "File:Estuary.jpg")]
+        _, text, summary = self.finalise(assignment, path, rows)
+        self.assertEqual(summary["entries"][1].get("sameAs"), "unsplash/taught.jpg")
+
+    def test_two_pictures_from_one_website_are_not_one_photograph(self):
+        # An open-web candidate id names the site and a position, not a picture:
+        # four stress-test lessons had different pictures sharing one.
+        req, assignment, path, photos = self.make_assignment(("unsplash/chalk.jpg", "unsplash/granite.jpg"))
+        rows = [self.sourced("unsplash/chalk.jpg", b"chalk", "web-1-commons.wikimedia.org"), self.sourced("unsplash/granite.jpg", b"granite", "web-1-commons.wikimedia.org")]
+        for row in rows:
+            summary_path = Path(row["selection"]["summary_path"]); summary = json.loads(summary_path.read_text())
+            summary["results"][0].update(source="web", source_page_url="https://commons.wikimedia.org/wiki/x", licence_name="CC BY 4.0", licence_url="https://creativecommons.org/licenses/by/4.0/")
+            summary_path.write_text(json.dumps(summary) + "\n", encoding="utf-8")
+        _, text, summary = self.finalise(assignment, path, rows)
+        self.assertNotIn("PICTURE_SAME_AS", text)
+
+    def test_two_different_photographs_say_nothing(self):
+        req, assignment, path, photos = self.make_assignment(("unsplash/taught.jpg", "unsplash/unseen.jpg"))
+        rows = [self.sourced("unsplash/taught.jpg", b"one-estuary"), self.sourced("unsplash/unseen.jpg", b"another-estuary")]
+        _, text, summary = self.finalise(assignment, path, rows)
+        self.assertNotIn("PICTURE_SAME_AS", text)
+        self.assertTrue(all("sameAs" not in entry for entry in summary["entries"]))
+
+    def test_a_retired_picture_may_come_back_under_its_replacement_name(self):
+        req, assignment, path, photos = self.make_assignment(("unsplash/old-name.jpg",))
+        self.finalise(assignment, path, [self.sourced("unsplash/old-name.jpg")], summary_name="first.json")
+        # A design revision takes the old request out and asks again by a new name.
+        req, assignment, path, photos = self.make_assignment(("unsplash/new-name.jpg",))
+        _, text, summary = self.finalise(assignment, path, [self.sourced("unsplash/new-name.jpg")], summary_name="second.json")
+        self.assertNotIn("PICTURE_SAME_AS", text)
+
+    def test_a_repair_that_lands_on_the_same_photograph_tells_the_teacher(self):
+        req, assignment, path, photos = self.make_assignment(("unsplash/taught.jpg", "unsplash/unseen.jpg"))
+        rows = [self.sourced("unsplash/taught.jpg"), self.sourced("unsplash/unseen.jpg")]
+        self.finalise(assignment, path, rows, summary_name="first.json")
+        receipt = finalizer.receipt_path(self.working, "unsplash/unseen.jpg")
+        (self.working / "unsplash/unseen.jpg").unlink()
+        repair = dict(assignment); repair["entries"] = [assignment["entries"][1]]
+        repair["repair"] = {"previous_receipt": str(receipt), "previous_receipt_sha256": hashlib.sha256(receipt.read_bytes()).hexdigest()}
+        repair_path = self.root / "repair.json"; repair_path.write_text(json.dumps(repair) + "\n", encoding="utf-8")
+        _, text, summary = self.finalise(repair, repair_path, [rows[1]], replace="yes", summary_name="repair.json")
+        line = next(line for line in text.splitlines() if line.startswith("PICTURE_SAME_AS: "))
+        self.assertIn("its one repair is spent", line)
+        self.assertIn("Tell the teacher", line)

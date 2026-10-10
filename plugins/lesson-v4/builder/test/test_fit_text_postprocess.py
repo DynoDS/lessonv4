@@ -633,3 +633,91 @@ def test_a_sign_with_no_words_beside_it_stays_where_it_was_drawn():
         MODULE.process(str(path))
         sign = next(s for s in Presentation(path).slides[0].shapes if s.name == "CardSign")
         assert (sign.left, sign.top, sign.height) == drawn
+
+
+# A fraction is written top and bottom on the board (the teacher, 9 October
+# 2026). It goes in once every box has its size, as PowerPoint's own fraction,
+# with the typed form kept as the fallback another program shows.
+M_F = "{http://schemas.openxmlformats.org/officeDocument/2006/math}f"
+MC_FALLBACK = "{http://schemas.openxmlformats.org/markup-compatibility/2006}Fallback"
+A_T = "{http://schemas.openxmlformats.org/drawingml/2006/main}t"
+A_RPR = "{http://schemas.openxmlformats.org/drawingml/2006/main}rPr"
+
+
+def fitted(path):
+    MODULE.process(str(path), floor_pt=18)
+    return Presentation(str(path))
+
+
+def fraction_sizes(shape):
+    return [
+        int(rpr.get("sz"))
+        for fraction in shape._element.iter(M_F)
+        for rpr in fraction.iter(A_RPR)
+        if rpr.get("sz")
+    ]
+
+
+def test_a_typed_fraction_is_stacked_and_keeps_its_typed_form_as_the_fallback():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "fractions.pptx"
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_box(slide, "Text 1", "Chidi has eaten 1/2 of a bar and Ali has eaten 2/4 of a bar.", 0.5, 0.5, 6, 1.1, size=24)
+        add_box(slide, "Text 2", "We met on 9/10/2026.", 0.5, 3, 6, 1, size=24)
+        prs.save(str(path))
+        shapes = fitted(path).slides[0].shapes
+        assert len(list(shapes[0]._element.iter(M_F))) == 2
+        fallbacks = [t.text for f in shapes[0]._element.iter(MC_FALLBACK) for t in f.iter(A_T)]
+        assert fallbacks == ["1/2", "2/4"]
+        # A date is not a fraction.
+        assert not list(shapes[1]._element.iter(M_F))
+
+
+def test_a_box_with_room_takes_a_full_size_fraction_and_a_tight_one_keeps_its_words():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "sizes.pptx"
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_box(slide, "Text 1", "(1) 1/2 = ?/10", 0.5, 0.5, 6, 2.0, size=30)
+        tight = "Chidi has eaten 1/2 of a bar and Ali has eaten 2/4 of a bar."
+        add_box(slide, "Text 2", tight, 0.5, 3, 6, 0.95, size=24)
+        add_box(slide, "Text 3", tight.replace("1/2", "half").replace("2/4", "half"), 0.5, 5, 6, 0.95, size=24)
+        prs.save(str(path))
+        roomy, tight_box, plain = fitted(path).slides[0].shapes
+        assert set(fraction_sizes(roomy)) == {run_sizes(roomy)[0] * 100}, "room to spare: the fraction is the size of its words"
+        smallest = MODULE.FRACTION_SCALES[-1]
+        assert set(fraction_sizes(tight_box)) == {int(run_sizes(tight_box)[0] * 100 * smallest)}
+        # The words are the size they would be with no fraction in them.
+        assert run_sizes(tight_box)[0] == run_sizes(plain)[0]
+
+
+def test_a_deck_fitted_twice_measures_its_stacked_fractions_and_stacks_nothing_twice():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "twice.pptx"
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        add_box(slide, "Text 1", "Shade 3/4 on the top bar and 6/8 on the bottom bar.", 0.5, 0.5, 6, 1.1, size=24)
+        prs.save(str(path))
+        first = fitted(path).slides[0].shapes[0]
+        size_once, count_once = run_sizes(first), len(list(first._element.iter(M_F)))
+        second = fitted(path).slides[0].shapes[0]
+        assert len(list(second._element.iter(M_F))) == count_once == 2
+        assert run_sizes(second) == size_once
+
+
+def test_a_fraction_in_a_table_cell_is_stacked_at_the_size_that_keeps_its_row():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "table.pptx"
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        frame = slide.shapes.add_table(2, 2, Inches(0.5), Inches(0.5), Inches(6), Inches(1.5))
+        cell = frame.table.cell(1, 1)
+        cell.text = ""
+        run = cell.text_frame.paragraphs[0].add_run()
+        run.text = "1/2 = 2/4"
+        run.font.size = Pt(20)
+        prs.save(str(path))
+        table = fitted(path).slides[0].shapes[0]
+        assert len(list(table._element.iter(M_F))) == 2
+        assert set(fraction_sizes(table)) == {int(2000 * MODULE.FRACTION_SCALES[-1])}

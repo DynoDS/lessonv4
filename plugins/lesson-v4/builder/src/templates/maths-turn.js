@@ -4,6 +4,7 @@ const { FONT, COLOURS, SIZE_CEILINGS, FIT, CARD } = require('../styles');
 const { drawHeader } = require('../headers');
 const { colourInlineLabels } = require('../question-labels');
 const { drawContent } = require('../content');
+const { noteAnswerSpace } = require('../content/_figure-boxes');
 const {
   baseColourForRole,
   presentationRuns
@@ -128,7 +129,8 @@ function drawMathsTurn(pptx, slide, data, ctx) {
     headerStyle: 'title',
     title: titleOverride,
     instruction: data.instruction,
-    signal: data.signal
+    signal: data.signal,
+    doSign: data.doSign
   }, ctx);
 
   const questions = Array.isArray(data.questions) ? data.questions : [];
@@ -218,6 +220,9 @@ function drawQuestions(slide, questions, box, pptx, ctx, options) {
     });
     box = { x: box.x, y: box.y, w: box.w, h: hugH };
   }
+  // The blank after an open sum is where the teacher writes the answer, so the
+  // decoration check is told that part of this card is not a clear place.
+  noteAnswerSpace(ctx, box, entries.flatMap(function (entry) { return String(entry.text).split('\n'); }));
   const rowH = box.h / questions.length;
   // Lettered only for a teacher-led set of two or more - see
   // measureQuestionsHeight above for why a single teacher-led question

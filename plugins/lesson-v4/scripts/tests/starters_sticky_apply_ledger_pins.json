@@ -5300,7 +5300,7 @@
     },
     {
      "file": "agents/working-wall-designer.md",
-     "text": "On a sticky-knowledge card the builder fits the photo into a square box, so a wide or tall photo distorts. Prefer a roughly square photo there, or leave `photo` null.",
+     "text": "Use it: every card prints a photograph at its own shape, never squeezed or stretched. Its shape is no reason to leave it off or to carry it as a labelled picture with no labels.",
      "section": {
       "heading": "## Edge Cases",
       "occurrence": 0,

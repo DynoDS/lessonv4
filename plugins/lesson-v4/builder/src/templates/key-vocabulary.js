@@ -143,7 +143,8 @@ function drawKeyVocabulary(pptx, slide, data, ctx) {
     headerStyle: 'title',
     title: data.title || 'Key Vocabulary',
     instruction: data.instruction,
-    signal: data.signal
+    signal: data.signal,
+    doSign: data.doSign
   }, ctx);
 
   const words = Array.isArray(data.words) ? data.words : [];

@@ -9,6 +9,7 @@ const {
   titleBarHeightInches,
   fitReferenceTableSize,
   referenceColumnWidths,
+  comparesTwoColumns,
   tryReadPhoto,
   photoAspect,
   TITLE_BAR_LINE_HEIGHT,
@@ -27,6 +28,19 @@ const { plainCriteria } = require("../../shared/text/criteria-marks");
 // Arrows come from "Wall Arrows" (shared.js says why).
 const FONT_STACK_FALLBACK = "'Wall Arrows', 'Segoe Print', cursive";
 const WALL_TABLE_IMAGE_HEIGHT_CAP_IN = 1.6;
+// A table that sets two things side by side gives each its own colour, the
+// board's first two category colours: its heading, and its words in a key row.
+// The teacher's Athens and Sparta sheet (10 October 2026): one table, a picture
+// above each city, the big idea as the top row in the city's colour.
+const COMPARED_THEMES = [
+  { main: "0070C0", fill: "EAF3FB" },
+  { main: "E46C0A", fill: "FEF1E6" },
+];
+// Spare height a row of pictures may take, kept clear of the page edge.
+const PICTURE_ROW_SAFETY_IN = 0.15;
+// What a row of pictures is offered, most first; the least keeps a full
+// table's words whole.
+const PICTURE_ROW_OFFERS_IN = [2.8, 2.4, 2.0, 1.6, 1.2];
 
 // Local title-fit wrapper used by this renderer family.
 function titlePtFor(card, style) {
@@ -76,7 +90,7 @@ function renderReferenceTable(card, style, specDir, ctx = {}) {
   );
 
   const titlePt = fitTitleSize(card.title || "", card.page.size === "A3" ? style.sizes.a3TitlePt : style.sizes.a4TitlePt, card.page.size, card.page.orientation, style);
-  const colWidths = referenceColumnWidths(card.columns.length, card.page.size, card.page.orientation, style);
+  const colWidths = referenceColumnWidths(card.columns.length, card.page.size, card.page.orientation, style, textRows);
   const rowImageMaxHeight = card.rows.length <= 2
     ? 1.8
     : WALL_TABLE_IMAGE_HEIGHT_CAP_IN;
@@ -87,7 +101,15 @@ function renderReferenceTable(card, style, specDir, ctx = {}) {
   // A3-only builder: use the fixed A3 value below.
   const tablePhotoHeight = tablePhoto ? 1.35 : 0;
 
-  const rowMinHeights = resolvedRows.map((row) => {
+  // A row that is only pictures bends to the page. It is offered a generous
+  // height and keeps the most the words can spare at their smallest size, so
+  // the pictures are seen across the room and no word is lost for them; then
+  // it takes whatever height the words leave once they are sized.
+  const isPictureRow = (row) => row.some((cell) => cell && typeof cell === "object" && cell.image)
+    && row.every((cell) => (cell && typeof cell === "object" && cell.image) || String(cell == null ? "" : cell).trim() === "");
+  const pictureRows = resolvedRows.map(isPictureRow);
+  const minHeightsFor = (promised) => resolvedRows.map((row, rowIdx) => {
+    const rowCap = pictureRows[rowIdx] ? promised : rowImageMaxHeight;
     let maxHeight = 0;
     row.forEach((cell, idx) => {
       if (cell && typeof cell === "object" && cell.image) {
@@ -95,24 +117,30 @@ function renderReferenceTable(card, style, specDir, ctx = {}) {
         let wIn = Math.max(0.6, colIn - 0.35);
         const aspect = cell.aspect || 1;
         let hIn = wIn / aspect;
-        if (hIn > rowImageMaxHeight) hIn = rowImageMaxHeight;
+        if (hIn > rowCap) hIn = rowCap;
         maxHeight = Math.max(maxHeight, hIn + 0.3);
       }
     });
     return maxHeight;
   });
 
-  const bodyPt = fitReferenceTableSize(
+  // The two things a side-by-side table compares are named as large as its words.
+  const compared = comparesTwoColumns(card.columns.length, textRows);
+  const headerRatio = compared ? 1 : 0.75;
+  const fitReport = {};
+  const fitWith = (rowMinHeights, fromPt) => fitReferenceTableSize(
     card.columns,
     textRows,
     colWidths,
-    defaultBodyPt(card, style),
+    fromPt,
     minBodyPt(card, style),
     card.page.size,
     card.page.orientation,
     style,
     {
       rowMinHeights,
+      report: fitReport,
+      headerRatio,
       titleAreaInches: titleBarHeightInches(titlePt) + tablePhotoHeight + (tablePhoto ? 0.2 : 0),
       label: cardLabel(card),
       // A portrait table trades width for height, so three measured lines are
@@ -121,7 +149,25 @@ function renderReferenceTable(card, style, specDir, ctx = {}) {
       lineHeight: REFERENCE_TABLE_LINE_HEIGHT,
     }
   );
-  const headerPt = Math.max(20, Math.round(bodyPt * 0.75));
+  // Whether the words fit at their smallest size with this much promised to
+  // the pictures; asked quietly, since only the last answer is the build's.
+  const fitsAtFloor = (promised) => {
+    const warn = console.warn;
+    let refused = false;
+    console.warn = () => { refused = true; };
+    try {
+      fitWith(minHeightsFor(promised), minBodyPt(card, style));
+    } finally {
+      console.warn = warn;
+    }
+    return !refused;
+  };
+  const promised = pictureRows.some(Boolean)
+    ? PICTURE_ROW_OFFERS_IN.find(fitsAtFloor) || PICTURE_ROW_OFFERS_IN[PICTURE_ROW_OFFERS_IN.length - 1]
+    : rowImageMaxHeight;
+  const rowMinHeights = minHeightsFor(promised);
+  const bodyPt = fitWith(rowMinHeights, defaultBodyPt(card, style));
+  const headerPt = Math.max(20, Math.round(bodyPt * headerRatio));
 
   // Title bar text colour matches titleBarText (both FFFFFF), so
   // titleBarHtml's own text colour is used as-is.
@@ -144,7 +190,20 @@ function renderReferenceTable(card, style, specDir, ctx = {}) {
     html += `<div style="text-align:center;padding:${mm(90 / 1440)}mm 0;">${imgTag(tablePhoto, mm(wIn), mm(hIn), "margin:0 auto;")}</div>`;
   }
 
-  html += referenceTableHtml(card.columns, resolvedRows, headerPt, bodyPt, colWidths, style, { imageMaxHeight: rowImageMaxHeight });
+  // A row that is only pictures takes the height the words left over: the
+  // words are sized first and a short table used to end half way down the
+  // sheet with its pictures at the 1.6in cap. Each picture still stops at its
+  // column's width, and a row that mixes words and pictures keeps the cap.
+  const spare = (fitReport.available || 0) - (fitReport.height || 0) - PICTURE_ROW_SAFETY_IN;
+  const share = pictureRows.some(Boolean) && spare > 0 ? spare / pictureRows.filter(Boolean).length : 0;
+  const rowImageMaxHeights = resolvedRows.map((row, idx) => (pictureRows[idx] ? promised + share : rowImageMaxHeight));
+  const keyRows = new Set((Array.isArray(card.keyRows) ? card.keyRows : []).map(Number));
+  html += referenceTableHtml(card.columns, resolvedRows, headerPt, bodyPt, colWidths, style, {
+    imageMaxHeight: rowImageMaxHeight,
+    rowImageMaxHeights,
+    columnThemes: compared ? [null, COMPARED_THEMES[0], COMPARED_THEMES[1]] : [],
+    keyRows,
+  });
   return html;
 }
 
@@ -154,12 +213,14 @@ function referenceTableHtml(columns, rows, headerPt, bodyPt, columnWidths, style
   const borderCss = `${mm(8 / 8 / 72)}mm solid ${hash(style.colours.referenceTableGrid)}`;
   const cellPadMm = mm(200 / 1440);
   const totalDxa = columnWidths.reduce((a, b) => a + b, 0);
+  const themes = opts.columnThemes || [];
+  const keyRows = opts.keyRows || new Set();
   const colsHtml = columnWidths.map((w) => `<col style="width:${mm(w / 1440)}mm;">`).join("");
 
   const headerHtml =
     `<tr>` +
-    columns.map((header) =>
-      `<th style="box-sizing:border-box;border:${borderCss};padding:${cellPadMm}mm;background:${hash(style.colours.referenceTableHeaderFill)};` +
+    columns.map((header, headerIdx) =>
+      `<th style="box-sizing:border-box;border:${borderCss};padding:${cellPadMm}mm;background:${hash((themes[headerIdx] && themes[headerIdx].main) || style.colours.referenceTableHeaderFill)};` +
       `text-align:center;vertical-align:middle;font-family:'${style.fonts.title}', ${FONT_STACK_FALLBACK};font-weight:bold;` +
       `font-size:${headerPt}pt;line-height:${REFERENCE_TABLE_LINE_HEIGHT};color:${hash(style.colours.referenceTableHeaderText)};">${esc(header)}</th>`
     ).join("") +
@@ -177,14 +238,18 @@ function referenceTableHtml(columns, rows, headerPt, bodyPt, columnWidths, style
         let wIn = Math.max(0.6, colIn - 0.35);
         const aspect = cell.aspect || 1;
         let hIn = wIn / aspect;
-        const maxHIn = opts.imageMaxHeight || 1.8;
+        const maxHIn = (opts.rowImageMaxHeights && opts.rowImageMaxHeights[idx]) || opts.imageMaxHeight || 1.8;
         if (hIn > maxHIn) { hIn = maxHIn; wIn = hIn * aspect; }
         innerHtml = imgTag(cell.image, mm(wIn), mm(hIn), "margin:0 auto;");
       } else {
-        const textColour = cellIdx === 0 ? style.colours.referenceTableHeaderFill : style.colours.body;
+        // A key row says each column's main point in that column's colour.
+        const keyed = keyRows.has(idx) && cellIdx > 0;
+        const textColour = cellIdx === 0 ? style.colours.referenceTableHeaderFill
+          : keyed ? ((themes[cellIdx] && themes[cellIdx].main) || style.colours.referenceTableHeaderFill) : style.colours.body;
         innerHtml = `<div style="font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};font-weight:bold;font-size:${bodyPt}pt;line-height:${REFERENCE_TABLE_LINE_HEIGHT};color:${hash(textColour)};">${markedHtml(cell)}</div>`;
       }
-      return `<td style="box-sizing:border-box;border:${borderCss};padding:${cellPadMm}mm;background:${hash(fillColour)};text-align:center;vertical-align:middle;">${innerHtml}</td>`;
+      const cellFill = keyRows.has(idx) && cellIdx > 0 && themes[cellIdx] ? themes[cellIdx].fill : fillColour;
+      return `<td style="box-sizing:border-box;border:${borderCss};padding:${cellPadMm}mm;background:${hash(cellFill)};text-align:center;vertical-align:middle;">${innerHtml}</td>`;
     }).join("");
     return `<tr>${cellsHtml}</tr>`;
   }).join("");
@@ -270,7 +335,8 @@ function renderEquivalenceGrid(card, style, specDir, ctx = {}) {
 
 // ─── Vocab chips: 2-column grid of white pills, green 3pt outline ───────
 // Chip autofit loop (40pt down to 24pt floor, 0.6 ratio), word bold green
-// centred, photo chips put the word left and a square image right.
+// centred, photo chips put the word left and the photograph, at its own
+// shape, right. The chips share the whole page between them.
 
 function renderVocabChips(card, style, specDir, ctx = {}) {
   const titleText = card.title || "Vocabulary";
@@ -307,34 +373,60 @@ function renderVocabChips(card, style, specDir, ctx = {}) {
   // the card.
   //
   // Size it from the room the rows actually have. Four chips make two rows and a
-  // picture can be inches across; twelve chips make six rows and it cannot. The
-  // word is what a child reads first, so the picture never takes more than a
-  // little over a third of the pill's width, and it never drops below the size
-  // it used to be.
+  // picture can be inches across; twelve chips make six rows and it cannot.
+  //
+  // Every photograph was then drawn in a square whatever its shape, so a wide
+  // hillside was squeezed thin and a tall statue squashed fat, and the chips
+  // stopped two thirds of the way down the sheet. His answers of 10 October
+  // 2026, from pictures of an Athens and Sparta word sheet: a photograph keeps
+  // its own shape, as tall as its row allows, and a wide one spreads into the
+  // blank beside its word; the chips fill the page; every chip is one size.
   const rowCount = Math.ceil(chips.length / cols);
   const dimsIn = printableInches(card.page.size, card.page.orientation, style);
   const rowHeightIn = (dimsIn.height - titleBarHeightInches(titlePt)) / rowCount;
+  const pillInnerIn = pillInnerWidthDxa / 1440;
   const OLD_SIDE_IN = 44 / 96;
-  const imageTrueSideIn = hasPhotoChip
-    ? Math.max(OLD_SIDE_IN, Math.min(rowHeightIn * 0.62, (pillInnerWidthDxa / 1440) * 0.36))
-    : 0;
+  // The row less the chip's own gaps, border and padding.
+  const imageMaxHeightIn = Math.max(OLD_SIDE_IN, rowHeightIn - 0.6);
 
-  // Chip text autofit - pick a size that keeps the longest word on one line
-  // inside the pill, with a floor of 24pt. The picture is measured first, so the
-  // word is fitted to what is genuinely left beside it.
-  const usableInches = (pillInnerWidthDxa / 1440) - 0.4 - (hasPhotoChip ? imageTrueSideIn + 0.3 : 0);
-  let chipPt = 40;
-  for (let pt = 40; pt >= 24; pt -= 2) {
-    const widthIn = (longestChipChars * pt * 0.6) / 72;
-    if (widthIn <= usableInches) { chipPt = pt; break; }
-    chipPt = pt;
-  }
+  // Chip text autofit - the largest size that keeps the longest word on one
+  // line beside the picture, with a floor of 24pt. A chip in a tall row has a
+  // bigger word, as it has a bigger picture.
+  const maxChipPt = Math.max(40, Math.min(64, Math.round(rowHeightIn * 72 * 0.2)));
+  const wordWidthIn = (pt) => (longestChipChars * pt * 0.6) / 72;
+  const wordRoomIn = (pictureWidthIn) => pillInnerIn - 0.4 - (hasPhotoChip ? pictureWidthIn + 0.3 : 0);
+  const fitChipPt = (roomIn) => {
+    for (let pt = maxChipPt; pt > 24; pt -= 2) {
+      if (wordWidthIn(pt) <= roomIn) return pt;
+    }
+    return 24;
+  };
 
-  const imageCellWidthDxa = Math.round(imageTrueSideIn * 1440) + 200;
+  // The word is what a child reads first. A picture is sure of a little over a
+  // third of the chip, as it always was; a wide photograph may take up to 55%,
+  // but only room the word does not need at the size it would otherwise print
+  // (40pt at most), so a long word is never shrunk to make a photograph wider.
+  const sureWidthIn = Math.min(imageMaxHeightIn, pillInnerIn * 0.36);
+  const keptWordPt = Math.min(40, fitChipPt(wordRoomIn(sureWidthIn)));
+  const imageMaxWidthIn = Math.max(sureWidthIn, Math.min(pillInnerIn * 0.55, pillInnerIn - 0.7 - wordWidthIn(keptWordPt)));
+  const pictureSizeIn = (aspect) => {
+    const w = Math.min(imageMaxHeightIn * aspect, imageMaxWidthIn);
+    return { w, h: w / aspect };
+  };
+  const chipPhotos = chips.map((chip) => {
+    const buf = chip.photo ? tryReadPhoto(specDir, chip.photo) : null;
+    return buf ? { buf, ...pictureSizeIn(photoAspect(buf) || 1) } : null;
+  });
+  // One picture column down the sheet, as wide as the widest photograph.
+  const widestPictureIn = chipPhotos.reduce((m, p) => Math.max(m, p ? p.w : 0), 0);
+  const chipPt = fitChipPt(wordRoomIn(widestPictureIn));
+
+  const imageCellWidthDxa = Math.round(widestPictureIn * 1440) + 200;
   const wordCellWidthDxa = pillInnerWidthDxa - imageCellWidthDxa;
 
-  const buildPillHtml = (chip) => {
-    const photoBuf = chip.photo ? tryReadPhoto(specDir, chip.photo) : null;
+  const buildPillHtml = (chip, index) => {
+    const picture = chipPhotos[index];
+    const photoBuf = picture ? picture.buf : null;
 
     const wordHtml =
       `<div style="text-align:${photoBuf ? "left" : "center"};padding:${mm(60 / 1440)}mm 0;` +
@@ -347,7 +439,7 @@ function renderVocabChips(card, style, specDir, ctx = {}) {
       const inner =
         `<div style="display:flex;align-items:center;width:100%;">` +
         `<div style="box-sizing:border-box;width:${mm(wordCellWidthDxa / 1440)}mm;padding:${mm(80 / 1440)}mm ${mm(80 / 1440)}mm ${mm(80 / 1440)}mm ${mm(160 / 1440)}mm;">${wordHtml}</div>` +
-        `<div style="box-sizing:border-box;width:${mm(imageCellWidthDxa / 1440)}mm;padding:${mm(80 / 1440)}mm ${mm(160 / 1440)}mm ${mm(80 / 1440)}mm ${mm(80 / 1440)}mm;text-align:right;">${imgTag(photoBuf, mm(imageTrueSideIn), mm(imageTrueSideIn), "display:inline-block;")}</div>` +
+        `<div style="box-sizing:border-box;width:${mm(imageCellWidthDxa / 1440)}mm;padding:${mm(80 / 1440)}mm ${mm(160 / 1440)}mm ${mm(80 / 1440)}mm ${mm(80 / 1440)}mm;text-align:right;">${imgTag(photoBuf, mm(picture.w), mm(picture.h), "margin-left:auto;")}</div>` +
         `</div>`;
       return panelHtml(inner, pillFill, accent, style, card.page.size, card.page.orientation, { borderEighths: 24, paddingDxa: 80 });
     }
@@ -360,15 +452,18 @@ function renderVocabChips(card, style, specDir, ctx = {}) {
   const rowsHtml = [];
   for (let i = 0; i < chips.length; i += cols) {
     const rowChips = [chips[i], chips[i + 1] || null];
-    const cellsHtml = rowChips.map((chip) =>
-      `<div style="box-sizing:border-box;width:${mm(colWidthDxa / 1440)}mm;padding:${mm(120 / 1440)}mm ${mm(cellPadding / 1440)}mm;display:flex;align-items:center;">` +
-      (chip ? buildPillHtml(chip) : "") +
+    // Each chip is as tall as its row, so two chips side by side are one size
+    // whatever the shape of their photographs.
+    const cellsHtml = rowChips.map((chip, offset) =>
+      `<div style="box-sizing:border-box;width:${mm(colWidthDxa / 1440)}mm;padding:${mm(120 / 1440)}mm ${mm(cellPadding / 1440)}mm;display:flex;align-items:stretch;">` +
+      (chip ? buildPillHtml(chip, i + offset) : "") +
       `</div>`
     );
-    rowsHtml.push(`<div style="display:flex;align-items:stretch;width:100%;">${cellsHtml.join("")}</div>`);
+    rowsHtml.push(`<div style="display:flex;align-items:stretch;width:100%;flex:1 1 0;min-height:0;">${cellsHtml.join("")}</div>`);
   }
 
-  return titleBarEl + `<div style="width:100%;">${rowsHtml.join("")}</div>`;
+  // The rows share the page under the title between them (shared.js PAGE_CSS).
+  return titleBarEl + `<div class="wall-body" style="width:100%;display:flex;flex-direction:column;">${rowsHtml.join("")}</div>`;
 }
 
 module.exports = { renderReferenceTable, renderEquivalenceGrid, renderVocabChips };

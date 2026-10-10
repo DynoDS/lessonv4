@@ -26,6 +26,8 @@ const { sanitizeHouseStyle } = require("../../shared/text/house-style");
 const { sixSevenNumbers, sixSevenMessage } = require("../../shared/text/no-six-seven");
 
 const { renderSheet } = require("../src/render");
+const { withBoardColours } = require("../src/board-colours");
+const { withTaughtChips } = require("../src/taught-chips");
 
 // Whether a printed page actually fits is settled in src/settle-fit.js: the
 // browser's own measurements are fed back into the zones that ran short, then a
@@ -44,6 +46,9 @@ const {
 const { resolveImages } = require("../src/images");
 const { prepareWorksheetDecorations } = require("../src/decorations");
 const { recordingProblems, recordingAdvisories, buildSlips } = require("../src/slips");
+const { sameQuestionProblems } = require("../src/across-levels");
+const { withAnswersInBooks } = require("../src/answer-place");
+const { splitQuestionProblems } = require("../src/parts-together");
 const { answerSheetHtml, buildAnswerSheet, longAnswerAdvisories } = require("../src/answer-sheet");
 const {
   STAND_IN_TIERS,
@@ -115,6 +120,35 @@ function whatAClassReads(spec) {
   return rest;
 }
 
+// A drawing the board coloured prints in that colour on the sheet (see
+// src/board-colours.js). The deck's spec sits beside the sheet's in a lesson
+// folder; where there is none, or it cannot be read, the sheet builds as
+// written, because a missing deck is not a fault in a worksheet.
+function withTheBoardsColours(spec, specDir) {
+  let lesson;
+  try {
+    lesson = JSON.parse(fs.readFileSync(path.join(specDir, "lesson.json"), "utf8"));
+  } catch {
+    return spec;
+  }
+  const { spec: coloured, adopted } = withBoardColours(spec, lesson);
+  if (adopted) console.log(`Board colours: ${adopted} drawing${adopted === 1 ? "" : "s"} took the colour the slides use.`);
+  return coloured;
+}
+
+// A word-bank chip that is one of the lesson's taught words prints green (see
+// src/taught-chips.js). The words come from the lesson design beside the sheet;
+// without one the bank prints as written.
+function withTheLessonsTaughtWords(spec, specDir) {
+  let design;
+  try {
+    design = JSON.parse(fs.readFileSync(path.join(specDir, "lesson-design.json"), "utf8"));
+  } catch {
+    return spec;
+  }
+  return withTaughtChips(spec, design).spec;
+}
+
 function readSpec(file) {
   let raw;
   let spec;
@@ -178,7 +212,7 @@ async function main() {
   // is said to be left on. The class's own sheet is never built around
   // (`returned` naming a present Expected sheet is refused, and so is a return
   // with no Expected sheet to print in its place).
-  const spec = readSpec(specPath);
+  const spec = withTheLessonsTaughtWords(withTheBoardsColours(readSpec(specPath), specDir), specDir);
   const returnedFaults = returnedProblems(spec);
   const back = withExpectedStandingIn(spec);
   for (const entry of back.noExpected) {
@@ -326,6 +360,19 @@ async function main() {
     }
     return;
   }
+  // The browser measures every piece before a shape is chosen, exactly as the
+  // designer's check did (src/browser-measure.js), so the build lays out the
+  // page the check passed. With no browser the arithmetic stands and the pack
+  // is reported unverified further down, as before.
+  if (!pdfBlocker()) {
+    const toMeasure = worksheet;
+    await require("../src/browser-measure").calibrate(() => {
+      const resolved = resolveAutoLayouts(toMeasure).worksheet;
+      for (const sheet of sheetsOf(resolved)) tightnessOf(sheet.spec);
+      checkWorksheet(resolved);
+    });
+  }
+
   const omitted = [];
   for (;;) {
     try {
@@ -337,6 +384,12 @@ async function main() {
             `(${choice.orientation}), ${choice.fillPct}% full.` +
             (choice.splitFrom
             ? ` The engine set it out in ${choice.zoneCount} zones, in the order written, because it did not fit in ${choice.splitFrom}.`
+            : "") +
+          (choice.pictureScale
+            ? ` The photograph is drawn at ${Math.round(choice.pictureScale * 100)}% of its full size so the sheet stays in one column: the engine's choice, and it needs no repair. State "imageHeightMm" to size it yourself.`
+            : "") +
+          (choice.claimLook === "panel"
+            ? " The page was too tight for a child's claim drawn as a figure with a speech bubble, so it prints as a flat panel with the name: the engine's choice, and it needs no repair."
             : "")
         );
       }
@@ -376,6 +429,33 @@ async function main() {
         "Printed with no mark and no question slips."
     );
     diagnostic("RECORDING_CHANGED", "content", { sheet: problem.sheet }, problem.message);
+  }
+  // A question on a pencil sheet with nowhere to answer is refused at the
+  // designer's check. One that reaches here is printed, sent to the book and
+  // said out loud: a child is never handed "draw it" under a pencil with no
+  // room, and one question never withholds a pack (src/answer-place.js).
+  {
+    const mended = withAnswersInBooks(worksheet);
+    worksheet = mended.worksheet;
+    for (const change of mended.changed) {
+      const message =
+        `"${change.question}" had nowhere to answer on a pencil sheet, so it is ` +
+        `printed with the book mark and "Write your answer in your book."`;
+      console.log(`ANSWER_SENT_TO_BOOK: ${sheetLabel(change.sheet)} - ${message}`);
+      diagnostic("ANSWER_SENT_TO_BOOK", "content", { sheet: change.sheet }, message);
+    }
+  }
+  // Named, never refused: the designer's check refuses this while it can still
+  // be put right, and a finished pack is not withheld over a count of lines.
+  try {
+    for (const problem of sameQuestionProblems(sheetsOf(worksheet))) {
+      console.log(`${problem.signal}: ${problem.message}`);
+    }
+    for (const problem of splitQuestionProblems(sheetsOf(worksheet))) {
+      console.log(`${problem.signal}: ${problem.message}`);
+    }
+  } catch {
+    // A sheet that cannot be read yet is reported by the checks below.
   }
   for (const advisory of recordingAdvisories(worksheet)) {
     const label = sheetLabel(advisory.sheet);
@@ -567,8 +647,18 @@ async function main() {
     const across = result.cols === 2 ? "2 across" : "1 across";
     console.log(
       `SLIPS: ${sheet.label} - ${result.cols * result.rows} slips a page ` +
-        `(${across}, ${result.rows} down), printed in place of the sheet.`
+        `(${across}, ${result.rows} down), printed in place of the sheet.` +
+        (result.claimLook === "panel"
+          ? " A child's claim prints as a flat panel with the name here, because the figure with a speech bubble would have meant fewer slips on the page: the engine's choice, and it needs no repair."
+          : "") +
+        (result.picture ? " A small picture sits in the corner of each slip." : "")
     );
+    if (result.pictureLeftOff) {
+      console.log(
+        `SLIP_PICTURE_LEFT_OFF: ${sheet.label} - the corner picture is not printed, because ${result.pictureLeftOff}. ` +
+          `It is decoration, so the slips are complete without it and nothing needs repair.`
+      );
+    }
   };
 
   const blocker = pdfBlocker();

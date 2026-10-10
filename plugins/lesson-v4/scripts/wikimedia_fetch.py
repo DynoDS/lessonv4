@@ -13,6 +13,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
+from picture_plain import plain_bytes
 
 USER_AGENT = "lesson-resources-image-scout/2.0 (https://github.com/DynoDS/teaching-plugins; educational lesson-generation tool)"
 DEFAULT_OUTPUT = os.path.expanduser("~/Pictures/wikimedia-fetch")
@@ -200,8 +201,27 @@ def search_commons_once(query, reserve, thumb_width=BOARD_WIDTH_PX):
     except OSError as exc:
         raise SourceFailure(f"could not reach Wikimedia Commons: {exc}", "transport") from exc
     pages = data.get("query", {}).get("pages", {})
+    return candidates_in_rank_order(list(pages.values()) if isinstance(pages, dict) else list(pages or []))
+
+
+def candidates_in_rank_order(pages):
+    """The allowed-licence candidates, Commons' best match first.
+
+    Commons answers a search with its pages keyed by page, in file-name order,
+    and puts each one's place in the ranking in `index`. Read as they arrive,
+    the first three downloaded were the first three in the alphabet: a search
+    for "cartesian quadrants" saved "646px-...", "A Quadrant" and "Basadur
+    Quadrants" while Commons' own first choice, the plain four-quadrant
+    diagram, sat fifth and was never fetched; and a search for a file by its
+    exact name still saved "Acardiac Foetus" ahead of it (7 October 2026). A
+    page with no `index` keeps its place after the ranked ones.
+    """
+    def rank(page):
+        index = page.get("index") if isinstance(page, dict) else None
+        return index if isinstance(index, int) and not isinstance(index, bool) else float("inf")
+
     output = []
-    for page in pages.values() if isinstance(pages, dict) else pages:
+    for page in sorted(pages, key=rank):
         info_list = page.get("imageinfo") or []
         if not info_list: continue
         info = info_list[0]; meta = info.get("extmetadata", {})
@@ -247,7 +267,8 @@ def download_image(url, dest_path):
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS) as response:
         data = response.read()
-    _atomic_write(dest_path, data)
+    # Rewritten plain, so the worker who looks at it can open it (picture_plain.py).
+    _atomic_write(dest_path, plain_bytes(data))
 
 
 def decode_info(path):

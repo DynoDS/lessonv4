@@ -8,6 +8,15 @@
 // have a sheet to hand out and which stay quick ("I would have seen the
 // lightning bolt and did it on the board").
 //
+// Two more rulings (8 October 2026). An Our Turn carries no badge: the class
+// works it with the teacher, and the bolt is for the task children do on their
+// own. And the lesson's main worksheet earns the sheet only on the task it
+// IS (`worksheet.taskUnitId`: the planning grid a child can only fill in on
+// paper), never on a Your Turn that has its own questions on the board with
+// the worksheet as fresh practice beside it; that one keeps the bolt. Until
+// the design named the task, a Your Turn done on the worksheet showed the
+// bolt, because the worksheet is planned apart from the beats.
+//
 // The design sits beside lesson.json in the working folder; a deck built
 // without it (a test deck, an older lesson) simply carries no badges. A badge
 // the slide already names is kept. Answer and check slides take none: the
@@ -30,7 +39,14 @@ function designUnits(design) {
   return units;
 }
 
-function badgeFor(unit) {
+function worksheetTaskId(design) {
+  const worksheet = design && design.worksheet;
+  return worksheet && typeof worksheet.taskUnitId === 'string' ? worksheet.taskUnitId : null;
+}
+
+function badgeFor(unit, worksheetTask) {
+  if (unit.kind === 'our-turn') return null;
+  if (worksheetTask && unit.sourceUnitId === worksheetTask) return 'sheet';
   const levels = unit.levels && typeof unit.levels === 'object' ? unit.levels : null;
   if (!levels) return null;
   if (levels.printed && typeof levels.printed === 'object') return 'sheet';
@@ -41,8 +57,11 @@ function applyDoSigns(lesson, lessonDir) {
   const designPath = path.join(lessonDir || '.', 'lesson-design.json');
   if (!lesson || !Array.isArray(lesson.slides) || !fs.existsSync(designPath)) return lesson;
   let units;
+  let worksheetTask;
   try {
-    units = designUnits(JSON.parse(fs.readFileSync(designPath, 'utf8')));
+    const design = JSON.parse(fs.readFileSync(designPath, 'utf8'));
+    units = designUnits(design);
+    worksheetTask = worksheetTaskId(design);
   } catch (err) {
     return lesson;
   }
@@ -54,7 +73,7 @@ function applyDoSigns(lesson, lessonDir) {
     const ids = typeof slide.designUnitId === 'string' ? [slide.designUnitId]
       : Array.isArray(slide.designUnitIds) ? slide.designUnitIds : [];
     const unit = ids.map((id) => units.get(id)).find(Boolean);
-    const badge = unit ? badgeFor(unit) : null;
+    const badge = unit ? badgeFor(unit, worksheetTask) : null;
     if (badge) slide.doSign = badge;
   }
   return lesson;

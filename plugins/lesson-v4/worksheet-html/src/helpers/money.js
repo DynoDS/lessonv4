@@ -40,8 +40,11 @@ const {
   BLANK_CHARS,
   esc,
   linesFor,
+  BANK_HEADING,
+  namesTheBank,
 } = require("./shared");
 const { MM_TO_PT } = require("../../../shared/visuals/surface-profiles");
+const { withoutTaughtMarks } = require("../../../shared/text/criteria-marks");
 
 // None of the five gains anything from spare page height. The two drawings are
 // locked to their own aspect and capped at the width where a coin is already
@@ -83,7 +86,7 @@ function coinStripMinWidthMm(spec) {
   return moneyShared.describeLayout(spec, "worksheets", { widthMm: 10000 }).w / MM_TO_PT * COIN_SCALE_MIN;
 }
 
-const ANSWER_LINE_MM = WRITING_LINE_MM.lower; // a total, written by a child
+const ANSWER_LINE_MM = 8; // a total, written by a child: a number, not a sentence line
 
 // The prompt above and the answer line below, around the shared row.
 function coinStrip(figure) {
@@ -254,12 +257,15 @@ function needsFractionSequence(spec) {
 // borders is discrimination: a comma-joined list reads as running text, and a
 // child picking one word out of six should not have to parse a sentence first.
 //
-// The three variants keep the Word builder's three identities, mapped on to the
-// tokens whose settled meaning matches. `blue` is the neutral default and takes
-// the question colour; `green` takes the vocabulary colour, which is what a
-// scaffold bank of words is; `yellow` has no token (there is no yellow in this
-// palette) and takes the "given" orange, which carries exactly what the Word
-// builder's warm word-bank yellow was for - material handed to the child.
+// The three variants are the board's three (builder/src/content/chip-bank.js),
+// so a bank on the sheet is recognisably the bank the class saw on the slide.
+// `blue` is the neutral default, blue words on a quiet card. `yellow` is the
+// word-bank look: ink words on a cream card with the given-orange edge.
+// `green` is a support bank: ink words on the pale criteria green with a green
+// edge. In `yellow` and `green` the colour is the CARD and the words are ink,
+// as on the board. The words used to take the colour, and since the teacher's
+// answer sheet began printing answers in green (30 September 2026) a bank of
+// green words read as a bank of answers (stress test, 7 October 2026).
 const CHIP_VARIANTS = { blue: "question", yellow: "given", green: "vocab" };
 
 // A chip is only as wide as ITS OWN label needs, with a floor so that a bank
@@ -288,46 +294,79 @@ const CHIP_CHAR_MM = BODY_PT * PT_MM * 0.58; // bold, so wider than prose
 //
 // So a chip may be written as a bare string, or as { word, meaning }, and the
 // bank stays one bank.
+//
+// A chip wrapped whole in `{{ }}` is one of this lesson's taught words, written
+// exactly as it is for the board. It prints in vocabulary green in any variant
+// and the braces never print; every other chip is a choice, and prints in its
+// variant's own words (the teacher, 9 October 2026: the sheet follows the
+// slide, green for a taught word and not for "at bedtime").
+const TAUGHT_CHIP = /^\{\{([\s\S]+)\}\}$/;
+
+// The bank keeps its chips' braces to read them; its title and instruction are
+// ordinary words and lose theirs here, as every other helper's do upstream.
+function plainBankWords(spec) {
+  if (!spec || typeof spec !== "object") return spec;
+  return { ...spec, text: withoutTaughtMarks(spec.text), title: withoutTaughtMarks(spec.title) };
+}
+
+function taughtWord(raw) {
+  const text = raw == null ? "" : String(raw).trim();
+  const match = TAUGHT_CHIP.exec(text);
+  return match ? { word: match[1].trim(), taught: true } : { word: text, taught: false };
+}
+
 function chipList(spec) {
   return (Array.isArray(spec.chips) ? spec.chips : [])
     .map((c) => {
-      if (c && typeof c === "object" && !Array.isArray(c)) {
-        return {
-          word: c.word == null ? "" : String(c.word).trim(),
-          meaning: c.meaning == null ? "" : String(c.meaning).trim(),
-        };
-      }
-      return { word: c == null ? "" : String(c).trim(), meaning: "" };
+      const object = c && typeof c === "object" && !Array.isArray(c);
+      const { word, taught } = taughtWord(object ? c.word : c);
+      return {
+        word,
+        taught,
+        meaning: object && c.meaning != null ? String(c.meaning).trim() : "",
+      };
     })
     .filter((c) => c.word !== "");
 }
 
-// A bank titled "Word bank" is vocabulary by definition, so with no variant
-// stated it takes vocabulary green rather than the neutral blue. The teacher's
-// colour system says green IS what a bank of taught words means on paper, and
-// a designer who leaves `variant` off has not chosen blue - they have not
-// chosen. An explicit variant still wins, for the bank that is genuinely
-// something else (options for a question, material handed over).
+// A bank titled "Word bank" with no variant stated takes the word-bank look,
+// which is what the board gives the same bank. It used to take vocabulary green
+// from its title alone, whatever it held, so phrases to choose from, rock names
+// and story words all printed green. Whether a word is a taught word is said
+// chip by chip (see `taughtWord`), not by the title of the box. An explicit
+// variant still wins.
 function chipVariantClass(spec) {
   let role = CHIP_VARIANTS[spec.variant];
   if (!role) {
-    role = /word\s*bank/i.test(String(spec.title || ""))
-      ? CHIP_VARIANTS.green
+    role = /word\s*bank/i.test(String(spec.title || "")) || namesTheBank(spec.text)
+      ? CHIP_VARIANTS.yellow
       : CHIP_VARIANTS.blue;
   }
   return `h-chipbank--${role}`;
 }
 
+// The one heading and the one line above a bank's words (shared.js,
+// BANK_HEADING): a bank named as a word bank, in its title or in a line that
+// only names it, is headed the house way, and that naming line is dropped.
+function bankWords(spec) {
+  const named = namesTheBank(spec.title) || namesTheBank(spec.text);
+  return {
+    title: named ? BANK_HEADING : spec.title ? String(spec.title) : "",
+    stem: spec.text && !namesTheBank(spec.text) ? String(spec.text) : "",
+  };
+}
+
 function renderChipBank(spec) {
   const chips = chipList(spec);
-  const stem = spec.text ? `<p class="h-money-stem">${esc(spec.text)}</p>` : "";
-  const title = spec.title
-    ? `<p class="h-chipbank-title">${esc(spec.title)}</p>`
+  const words = bankWords(spec);
+  const stem = words.stem ? `<p class="h-money-stem">${esc(words.stem)}</p>` : "";
+  const title = words.title
+    ? `<p class="h-chipbank-title">${esc(words.title)}</p>`
     : "";
   const pills = chips
     .map(
       (chip) =>
-        `<span class="h-chip"><span class="h-chip-word">${esc(chip.word)}</span>` +
+        `<span class="h-chip${chip.taught ? " h-chip--taught" : ""}"><span class="h-chip-word">${esc(chip.word)}</span>` +
         (chip.meaning
           ? `<span class="h-chip-meaning">${esc(chip.meaning)}</span>`
           : "") +
@@ -336,7 +375,7 @@ function renderChipBank(spec) {
     .join("");
   return `
     <div class="h-chipbank ${chipVariantClass(spec)}">
-      ${stem}${title}
+      ${title}${stem}
       <div class="h-chipbank-grid">${pills}</div>
     </div>`;
 }
@@ -405,10 +444,11 @@ function chipRows(chips, widthMm) {
 
 function measureChipBank(spec, widthMm) {
   const chips = chipList(spec);
-  const stemMm = spec.text
-    ? linesFor(spec.text, widthMm) * LINE_MM + SPACE_TIGHT_MM
+  const words = bankWords(spec);
+  const stemMm = words.stem
+    ? linesFor(words.stem, widthMm) * LINE_MM + SPACE_TIGHT_MM
     : 0;
-  const titleMm = spec.title ? LINE_MM + SPACE_TIGHT_MM : 0;
+  const titleMm = words.title ? LINE_MM + SPACE_TIGHT_MM : 0;
   if (chips.length === 0) return stemMm + titleMm;
 
   // Each row is as tall as its tallest chip. A chip only wraps its own word
@@ -549,12 +589,18 @@ const css = `
     font-size: var(--type-note); font-weight: normal;
     color: var(--colour-ink); line-height: 1.35;
   }
+  /* In these two the card carries the colour and the words are ink, as on the
+     board. */
   .h-chipbank--vocab .h-chip {
-    border-color: var(--colour-vocab); color: var(--colour-vocab);
+    border-color: var(--colour-vocab); background: var(--colour-criteria);
+    color: var(--colour-ink);
   }
   .h-chipbank--given .h-chip {
-    border-color: var(--colour-given); color: var(--colour-given);
+    border-color: var(--colour-given); background: var(--colour-givenCard);
+    color: var(--colour-ink);
   }
+  /* A taught word, green in any variant. After the variants so it wins. */
+  .h-chipbank .h-chip--taught .h-chip-word { color: var(--colour-vocab); }
 `;
 
 const helpers = {
@@ -584,9 +630,9 @@ const helpers = {
   "part-whole-money": withStem(atPrintedWidth(partWholeModel, { minWidthMm: partWholeMinMm(false), toSpec: (spec) => ({ ...spec, requireIntent: false }) })),
   "part-whole": withStem(atPrintedWidth(partWholeModel, { minWidthMm: partWholeMinMm(true), toSpec: (spec) => ({ ...spec, requireIntent: true }) })),
   "chip-bank": {
-    render: renderChipBank,
-    measure: measureChipBank,
-    needs: needsChipBank,
+    render: (spec, ...rest) => renderChipBank(plainBankWords(spec), ...rest),
+    measure: (spec, ...rest) => measureChipBank(plainBankWords(spec), ...rest),
+    needs: (spec, ...rest) => needsChipBank(plainBankWords(spec), ...rest),
     greed: NEVER_STRETCH,
   },
 };

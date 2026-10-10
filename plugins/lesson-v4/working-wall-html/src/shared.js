@@ -72,7 +72,7 @@ function hash(c) {
   return c.startsWith("#") ? c : `#${c}`;
 }
 
-const { notePlacement } = require("./figure-size");
+const { notePlacement, offerRoom } = require("./figure-size");
 
 function pngDataUri(buf) {
   return `data:image/png;base64,${buf.toString("base64")}`;
@@ -189,6 +189,7 @@ function panelWithVisualHtml(innerHtml, visual, visualLabel, fillColour, borderC
         visualHeightIn = maxVisualHeightIn;
         fittedVisualWidthIn = visualHeightIn * aspect;
       }
+      offerRoom(visual.buf, mm(visualWidthIn), mm(maxVisualHeightIn));
       visualHtml =
         `<div style="text-align:center;margin-top:${mm(160 / 1440)}mm;">` +
         visualTag(visual, mm(fittedVisualWidthIn), mm(visualHeightIn), "margin:0 auto;") +
@@ -232,6 +233,10 @@ function panelWithVisualHtml(innerHtml, visual, visualLabel, fillColour, borderC
 
   let visualInner = `<div></div>`;
   if (visual && (visual.buf || visual.emoji)) {
+    const roomHIn = opts.bodyHeightIn > 0
+      ? Math.min(maxHeightIn, (opts.bodyHeightIn - (2 * paddingDxa) / 1440 - (visualLabel ? 0.6 : 0)) * 0.94)
+      : maxHeightIn;
+    offerRoom(visual.buf, mm(visualWidthIn * 0.94), mm(roomHIn));
     visualInner = visualTag(
       visual,
       mm(effectiveVisualWidthIn),
@@ -358,5 +363,6 @@ module.exports = {
   panelWithVisualHtml,
   twoUpPanelsHtml,
   colouredLetterBoxHtml,
+  offerRoom,
   PAGE_CSS,
 };

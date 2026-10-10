@@ -126,7 +126,7 @@ Full page
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 239 | 233 x 180 |
+| `a` | 174 x 248 | 242 x 180 |
 
 #### `halves-stacked`
 
@@ -134,8 +134,8 @@ Halves, stacked
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 120 | 233 x 90 |
-| `b` | 174 x 120 | 233 x 90 |
+| `a` | 174 x 124 | 242 x 90 |
+| `b` | 174 x 124 | 242 x 90 |
 
 #### `halves-side`
 
@@ -143,8 +143,8 @@ Halves, side by side
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 239 | 114 x 180 |
-| `b` | 84 x 239 | 114 x 180 |
+| `a` | 84 x 248 | 118 x 180 |
+| `b` | 84 x 248 | 118 x 180 |
 
 #### `thirds-stacked`
 
@@ -152,9 +152,9 @@ Thirds, stacked
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 80 | 233 x 60 |
-| `b` | 174 x 80 | 233 x 60 |
-| `c` | 174 x 80 | 233 x 60 |
+| `a` | 174 x 83 | 242 x 60 |
+| `b` | 174 x 83 | 242 x 60 |
+| `c` | 174 x 83 | 242 x 60 |
 
 #### `thirds-side`
 
@@ -162,9 +162,9 @@ Thirds, side by side
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 54 x 239 | 74 x 180 |
-| `b` | 54 x 239 | 74 x 180 |
-| `c` | 54 x 239 | 74 x 180 |
+| `a` | 54 x 248 | 77 x 180 |
+| `b` | 54 x 248 | 77 x 180 |
+| `c` | 54 x 248 | 77 x 180 |
 
 #### `third-then-two`
 
@@ -172,8 +172,8 @@ One third above, two thirds below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 80 | 233 x 60 |
-| `b` | 174 x 159 | 233 x 120 |
+| `a` | 174 x 83 | 242 x 60 |
+| `b` | 174 x 165 | 242 x 120 |
 
 #### `two-then-third`
 
@@ -181,8 +181,8 @@ Two thirds above, one third below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 159 | 233 x 120 |
-| `b` | 174 x 80 | 233 x 60 |
+| `a` | 174 x 165 | 242 x 120 |
+| `b` | 174 x 83 | 242 x 60 |
 
 #### `four-stacked`
 
@@ -190,10 +190,10 @@ Four questions, stacked
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 60 | 233 x 45 |
-| `b` | 174 x 60 | 233 x 45 |
-| `c` | 174 x 60 | 233 x 45 |
-| `d` | 174 x 60 | 233 x 45 |
+| `a` | 174 x 62 | 242 x 45 |
+| `b` | 174 x 62 | 242 x 45 |
+| `c` | 174 x 62 | 242 x 45 |
+| `d` | 174 x 62 | 242 x 45 |
 
 #### `five-stacked`
 
@@ -201,11 +201,11 @@ Five questions, stacked
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 48 | 233 x 36 |
-| `b` | 174 x 48 | 233 x 36 |
-| `c` | 174 x 48 | 233 x 36 |
-| `d` | 174 x 48 | 233 x 36 |
-| `e` | 174 x 48 | 233 x 36 |
+| `a` | 174 x 50 | 242 x 36 |
+| `b` | 174 x 50 | 242 x 36 |
+| `c` | 174 x 50 | 242 x 36 |
+| `d` | 174 x 50 | 242 x 36 |
+| `e` | 174 x 50 | 242 x 36 |
 
 #### `six-stacked`
 
@@ -213,12 +213,12 @@ Six questions, stacked
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 40 | 233 x 30 |
-| `b` | 174 x 40 | 233 x 30 |
-| `c` | 174 x 40 | 233 x 30 |
-| `d` | 174 x 40 | 233 x 30 |
-| `e` | 174 x 40 | 233 x 30 |
-| `f` | 174 x 40 | 233 x 30 |
+| `a` | 174 x 41 | 242 x 30 |
+| `b` | 174 x 41 | 242 x 30 |
+| `c` | 174 x 41 | 242 x 30 |
+| `d` | 174 x 41 | 242 x 30 |
+| `e` | 174 x 41 | 242 x 30 |
+| `f` | 174 x 41 | 242 x 30 |
 
 #### `big-then-three-stacked`
 
@@ -226,10 +226,10 @@ Big question, then three stacked
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 96 | 233 x 72 |
-| `b` | 174 x 48 | 233 x 36 |
-| `c` | 174 x 48 | 233 x 36 |
-| `d` | 174 x 48 | 233 x 36 |
+| `a` | 174 x 99 | 242 x 72 |
+| `b` | 174 x 50 | 242 x 36 |
+| `c` | 174 x 50 | 242 x 36 |
+| `d` | 174 x 50 | 242 x 36 |
 
 #### `strip-top`
 
@@ -237,8 +237,8 @@ Strip across the top
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 48 | 233 x 36 |
-| `b` | 174 x 191 | 233 x 144 |
+| `a` | 174 x 50 | 242 x 36 |
+| `b` | 174 x 198 | 242 x 144 |
 
 #### `strip-bottom`
 
@@ -246,8 +246,8 @@ Strip across the bottom
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 191 | 233 x 144 |
-| `b` | 174 x 48 | 233 x 36 |
+| `a` | 174 x 198 | 242 x 144 |
+| `b` | 174 x 50 | 242 x 36 |
 
 #### `strip-both`
 
@@ -255,9 +255,9 @@ Strip top and bottom
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 36 | 233 x 27 |
-| `b` | 174 x 167 | 233 x 126 |
-| `c` | 174 x 36 | 233 x 27 |
+| `a` | 174 x 37 | 242 x 27 |
+| `b` | 174 x 174 | 242 x 126 |
+| `c` | 174 x 37 | 242 x 27 |
 
 #### `strip-left`
 
@@ -265,8 +265,8 @@ Narrow column, left
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 44 x 239 | 61 x 180 |
-| `b` | 124 x 239 | 166 x 180 |
+| `a` | 44 x 248 | 63 x 180 |
+| `b` | 124 x 248 | 173 x 180 |
 
 #### `strip-right`
 
@@ -274,8 +274,8 @@ Narrow column, right
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 124 x 239 | 166 x 180 |
-| `b` | 44 x 239 | 61 x 180 |
+| `a` | 124 x 248 | 173 x 180 |
+| `b` | 44 x 248 | 63 x 180 |
 
 #### `quarters`
 
@@ -283,10 +283,10 @@ Quarters
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 120 | 114 x 90 |
-| `b` | 84 x 120 | 114 x 90 |
-| `c` | 84 x 120 | 114 x 90 |
-| `d` | 84 x 120 | 114 x 90 |
+| `a` | 84 x 124 | 118 x 90 |
+| `b` | 84 x 124 | 118 x 90 |
+| `c` | 84 x 124 | 118 x 90 |
+| `d` | 84 x 124 | 118 x 90 |
 
 #### `grid-six`
 
@@ -294,12 +294,12 @@ Six boxes
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 54 x 120 | 74 x 90 |
-| `b` | 54 x 120 | 74 x 90 |
-| `c` | 54 x 120 | 74 x 90 |
-| `d` | 54 x 120 | 74 x 90 |
-| `e` | 54 x 120 | 74 x 90 |
-| `f` | 54 x 120 | 74 x 90 |
+| `a` | 54 x 124 | 77 x 90 |
+| `b` | 54 x 124 | 77 x 90 |
+| `c` | 54 x 124 | 77 x 90 |
+| `d` | 54 x 124 | 77 x 90 |
+| `e` | 54 x 124 | 77 x 90 |
+| `f` | 54 x 124 | 77 x 90 |
 
 #### `big-above-two`
 
@@ -307,9 +307,9 @@ Big above, two below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 131 | 233 x 99 |
-| `b` | 84 x 108 | 114 x 81 |
-| `c` | 84 x 108 | 114 x 81 |
+| `a` | 174 x 136 | 242 x 99 |
+| `b` | 84 x 112 | 118 x 81 |
+| `c` | 84 x 112 | 118 x 81 |
 
 #### `two-above-big`
 
@@ -317,9 +317,9 @@ Two above, big below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 108 | 114 x 81 |
-| `b` | 84 x 108 | 114 x 81 |
-| `c` | 174 x 131 | 233 x 99 |
+| `a` | 84 x 112 | 118 x 81 |
+| `b` | 84 x 112 | 118 x 81 |
+| `c` | 174 x 136 | 242 x 99 |
 
 #### `big-left-two`
 
@@ -327,9 +327,9 @@ Big left, two right
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 93 x 239 | 125 x 180 |
-| `b` | 75 x 120 | 102 x 90 |
-| `c` | 75 x 120 | 102 x 90 |
+| `a` | 93 x 248 | 130 x 180 |
+| `b` | 75 x 124 | 106 x 90 |
+| `c` | 75 x 124 | 106 x 90 |
 
 #### `two-left-big`
 
@@ -337,9 +337,9 @@ Two left, big right
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 75 x 120 | 102 x 90 |
-| `b` | 75 x 120 | 102 x 90 |
-| `c` | 93 x 239 | 125 x 180 |
+| `a` | 75 x 124 | 106 x 90 |
+| `b` | 75 x 124 | 106 x 90 |
+| `c` | 93 x 248 | 130 x 180 |
 
 #### `band-two-cols`
 
@@ -347,9 +347,9 @@ Band on top, two columns
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 72 | 233 x 54 |
-| `b` | 84 x 167 | 114 x 126 |
-| `c` | 84 x 167 | 114 x 126 |
+| `a` | 174 x 74 | 242 x 54 |
+| `b` | 84 x 174 | 118 x 126 |
+| `c` | 84 x 174 | 118 x 126 |
 
 #### `band-three-cols`
 
@@ -357,10 +357,10 @@ Band on top, three columns
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 72 | 233 x 54 |
-| `b` | 54 x 167 | 74 x 126 |
-| `c` | 54 x 167 | 74 x 126 |
-| `d` | 54 x 167 | 74 x 126 |
+| `a` | 174 x 74 | 242 x 54 |
+| `b` | 54 x 174 | 77 x 126 |
+| `c` | 54 x 174 | 77 x 126 |
+| `d` | 54 x 174 | 77 x 126 |
 
 #### `band-cols-strip`
 
@@ -368,10 +368,10 @@ Band, two columns, strip below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 67 | 233 x 50 |
-| `b` | 84 x 131 | 114 x 99 |
-| `c` | 84 x 131 | 114 x 99 |
-| `d` | 174 x 41 | 233 x 31 |
+| `a` | 174 x 69 | 242 x 50 |
+| `b` | 84 x 136 | 118 x 99 |
+| `c` | 84 x 136 | 118 x 99 |
+| `d` | 174 x 42 | 242 x 31 |
 
 #### `band-cols-split-right`
 
@@ -379,10 +379,10 @@ Band, left column, right column split
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 72 | 233 x 54 |
-| `b` | 84 x 167 | 114 x 126 |
-| `c` | 84 x 84 | 114 x 63 |
-| `d` | 84 x 84 | 114 x 63 |
+| `a` | 174 x 74 | 242 x 54 |
+| `b` | 84 x 174 | 118 x 126 |
+| `c` | 84 x 87 | 118 x 63 |
+| `d` | 84 x 87 | 118 x 63 |
 
 #### `strip-left-body-split`
 
@@ -390,9 +390,9 @@ Narrow left, body split in two
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 44 x 239 | 61 x 180 |
-| `b` | 124 x 120 | 166 x 90 |
-| `c` | 124 x 120 | 166 x 90 |
+| `a` | 44 x 248 | 63 x 180 |
+| `b` | 124 x 124 | 173 x 90 |
+| `c` | 124 x 124 | 173 x 90 |
 
 #### `big-top-three-below`
 
@@ -400,10 +400,10 @@ Big above, three below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 143 | 233 x 108 |
-| `b` | 54 x 96 | 74 x 72 |
-| `c` | 54 x 96 | 74 x 72 |
-| `d` | 54 x 96 | 74 x 72 |
+| `a` | 174 x 149 | 242 x 108 |
+| `b` | 54 x 99 | 77 x 72 |
+| `c` | 54 x 99 | 77 x 72 |
+| `d` | 54 x 99 | 77 x 72 |
 
 #### `quarters-one-split`
 
@@ -411,11 +411,11 @@ Quarters, bottom right split
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 120 | 114 x 90 |
-| `b` | 84 x 120 | 114 x 90 |
-| `c` | 84 x 120 | 114 x 90 |
-| `d` | 84 x 60 | 114 x 45 |
-| `e` | 84 x 60 | 114 x 45 |
+| `a` | 84 x 124 | 118 x 90 |
+| `b` | 84 x 124 | 118 x 90 |
+| `c` | 84 x 124 | 118 x 90 |
+| `d` | 84 x 62 | 118 x 45 |
+| `e` | 84 x 62 | 118 x 45 |
 
 #### `strip-top-quarters`
 
@@ -423,11 +423,11 @@ Strip on top, quarters below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 43 | 233 x 32 |
-| `b` | 84 x 98 | 114 x 74 |
-| `c` | 84 x 98 | 114 x 74 |
-| `d` | 84 x 98 | 114 x 74 |
-| `e` | 84 x 98 | 114 x 74 |
+| `a` | 174 x 45 | 242 x 32 |
+| `b` | 84 x 102 | 118 x 74 |
+| `c` | 84 x 102 | 118 x 74 |
+| `d` | 84 x 102 | 118 x 74 |
+| `e` | 84 x 102 | 118 x 74 |
 
 #### `flanked-middle`
 
@@ -435,9 +435,9 @@ Middle, with a flank each side
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 34 x 239 | 47 x 180 |
-| `b` | 95 x 239 | 128 x 180 |
-| `c` | 34 x 239 | 47 x 180 |
+| `a` | 34 x 248 | 49 x 180 |
+| `b` | 95 x 248 | 133 x 180 |
+| `c` | 34 x 248 | 49 x 180 |
 
 #### `flanked-middle-band`
 
@@ -445,10 +445,10 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 34 x 148 | 47 x 112 |
-| `b` | 95 x 148 | 128 x 112 |
-| `c` | 34 x 148 | 47 x 112 |
-| `d` | 174 x 91 | 233 x 68 |
+| `a` | 34 x 154 | 49 x 112 |
+| `b` | 95 x 154 | 133 x 112 |
+| `c` | 34 x 154 | 49 x 112 |
+| `d` | 174 x 94 | 242 x 68 |
 
 #### `stacked-20-80`
 
@@ -456,8 +456,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 48 | 233 x 36 |
-| `b` | 174 x 191 | 233 x 144 |
+| `a` | 174 x 50 | 242 x 36 |
+| `b` | 174 x 198 | 242 x 144 |
 
 #### `stacked-30-70`
 
@@ -465,8 +465,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 72 | 233 x 54 |
-| `b` | 174 x 167 | 233 x 126 |
+| `a` | 174 x 74 | 242 x 54 |
+| `b` | 174 x 174 | 242 x 126 |
 
 #### `stacked-40-60`
 
@@ -474,8 +474,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 96 | 233 x 72 |
-| `b` | 174 x 143 | 233 x 108 |
+| `a` | 174 x 99 | 242 x 72 |
+| `b` | 174 x 149 | 242 x 108 |
 
 #### `stacked-50-50`
 
@@ -483,8 +483,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 120 | 233 x 90 |
-| `b` | 174 x 120 | 233 x 90 |
+| `a` | 174 x 124 | 242 x 90 |
+| `b` | 174 x 124 | 242 x 90 |
 
 #### `stacked-60-40`
 
@@ -492,8 +492,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 143 | 233 x 108 |
-| `b` | 174 x 96 | 233 x 72 |
+| `a` | 174 x 149 | 242 x 108 |
+| `b` | 174 x 99 | 242 x 72 |
 
 #### `stacked-70-30`
 
@@ -501,8 +501,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 167 | 233 x 126 |
-| `b` | 174 x 72 | 233 x 54 |
+| `a` | 174 x 174 | 242 x 126 |
+| `b` | 174 x 74 | 242 x 54 |
 
 #### `stacked-80-20`
 
@@ -510,8 +510,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 191 | 233 x 144 |
-| `b` | 174 x 48 | 233 x 36 |
+| `a` | 174 x 198 | 242 x 144 |
+| `b` | 174 x 50 | 242 x 36 |
 
 #### `side-20-80`
 
@@ -519,8 +519,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 30 x 239 | 42 x 180 |
-| `b` | 138 x 239 | 185 x 180 |
+| `a` | 30 x 248 | 44 x 180 |
+| `b` | 138 x 248 | 192 x 180 |
 
 #### `side-30-70`
 
@@ -528,8 +528,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 48 x 239 | 66 x 180 |
-| `b` | 120 x 239 | 161 x 180 |
+| `a` | 48 x 248 | 68 x 180 |
+| `b` | 120 x 248 | 168 x 180 |
 
 #### `side-40-60`
 
@@ -537,8 +537,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 66 x 239 | 90 x 180 |
-| `b` | 102 x 239 | 137 x 180 |
+| `a` | 66 x 248 | 93 x 180 |
+| `b` | 102 x 248 | 143 x 180 |
 
 #### `side-50-50`
 
@@ -546,8 +546,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 239 | 114 x 180 |
-| `b` | 84 x 239 | 114 x 180 |
+| `a` | 84 x 248 | 118 x 180 |
+| `b` | 84 x 248 | 118 x 180 |
 
 #### `side-60-40`
 
@@ -555,8 +555,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 102 x 239 | 137 x 180 |
-| `b` | 66 x 239 | 90 x 180 |
+| `a` | 102 x 248 | 143 x 180 |
+| `b` | 66 x 248 | 93 x 180 |
 
 #### `side-70-30`
 
@@ -564,8 +564,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 120 x 239 | 161 x 180 |
-| `b` | 48 x 239 | 66 x 180 |
+| `a` | 120 x 248 | 168 x 180 |
+| `b` | 48 x 248 | 68 x 180 |
 
 #### `side-80-20`
 
@@ -573,8 +573,8 @@ Middle with flanks, band below
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 138 x 239 | 185 x 180 |
-| `b` | 30 x 239 | 42 x 180 |
+| `a` | 138 x 248 | 192 x 180 |
+| `b` | 30 x 248 | 44 x 180 |
 
 #### `third-then-two-turned`
 
@@ -582,8 +582,8 @@ One third above, two thirds below, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 54 x 239 | 74 x 180 |
-| `b` | 114 x 239 | 153 x 180 |
+| `a` | 54 x 248 | 77 x 180 |
+| `b` | 114 x 248 | 159 x 180 |
 
 #### `two-then-third-turned`
 
@@ -591,8 +591,8 @@ Two thirds above, one third below, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 114 x 239 | 153 x 180 |
-| `b` | 54 x 239 | 74 x 180 |
+| `a` | 114 x 248 | 159 x 180 |
+| `b` | 54 x 248 | 77 x 180 |
 
 #### `four-stacked-turned`
 
@@ -600,10 +600,10 @@ Four questions, stacked, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 39 x 239 | 54 x 180 |
-| `b` | 39 x 239 | 54 x 180 |
-| `c` | 39 x 239 | 54 x 180 |
-| `d` | 39 x 239 | 54 x 180 |
+| `a` | 39 x 248 | 56 x 180 |
+| `b` | 39 x 248 | 56 x 180 |
+| `c` | 39 x 248 | 56 x 180 |
+| `d` | 39 x 248 | 56 x 180 |
 
 #### `five-stacked-turned`
 
@@ -611,11 +611,11 @@ Five questions, stacked, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 30 x 239 | 42 x 180 |
-| `b` | 30 x 239 | 42 x 180 |
-| `c` | 30 x 239 | 42 x 180 |
-| `d` | 30 x 239 | 42 x 180 |
-| `e` | 30 x 239 | 42 x 180 |
+| `a` | 30 x 248 | 44 x 180 |
+| `b` | 30 x 248 | 44 x 180 |
+| `c` | 30 x 248 | 44 x 180 |
+| `d` | 30 x 248 | 44 x 180 |
+| `e` | 30 x 248 | 44 x 180 |
 
 #### `six-stacked-turned`
 
@@ -623,12 +623,12 @@ Six questions, stacked, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 24 x 239 | 34 x 180 |
-| `b` | 24 x 239 | 34 x 180 |
-| `c` | 24 x 239 | 34 x 180 |
-| `d` | 24 x 239 | 34 x 180 |
-| `e` | 24 x 239 | 34 x 180 |
-| `f` | 24 x 239 | 34 x 180 |
+| `a` | 24 x 248 | 35 x 180 |
+| `b` | 24 x 248 | 35 x 180 |
+| `c` | 24 x 248 | 35 x 180 |
+| `d` | 24 x 248 | 35 x 180 |
+| `e` | 24 x 248 | 35 x 180 |
+| `f` | 24 x 248 | 35 x 180 |
 
 #### `big-then-three-stacked-flip-v`
 
@@ -636,10 +636,10 @@ Big question, then three stacked, mirrored top to bottom  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 48 | 233 x 36 |
-| `b` | 174 x 48 | 233 x 36 |
-| `c` | 174 x 48 | 233 x 36 |
-| `d` | 174 x 96 | 233 x 72 |
+| `a` | 174 x 50 | 242 x 36 |
+| `b` | 174 x 50 | 242 x 36 |
+| `c` | 174 x 50 | 242 x 36 |
+| `d` | 174 x 99 | 242 x 72 |
 
 #### `big-then-three-stacked-turned`
 
@@ -647,10 +647,10 @@ Big question, then three stacked, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 66 x 239 | 90 x 180 |
-| `b` | 30 x 239 | 42 x 180 |
-| `c` | 30 x 239 | 42 x 180 |
-| `d` | 30 x 239 | 42 x 180 |
+| `a` | 66 x 248 | 93 x 180 |
+| `b` | 30 x 248 | 44 x 180 |
+| `c` | 30 x 248 | 44 x 180 |
+| `d` | 30 x 248 | 44 x 180 |
 
 #### `strip-both-turned`
 
@@ -658,9 +658,9 @@ Strip top and bottom, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 21 x 239 | 30 x 180 |
-| `b` | 120 x 239 | 161 x 180 |
-| `c` | 21 x 239 | 30 x 180 |
+| `a` | 21 x 248 | 31 x 180 |
+| `b` | 120 x 248 | 168 x 180 |
+| `c` | 21 x 248 | 31 x 180 |
 
 #### `strip-left-turned`
 
@@ -668,8 +668,8 @@ Narrow column, left, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 67 | 233 x 50 |
-| `b` | 174 x 172 | 233 x 130 |
+| `a` | 174 x 69 | 242 x 50 |
+| `b` | 174 x 179 | 242 x 130 |
 
 #### `strip-right-turned`
 
@@ -677,8 +677,8 @@ Narrow column, right, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 172 | 233 x 130 |
-| `b` | 174 x 67 | 233 x 50 |
+| `a` | 174 x 179 | 242 x 130 |
+| `b` | 174 x 69 | 242 x 50 |
 
 #### `quarters-turned`
 
@@ -686,10 +686,10 @@ Quarters, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 120 | 114 x 90 |
-| `b` | 84 x 120 | 114 x 90 |
-| `c` | 84 x 120 | 114 x 90 |
-| `d` | 84 x 120 | 114 x 90 |
+| `a` | 84 x 124 | 118 x 90 |
+| `b` | 84 x 124 | 118 x 90 |
+| `c` | 84 x 124 | 118 x 90 |
+| `d` | 84 x 124 | 118 x 90 |
 
 #### `grid-six-turned`
 
@@ -697,12 +697,12 @@ Six boxes, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 80 | 114 x 60 |
-| `b` | 84 x 80 | 114 x 60 |
-| `c` | 84 x 80 | 114 x 60 |
-| `d` | 84 x 80 | 114 x 60 |
-| `e` | 84 x 80 | 114 x 60 |
-| `f` | 84 x 80 | 114 x 60 |
+| `a` | 84 x 83 | 118 x 60 |
+| `b` | 84 x 83 | 118 x 60 |
+| `c` | 84 x 83 | 118 x 60 |
+| `d` | 84 x 83 | 118 x 60 |
+| `e` | 84 x 83 | 118 x 60 |
+| `f` | 84 x 83 | 118 x 60 |
 
 #### `band-two-cols-flip-v`
 
@@ -710,9 +710,9 @@ Band on top, two columns, mirrored top to bottom  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 167 | 114 x 126 |
-| `b` | 84 x 167 | 114 x 126 |
-| `c` | 174 x 72 | 233 x 54 |
+| `a` | 84 x 174 | 118 x 126 |
+| `b` | 84 x 174 | 118 x 126 |
+| `c` | 174 x 74 | 242 x 54 |
 
 #### `band-two-cols-turned`
 
@@ -720,9 +720,9 @@ Band on top, two columns, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 48 x 239 | 66 x 180 |
-| `b` | 120 x 120 | 161 x 90 |
-| `c` | 120 x 120 | 161 x 90 |
+| `a` | 48 x 248 | 68 x 180 |
+| `b` | 120 x 124 | 168 x 90 |
+| `c` | 120 x 124 | 168 x 90 |
 
 #### `band-three-cols-flip-v`
 
@@ -730,10 +730,10 @@ Band on top, three columns, mirrored top to bottom  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 54 x 167 | 74 x 126 |
-| `b` | 54 x 167 | 74 x 126 |
-| `c` | 54 x 167 | 74 x 126 |
-| `d` | 174 x 72 | 233 x 54 |
+| `a` | 54 x 174 | 77 x 126 |
+| `b` | 54 x 174 | 77 x 126 |
+| `c` | 54 x 174 | 77 x 126 |
+| `d` | 174 x 74 | 242 x 54 |
 
 #### `band-three-cols-turned`
 
@@ -741,10 +741,10 @@ Band on top, three columns, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 48 x 239 | 66 x 180 |
-| `b` | 120 x 80 | 161 x 60 |
-| `c` | 120 x 80 | 161 x 60 |
-| `d` | 120 x 80 | 161 x 60 |
+| `a` | 48 x 248 | 68 x 180 |
+| `b` | 120 x 83 | 168 x 60 |
+| `c` | 120 x 83 | 168 x 60 |
+| `d` | 120 x 83 | 168 x 60 |
 
 #### `band-cols-strip-flip-v`
 
@@ -752,10 +752,10 @@ Band, two columns, strip below, mirrored top to bottom  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 41 | 233 x 31 |
-| `b` | 84 x 131 | 114 x 99 |
-| `c` | 84 x 131 | 114 x 99 |
-| `d` | 174 x 67 | 233 x 50 |
+| `a` | 174 x 42 | 242 x 31 |
+| `b` | 84 x 136 | 118 x 99 |
+| `c` | 84 x 136 | 118 x 99 |
+| `d` | 174 x 69 | 242 x 50 |
 
 #### `band-cols-strip-turned`
 
@@ -763,10 +763,10 @@ Band, two columns, strip below, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 44 x 239 | 61 x 180 |
-| `b` | 93 x 120 | 125 x 90 |
-| `c` | 93 x 120 | 125 x 90 |
-| `d` | 25 x 239 | 35 x 180 |
+| `a` | 44 x 248 | 63 x 180 |
+| `b` | 93 x 124 | 130 x 90 |
+| `c` | 93 x 124 | 130 x 90 |
+| `d` | 25 x 248 | 36 x 180 |
 
 #### `band-cols-split-right-flip-v`
 
@@ -774,10 +774,10 @@ Band, left column, right column split, mirrored top to bottom  *(a ratio variant
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 167 | 114 x 126 |
-| `b` | 84 x 84 | 114 x 63 |
-| `c` | 84 x 84 | 114 x 63 |
-| `d` | 174 x 72 | 233 x 54 |
+| `a` | 84 x 174 | 118 x 126 |
+| `b` | 84 x 87 | 118 x 63 |
+| `c` | 84 x 87 | 118 x 63 |
+| `d` | 174 x 74 | 242 x 54 |
 
 #### `band-cols-split-right-flip-h`
 
@@ -785,10 +785,10 @@ Band, left column, right column split, mirrored left to right  *(a ratio variant
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 72 | 233 x 54 |
-| `b` | 84 x 84 | 114 x 63 |
-| `c` | 84 x 84 | 114 x 63 |
-| `d` | 84 x 167 | 114 x 126 |
+| `a` | 174 x 74 | 242 x 54 |
+| `b` | 84 x 87 | 118 x 63 |
+| `c` | 84 x 87 | 118 x 63 |
+| `d` | 84 x 174 | 118 x 126 |
 
 #### `band-cols-split-right-turned`
 
@@ -796,10 +796,10 @@ Band, left column, right column split, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 48 x 239 | 66 x 180 |
-| `b` | 120 x 120 | 161 x 90 |
-| `c` | 57 x 120 | 78 x 90 |
-| `d` | 57 x 120 | 78 x 90 |
+| `a` | 48 x 248 | 68 x 180 |
+| `b` | 120 x 124 | 168 x 90 |
+| `c` | 57 x 124 | 81 x 90 |
+| `d` | 57 x 124 | 81 x 90 |
 
 #### `strip-left-body-split-flip-h`
 
@@ -807,9 +807,9 @@ Narrow left, body split in two, mirrored left to right  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 124 x 120 | 166 x 90 |
-| `b` | 124 x 120 | 166 x 90 |
-| `c` | 44 x 239 | 61 x 180 |
+| `a` | 124 x 124 | 173 x 90 |
+| `b` | 124 x 124 | 173 x 90 |
+| `c` | 44 x 248 | 63 x 180 |
 
 #### `strip-left-body-split-turned`
 
@@ -817,9 +817,9 @@ Narrow left, body split in two, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 67 | 233 x 50 |
-| `b` | 84 x 172 | 114 x 130 |
-| `c` | 84 x 172 | 114 x 130 |
+| `a` | 174 x 69 | 242 x 50 |
+| `b` | 84 x 179 | 118 x 130 |
+| `c` | 84 x 179 | 118 x 130 |
 
 #### `big-top-three-below-flip-v`
 
@@ -827,10 +827,10 @@ Big above, three below, mirrored top to bottom  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 54 x 96 | 74 x 72 |
-| `b` | 54 x 96 | 74 x 72 |
-| `c` | 54 x 96 | 74 x 72 |
-| `d` | 174 x 143 | 233 x 108 |
+| `a` | 54 x 99 | 77 x 72 |
+| `b` | 54 x 99 | 77 x 72 |
+| `c` | 54 x 99 | 77 x 72 |
+| `d` | 174 x 149 | 242 x 108 |
 
 #### `big-top-three-below-turned`
 
@@ -838,10 +838,10 @@ Big above, three below, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 102 x 239 | 137 x 180 |
-| `b` | 66 x 80 | 90 x 60 |
-| `c` | 66 x 80 | 90 x 60 |
-| `d` | 66 x 80 | 90 x 60 |
+| `a` | 102 x 248 | 143 x 180 |
+| `b` | 66 x 83 | 93 x 60 |
+| `c` | 66 x 83 | 93 x 60 |
+| `d` | 66 x 83 | 93 x 60 |
 
 #### `quarters-one-split-flip-v`
 
@@ -849,11 +849,11 @@ Quarters, bottom right split, mirrored top to bottom  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 120 | 114 x 90 |
-| `b` | 84 x 60 | 114 x 45 |
-| `c` | 84 x 60 | 114 x 45 |
-| `d` | 84 x 120 | 114 x 90 |
-| `e` | 84 x 120 | 114 x 90 |
+| `a` | 84 x 124 | 118 x 90 |
+| `b` | 84 x 62 | 118 x 45 |
+| `c` | 84 x 62 | 118 x 45 |
+| `d` | 84 x 124 | 118 x 90 |
+| `e` | 84 x 124 | 118 x 90 |
 
 #### `quarters-one-split-flip-h`
 
@@ -861,11 +861,11 @@ Quarters, bottom right split, mirrored left to right  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 120 | 114 x 90 |
-| `b` | 84 x 120 | 114 x 90 |
-| `c` | 84 x 60 | 114 x 45 |
-| `d` | 84 x 60 | 114 x 45 |
-| `e` | 84 x 120 | 114 x 90 |
+| `a` | 84 x 124 | 118 x 90 |
+| `b` | 84 x 124 | 118 x 90 |
+| `c` | 84 x 62 | 118 x 45 |
+| `d` | 84 x 62 | 118 x 45 |
+| `e` | 84 x 124 | 118 x 90 |
 
 #### `quarters-one-split-turned`
 
@@ -873,11 +873,11 @@ Quarters, bottom right split, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 120 | 114 x 90 |
-| `b` | 84 x 120 | 114 x 90 |
-| `c` | 84 x 120 | 114 x 90 |
-| `d` | 39 x 120 | 54 x 90 |
-| `e` | 39 x 120 | 54 x 90 |
+| `a` | 84 x 124 | 118 x 90 |
+| `b` | 84 x 124 | 118 x 90 |
+| `c` | 84 x 124 | 118 x 90 |
+| `d` | 39 x 124 | 56 x 90 |
+| `e` | 39 x 124 | 56 x 90 |
 
 #### `strip-top-quarters-flip-v`
 
@@ -885,11 +885,11 @@ Strip on top, quarters below, mirrored top to bottom  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 84 x 98 | 114 x 74 |
-| `b` | 84 x 98 | 114 x 74 |
-| `c` | 84 x 98 | 114 x 74 |
-| `d` | 84 x 98 | 114 x 74 |
-| `e` | 174 x 43 | 233 x 32 |
+| `a` | 84 x 102 | 118 x 74 |
+| `b` | 84 x 102 | 118 x 74 |
+| `c` | 84 x 102 | 118 x 74 |
+| `d` | 84 x 102 | 118 x 74 |
+| `e` | 174 x 45 | 242 x 32 |
 
 #### `strip-top-quarters-turned`
 
@@ -897,11 +897,11 @@ Strip on top, quarters below, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 26 x 239 | 37 x 180 |
-| `b` | 68 x 120 | 92 x 90 |
-| `c` | 68 x 120 | 92 x 90 |
-| `d` | 68 x 120 | 92 x 90 |
-| `e` | 68 x 120 | 92 x 90 |
+| `a` | 26 x 248 | 39 x 180 |
+| `b` | 68 x 124 | 96 x 90 |
+| `c` | 68 x 124 | 96 x 90 |
+| `d` | 68 x 124 | 96 x 90 |
+| `e` | 68 x 124 | 96 x 90 |
 
 #### `flanked-middle-turned`
 
@@ -909,9 +909,9 @@ Middle, with a flank each side, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 53 | 233 x 40 |
-| `b` | 174 x 134 | 233 x 101 |
-| `c` | 174 x 53 | 233 x 40 |
+| `a` | 174 x 55 | 242 x 40 |
+| `b` | 174 x 139 | 242 x 101 |
+| `c` | 174 x 55 | 242 x 40 |
 
 #### `flanked-middle-band-flip-v`
 
@@ -919,10 +919,10 @@ Middle with flanks, band below, mirrored top to bottom  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 174 x 91 | 233 x 68 |
-| `b` | 34 x 148 | 47 x 112 |
-| `c` | 95 x 148 | 128 x 112 |
-| `d` | 34 x 148 | 47 x 112 |
+| `a` | 174 x 94 | 242 x 68 |
+| `b` | 34 x 154 | 49 x 112 |
+| `c` | 95 x 154 | 133 x 112 |
+| `d` | 34 x 154 | 49 x 112 |
 
 #### `flanked-middle-band-turned`
 
@@ -930,7 +930,7 @@ Middle with flanks, band below, turned on its side  *(a ratio variant)*
 
 | zone | portrait (mm) | landscape (mm) |
 |---|---|---|
-| `a` | 106 x 53 | 142 x 40 |
-| `b` | 106 x 134 | 142 x 101 |
-| `c` | 106 x 53 | 142 x 40 |
-| `d` | 62 x 239 | 85 x 180 |
+| `a` | 106 x 55 | 148 x 40 |
+| `b` | 106 x 139 | 148 x 101 |
+| `c` | 106 x 55 | 148 x 40 |
+| `d` | 62 x 248 | 88 x 180 |

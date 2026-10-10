@@ -36,7 +36,7 @@ Work through every `label-diagram` object in the spec, one photo at a time.
 
 2. **Reuse an earlier reading of the same photo.** If a sidecar `<photo-folder>/<photo-name>.anchors.json` already exists beside the image (you or an earlier run wrote it), apply it instead of looking again, so the same photo gets the same dots on every surface it appears on. Only look at a photo you have no sidecar for.
 
-3. **Look at the photo.** Open the image and see what is actually in it.
+3. **Look at the photo.** Open the image and see what is actually in it. If your viewer refuses it, the cause is the file's byte layout, not its size or what it shows, and a freshly saved copy usually opens: try the `.resized/` copy when there is one, opened on its own, because one refused picture takes any picture opened beside it down too. If no copy opens, leave that photo's dots exactly as the designer wrote them and report the photo as unchecked: a dot placed on a picture nobody saw is a guess the page presents as fact.
 
 4. **Decide how the labels should sit, from what the image is:**
    - A **photograph**, or any busy or coloured image, takes `"layout": "sides"` — the names sit out in the white margins beside the picture, always readable, joined to their dots by leader lines. Set `layout` to `"sides"` on the object if it is not already, because dark label text printed on a photo disappears into it.

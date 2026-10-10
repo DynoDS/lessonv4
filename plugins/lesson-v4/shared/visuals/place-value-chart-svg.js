@@ -49,7 +49,12 @@
 //              { from, to, operation, title, counters: { from, to },
 //                exchanges: [{ from, to, count, label }] }
 //   calculation  ONE written column calculation, the way the teacher sets it out:
-//              { operator, numbers, answer, carry, worked }
+//              { operator, numbers, answer, carry, worked, exchanges, ring }
+//              `exchanges: [{ from: "T", to: "O" }]` on a subtraction, in the
+//              order they are made: the giving column's digit is crossed out
+//              with one fewer written above it, and the column to its right
+//              gets a small 1 in front of its digit. `ring: "O"` rings the
+//              digits being worked in that column.
 //              `numbers: ["", ""]` with `columns` is the empty frame a child
 //              sets a calculation out in, and `operator: ""` leaves the sign's
 //              place blank too, for a problem where they choose the operation.
@@ -86,8 +91,9 @@
 // of three charts, because a chain says the third number grew out of the second.
 
 const { textWidthEm } = require('../text/comic-glyph-width');
-const { profileFor } = require('./surface-profiles');
+const { profileFor, answerColour } = require('./surface-profiles');
 const { insetProfile } = require('./fit-unit');
+const { clearlyUnder } = require('./hair-under');
 
 // ─── CONSTANTS ──────────────────────────────────────────────────────────────
 // Sizes are in D, the digit's font size, so the whole chart grows and shrinks
@@ -279,6 +285,12 @@ const CALC_CARRY_H = 1.25;     // the carry row on the board and the wall, in D:
                                // shallow, because a carried digit is written small
 const CALC_CARRY_OF_ROW = 0.5; // ...and on paper, as a share of a digit row
 const CALC_CARRY_FONT = 0.62;  // the carried digit, as a share of D
+const CALC_ONE_FONT = 0.55;   // the small 1 an exchange puts in front of a digit
+const CALC_ABOVE_FONT = 0.74; // the digit written above a crossed-out one
+const CALC_STRIKE_W = 0.11;   // the line through a crossed-out digit
+// The wall's colours for a subtraction's exchanges, in order: the board's
+// decide-orange and worked-purple, then the step sheet's pink and teal.
+const CALC_EXCHANGE_WALL = ['#E46C0A', '#7030A0', '#C2185B', '#00828A'];
 const CALC_HEAVY_W = 0.16;     // the two thick rules, at least three times a cell
                                // rule so they still read as thick across a room
 // A written calculation's squares on paper, in millimetres: [smallest a child
@@ -567,6 +579,55 @@ function splitNumber(value, what) {
   return { whole, frac };
 }
 
+// A subtraction's exchanges, worked out from the top number so a mark can never
+// disagree with the digits: for each, which digit is crossed out, what is
+// written above it, and where the small 1 goes. The teacher's wall for column
+// subtraction listed "12 - 8 = 4" under a sum that showed 2 - 8, because the
+// drawing had no way to show the exchange (stress test of 7 October 2026; "show
+// that on the place value chart too", 10 October). A column gives once and
+// receives once: a 4 that gives is crossed with a 3 above it, and if it then
+// receives, the small 1 stands in front of that 3; a 0 that receives first and
+// then gives has its small 1 crossed out with it and a 9 above.
+function normaliseCalcExchanges(c, columns, operator, top) {
+  const raw = asList(c.exchanges != null ? c.exchanges : c.exchange);
+  if (raw.length === 0) return null;
+  const refuse = (why) => {
+    throw new Error(`PLACE_VALUE_CALCULATION_INVALID: ${why}`);
+  };
+  if (operator !== '−') {
+    refuse('`exchanges` are the crossings-out of a column subtraction. A digit carried in an addition or a multiplication goes in `carry`.');
+  }
+  const value = top.map((d) => (/^\d$/.test(d) ? Number(d) : 0));
+  const marks = columns.map(() => ({ crossed: null, above: null, one: null }));
+  // A surface that tells its steps apart by colour may give an exchange its own.
+  const colours = raw.map((e) => hexColour(isObj(e) ? e.colour : ''));
+  raw.forEach((e, k) => {
+    const from = columns.indexOf(canonicalColumn(str(isObj(e) ? e.from : '')));
+    const to = columns.indexOf(canonicalColumn(str(isObj(e) ? e.to : '')));
+    const right = columns[from + 1] === '.' ? from + 2 : from + 1;
+    if (from === -1 || to === -1 || columns[from] === '.' || to !== right) {
+      refuse(`exchange ${k + 1} names the column that gives one and the column to its right that gets ten, for example { "from": "T", "to": "O" }.`);
+    }
+    if (marks[from].crossed !== null || marks[to].one !== null) {
+      refuse(`exchange ${k + 1} repeats one already listed: a column gives once and receives once in a written subtraction.`);
+    }
+    if (value[from] < 1) {
+      refuse(`exchange ${k + 1} takes one ${COLUMN_WORD[columns[from]]} and the top number has none there yet. List the exchange INTO that column first, as it is done on paper.`);
+    }
+    value[from] -= 1;
+    value[to] += 10;
+    marks[to].one = { level: marks[to].above ? 1 : 0, k };
+    marks[from].crossed = k;
+    marks[from].above = { text: String(value[from]), k };
+  });
+  return { count: raw.length, marks, colours };
+}
+
+function hexColour(value) {
+  const text = str(value).trim().replace(/^#/, '');
+  return /^[0-9a-fA-F]{6}$/.test(text) ? `#${text.toUpperCase()}` : '';
+}
+
 function normaliseCalculation(spec) {
   const c = isObj(spec.calculation) ? spec.calculation : {};
   // `operator: ""` leaves the sign's place empty, for a problem where choosing
@@ -659,8 +720,21 @@ function normaliseCalculation(spec) {
       // class is not shown a row nobody has explained yet.
       carryRow: operator !== '−' && c.carry !== false,
       worked: c.worked === true,
+      exchange: normaliseCalcExchanges(c, columns, operator, cellsOf(numbers[0], 'number 1')),
+      ring: ringColumn(c, columns),
+      ringColour: hexColour(c.ringColour),
     },
   };
+}
+
+// The column whose digits are being worked, ringed: `ring: "O"`.
+function ringColumn(c, columns) {
+  if (c.ring == null || c.ring === '' || c.ring === false) return '';
+  const column = canonicalColumn(str(c.ring));
+  if (column === '.' || columns.indexOf(column) === -1) {
+    throw new Error(`PLACE_VALUE_CALCULATION_INVALID: \`ring\` names "${str(c.ring)}", a column this calculation does not have (${columns.join(', ')}).`);
+  }
+  return column;
 }
 
 function normalise(spec = {}) {
@@ -752,8 +826,15 @@ function floorPt(profile, boardShare) {
   return profile.heightPt ? profile.minFontPt * boardShare : profile.minFontPt;
 }
 
+// `answer` is the colour of a digit that has been worked out or that changed:
+// the ring's green on the board and the wall. On a pupil sheet nothing has been
+// worked out, so every printed digit is the ink of a given digit, the bottom
+// row of a missing-digit sum included, while the ring itself stays green
+// because a ring points and does not answer (the teacher, 9 October 2026:
+// "black is fine", and "green ring with a black digit is fine").
 function paletteFor(profile) {
-  return profile.palette === 'ink' ? INK : COLOURS;
+  const pal = profile.palette === 'ink' ? INK : COLOURS;
+  return { ...pal, answer: answerColour(profile, pal.ring, pal.text) };
 }
 
 function columnFills(profile, column) {
@@ -1036,7 +1117,7 @@ function describeStacked(chart, profile) {
     if (!row.counterLabels && (smallest === null || lay.raw / lay.floor < smallest.raw / smallest.floor)) smallest = lay;
     if (row.counterLabels && lay.fontPt < COUNTER_FACE_MIN_PT) facesTooSmall = lay;
   }));
-  if (smallest !== null && smallest.raw < smallest.floor) {
+  if (smallest !== null && clearlyUnder(smallest.raw, smallest.floor, { surface: profile.surface, what: "a place value chart's counters" })) {
     throw new Error(
       `PLACE_VALUE_COUNTERS_TOO_SMALL: this chart's counters come out ${(smallest.raw / 72).toFixed(2)}in across, below the ` +
         `${(smallest.floor / 72).toFixed(3)}in a child can count from the carpet${smallest.floor > COUNTER_READABLE_PT ? ' when they stand close together' : ''}, because each column is only ${(colW / 72).toFixed(2)}in wide. ` +
@@ -1054,7 +1135,7 @@ function describeStacked(chart, profile) {
   // Refuse a column too narrow to write in. If nobody writes in the chart, the
   // honest repair is to say so: print the digits, or ask for the heading strip.
   const writeRows = chart.rows.some((r) => isWriteRow(r, cols));
-  if (writeRows && L.writeIn.colPt && colW < L.writeIn.colPt - 0.01) {
+  if (writeRows && L.writeIn.colPt && clearlyUnder(colW, L.writeIn.colPt - 0.01, { surface: profile.surface, what: "a place value chart's write-in columns" })) {
     throw new Error(
       `PLACE_VALUE_WRITE_IN_TOO_NARROW: this chart has a row left blank for somebody to write in, but each column is only ` +
         `${(colW / 72).toFixed(3)}in wide, below the ${(L.writeIn.colPt / 72).toFixed(2)}in one handwritten digit needs at the size this chart prints its own digits. ` +
@@ -1154,7 +1235,7 @@ function describeStacked(chart, profile) {
           // worked row would call a wrong digit right.
           const worked = !isDot && row.worked && !row.answer && text !== '';
           const revealed = !isDot && row.answer && text !== '';
-          if (text !== '') texts.push({ role: 'digit', text, x: cx + colWs[i] / 2, y: dy, h: digitH, pt: D, fill: worked ? pal.worked : (picked || revealed) ? pal.ring : pal.text, picked });
+          if (text !== '') texts.push({ role: 'digit', text, x: cx + colWs[i] / 2, y: dy, h: digitH, pt: D, fill: worked ? pal.worked : (picked || revealed) ? pal.answer : pal.text, picked });
           const ringStroke = row.worked && !row.answer ? pal.worked : pal.ring;
           if (picked) rings.push({ x: cx + ringInset, y: dy + ringInset, w: colWs[i] - 2 * ringInset, h: digitH - 2 * ringInset, sw: ringW, column: c, stroke: ringStroke });
           cx += colWs[i];
@@ -1206,7 +1287,11 @@ function describeCalculation(chart, profile) {
   const carryH = (D) => (!calc.carryRow ? 0 : paper ? rowH(D) * CALC_CARRY_OF_ROW : CALC_CARRY_H * D);
   const titleH = (D) => (chart.title ? D * TITLE_FONT * 1.3 + TITLE_GAP * D : 0);
   const headH = (D) => (chart.headings ? HEADER_H * D : 0);
-  const heightIn = (D) => titleH(D) + headH(D) + rowsOf * rowH(D) + carryH(D);
+  // A subtraction with exchanges keeps a shallow band above its top number,
+  // inside that number's own cells, for the digit written over a crossed-out one.
+  const exchange = calc.exchange;
+  const exchangeH = (D) => (!exchange ? 0 : paper ? rowH(D) * CALC_CARRY_OF_ROW : CALC_CARRY_H * D);
+  const heightIn = (D) => titleH(D) + headH(D) + rowsOf * rowH(D) + carryH(D) + exchangeH(D);
 
   let D = Math.min(hi, Math.max(1, colW - inset) / digitEm);
   if (profile.heightPt) {
@@ -1229,7 +1314,7 @@ function describeCalculation(chart, profile) {
     );
   }
   const blankAnswer = cols.some((c, i) => c !== '.' && calc.answer[i] === '');
-  if (blankAnswer && writeIn.colPt && colW < writeIn.colPt - 0.01) {
+  if (blankAnswer && writeIn.colPt && clearlyUnder(colW, writeIn.colPt - 0.01, { surface: profile.surface, what: "a column calculation's write-in columns" })) {
     throw new Error(
       `PLACE_VALUE_WRITE_IN_TOO_NARROW: this calculation's answer row is blank for somebody to write in, but each column is only ` +
         `${(colW / 72).toFixed(3)}in wide, below the ${(writeIn.colPt / 72).toFixed(2)}in one handwritten digit needs. ` +
@@ -1261,7 +1346,7 @@ function describeCalculation(chart, profile) {
   };
   // Everything worked out prints in the answer's green, or in the worked
   // example's purple when the class is watching it be done (or done wrong).
-  const worked = calc.worked ? pal.worked : pal.ring;
+  const worked = calc.worked ? pal.worked : pal.answer;
   const given = calc.worked ? pal.worked : pal.text;
 
   let y = 0;
@@ -1283,8 +1368,11 @@ function describeCalculation(chart, profile) {
     y += h;
   }
 
-  const row = (role, digits, h, pt, fill, sign, name) => {
-    cells.push({ role: 'label', x: 0, y, w: opW, h, fill: pal.labelFill });
+  // `head` is room above the digits inside the same cells (the exchange band).
+  const row = (role, digits, h, pt, fill, sign, name, head = 0) => {
+    cells.push({ role: 'label', x: 0, y, w: opW, h: h + head, fill: pal.labelFill });
+    const cellTop = y;
+    y += head;
     if (sign) {
       const signPt = Math.min(D, (opW * 0.8) / textWidthEm(sign, true));
       texts.push({ role: 'operator', text: sign, x: opW / 2, y, h, pt: signPt, fill: given });
@@ -1295,7 +1383,7 @@ function describeCalculation(chart, profile) {
     cols.forEach((c, i) => {
       const text = c === '.' ? (any && role !== 'carry' ? '.' : '') : digits[i];
       const cellRole = role === 'carry' ? 'carry' : text === '' && role === 'answer' ? 'write' : 'digit';
-      cells.push({ role: cellRole, row: role, column: c, x, y, w: colWs[i], h, fill: columnFills(profile, c)[1] });
+      cells.push({ role: cellRole, row: role, column: c, x, y: cellTop, w: colWs[i], h: h + head, fill: columnFills(profile, c)[1] });
       if (text !== '') texts.push({ role: role === 'carry' ? 'carry' : 'digit', row: role, column: c, text, x: x + colWs[i] / 2, y, h, pt, fill });
       if (COLUMN_PLACE[c]) point(`${COLUMN_PLACE[c]} ${name}`, x + colWs[i] / 2, y, h, text, pt);
       x += colWs[i];
@@ -1306,9 +1394,67 @@ function describeCalculation(chart, profile) {
   };
 
   const marks = { numbers: [] };
+  const strikes = [];
+  const rings = [];
   calc.numbers.forEach((digits, i) => {
-    marks.numbers.push(row('number', digits, rowH(D), D, given, i === calc.numbers.length - 1 ? calc.operator : '', `number ${i + 1}`));
+    marks.numbers.push(row('number', digits, rowH(D), D, given, i === calc.numbers.length - 1 ? calc.operator : '', `number ${i + 1}`, i === 0 ? exchangeH(D) : 0));
   });
+  if (exchange) {
+    // Each exchange's marks share one colour: the worked colour, or the colour a
+    // surface gives that exchange (the wall's step sheet colours each by its step).
+    // On the wall an exchange nobody coloured is still not the answer's green:
+    // beside green step numbers and a green answer the crossings-out vanished
+    // into them ("you got the exchanging which is also green", 10 October 2026).
+    const wall = profile.surface === 'wall' && !calc.worked ? CALC_EXCHANGE_WALL : [];
+    const colourOf = (k) => exchange.colours[k] || (Array.isArray(profile.exchangeColours) && profile.exchangeColours[k]) || wall[k % (wall.length || 1)] || worked;
+    const top = marks.numbers[0];
+    const bandH = exchangeH(D);
+    const bandY = top.y - bandH;
+    const abovePt = CALC_ABOVE_FONT * D;
+    const digitW = digitEm * D;
+    const oneEm = textWidthEm('1', true);
+    const strikeW = Math.max(1.5, CALC_STRIKE_W * D);
+    let x = opW;
+    cols.forEach((c, i) => {
+      const m = exchange.marks[i];
+      const cx = x + colWs[i] / 2;
+      x += colWs[i];
+      if (c === '.') return;
+      const oneBelow = m.one && m.one.level === 0;
+      const oneAbove = m.one && m.one.level === 1;
+      // The small 1 in front of the top digit: 2 becomes 12.
+      const onePt = CALC_ONE_FONT * D;
+      const oneW = oneEm * onePt;
+      const oneX = cx - digitW / 2 - oneW / 2;
+      if (oneBelow) {
+        texts.push({ role: 'exchange-one', row: 'number', column: c, text: '1', x: oneX, y: top.y, h: top.h * 0.62, pt: onePt, fill: colourOf(m.one.k) });
+      }
+      if (m.crossed !== null) {
+        const left = (oneBelow ? oneX - oneW / 2 : cx - digitW / 2) - 0.05 * D;
+        strikes.push({ role: 'cross-out', column: c, x1: left, y1: top.y + top.h * 0.82, x2: cx + digitW / 2 + 0.05 * D, y2: top.y + top.h * 0.18, sw: strikeW, stroke: colourOf(m.crossed) });
+      }
+      if (m.above) {
+        const leadPt = abovePt * 0.75;
+        const lead = oneAbove ? oneEm * leadPt : 0;
+        const aboveW = textWidthEm(m.above.text, true) * abovePt;
+        texts.push({ role: 'exchange', row: 'exchange', column: c, text: m.above.text, x: cx + lead / 2, y: bandY, h: bandH, pt: abovePt, fill: colourOf(m.above.k) });
+        if (oneAbove) {
+          texts.push({ role: 'exchange-one', row: 'exchange', column: c, text: '1', x: cx + lead / 2 - aboveW / 2 - lead / 2, y: bandY, h: bandH * 0.8, pt: leadPt, fill: colourOf(m.one.k) });
+        }
+      }
+      if (COLUMN_PLACE[c]) point(`${COLUMN_PLACE[c]} exchange`, cx, bandY, bandH, m.above ? m.above.text : '', abovePt);
+    });
+    marks.exchange = { y: bandY, h: bandH };
+  }
+  if (calc.ring) {
+    // One ring round the column's digits in every number: what is being worked.
+    const i = cols.indexOf(calc.ring);
+    const left = opW + colWs.slice(0, i).reduce((a, b) => a + b, 0);
+    const inset = RING_INSET * D;
+    const first = marks.numbers[0];
+    const last = marks.numbers[marks.numbers.length - 1];
+    rings.push({ role: 'working-column', column: calc.ring, x: left + inset, y: first.y + inset, w: colWs[i] - 2 * inset, h: last.y + last.h - first.y - 2 * inset, sw: Math.max(3, RING_W * D), stroke: calc.ringColour || pal.ring });
+  }
   const rules = [y];
   marks.answer = row('answer', calc.answer, rowH(D), D, worked, '', 'answer');
   rules.push(y);
@@ -1318,7 +1464,7 @@ function describeCalculation(chart, profile) {
 
   return {
     form: 'calculation', D, N, colW, colWs, labelW: opW, chartW, w: chartW, h: y, rule, heavy, pal,
-    headings: heading, labelFonts: [], labels: [], cells, texts, circles: [], rings: [], lines, polys: [], bars: [],
+    headings: heading, labelFonts: [], labels: [], cells, texts, circles: [], rings, lines, polys: [], bars: [], strikes,
     rows: marks, anchor: 'middle', points,
   };
 }
@@ -1545,7 +1691,7 @@ function describePair(chart, profile) {
         if (count > 0 && c !== '.') {
           const mark = exchange && [exchange.group, exchange.one].find((m) => m.chart === which && m.column === c);
           const lay = counterLayout(colWs[i], band, count, c, false, D, { close: closePair, ring: ringIn(pops, c) });
-          if (lay.raw < lay.floor) {
+          if (clearlyUnder(lay.raw, lay.floor, { surface: profile.surface, what: "a before-and-after chart's counters" })) {
             const refusal = new Error(
               `PLACE_VALUE_COUNTERS_TOO_SMALL: this pair's counters come out ${(lay.raw / 72).toFixed(2)}in across, below the ` +
                 `${(lay.floor / 72).toFixed(3)}in a child can count from the carpet${lay.floor > COUNTER_READABLE_PT ? ' when they stand close together' : ''}. ${pairCounterLever(chart, profile, lay.raw)}`
@@ -1590,7 +1736,7 @@ function describePair(chart, profile) {
       const on = !isDot && picked.has(i);
       const text = isDot ? '.' : str(cells_[i]);
       cells.push({ role: text === '' ? 'write' : 'digit', column: c, x, y: yy, w: colWs[i], h: rowH, fill: columnFills(profile, c)[1] });
-      if (text !== '') texts.push({ role: 'digit', text, x: x + colWs[i] / 2, y: yy, h: rowH, pt: D, fill: on ? pal.ring : pal.text, picked: on });
+      if (text !== '') texts.push({ role: 'digit', text, x: x + colWs[i] / 2, y: yy, h: rowH, pt: D, fill: on ? pal.answer : pal.text, picked: on });
       if (on) rings.push({ x: x + ringInset, y: yy + ringInset, w: colWs[i] - 2 * ringInset, h: rowH - 2 * ringInset, sw: ringW, column: c });
       x += colWs[i];
     });
@@ -1683,6 +1829,7 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   L.lines.forEach((l) => parts.push(`<line x1="${f2(l.x1)}" y1="${f2(l.y1)}" x2="${f2(l.x2)}" y2="${f2(l.y2)}" stroke="${l.stroke}" stroke-width="${f2(l.sw)}"/>`));
   L.polys.forEach((p) => parts.push(`<polygon points="${p.points.map((q) => `${f2(q[0])},${f2(q[1])}`).join(' ')}" fill="${p.fill}"/>`));
   L.texts.forEach((t) => parts.push(text(t)));
+  (L.strikes || []).forEach((l) => parts.push(`<line x1="${f2(l.x1)}" y1="${f2(l.y1)}" x2="${f2(l.x2)}" y2="${f2(l.y2)}" stroke="${l.stroke}" stroke-width="${f2(l.sw)}" stroke-linecap="round"/>`));
   // Rings last, so a neighbouring cell drawn afterwards never paints over half.
   L.rings.forEach((r) => parts.push(`<rect x="${f2(r.x)}" y="${f2(r.y)}" width="${f2(r.w)}" height="${f2(r.h)}" fill="none" stroke="${r.stroke || L.pal.ring}" stroke-width="${f2(r.sw)}"/>`));
   const w = L.w + 2 * bleed;

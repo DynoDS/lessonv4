@@ -946,6 +946,104 @@ def receipted_omissions(after_path: Path) -> set[str]:
     return found
 
 
+# Words that point at a picture: "Look at this sponge", "This photograph shows
+# a place like it, at night", "These five pictures". When the picture they point
+# at never arrived, keeping them exact is what leaves a slide telling the class
+# to look at nothing (6 of 20 lessons in the 7 October 2026 stress test), and
+# only the repairer knows which pictures came. So on the pages that named a
+# receipted-lost picture, and the pages of the same design unit, a sentence
+# carrying one of these cues may be reworded or dropped. A sentence without one
+# is held exactly as before, and so is every other page.
+POINTS_AT_A_PICTURE = re.compile(
+    r"\b(pictures?|photos?|photographs?|images?|paintings?|drawings?|"
+    r"look(?:ing)? at|you can see|shows?|shown)\b",
+    re.IGNORECASE,
+)
+SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+
+
+def pages_of(spec: object) -> list:
+    """The pages of a specification: slides, sheets, cards, stick-in pieces."""
+    pages: list = []
+    if isinstance(spec, dict):
+        for value in spec.values():
+            if isinstance(value, list):
+                pages.extend(item for item in value if isinstance(item, dict))
+            elif isinstance(value, dict):
+                pages.extend(item for item in value.values() if isinstance(item, dict))
+    return pages
+
+
+def names_any(node: object, names: set[str]) -> bool:
+    if isinstance(node, str):
+        return node in names
+    if isinstance(node, list):
+        return any(names_any(item, names) for item in node)
+    if isinstance(node, dict):
+        return any(names_any(value, names) for value in node.values())
+    return False
+
+
+def pages_that_lost_a_picture(spec: object, omitted: set[str]) -> list:
+    """Pages that named a lost picture, and the other pages of the same unit.
+
+    A unit split over two slides keeps its script on one and its picture on the
+    other, so the sentence that points and the picture it points at are often
+    on different pages of one `designUnitId`.
+    """
+    if not omitted:
+        return []
+    pages = pages_of(spec)
+    direct = [page for page in pages if names_any(page, omitted)]
+    units = {page.get("designUnitId") for page in direct} - {None}
+    return [page for page in pages
+            if any(page is hit for hit in direct) or page.get("designUnitId") in units]
+
+
+def release_pointing_words(before: "Census", after: "Census", lost_pages: list) -> int:
+    """Let the words that pointed at a lost picture change, and nothing else.
+
+    Returns how many were released. Each reworded line may bring one new line
+    with it, never one copied off the teacher's answers, so the release cannot
+    be used to print an answer.
+    """
+    if not lost_pages:
+        return 0
+    on_lost_pages = Census(lost_pages)
+    changed = [text for text in before.content
+               if isinstance(text, str) and text in on_lost_pages.content
+               and after.content.get(text, 0) < before.content[text]
+               and POINTS_AT_A_PICTURE.search(text)]
+    replacements = [text for text in sorted(after.content)
+                    if text not in before.content and text not in before.teacher]
+    replacements = replacements[:len(changed)]
+    # A list of lines is also counted whole, so the list that held a reworded
+    # line goes with it on both sides.
+    for tally, texts in ((after.content, replacements), (before.content, changed)):
+        for key in [key for key in tally if isinstance(key, str)
+                    and any(key == text or (": " in key and text in key) for text in texts)]:
+            del tally[key]
+    for text in changed:
+        for tally in (before.cases, before.case_room):
+            for fingerprint in [key for key in tally if f"{text}x" in key]:
+                del tally[fingerprint]
+
+    released = len(changed)
+    kept_scripts = []
+    for note in before.script:
+        if note not in on_lost_pages.script or any(note in candidate for candidate in after.script):
+            kept_scripts.append(note)
+            continue
+        sentences = [part for part in SENTENCE_END.split(note) if part.strip()]
+        held = [part for part in sentences if not POINTS_AT_A_PICTURE.search(part)]
+        if all(any(part in candidate for candidate in after.script) for part in held):
+            released += 1
+        else:
+            kept_scripts.append(note)
+    before.script[:] = kept_scripts
+    return released
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Prove a repair preserved what children work from."
@@ -959,7 +1057,9 @@ def main(argv: list[str] | None = None) -> int:
     # worker deleted by mistake (2 October 2026) is restored, not dropped.
     omitted = receipted_omissions(Path(args.after))
 
-    before_spec = without_omitted_pictures(read_spec(Path(args.before), "--before"), omitted)
+    raw_before = read_spec(Path(args.before), "--before")
+    lost_pages = pages_that_lost_a_picture(raw_before, omitted)
+    before_spec = without_omitted_pictures(raw_before, omitted)
     after_spec = without_omitted_pictures(read_spec(Path(args.after), "--after"), omitted)
     taken_away = returns_taken_away(before_spec, after_spec)
     if taken_away:
@@ -976,6 +1076,7 @@ def main(argv: list[str] | None = None) -> int:
     after = Census(without_sheets_come_back(before_spec, after_spec))
 
     rejoin_split_sequences(before, after)
+    pointing_words = release_pointing_words(before, after, lost_pages)
 
     lost = losses(before.objects, after.objects)
     if lost:
@@ -1106,6 +1207,8 @@ def main(argv: list[str] | None = None) -> int:
         f"{sum(after.teacher.values())} teacher answer(s), "
         f"{after.room['targets']} place(s) to write and "
         f"{sum(after.metadata.values())} piece(s) of authoring data preserved"
+        + (f"; {pointing_words} line(s) that pointed at a lost picture reworded"
+           if pointing_words else "")
     )
     return 0
 

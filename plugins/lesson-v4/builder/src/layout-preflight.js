@@ -19,7 +19,8 @@
 // number. Deleting the content, moving it or swapping the zone would each be the
 // builder making a decision about what a lesson should contain.
 
-const { getWarnings, clearWarnings, restoreWarnings } = require('./warnings');
+const { getWarnings, clearWarnings, restoreWarnings, withoutRecording } = require('./warnings');
+const { allowHairUnder } = require('../../shared/visuals/hair-under');
 const { ZONE_COMPAT } = require('./content/index');
 
 // Every content object on a slide, with the zone it was put in where the slide
@@ -78,6 +79,20 @@ function compatibilityProblems(lesson) {
 // `contextForSlide(index, slideData)` supplies the same ctx the real build
 // would, so the pre-rendered images and measurements a helper expects are the
 // ones it actually gets.
+// The second look records nothing: what the first try raised stands, and a
+// slide still refused must not say everything twice.
+function drawsWithHairUnder(drawAgain) {
+  allowHairUnder(true);
+  try {
+    withoutRecording(drawAgain);
+    return true;
+  } catch (_) {
+    return false;
+  } finally {
+    allowHairUnder(false);
+  }
+}
+
 function preflightLayouts({ PptxGenJS, lesson, contextForSlide, drawSlide }) {
   const { SLIDE_W, SLIDE_H } = require('./layout');
   const { drawSlide: realDrawSlide } = require('./templates');
@@ -86,6 +101,7 @@ function preflightLayouts({ PptxGenJS, lesson, contextForSlide, drawSlide }) {
   const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
   const errors = [];
   const warnings = [];
+  const hairSlides = [];
 
   // A dry run raises the same warnings the real run will, and a warning counted
   // twice reads as two faults. So the global store is set aside for the duration
@@ -104,6 +120,13 @@ function preflightLayouts({ PptxGenJS, lesson, contextForSlide, drawSlide }) {
       try {
         draw(pptx, slide, slideData, contextForSlide(i, slideData));
       } catch (err) {
+        // A slide refused over a size gets one second look with near misses let
+        // through (shared/visuals/hair-under.js). It draws only when every size
+        // it missed was missed by a hair; anything else is refused as it was.
+        if (drawsWithHairUnder(() => draw(pptx, pptx.addSlide(), slideData, contextForSlide(i, slideData)))) {
+          hairSlides.push(i + 1);
+          return;
+        }
         // A helper that refuses by name keeps its name: STEP_TEXT_OVERLOAD is a
         // different fault from a broken spec and goes to a different owner.
         const message = (err && err.message) || String(err);
@@ -124,7 +147,7 @@ function preflightLayouts({ PptxGenJS, lesson, contextForSlide, drawSlide }) {
 
   errors.push(...compatibilityProblems(lesson));
 
-  return { errors, warnings };
+  return { errors, warnings, hairSlides };
 }
 
 module.exports = { preflightLayouts, compatibilityProblems };

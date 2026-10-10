@@ -22,7 +22,8 @@ function drawGridCalc(pptx, slide, data, ctx) {
     headerStyle: data.headerStyle || 'title',
     title: data.title,
     instruction: data.instruction,
-    signal: data.signal
+    signal: data.signal,
+    doSign: data.doSign
   }, ctx);
   const bz = bodyZone(data.headerStyle, data);
 

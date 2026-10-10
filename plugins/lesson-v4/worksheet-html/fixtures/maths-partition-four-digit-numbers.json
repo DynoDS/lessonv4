@@ -241,7 +241,7 @@
             },
             {
               "helper": "instruction",
-              "text": "Decide whether each equation is correct. Explain your decisions.\nThe counters show each addition."
+              "text": "Decide whether each equation is correct. Explain your decisions."
             },
             {
               "row": [
@@ -490,6 +490,7 @@
     ]
   },
   "notes": [
-    "Expected carries every task, value, case and response target of the approved reference. It does not carry the reference band from the foot of that page - the place-value chart and the two method-step lists - and that is a page decision this fixture records rather than a difference anyone approved. The work alone measures 255mm of the 267mm a portrait A4 side gives, and the band costs 69mm more. The approved PDF fits both by setting its counters, captions and writing lines below the sizes this design system allows anything to print at, so the honest choice was legible type and the chart on the board while children work. Restoring it on paper needs a decision from the lesson designer about what else comes off."
+    "Expected carries every task, value, case and response target of the approved reference. It does not carry the reference band from the foot of that page - the place-value chart and the two method-step lists - and that is a page decision this fixture records rather than a difference anyone approved. The work alone measures 255mm of the 267mm a portrait A4 side gives, and the band costs 69mm more. The approved PDF fits both by setting its counters, captions and writing lines below the sizes this design system allows anything to print at, so the honest choice was legible type and the chart on the board while children work. Restoring it on paper needs a decision from the lesson designer about what else comes off.",
+    "The instruction over the two counter equations has lost its second sentence, 'The counters show each addition.': at the Year 4 line height of 8mm (9 October 2026) this full page came out 4mm over, and that sentence is the one line on it that sets no task and holds no answer."
   ]
 }

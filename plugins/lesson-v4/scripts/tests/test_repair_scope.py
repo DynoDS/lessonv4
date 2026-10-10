@@ -310,6 +310,90 @@ class APictureThatNeverArrivedTests(RepairScopeCase):
         self.assertEqual(result.returncode, 1, result.stdout)
 
 
+class WordsThatPointedAtALostPictureTests(RepairScopeCase):
+    """A sentence pointing at a picture that never arrived may be reworded.
+
+    Six of the twenty lessons in the 7 October 2026 stress test delivered a
+    slide or a script still saying "Look at this sponge" or "This photograph
+    shows a place like it, at night" beside nothing, because the repair that
+    took the picture off was refused any change to the words. Only the pages
+    that named the lost picture are released, and only their pointing words.
+    """
+
+    LOST = {"filename": "unsplash/sponge.jpg", "terminalState": "unsatisfied"}
+    SCRIPT = ("Say to children: Two words for what you've just seen. Look at this sponge. "
+              "When water lands on it, the water soaks in.")
+
+    def deck(self):
+        return {"slides": [
+            {"template": "body-full", "title": "Key Vocabulary", "speakerNotes": self.SCRIPT,
+             "body": {"type": "stack", "items": [
+                 {"type": "text", "text": "This photograph shows a sponge."},
+                 {"type": "text", "text": "Which rock is permeable?", "answer": "chalk"},
+                 {"type": "image", "imagePath": "unsplash/sponge.jpg"}]}},
+            {"template": "body-full", "title": "Granite",
+             "speakerNotes": "Say to children: Look at this granite. It is speckled.",
+             "body": {"type": "stack", "items": [
+                 {"type": "text", "text": "Look at the picture of granite."},
+                 {"type": "image", "imagePath": "unsplash/granite.jpg"}]}},
+        ]}
+
+    def repaired(self, change):
+        after = self.deck()
+        after["slides"][0]["body"]["items"].pop()
+        change(after["slides"])
+        return after
+
+    def check(self, change, receipts=None):
+        receipts = (self.LOST,) if receipts is None else receipts
+        return self.run_check(self.deck(), self.repaired(change), receipts=receipts)
+
+    def test_the_script_line_that_pointed_at_it_may_be_reworded(self):
+        def change(slides):
+            slides[0]["speakerNotes"] = self.SCRIPT.replace("Look at this sponge.", "Think of a sponge.")
+        result = self.check(change)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("pointed at a lost picture", result.stdout)
+
+    def test_the_rest_of_that_script_is_still_held(self):
+        def change(slides):
+            slides[0]["speakerNotes"] = "Say to children: Think of a sponge. Water runs off it."
+        result = self.check(change)
+        self.assertEqual(result.returncode, 1, result.stdout)
+        self.assertIn("teacher script(s) did not survive", result.stdout)
+
+    def test_the_slide_line_that_pointed_at_it_may_be_reworded(self):
+        def change(slides):
+            slides[0]["body"]["items"][0]["text"] = "A sponge soaks up water."
+        result = self.check(change)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_question_on_that_slide_may_not_be_reworded(self):
+        def change(slides):
+            slides[0]["body"]["items"][1]["text"] = "Chalk is permeable. True?"
+        result = self.check(change)
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_the_new_line_may_not_be_the_answer(self):
+        def change(slides):
+            slides[0]["body"]["items"][0]["text"] = "chalk"
+        result = self.check(change)
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_a_slide_that_kept_its_picture_is_not_released(self):
+        def change(slides):
+            slides[1]["speakerNotes"] = "Say to children: Think of granite. It is speckled."
+            slides[1]["body"]["items"][0]["text"] = "Think about granite."
+        result = self.check(change)
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+    def test_without_a_receipt_nothing_is_released(self):
+        def change(slides):
+            slides[0]["speakerNotes"] = self.SCRIPT.replace("Look at this sponge.", "Think of a sponge.")
+        result = self.check(change, receipts=())
+        self.assertEqual(result.returncode, 1, result.stdout)
+
+
 class EveryRepairerRunsItTests(unittest.TestCase):
     def test_all_four_owners_snapshot_and_check(self):
         for name, spec in REPAIRERS:

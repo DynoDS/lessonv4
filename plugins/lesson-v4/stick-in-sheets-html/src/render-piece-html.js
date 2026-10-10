@@ -100,17 +100,26 @@ function renderSingle(item, opts = {}) {
     ? Math.max(1, naturalHeightMm - reserveTopMm) * a
     : naturalWidthMm;
   const heightMm = widthMm / a;
+  // A whole page can ask for the drawing enlarged as it stands (`zoom`): its
+  // words and its boxes grow together. This is how a drawing sized from its
+  // own words fills a page: a ten frame's boxes are four letters wide however
+  // much width it is offered, so on a page it printed 78mm wide with boxes too
+  // small for a counter (7 October 2026). `flex` tells the page it may do this;
+  // a drawing printed at true size (a ruler, coins) is never enlarged.
+  const flex = Boolean(def.laidOutAtWidth && !def.widthMmFor && !def.trueSize);
+  const zoom = flex && opts.zoom > 0 ? opts.zoom : 1;
   return {
-    html: centreWrap(inlineSvg(svg, widthMm, heightMm), widthMm),
-    widthMm,
-    heightMm: heightMm + reserveTopMm,
+    html: centreWrap(inlineSvg(svg, widthMm * zoom, heightMm * zoom), widthMm * zoom),
+    widthMm: widthMm * zoom,
+    heightMm: heightMm * zoom + reserveTopMm,
+    flex,
   };
 }
 
 // A strip of N figures, each contain-fitted into one common box with a solid
 // write-on line beneath - same box, same wrap count, same footprint arithmetic,
 // so all the lines sit on one baseline and the strip plans into the same tile.
-function renderRow(item) {
+function renderRow(item, opts = {}) {
   const def = ROW_VISUALS[item.visual];
   const figs = (item.spec && item.spec.figures) || [];
   if (figs.length === 0) return null;
@@ -135,42 +144,62 @@ function renderRow(item) {
   // A row printed as a whole page is asked for at a width, like any figure:
   // every box grows by the same factor, so the strip stays level and the
   // write-on lines keep their place under each figure.
-  const naturalWidthMm = Math.min(figs.length, ROW_PER_ROW) * (naturalBoxWMm + 2 * ROW_CELL_PAD_MM);
+  // A slip wraps at three so it fits a book. A page has the width for one row
+  // of up to five, and splits a longer strip into even rows of up to four, so
+  // four clocks print side by side and not as three and one.
+  const perRow = opts.page
+    ? (figs.length <= 5 ? figs.length : Math.ceil(figs.length / Math.ceil(figs.length / 4)))
+    : ROW_PER_ROW;
+  const naturalWidthMm = Math.min(figs.length, perRow) * (naturalBoxWMm + 2 * ROW_CELL_PAD_MM);
   const grow = Number.isFinite(item.widthMm) && item.widthMm > 0 ? item.widthMm / naturalWidthMm : 1;
   const boxWMm = naturalBoxWMm * grow;
   const boxHMm = naturalBoxHMm * grow;
   const cellWMm = boxWMm + 2 * ROW_CELL_PAD_MM;
   const withLabels = Boolean(item.spec?.writeOnLabels);
+  // Words a figure is given (`caption`: the time to show on a blank clock)
+  // print under that figure, where the child is working. Listed in the task
+  // line instead, four times shared one sentence and a Year 2 child matched
+  // each to its face by a 7pt letter (7 October 2026). The words grow with the
+  // figure, from the pack's 11pt on a slip to 18pt on a page.
+  const captions = figs.map((f) => (f && typeof f.caption === "string" ? f.caption.trim() : ""));
+  const captionPt = Math.max(11, Math.min(18, boxWMm / 3.2));
+  const captionLineMm = captionPt * 0.45;
+  const captionChars = Math.max(6, Math.floor(cellWMm / (captionPt * 0.19)));
+  const captionLines = Math.max(0, ...captions.map((c) => (c ? Math.ceil(c.length / captionChars) : 0)));
+  const captionBandMm = captionLines ? captionLines * captionLineMm + 2 : 0;
 
-  const cells = figs.map((fspec) => {
-    const { svg, w, h } = def.tightSvg(fspec);
+  const cells = figs.map((fspec, i) => {
+    const { caption: _given, ...drawSpec } = fspec || {};
+    const { svg, w, h } = def.tightSvg(drawSpec);
     const scale = Math.min(boxWMm / w, boxHMm / h);
     const displayW = w * scale;
     const displayH = h * scale;
-    const line = withLabels
+    const line = captions[i]
+      ? `<div style="text-align:center;font-weight:bold;font-size:${captionPt.toFixed(1)}pt;line-height:${captionLineMm.toFixed(1)}mm;margin-top:2mm;color:#000">${esc(captions[i])}</div>`
+      : withLabels
       ? `<div style="border-bottom:0.4mm solid ${GREY};height:0;margin-top:${ROW_LINE_GAP_MM}mm"></div>`
       : "";
     // Bottom-aligned figure so every write-on line sits level however tall the
     // figure inside the common box is.
-    return `<td style="width:${cellWMm}mm;height:${boxHMm + ROW_LINE_GAP_MM}mm;vertical-align:bottom;padding:1mm 2mm;border:none">` +
+    return `<td style="width:${cellWMm}mm;height:${boxHMm + ROW_LINE_GAP_MM}mm;vertical-align:${captionBandMm ? "top" : "bottom"};padding:1mm 2mm;border:none">` +
       `<div style="display:flex;align-items:flex-end;justify-content:center;height:${boxHMm}mm">` +
       inlineSvg(svg, displayW, displayH) +
       `</div>${line}</td>`;
   });
 
-  const colCount = Math.min(figs.length, ROW_PER_ROW);
+  const colCount = Math.min(figs.length, perRow);
   const rows = [];
-  for (let i = 0; i < cells.length; i += ROW_PER_ROW) {
-    const rowCells = cells.slice(i, i + ROW_PER_ROW);
+  for (let i = 0; i < cells.length; i += perRow) {
+    const rowCells = cells.slice(i, i + perRow);
     while (rowCells.length < colCount) rowCells.push(`<td style="width:${cellWMm}mm;border:none"></td>`);
     rows.push(`<tr>${rowCells.join("")}</tr>`);
   }
 
-  const rowCount = Math.ceil(figs.length / ROW_PER_ROW);
+  const rowCount = Math.ceil(figs.length / perRow);
   return {
     html: `<table style="border-collapse:collapse;margin:0 auto"><tbody>${rows.join("")}</tbody></table>`,
     widthMm: colCount * cellWMm,
-    heightMm: rowCount * (boxHMm + ROW_LINE_GAP_MM + (withLabels ? ROW_LABEL_BAND_MM : 0)),
+    heightMm: rowCount * (boxHMm + ROW_LINE_GAP_MM + Math.max(withLabels ? ROW_LABEL_BAND_MM : 0, captionBandMm)),
   };
 }
 
@@ -206,6 +235,37 @@ function renderBoxRow(item) {
   };
 }
 
+// A picture whose every printed label is only a letter or a number (A, B, 2) is
+// a picture to name things on: the board shows the letters, and the child writes
+// what each one is. `letterMarks` gives those letters in order, or null for any
+// other labelled diagram. Anything after `||` is the board's answer and is
+// never read.
+function letterMarks(item) {
+  if (!item || item.visual !== "label-diagram") return null;
+  const callouts = (item.spec && item.spec.callouts) || [];
+  if (callouts.length === 0) return null;
+  const marks = callouts.map((c) => (c && c.given ? String(c.label == null ? "" : c.label).split("||")[0].trim() : ""));
+  return marks.every((m) => /^[A-Za-z]$|^\d{1,2}$/.test(m)) ? marks : null;
+}
+
+// On a page, such a picture prints with each letter in a circle on the thing
+// it marks and nothing round it, so the picture has the whole of its space;
+// the page rules a line for each letter underneath. With a pointer line run
+// out to a margin for every letter, a river photograph printed an eighth of
+// its page (7 October 2026).
+function markedPictureSvg({ href, width, height, callouts, marks, widthMm }) {
+  const pxPerMm = width / widthMm;
+  const r = 3.6 * pxPerMm;
+  const circles = callouts.map((c, i) => {
+    const cx = (c.anchor[0] / 100) * width;
+    const cy = (c.anchor[1] / 100) * height;
+    return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="#FFFFFF" stroke="${STICKIN_INK}" stroke-width="${(0.5 * pxPerMm).toFixed(1)}"/>` +
+      `<text x="${cx.toFixed(1)}" y="${cy.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-family="Comic Sans MS, Segoe Print, cursive" font-weight="bold" font-size="${(4.6 * pxPerMm).toFixed(1)}" fill="${STICKIN_INK}">${esc(marks[i])}</text>`;
+  }).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
+    `<image href="${href}" x="0" y="0" width="${width}" height="${height}"/>${circles}</svg>`;
+}
+
 // The photo-based labelled diagram - the picture is embedded as a data URI
 // inside the shared SVG overlay, so the printed piece shows the same photo the
 // board shows with the same leader lines.
@@ -223,6 +283,12 @@ async function renderLabelDiagram(item, baseDir, opts = {}) {
   const { mime, base64: b64 } = await printSized(imgPath, fileMime);
   const naturalWidthMm = item.widthMm ?? LABEL_DIAGRAM_WIDTH_MM;
   const callouts = spec.callouts || [];
+  const marks = opts.page ? letterMarks(item) : null;
+  if (marks) {
+    const heightMm = naturalWidthMm * (meta.height / meta.width);
+    const svg = markedPictureSvg({ href: `data:${mime};base64,${b64}`, width: meta.width, height: meta.height, callouts, marks, widthMm: naturalWidthMm });
+    return { html: centreWrap(inlineSvg(svg, naturalWidthMm, heightMm), naturalWidthMm), widthMm: naturalWidthMm, heightMm };
+  }
   const drawing = {
     href: `data:${mime};base64,${b64}`,
     width: meta.width,
@@ -325,7 +391,7 @@ async function renderPieceHtml(marked, opts = {}) {
   // Every piece is a figure, and a figure's words print plain: a taught
   // word's braces never reach the pack (the colours release's third check).
   const item = withoutTaughtMarks(marked);
-  if (ROW_VISUALS[item.visual]) return renderRow(item);
+  if (ROW_VISUALS[item.visual]) return renderRow(item, opts);
   if (item.visual === "draw-box-row") return renderBoxRow(item);
   if (item.visual === "label-diagram") return renderLabelDiagram(item, opts.baseDir, opts);
   if (item.visual === "source-copy") return renderSourceCopy(item, opts.baseDir, opts);
@@ -335,4 +401,4 @@ async function renderPieceHtml(marked, opts = {}) {
   return renderSingle(item, opts);
 }
 
-module.exports = { renderPieceHtml, esc };
+module.exports = { renderPieceHtml, letterMarks, esc };

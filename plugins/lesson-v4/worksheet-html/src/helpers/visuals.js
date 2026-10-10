@@ -34,7 +34,7 @@ const rainforestLayersSvg = require("../../../shared/visuals/rainforest-layers-s
 const balancedPatternPlateSvg = require("../../../shared/visuals/balanced-pattern-plate-svg");
 const mapSvg = require("../../../shared/visuals/map-svg");
 const { atPrintedWidth } = require("./at-printed-width");
-const { profileFor, MM_TO_PT, PROFILES } = require("../../../shared/visuals/surface-profiles");
+const { profileFor, MM_TO_PT, PROFILES, SHEET_COLOURING } = require("../../../shared/visuals/surface-profiles");
 const reflectionGridSvg = require("../../../shared/visuals/reflection-grid-svg");
 const tallyChartSvg = require("../../../shared/visuals/tally-chart-svg");
 const translationShapeSvg = require("../../../shared/visuals/translation-shape-svg");
@@ -80,21 +80,35 @@ const balancedPatternPlateSpec = (spec) => ({
 //
 // Spare height belongs to writing space, or at the foot of the page where a
 // teacher trims it. A helper that genuinely redraws itself taller can say so.
-function fromShared(module, toSpec, { capMm, minWidthMm, minHeightMm, greed = 0, maxWidthMm }) {
+function fromShared(module, toSpec, { capMm, minWidthMm, minHeightMm, greed = 0, maxWidthMm, answerMarks = false, titled = false }) {
+  // `answerMarks` names a drawing that has an answer colour of its own (a
+  // revealed total, a placed chip, a reflected shape). It is told it is on a
+  // pupil sheet, where nothing is an answer, so those print as given.
+  const colouring = answerMarks ? [SHEET_COLOURING] : [];
+  // `titled` names a drawing that prints a title of its own. It is told the
+  // box it will be scaled into, so the title can print at the sheet's one title
+  // size (PROFILES.worksheets.titlePt) however far the drawing is stretched.
+  const told = (widthMm) => {
+    if (!titled || !(typeof widthMm === "number" && widthMm > 0)) return colouring;
+    return [{ ...SHEET_COLOURING, titlePt: PROFILES.worksheets.titlePt, widthPt: widthMm * MM_TO_PT, maxHeightPt: capMm ? capMm * MM_TO_PT : 0 }];
+  };
+  const widthIn = (width) => (typeof width === "number" ? width : width && width.widthMm);
   // `maxWidthMm` (a number, or a function of the spec) stops a drawing that has
   // no reason to be page-wide from stretching to the zone: it is drawn at that
   // width against the left, and measured at it.
   const widest = (spec) => (typeof maxWidthMm === "function" ? maxWidthMm(spec) : maxWidthMm);
   return {
-    render: (spec) => {
+    render: (spec, width) => {
       const max = widest(spec);
       const style = max ? ` style="max-width:${max}mm;margin-right:auto"` : "";
-      return `<div class="h-figure"${style}>${module.tightSvg(toSpec(spec)).svg}</div>`;
+      const given = widthIn(width);
+      const drawn = max && given > 0 ? Math.min(given, max) : given;
+      return `<div class="h-figure"${style}>${module.tightSvg(toSpec(spec), ...told(drawn)).svg}</div>`;
     },
     measure: (spec, widthMm) => {
       const max = widest(spec);
       const drawn = max && typeof widthMm === "number" ? Math.min(widthMm, max) : widthMm;
-      return heightFromAspect(module.tightSvg(toSpec(spec)).aspect, drawn, capMm);
+      return heightFromAspect(module.tightSvg(toSpec(spec), ...told(drawn)).aspect, drawn, capMm);
     },
     needs: (spec) => ({
       minWidthMm: atLeast(minWidthMm, spec),
@@ -124,7 +138,10 @@ function narrowestThatDraws(module, floorMm) {
     const floor = floorMm(spec);
     for (let mm = floor; mm <= SHEET_WIDEST_MM; mm += 2) {
       try {
-        module.tightSvg(spec, profileFor("worksheets", { widthMm: mm }));
+        // Probed as it will be drawn: both charts that ask here grow their
+        // words into a wide zone, and a width that draws without that growth
+        // can refuse with it (a long title has a little less room).
+        module.tightSvg(spec, profileFor("worksheets", { widthMm: mm, overrides: { grow: CHART_GROW } }));
         return mm;
       } catch (err) {
         // Only a width that is too narrow is worth widening for. Anything
@@ -168,6 +185,7 @@ const helpers = {
       showRegionHints: spec.showRegionHints !== false,
     }),
     {
+      answerMarks: true,
       capMm: 130,
       // TWO floors, because a Venn is used in two different ways and they do
       // not need the same room. Daniel, looking at printed rungs: "59 is fine
@@ -272,7 +290,7 @@ const helpers = {
       colNotLabel: spec.colNotLabel,
       shapes: spec.shapes,
     }),
-    { capMm: 130, minWidthMm: 100, minHeightMm: 80, greed: 0 }
+    { answerMarks: true, capMm: 130, minWidthMm: 100, minHeightMm: 80, greed: 0 }
   ),
 
   // A numbered first-quadrant grid a child plots on. More columns need more
@@ -308,6 +326,7 @@ const helpers = {
       symmetryLinesAnswer: spec.symmetryLinesAnswer,
     }),
     {
+      answerMarks: true,
       capMm: 140,
       minWidthMm: (spec) => Math.max(70, (Number(spec.cols) || 5) * 14),
       // A grid squares up: its height follows its ROW count exactly as its
@@ -535,6 +554,7 @@ const helpers = {
       showReflection: spec.showReflection,
     }),
     {
+      answerMarks: true,
       capMm: 150,
       minWidthMm: (spec) => Math.max(90, (Number(spec.cols) || 10) * 11),
       // A grid squares up: its height follows its ROW count exactly as its
@@ -555,6 +575,8 @@ const helpers = {
       blank: spec.blank,
     }),
     {
+      answerMarks: true,
+      titled: true,
       capMm: 120,
       minWidthMm: (spec) => {
         const rows = spec.rows || [];
@@ -617,7 +639,7 @@ const helpers = {
     // Lowered from 50mm. Daniel, on the printed rungs: "triangle could be
     // smaller". Like an angle it is an outline with a couple of marks on it,
     // and the marks scale with it.
-    { capMm: 90, minWidthMm: 36, minHeightMm: 36 }
+    { answerMarks: true, capMm: 90, minWidthMm: 36, minHeightMm: 36 }
   ),
 
   "label-diagram": {

@@ -344,3 +344,71 @@ test('a wall step number that names a word is given room just above it', () => {
   // A different set of step numbers is a different picture.
   assert.notEqual(A.cacheKey(spec, 'wall', { widthMm: 260 }), A.cacheKey({ ...spec, callouts: undefined }, 'wall', { widthMm: 260 }));
 });
+
+// The fox pair of a Year 4 fronted adverbials wall (stress test of 7 October
+// 2026): the adverbial highlighted in both sentences, an arrow from the first
+// to the second, and the steps pinned to the second.
+const FOX = {
+  lines: ['The fox ate its dinner at midnight.', 'At midnight, the fox ate its dinner.'],
+  marks: [
+    { find: 'at midnight', id: 'end', style: 'highlight', colour: 'orange' },
+    { find: 'At midnight', id: 'front', style: 'highlight', colour: 'orange' },
+  ],
+  links: [{ from: 'end', to: 'front' }],
+};
+
+test('an arrow into a word lands clear of the step number standing on it', () => {
+  const spec = { ...FOX, callouts: [{ part: 'front', step: 1 }, { part: ',', step: 2 }] };
+  const r = A.tightSvg(spec, 'wall', { widthMm: 260 });
+  const L = r.layout;
+  const arrow = L.arrows[0].points;
+  const [endX, endY] = arrow[arrow.length - 1];
+  const front = L.placed.find((m) => m.id === 'front').pieces[0];
+  assert.ok(endX >= front.x1 && endX <= front.x2, 'the arrow no longer ends on its words');
+  const steps = L.pins.filter((p) => p.step);
+  assert.equal(steps.length, 2);
+  for (const p of steps) {
+    const rad = 0.36 * L.pt;
+    assert.ok(Math.abs(p.x - endX) >= rad + 0.25 * L.pt, `step on "${p.part}" stands on the arrow`);
+    // Every stretch of the arrow keeps out of the circle.
+    for (let i = 1; i < arrow.length; i += 1) {
+      const [x1, y1] = arrow[i - 1];
+      const [x2, y2] = arrow[i];
+      const cx = Math.max(Math.min(p.x, Math.max(x1, x2)), Math.min(x1, x2));
+      const cy = Math.max(Math.min(p.y, Math.max(y1, y2)), Math.min(y1, y2));
+      assert.ok(Math.hypot(p.x - cx, p.y - cy) > rad + 0.05 * L.pt, `the arrow touches the circle on "${p.part}"`);
+    }
+  }
+  assert.ok(endY > steps[0].y, 'the arrow stops above the step number, short of its words');
+});
+
+test('a step number on a word too short to share moves to its other end', () => {
+  const spec = {
+    lines: ['We ran to it.', 'It was a den.'],
+    marks: [{ find: 'it', style: 'highlight' }, { find: 'It', id: 'second', style: 'highlight' }],
+    links: [{ from: 'it', to: 'second' }],
+    callouts: [{ part: 'second', step: 1 }],
+  };
+  const L = A.tightSvg(spec, 'wall', { widthMm: 260 }).layout;
+  const arrow = L.arrows[0].points;
+  const endX = arrow[arrow.length - 1][0];
+  assert.ok(Math.abs(L.pins[0].x - endX) >= (0.36 + 0.3) * L.pt - 0.01, 'the number still stands on the arrow');
+});
+
+test('a step number can name a later occurrence of its word', () => {
+  const r = A.tightSvg({ ...FOX, callouts: [{ part: 'dinner', step: 3 }, { part: 'dinner', nth: 2, step: 4 }] }, 'wall', { widthMm: 260 });
+  const L = r.layout;
+  assert.equal(A.pinKey('dinner', 2), 'dinner #2');
+  const first = L.pins.find((p) => p.key === 'dinner');
+  const second = L.pins.find((p) => p.key === 'dinner #2');
+  assert.equal(first.line, 0);
+  assert.equal(second.line, 1);
+  assert.ok(Array.isArray(r.anchors['dinner #2']));
+});
+
+test('a step number is about the size of the list circle, not of the words', () => {
+  const r = A.tightSvg({ lines: ['the bright, round moon'], callouts: [{ part: 'moon', step: 1 }] }, 'wall', { widthMm: 260 });
+  const rad = (r.anchors.moon[2] / 100) * r.h;
+  assert.ok(rad <= 0.4 * r.layout.pt, `the circle is ${(rad / r.layout.pt).toFixed(2)} of the text size across its radius`);
+  assert.ok(rad >= 0.3 * r.layout.pt, 'the circle is too small to hold its digit');
+});

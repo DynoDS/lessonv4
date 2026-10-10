@@ -524,7 +524,13 @@ const css = `
   /* The thick rule a child rules under a calculation before writing the
      answer. */
   .h-mgrid-answer .h-mgrid-cell { border-top: var(--rule-heavy) solid var(--colour-ink); }
-  .h-mgrid-carry .h-mgrid-cell { aspect-ratio: 2 / 1; border-color: var(--colour-tint); }
+  /* The carry row: shallow, and ruled in dashes. It was ruled in the panel
+     tint, which is nearly white, so it barely printed and vanished on a
+     photocopier (stress test, 7 October 2026). The teacher chose dashes from
+     pictures of the real long multiplication sheet (10 October 2026): they
+     print, and still read as the small row for carried digits rather than as
+     another row of the answer. Shallow is his ruling of 5 October. */
+  .h-mgrid-carry .h-mgrid-cell { aspect-ratio: 2 / 1; border: var(--rule-line) dashed var(--colour-quiet); }
 
   /* The bus stop is drawn with lines rather than boxes: only the roof and the
      wall are ruled. Transparent rather than removed, so the cells stay exactly

@@ -46,10 +46,10 @@ emailed. Never write `imageHref` yourself.
 - `section-label` - The mode-of-work heading a block sits under: Fluency, Practise, Apply.
 - `instruction` - A quiet child-facing direction that needs no question number or answer space.
 - `questions` - One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap.
-- `written-answers` - A question answered in the child's own words, on up to six ruled lines (longer writing goes in their book or a `writing-frame`).
+- `written-answers` - A question answered in the child's own words on ruled lines, with no box; four lines or more go in the child's book.
 - `source-text` - A passage, account or extract the child reads and works from.
 - `poem` - A poem the child reads line by line, its stanzas kept apart, with a box after each line (a syllable count) when it needs one.
-- `annotated-text` - A passage in the middle with words underlined, circled, boxed or highlighted in colour, arrows between words and margin notes, or wide margins left for the child to annotate.
+- `annotated-text` - A passage with words underlined, circled, boxed or highlighted, arrows and margin notes, or left unmarked to mark by hand; one unmarked sentence prints large with wide gaps to write punctuation into.
 
 **Tables**
 
@@ -156,7 +156,7 @@ emailed. Never write `imageHref` yourself.
 - `storyboard` - Numbered boxes to draw in with writing lines beneath: a journey, a life cycle, a story retold in order.
 - `fact-file` - Named slots a child fills in.
 - `speech-scene` - Turns of a CONVERSATION: a figure and a bubble each, printed to read or empty to fill.
-- `named-claim` - One person, one thing they said, and room to judge it: the claim in a panel with the speaker's name, then a tick-or-cross box and ruled lines.
+- `named-claim` - One person, one thing they said, and room to judge it: the speaker in a speech bubble (a flat panel where tight, the engine's choice), then the question (`ask`), a tick-or-cross box (`tickOrCross`) and ruled lines.
 
 **Cause, effect and evidence**
 
@@ -182,7 +182,7 @@ Smallest usable: **25mm wide x 11mm tall**. Spare height: never takes spare heig
 
 A quiet child-facing direction that needs no question number or answer space. With `hint: true` it is a hint for the question just above it: it prints as `If you're stuck: ...` and never comes first in a question.
 
-Smallest usable: **45mm wide x 6mm tall**. Spare height: never takes spare height.
+Smallest usable: **40mm wide x 6mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -194,7 +194,7 @@ Smallest usable: **45mm wide x 6mm tall**. Spare height: never takes spare heigh
 
 #### `questions`
 
-One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap.
+One-line read-off questions with a short answer space on that line; use written-answers when the prompt itself will wrap. `answerInBook: true` sends a drawing the child makes to their book.
 
 Smallest usable: **60mm wide x 27mm tall**. Spare height: never takes spare height.
 
@@ -212,9 +212,9 @@ Smallest usable: **60mm wide x 27mm tall**. Spare height: never takes spare heig
 
 #### `written-answers`
 
-A question answered in the child's own words, on up to six ruled lines (longer writing goes in their book or a `writing-frame`). Give `sentences` and the engine sizes the lines, or `lines` for an exact count.
+A question answered in the child's own words on ruled lines, with no box; four lines or more go in the child's book. Give `sentences` and the engine sizes the lines, or `lines` for an exact count.
 
-Smallest usable: **70mm wide x 33mm tall**. Spare height: takes spare height first (it is writing space), and it stops when the content stops gaining.
+Smallest usable: **70mm wide x 37mm tall**. Spare height: never takes spare height, and it stops when the content stops gaining.
 
 ```json
 {
@@ -276,7 +276,7 @@ Smallest usable: **70mm wide x 62mm tall**. Spare height: never takes spare heig
 
 #### `annotated-text`
 
-A passage in the middle with words underlined, circled, boxed or highlighted in colour, arrows between words and margin notes, or wide margins left for the child to annotate.
+A passage with words underlined, circled, boxed or highlighted, arrows and margin notes, or left unmarked to mark by hand; one unmarked sentence prints large with wide gaps to write punctuation into.
 
 Smallest usable: **110mm wide x 25mm tall**. Spare height: never takes spare height.
 
@@ -387,7 +387,7 @@ Smallest usable: **134mm wide x 92mm tall**. Spare height: takes spare height fi
 
 A bar chart to read off. Each bar needs room for its label underneath, so more categories need more width.
 
-Smallest usable: **80mm wide x 60mm tall**. Spare height: never takes spare height.
+Smallest usable: **80mm wide x 67mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -471,7 +471,7 @@ Smallest usable: **90mm wide x 63mm tall**. Spare height: never takes spare heig
 
 A tally table: bundles of five drawn as marks rather than the number written out.
 
-Smallest usable: **91mm wide x 53mm tall**. Spare height: never takes spare height.
+Smallest usable: **91mm wide x 56mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -2250,7 +2250,7 @@ Smallest usable: **60mm wide x 20mm tall**. Spare height: never takes spare heig
 
 #### `chip-bank`
 
-A set of short labels drawn as separate bordered choices, each sized to its own word, so they read as options rather than as running text. A bank titled Word bank prints in vocabulary green unless a variant overrides it.
+A set of short labels drawn as separate bordered choices, each sized to its own word, so they read as options rather than as running text. A chip written {{word}} is a taught word and prints green; the rest print black.
 
 Smallest usable: **61mm wide x 32mm tall**. Spare height: never takes spare height.
 
@@ -2342,7 +2342,7 @@ Smallest usable: **80mm wide x 100mm tall**. Spare height: takes spare height re
 
 A row of small titled cards, each optionally carrying a picture: plants along the foot of a sheet, artefacts under a timeline.
 
-Smallest usable: **96mm wide x 78mm tall**. Spare height: never takes spare height.
+Smallest usable: **96mm wide x 80mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -2428,9 +2428,9 @@ Smallest usable: **168mm wide x 34mm tall**. Spare height: never takes spare hei
 
 #### `writing-frame`
 
-Sentence starters with room after each, inside a frame whose SHAPE says what kind of writing this is: a museum tag, a postcard, a plaque.
+Sentence starters with room after each, inside a frame whose SHAPE says what kind of writing this is: a museum tag, a postcard, a plaque. For starters or a named part of a planner; plain ruled lines are written-answers.
 
-Smallest usable: **90mm wide x 69mm tall**. Spare height: takes spare height first (it is writing space), and it stops when the content stops gaining.
+Smallest usable: **90mm wide x 77mm tall**. Spare height: never takes spare height, and it stops when the content stops gaining.
 
 ```json
 {
@@ -2473,7 +2473,7 @@ Smallest usable: **60mm wide x 80mm tall**. Spare height: takes spare height fir
 
 Numbered boxes to draw in with writing lines beneath: a journey, a life cycle, a story retold in order.
 
-Smallest usable: **144mm wide x 128mm tall**. Spare height: never takes spare height.
+Smallest usable: **144mm wide x 140mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -2515,7 +2515,7 @@ Smallest usable: **55mm wide x 98mm tall**. Spare height: takes spare height fir
 
 Turns of a CONVERSATION: a figure and a bubble each, printed to read or empty to fill. One person saying one thing is named-claim, since every turn here gets its own figure.
 
-Smallest usable: **85mm wide x 70mm tall**. Spare height: takes a normal share of spare height.
+Smallest usable: **85mm wide x 76mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -2537,16 +2537,18 @@ Smallest usable: **85mm wide x 70mm tall**. Spare height: takes a normal share o
 
 #### `named-claim`
 
-One person, one thing they said, and room to judge it: the claim in a panel with the speaker's name, then a tick-or-cross box and ruled lines. No figures and no bubbles.
+One person, one thing they said, and room to judge it: the speaker in a speech bubble (a flat panel where tight, the engine's choice), then the question (`ask`), a tick-or-cross box (`tickOrCross`) and ruled lines.
 
-Smallest usable: **70mm wide x 70mm tall**. Spare height: takes spare height first (it is writing space), and it stops when the content stops gaining.
+Smallest usable: **70mm wide x 84mm tall**. Spare height: never takes spare height, and it stops when the content stops gaining.
 
 ```json
 {
   "helper": "named-claim",
-  "text": "Tick or cross, then explain how you know.",
+  "text": "Ethan is adding 1,000 to 4,382.",
   "speaker": "Ethan",
-  "says": "If I add 1,000 to 4,382, the hundreds digit changes.",
+  "says": "The hundreds digit changes.",
+  "ask": "Is Ethan correct? Explain how you know.",
+  "tickOrCross": true,
   "lines": 3
 }
 ```

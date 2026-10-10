@@ -6,9 +6,9 @@
 // of inner-HTML strings (one per physical page, all using the card's page
 // config) - build.js owns the page wrapper either way.
 
-const { fitTitleSize, printableInches, printableDxa } = require("./layout");
+const { fitTitleSize, printableInches, printableDxa, boldWidthPx } = require("./layout");
 const { pickRainbowColour, pickVisual } = require("./visuals");
-const { esc, mm, hash, imgTag, titleBarHtml, panelHtml, colouredLetterBoxHtml } = require("./shared");
+const { esc, mm, hash, imgTag, titleBarHtml, panelHtml, colouredLetterBoxHtml, offerRoom } = require("./shared");
 
 // Arrows come from "Wall Arrows" (shared.js says why).
 const FONT_STACK_FALLBACK = "'Wall Arrows', 'Segoe Print', cursive";
@@ -62,7 +62,14 @@ function renderLabelledDiagram(card, style, specDir, ctx = {}) {
   const hasCaption = caption.length > 0;
   // A3-only builder: use the fixed A3 values below.
   const titleAreaInches = 1.9;
-  const captionBand = hasCaption ? 0.9 : 0.2;
+  // The caption is the one sentence the poster says, so it is set as large as
+  // one line across the sheet allows, from 44pt down to the 28pt it always
+  // was, and its band is as deep as its type. At a flat 28pt it read as small
+  // print under an 80pt title (the teacher, 10 October 2026).
+  const captionPt = hasCaption
+    ? [44, 40, 36, 32, 28].find((pt) => pt === 28 || boldWidthPx(caption, pt) <= dims.width * 96 * 0.96)
+    : 0;
+  const captionBand = hasCaption ? 0.9 + (captionPt - 28) * 1.5 / 72 : 0.2;
   const safetyInches = 0.25;
   const bodyH = Math.max(1, dims.height - titleAreaInches);
   const imageBoxH = Math.max(1, bodyH - captionBand - safetyInches);
@@ -81,6 +88,7 @@ function renderLabelledDiagram(card, style, specDir, ctx = {}) {
   let hIn = wIn / aspect;
   if (hIn > imageBoxH) { hIn = imageBoxH; wIn = hIn * aspect; }
   const topPadIn = Math.max(0, (imageBoxH - hIn) / 2);
+  offerRoom(_v.buf, mm(availW), mm(imageBoxH));
 
   let html = titleBarEl + `<div style="text-align:center;padding-top:${mm(topPadIn)}mm;">${imgTag(_v.buf, mm(wIn), mm(hIn), "margin:0 auto;")}</div>`;
 
@@ -89,7 +97,7 @@ function renderLabelledDiagram(card, style, specDir, ctx = {}) {
     // apart from the picture while preserving the vertical centre of the
     // diagram in imageBoxH.
     const captionGapIn = topPadIn + 200 / 1440;
-    html += `<div style="text-align:center;padding-top:${mm(captionGapIn)}mm;font-weight:bold;font-size:28pt;` +
+    html += `<div style="text-align:center;padding-top:${mm(captionGapIn)}mm;font-weight:bold;font-size:${captionPt}pt;` +
       `color:${hash(style.colours.body)};font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};">${esc(caption)}</div>`;
   }
 

@@ -6,6 +6,15 @@
 // Unlike suggest.js, this checks the exact chosen layouts after automatic
 // numbering, year-group line sizing and answer-key coverage. It is the last
 // gate before a builder is spawned and deliberately creates no HTML or PDF.
+//
+// Where the machine has a browser, the page is measured in it and not guessed:
+// each piece is drawn before the shapes are chosen (src/browser-measure.js),
+// and each sheet that passes is then drawn whole, exactly as the build draws
+// it, so a page the build would find clipped is refused here while it is still
+// the designer's to change. The build used to be the first to see the real
+// page, after the designer had finished: a sheet that fitted was refused on an
+// estimate and cut to pass, and one that passed came back clipped (twelve of
+// twenty lessons, 7 October 2026).
 
 const fs = require("node:fs");
 const path = require("node:path");
@@ -22,7 +31,13 @@ const {
   WorksheetError,
 } = require("../src/worksheet");
 const { tightnessOf, describeTightness } = require("../src/tightness");
+const { calibrate } = require("../src/browser-measure");
+const { settleSheetFit, PX_PER_MM } = require("../src/settle-fit");
+const { renderSheet } = require("../src/render");
 const { recordingProblems, recordingAdvisories, slipWidthProblems } = require("../src/slips");
+const { sameQuestionProblems } = require("../src/across-levels");
+const { answerPlaceProblems } = require("../src/answer-place");
+const { splitQuestionProblems } = require("../src/parts-together");
 const { longAnswerAdvisories } = require("../src/answer-sheet");
 const {
   LABELS,
@@ -452,7 +467,45 @@ function checkExpectedSheet(worksheet) {
   );
 }
 
-function main() {
+// Each sheet drawn whole in the browser, the way the build will draw it. The
+// build's own corrections are allowed first (a zone grown by what the browser
+// measured, a roomier arrangement of the same page), so what is refused here
+// is only what the build would refuse.
+async function drawnPageProblems(worksheet, browser) {
+  const { htmlToPdf } = require("../src/chrome");
+  const problems = [];
+  for (const sheet of sheetsOf(worksheet)) {
+    let html;
+    try {
+      html = renderSheet(sheet.spec);
+    } catch {
+      continue; // already refused by name above
+    }
+    const settled = await settleSheetFit({ spec: sheet.spec, html, htmlToPdf, browser });
+    const byZone = new Map();
+    for (const problem of settled.fitProblems) {
+      const overMm = Math.max(
+        0,
+        (problem.scrollHeight - problem.clientHeight) / PX_PER_MM,
+        (problem.scrollWidth - problem.clientWidth) / PX_PER_MM
+      );
+      const tall = problem.scrollHeight - problem.clientHeight >= problem.scrollWidth - problem.clientWidth;
+      const seen = byZone.get(problem.zone);
+      if (!seen || overMm > seen.overMm) byZone.set(problem.zone, { overMm, tall });
+    }
+    for (const [zone, { overMm, tall }] of byZone) {
+      problems.push(
+        `${sheet.label} - drawn in the browser, zone "${zone}" holds more than its space` +
+          (overMm >= 0.5 ? `: about ${Math.ceil(overMm)}mm too ${tall ? "tall" : "wide"}` : "") +
+          `. This is the printed page, not an estimate, and the build will refuse it the same way. ` +
+          `Take that much out of this zone, or move a part of it to a zone with room.`
+      );
+    }
+  }
+  return problems;
+}
+
+async function main() {
   const argv = process.argv.slice(2);
   let fileArg = null;
   let adaptationArg = null;
@@ -515,6 +568,13 @@ function main() {
   // than stopping the check, because it is one field to set and the designer
   // should hear about the page's other faults in the same run.
   for (const problem of recordingProblems(worksheet, { required: true })) {
+    fail(problem.signal, problem.message);
+  }
+  // A pencil sheet is a promise that what is asked is answered on the page, so
+  // a question with its answer space switched off and nothing in its place is
+  // refused here, where the designer can still choose lines, a box or the book
+  // (src/answer-place.js).
+  for (const problem of answerPlaceProblems(worksheet)) {
     fail(problem.signal, problem.message);
   }
   // Words that look as if they need the printed page are a prompt to look
@@ -611,6 +671,28 @@ function main() {
     }
     worksheet = withoutTheirPanels;
 
+    // The browser measures every piece before a shape is chosen, so the
+    // heights below are the printed ones. With no browser on the machine the
+    // arithmetic stands, as it always did, and the check says so.
+    let browser = null;
+    try {
+      browser = await require("../src/chrome").launchBrowser();
+    } catch {
+      console.warn(
+        "[measure] No browser on this machine, so heights are estimated and the " +
+          "printed page was not checked here. The build measures it."
+      );
+    }
+    try {
+    if (browser) {
+      const toMeasure = worksheet;
+      await calibrate(() => {
+        const resolved = resolveAutoLayouts(toMeasure).worksheet;
+        for (const sheet of sheetsOf(resolved)) tightnessOf(sheet.spec);
+        checkWorksheet(resolved);
+      }, { browser });
+    }
+
     // A sheet that said `"layout": "auto"` gets its shape here, the same way
     // and at the same point the build gives it one, so this gate checks the
     // exact page the build will draw.
@@ -622,6 +704,12 @@ function main() {
           `(${choice.orientation}), ${choice.fillPct}% full.` +
           (choice.splitFrom
             ? ` The engine set it out in ${choice.zoneCount} zones, in the order written, because it did not fit in ${choice.splitFrom}.`
+            : "") +
+          (choice.pictureScale
+            ? ` The photograph is drawn at ${Math.round(choice.pictureScale * 100)}% of its full size so the sheet stays in one column: the engine's choice, and it needs no repair. State "imageHeightMm" to size it yourself.`
+            : "") +
+          (choice.claimLook === "panel"
+            ? " The page was too tight for a child's claim drawn as a figure with a speech bubble, so it prints as a flat panel with the name: the engine's choice, and it needs no repair."
             : "")
       );
     }
@@ -656,6 +744,20 @@ function main() {
     // engine's: holding a wide picture does not make a sheet "sheet" (Daniel,
     // 29 September 2026). Left unanswered, the build prints the sheet instead.
     for (const problem of slipWidthProblems(sheetsOf(worksheet))) {
+      fail(problem.signal, problem.message);
+    }
+
+    // The three levels laid side by side, which nothing else does: the same
+    // question, word for word, given different room on two of them. Refused
+    // here, while the count of lines is still the designer's to change
+    // (src/across-levels.js).
+    for (const problem of sameQuestionProblems(sheetsOf(worksheet))) {
+      fail(problem.signal, problem.message);
+    }
+
+    // The parts of one question in one column, unless the question is too
+    // long for one (src/parts-together.js).
+    for (const problem of splitQuestionProblems(sheetsOf(worksheet))) {
       fail(problem.signal, problem.message);
     }
 
@@ -697,6 +799,15 @@ function main() {
       }
       return;
     }
+
+    if (browser && process.exitCode !== 1) {
+      for (const problem of await drawnPageProblems(worksheet, browser)) {
+        fail("SHEET_DOES_NOT_FIT", problem);
+      }
+    }
+    } finally {
+      if (browser) await browser.close();
+    }
   } catch (error) {
     if (error instanceof WorksheetError) {
       fail(error.signal, error.message);
@@ -718,4 +829,7 @@ function main() {
   console.log("WORKSHEET_PREFLIGHT_OK");
 }
 
-main();
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

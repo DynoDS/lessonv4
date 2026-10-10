@@ -22,6 +22,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -319,6 +320,63 @@ def item_unit(item: dict) -> str | None:
     return unit_id if isinstance(unit_id, str) else None
 
 
+# A sheet whose task asks for writing names where each answer goes. Three
+# lessons of the 7 October 2026 stress test printed an activity with nowhere to
+# write (three sums with no box, eight coordinates with no line) and nothing
+# noticed, because a figure page builds happily without one. Read from the
+# task's own words, so a task that asks for writing in other words is not seen.
+ASKS_FOR_WRITING = re.compile(r"\b(write|writes|written|record|explain|complete the)\b", re.IGNORECASE)
+HOLDS_ITS_OWN_WRITING = {
+    "table", "tally-chart", "draw-box-row", "geographical-description-frame", "label-diagram",
+    "number-line", "place-value-chart", "part-whole-model", "pyramid", "mult-grid", "number-network",
+}
+NOT_CHECKED_FOR_WRITING = {"card-set", "source-text", "task-sheet"}
+
+
+def has_writing_place(item: dict) -> bool:
+    spec = item.get("spec") if isinstance(item.get("spec"), dict) else {}
+    write = item.get("write")
+    if isinstance(write, list) and any(isinstance(entry, str) and entry.strip() for entry in write):
+        return True
+    if isinstance(write, str) and write.strip():
+        return True
+    return item.get("visual") in HOLDS_ITS_OWN_WRITING or bool(spec.get("writeOnLabels"))
+
+
+def writing_place_notes(stick_in: dict) -> list[str]:
+    """Each whole-page sheet whose task asks children to write and names no
+    place for it. A note, never a fault: the teacher still gets the sheet."""
+    items = stick_in.get("items") if isinstance(stick_in, dict) else None
+    sheets: dict[str, list[dict]] = {}
+    for index, item in enumerate(items if isinstance(items, list) else []):
+        if not isinstance(item, dict) or item.get("visual") in NOT_CHECKED_FOR_WRITING:
+            continue
+        if item.get("layout") == "slips":
+            continue
+        sheet = item.get("sheet") if isinstance(item.get("sheet"), str) and item.get("sheet").strip() else None
+        key = f"sheet:{sheet.strip()}" if sheet else (item_unit(item) or f"item:{index}")
+        sheets.setdefault(key, []).append(item)
+    notes: list[str] = []
+    for group in sheets.values():
+        tasks = []
+        for item in group:
+            spec = item.get("spec") if isinstance(item.get("spec"), dict) else {}
+            task = item.get("task") or spec.get("task")
+            if isinstance(task, str):
+                tasks.append(task)
+        asking = any(ASKS_FOR_WRITING.search(task) for task in tasks)
+        if not asking or any(has_writing_place(item) for item in group):
+            continue
+        first = group[0]
+        name = first.get("sheet") or first.get("label") or first.get("visual")
+        notes.append(
+            f'"{name}": the task asks children to write and the sheet names no '
+            "place for it. List each answer in `write`, or set `\"write\": \"on the figure\"` when "
+            "the figure itself holds every answer"
+        )
+    return notes
+
+
 def level_faults(design: dict, items: list) -> list[str]:
     """Every beat whose `levels.printed` the design set has its printed piece,
     in the form it chose, named back to it by `sourceUnitId`."""
@@ -398,6 +456,8 @@ def main(argv: list[str] | None = None) -> int:
         sources = source_faults(design, stick_in)
         for fault in sources:
             print(f"STICK_IN_SOURCE_FAULT: {fault}")
+        for note in writing_place_notes(stick_in):
+            print(f"STICK_IN_WRITING_PLACE: {note}")
         if faults or sources:
             return 1
         count = len(card_kit_units(design))

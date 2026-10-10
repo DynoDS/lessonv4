@@ -1,6 +1,7 @@
 'use strict';
 
 const { FONT, COLOURS, FIT } = require('../styles');
+const { clearlyUnder } = require('../../../shared/visuals/hair-under');
 const { splitAnswerRuns } = require('../answer-text');
 const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { textWidthEm } = require('../../../shared/text/comic-glyph-width');
@@ -165,7 +166,7 @@ function drawTable(pptx, slide, zone, data, ctx) {
   const widths = columnWidths(headers, rows, innerW, rowH, data.columnWidths);
   const colX   = widths.map((_, c) => innerX + widths.slice(0, c).reduce((a, w) => a + w, 0));
 
-  if (rowH < ROW_MIN_H) {
+  if (clearlyUnder(rowH, ROW_MIN_H, { surface: 'slides', what: "a table's rows", perUnit: 1 })) {
     // The height asked for holds the words, not only one line a row. A Year 4
     // geography table of three definitions took the one-line height exactly
     // and was refused again, once for every cell, because the definitions ran

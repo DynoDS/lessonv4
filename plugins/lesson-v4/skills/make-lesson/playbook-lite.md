@@ -960,6 +960,7 @@ Run `photo-contract.py build-provisional`. Use exactly:
 ```text
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/photo-contract.py" build-provisional \
   --initial "[WORKING_DIR]/phase2-initial-photo-requirements.json" \
+  --canonical "[WORKING_DIR]/photo-requirements.json" \
   --adaptation "[WORKING_DIR]/adaptation.md" \
   --output "[WORKING_DIR]/adaptation-photo-provisional.json" \
   --lesson-design "[WORKING_DIR]/lesson-design.json" \
@@ -985,7 +986,8 @@ The command refuses a file that is not the adaptation document, so a zero can no
 longer be a wiring mistake wearing the face of a lesson that needed none.
 
 If adaptation fails deterministically, preserve the expected worksheet route and
-report adaptation omitted. Do not rerun unrelated branches.
+report adaptation omitted. Do not rerun unrelated branches. Retry it once
+first; an omission opens the teacher report.
 
 **The early adaptation picture wave** - whenever `PHOTO_CONTRACT_PROVISIONAL_OK`
 reports one or more, and the Phase 2 picture stage is `attempting`:
@@ -1363,10 +1365,10 @@ finished reopens, and relaunch the blocked designer on the published picture and
 survives it excludes as before, the pending helper still built for
 `/install-helper`.
 
-Re-record that use in `helper-check.json` as the wave leaves it: `substitute`
-naming the published filename in `picture`, or `gap` with its reason. The
-delivery check reads that file, so a use still recorded as drawn by a helper the
-specification no longer uses fails a resource the wave repaired correctly.
+**After any design revision once Phase 2 has begun** (this wave, an owner
+repair, a re-review), follow
+`[PLUGIN_ROOT]/references/records-after-a-revision.md` before relaunching
+any designer.
 
 Once the last branch settles, every earned resource must be either built with an
 accepted summary or excluded with a reason. A resource that is neither by that

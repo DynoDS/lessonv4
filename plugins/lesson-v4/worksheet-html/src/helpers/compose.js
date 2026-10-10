@@ -37,7 +37,8 @@
 // number per helper. Everything built out of them is arithmetic.
 
 const { SPACE } = require("../tokens");
-const { esc } = require("./shared");
+const { esc, colouringLoneAsks, sentenceKinds } = require("./shared");
+const { MARKED_QUESTION_MM } = require("./in-book");
 const { formatQuestionLabel } = require("../labels");
 
 const GAP_MM = SPACE.item;
@@ -69,7 +70,14 @@ const isStimulus = (item) =>
 
 function introduces(item) {
   return Boolean(
-    item && !Array.isArray(item) && typeof item === "object" && INTRODUCERS.has(item.helper)
+    item &&
+      !Array.isArray(item) &&
+      typeof item === "object" &&
+      INTRODUCERS.has(item.helper) &&
+      // A numbered instruction is a question part ("the ______ sky"), not a line
+      // introducing the next one: counted as an introducer, the question after
+      // it lost its rule and its step and ran on from it.
+      item.number === undefined
   );
 }
 
@@ -101,7 +109,15 @@ function opensQuestion(item) {
   if (item.startAt !== undefined) return true;
   if (isStack(item) || isRow(item)) {
     const inner = itemsOf(item);
-    return inner.length > 0 && opensQuestion(inner[0]);
+    if (!inner.length) return false;
+    if (opensQuestion(inner[0])) return true;
+    // A group of parts kept in a stack of its own opens with the line that
+    // introduces them ("Group the rocks." above (2a) and (2b)), and that line
+    // carries no number. Read as "not a question", the group ran on from the
+    // table of question 1 with no rule between them (the teacher, 9 October
+    // 2026: "shouldn't there be a separation line between question one and
+    // two?").
+    return isStack(item) && inner[0].helper !== "section-label" && startsQuestion(inner, 0);
   }
   return false;
 }
@@ -120,7 +136,14 @@ function startsQuestion(items, i) {
   if (!item) return false;
   if (item.helper === "section-label") return true;
   if (opensQuestion(item)) return true;
-  return introduces(item) && opensQuestion(items[i + 1]);
+  if (!introduces(item)) return false;
+  if (opensQuestion(items[i + 1])) return true;
+  // Two lines can lead into one question: what the question is about ("Sam
+  // wrote these phrases. Each one has one thing wrong.") and then its task
+  // line. The question starts at the first of them, or it is ruled off from
+  // nothing and runs on from the question above.
+  const next = items[i + 1];
+  return introduces(next) && next.helper !== "section-label" && startsQuestion(items, i + 1);
 }
 
 function gapAboveMm(items, i) {
@@ -204,6 +227,26 @@ function normaliseContent(content) {
   };
 }
 
+// The instructions that belong to one question: its own, and those of the
+// stacks and rows inside it, stopping at a question nested within (which is a
+// question of its own). Used to decide whether a question printed on a line by
+// itself has an instruction to stand out from; see `colourAsks` in shared.js.
+function instructionsOf(content, top = true) {
+  if (!content || typeof content !== "object") return [];
+  if (!top && content.number !== undefined) return [];
+  if (content.helper === "instruction" && content.hint !== true) return [content];
+  const listed = Array.isArray(content.stack)
+    ? content.stack
+    : Array.isArray(content.row)
+      ? content.row
+      : [];
+  return listed.flatMap((item) => instructionsOf(item, false));
+}
+
+function someInstructionTells(instructions) {
+  return instructions.some((item) => sentenceKinds(item.text).tells);
+}
+
 // A row may be written out in full, or as one item and a count. Five identical
 // angles are a count, not five copies of the same JSON.
 function itemsOf(content) {
@@ -234,6 +277,10 @@ function makeCompose({
   greed,
   fills = () => false,
   enough = null,
+  // Runs a measurement on the helpers' own arithmetic, whatever a browser has
+  // since reported (helpers/index.js). The default is for a caller with no
+  // browser heights at all.
+  byArithmetic = (run) => run(),
 }) {
   // A row divides its width the way a layout divides a page: by proportion.
   // `parts` sets them explicitly. Left unset, the default is NOT equal shares.
@@ -276,7 +323,16 @@ function makeCompose({
   //
   // So: halve the width until the height starts tracking it again, which is
   // the point at which the cap has stopped biting and the ratio is real.
+  // On arithmetic always. This asks what SHAPE a thing is, at widths nothing
+  // is printed at, to share a row's spare width; a browser's height for one of
+  // those widths and arithmetic for the next would make a ratio of two
+  // different rulers, and the row's columns would move for no reason a reader
+  // could find.
   function shapeRatio(item) {
+    return byArithmetic(() => shapeRatioOf(item));
+  }
+
+  function shapeRatioOf(item) {
     let widthMm = REFERENCE_WIDTH_MM;
     let heightMm = measureContent(item, widthMm);
 
@@ -353,9 +409,96 @@ function makeCompose({
   // A helper holding a SET of questions numbers its own items instead, with
   // `startAt` continuing the count. Setting both is refused rather than
   // silently printing two numbers.
+  // How many questions being drawn right now carry an instruction that tells.
+  // While it is above zero, an instruction line that only asks is drawn in
+  // question blue, because its instruction is its neighbour.
+  let amongTellings = 0;
+
   function renderContent(content, widthMm = REFERENCE_WIDTH_MM) {
     content = normaliseContent(content);
     const items = itemsOf(content);
+
+    // One question, or one unnumbered stack of lines: the instructions in it
+    // are read together. A numbered question nested inside starts again.
+    const group =
+      content && (content.number !== undefined || isStack(content))
+        ? someInstructionTells(
+            content.number !== undefined
+              ? instructionsOf(content)
+              : items.filter((item) => item && item.helper === "instruction" && item.hint !== true)
+          )
+        : null;
+    if (group !== null) {
+      const outer = amongTellings;
+      amongTellings = content.number !== undefined ? (group ? 1 : 0) : outer || (group ? 1 : 0);
+      try {
+        return renderGroup(content, items, widthMm);
+      } finally {
+        amongTellings = outer;
+      }
+    }
+    return renderGroup(content, items, widthMm);
+  }
+
+  // Drawings set side by side start level.
+  //
+  // Two questions in a row each carry their own instruction above their own
+  // drawing, and a row lines its columns up by their tops. So when one
+  // instruction ran to two lines and its neighbour's to one, the second drawing
+  // started a line higher: a tally chart and the bar chart made from it, same
+  // title, at two heights (stress test, 7 October 2026; the teacher chose the
+  // level pair from pictures of the real sheet, 9 October 2026).
+  //
+  // `leadMm` is how far down a column its first drawing starts: the lines above
+  // it and the gaps between. `levelDownMm` is what each column's drawing must
+  // come down by to start level with the lowest. It is part of the layout, not
+  // a nudge after it, so the row is measured with it and nothing is pushed over
+  // what follows. A column with no drawing is left alone, and so is a row whose
+  // drawings start more than LEVEL_LIMIT_MM apart, which is two different
+  // questions rather than a pair.
+  const LEVEL_LIMIT_MM = 20;
+
+  function isDrawing(item, widthMm) {
+    if (!item || typeof item !== "object" || !item.helper) return false;
+    try {
+      return /class="h-figure"/.test(render(item, widthMm));
+    } catch {
+      return false;
+    }
+  }
+
+  // { leadMm, at } for the first drawing in a column that is a stack (numbered
+  // or not), or null when it has none or is not a stack.
+  function firstDrawingIn(item, widthMm) {
+    item = normaliseContent(item);
+    if (!item || typeof item !== "object") return null;
+    const inside = item.number !== undefined ? widthMm - NUMBER_GUTTER_MM : widthMm;
+    if (!isStack(item)) return null;
+    const inner = itemsOf(item);
+    let leadMm = 0;
+    for (let i = 0; i < inner.length; i++) {
+      leadMm += gapAboveMm(inner, i);
+      if (isDrawing(inner[i], inside)) return { leadMm, at: i };
+      if (isRow(inner[i]) || isStack(inner[i]) || (inner[i] && inner[i].number !== undefined)) return null;
+      leadMm += measureContent(inner[i], inside);
+    }
+    return null;
+  }
+
+  function levelDownMm(items, widths) {
+    const firsts = items.map((item, i) => firstDrawingIn(item, widths[i]));
+    const leads = firsts.filter(Boolean).map((f) => f.leadMm);
+    if (leads.length < 2) return items.map(() => 0);
+    const lowest = Math.max(...leads);
+    if (lowest - Math.min(...leads) > LEVEL_LIMIT_MM) return items.map(() => 0);
+    return firsts.map((f) => (f && lowest - f.leadMm > 0.2 ? lowest - f.leadMm : 0));
+  }
+
+  // Set by a row for the column it is about to draw, and taken by that
+  // column's own stack (the first one drawn inside it).
+  let levelNext = 0;
+
+  function renderGroup(content, items, widthMm) {
 
     if (content && content.number !== undefined) {
       // A set of questions numbers its own items, so a number on the whole set
@@ -367,9 +510,9 @@ function makeCompose({
             "own items, and never both."
         );
       }
-      const { number, ...rest } = content;
+      const { number, mark, ...rest } = content;
       return `
-        <div class="h-numbered">
+        <div class="h-numbered${mark === "book" || mark === "pencil" ? ` h-numbered--${mark}` : ""}">
           <span class="h-numbered-n">${esc(formatQuestionLabel(number))}</span>
           <div class="h-numbered-body">${renderContent(rest, widthMm - NUMBER_GUTTER_MM)}</div>
         </div>`;
@@ -394,12 +537,14 @@ function makeCompose({
       // start from. Left to the default, it starts at its own minimum and
       // grows by its share, which is what widthsIn works out.
       const exact = Array.isArray(content.parts) && content.parts.length === items.length;
+      const downs = levelDownMm(items, renderWidths);
 
       const cells = items
         .map((item, i) => {
           const basis = exact ? "0" : `${needsContent(item).minWidthMm}mm`;
+          levelNext = downs[i];
           return `
-        <div class="h-row-item" style="flex: ${shares[i]} 1 ${basis};">
+        <div class="h-row-item${labelsItsDrawing(item, renderWidths[i]) ? " h-row-item--labelled" : ""}" style="flex: ${shares[i]} 1 ${basis};">
           ${content.letters ? `<div class="h-row-letter">(${String.fromCharCode(97 + i)})</div>` : ""}
           <div class="h-row-body">${renderContent(item, renderWidths[i])}</div>
         </div>`;
@@ -420,11 +565,16 @@ function makeCompose({
       // half the leftover as a hole under the question's two ruled lines and
       // gave the box half the space it should have had.
       const growing = growersIn(items);
+      // A column in a row whose first drawing must come down to start level.
+      const down = levelNext;
+      levelNext = 0;
+      const downAt = down ? (firstDrawingIn({ stack: items }, widthMm) || {}).at : undefined;
       const cells = items
         .map((item, i) => {
           const grows = growing[i];
           const gap = gapAboveMm(items, i);
-          const space = gap ? ` style="margin-top:${gap}mm"` : "";
+          const above = gap + (i === downAt ? down : 0);
+          const space = above ? ` style="margin-top:${above}mm"` : "";
           // A heading marks itself, so it takes the step without the rule.
           const divided =
             gap === QUESTION_START_GAP_MM &&
@@ -444,7 +594,35 @@ function makeCompose({
       return `<div class="h-stack">${cells}</div>`;
     }
 
+    if (amongTellings && content && content.helper === "instruction") {
+      return colouringLoneAsks(() => render(content, widthMm));
+    }
     return render(content, widthMm);
+  }
+
+  // A drawing in a row with one short line under it: the line is that
+  // drawing's label, and it sits under the middle of the drawing, which is
+  // where the drawing is. Set from the left like any other line, "quarter past
+  // 8" started well to the left of the clock it named (the teacher, 9 October
+  // 2026: "the words aren't centred to the clocks"). Only this shape is read as
+  // a label: a line that wraps, carries its own number or sits under words is
+  // an instruction and keeps the left edge.
+  const LABEL_CHARS = 40;
+
+  function labelsItsDrawing(item, widthMm) {
+    if (!item || typeof item !== "object" || !isStack(item)) return false;
+    const inner = itemsOf(item);
+    if (inner.length !== 2) return false;
+    const [drawing, label] = inner;
+    if (!drawing || !drawing.helper || !label || label.helper !== "instruction") return false;
+    if (label.number !== undefined || Array.isArray(label.rules)) return false;
+    const text = String(label.text ?? "");
+    if (!text.trim() || text.length > LABEL_CHARS || text.includes(String.fromCharCode(10))) return false;
+    try {
+      return /<svg|<img/.test(render(drawing, widthMm));
+    } catch {
+      return false;
+    }
   }
 
   function measureContent(content, widthMm) {
@@ -453,9 +631,12 @@ function makeCompose({
 
     // The number sits in a gutter beside the content, so it costs width and
     // never height. Measured off the same constant the CSS uses.
+    // On a sheet whose questions carry a book or pencil mark, a question is
+    // never shorter than its number and the mark under it (in-book.js).
     if (content && content.number !== undefined) {
-      const { number, ...rest } = content;
-      return measureContent(rest, widthMm - NUMBER_GUTTER_MM);
+      const { number, mark, ...rest } = content;
+      const bodyMm = measureContent(rest, widthMm - NUMBER_GUTTER_MM);
+      return mark ? Math.max(bodyMm, MARKED_QUESTION_MM) : bodyMm;
     }
 
     if (isRow(content)) {
@@ -463,8 +644,9 @@ function makeCompose({
       // at the width it will actually get.
       const widths = widthsIn(content, items, widthMm);
       const letterMm = content.letters ? 6 : 0;
+      const downs = levelDownMm(items, widths);
       return (
-        Math.max(...items.map((item, i) => measureContent(item, widths[i]))) +
+        Math.max(...items.map((item, i) => measureContent(item, widths[i]) + downs[i])) +
         letterMm
       );
     }
@@ -800,6 +982,7 @@ const css = `
      still says the stack is sound. Keep each measured basis, then distribute
      only what is genuinely spare. */
   .h-stack-item--grows { flex: 1 1 auto; }
+  .h-row-item--labelled .h-instruction { text-align: center; }
   .h-stack-item--new-question { position: relative; }
   .h-stack-item--new-question::before {
     content: ""; position: absolute; left: 0; right: 0;
