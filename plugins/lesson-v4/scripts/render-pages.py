@@ -43,6 +43,9 @@ POWERPOINT_CONVERT_TIMEOUT_SECONDS = 180
 # converter below is handed a file inside a short scratch directory instead of
 # the caller's own path, and this limit is asserted where each tool is invoked.
 LEGACY_TOOL_PATH_LIMIT = 255
+# LibreOffice crashes once its settings folder's path passes 148 characters;
+# 140 leaves room for a version whose settings tree runs a little deeper.
+LIBREOFFICE_PROFILE_PATH_LIMIT = 140
 
 
 def sha256_file(path):
@@ -341,16 +344,45 @@ def powerpoint_to_pdf(src, out_pdf, interpreter=None):
         )
 
 
+def libreoffice_profile(tmp_dir):
+    """Make a fresh folder for LibreOffice's own settings, short enough to work.
+
+    LibreOffice writes a settings tree about 110 characters deeper than the
+    folder it is given, and once that folder's path passes 148 characters it
+    crashes with exit 3221226505 before converting anything (measured on this
+    machine, 15 October 2026). The scratch folder is wherever TEMP points, and a
+    Codex worker points TEMP into its lesson folder, whose name is long: every
+    Codex slide preview that day crashed this way. So the settings go in the
+    scratch folder when it is short enough, otherwise in the nearest folder
+    above it that is. The caller removes the folder when LibreOffice is done.
+    """
+    name_length = len(os.sep) + len("lo-") + 8  # mkdtemp adds eight characters
+    for base in (Path(tmp_dir), *Path(tmp_dir).parents):
+        if len(str(base)) + name_length > LIBREOFFICE_PROFILE_PATH_LIMIT:
+            continue
+        try:
+            return Path(tempfile.mkdtemp(prefix="lo-", dir=base))
+        except OSError:
+            continue
+    raise RuntimeError(
+        f"LibreOffice needs a settings folder of at most "
+        f"{LIBREOFFICE_PROFILE_PATH_LIMIT} characters and no writable folder "
+        f"that short was found above {tmp_dir}")
+
+
 def libreoffice_to_pdf(src, out_pdf, tmp_dir):
     soffice = find_soffice()
     if not soffice:
         raise RuntimeError("LibreOffice (soffice) is unavailable")
     require_short_path(src, "LibreOffice")
     require_short_path(out_pdf, "LibreOffice")
-    profile = Path(tmp_dir, "lo-profile").as_uri()
-    cmd = [soffice, "--headless", f"-env:UserInstallation={profile}",
+    profile = libreoffice_profile(tmp_dir)
+    cmd = [soffice, "--headless", f"-env:UserInstallation={profile.as_uri()}",
            "--convert-to", "pdf", "--outdir", str(tmp_dir), str(src)]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+    finally:
+        shutil.rmtree(profile, ignore_errors=True)
     generated = Path(tmp_dir, src.stem + ".pdf")
     if result.returncode != 0 or not generated.is_file():
         raise RuntimeError(

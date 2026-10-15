@@ -1,0 +1,24 @@
+CAME BACK
+- p2 | Deck s5,7,9,10,12,13,15,17 | high | 8 of 9 answer slides have empty teacher notes (speakerNotes ""). Only s2 has notes. Round two every maths answer slide had notes: gone backwards.
+- cx13 / parts-in-rows ruling | Worksheets p1 Below | high | parts run 1a,1b down left and 1c,1d down right; "Use column addition." above 1a only, so 1c starts 7.8mm higher. Same as round two. Line under Fluency gone and Problem Solving now left with a line above (those held). Adaptation designer ordered it: "ordered (a), (b) down the left column, then (c), (d) down the right column" (adaptation.md line 92).
+- p1 / cx6 | Deck s11 Your Turn | medium | sheet sign, no bolt (free split-h-60-40 layout). Bolt present on s8, s14, s16.
+- sl1 | s16->s17 and s14->s15 | medium | s17 answers: Freya, questions and criteria vanish; chart grows 330->510px and moves; digits purple->black. s15 drops story and question, "tickets" alone in a black card. Same jump as round two 23->24.
+- s11 | answers p1 | medium | bold mixed again: Below 1c,1d bold, others regular; Expected all bold; GD 1a,1b,2a bold, 2b regular.
+- ct3 | s16 Apply | medium | Freya's claim smallest thing on slide (~18pt bubble far right), instruction ~28pt appears twice. Round two Anya bubble was biggest (~36pt). Nothing labels the chart as Freya's working.
+- sl11 | s8, s11, s14 | low conf | heading strip three sizes: ~22pt, 20pt, ~16pt (under 18pt).
+STILL THERE
+- cx3 | s8, s11, s14 | high | Th/H/T/O heading strip with no rows; s8 3.1in blank between it and sums; s14 squeezed to foot 15px from edge. Daniel called it "weird" in round two.
+- carried 1s ~11pt beside 28pt digits on every chart; 5mm on wall.
+NEW
+- s11 | high | white task card covers bottom of heading strip (~7px of 30px), card edge touches bottom of the heading words. Final slide check passed it.
+- Worksheets p3 GD slips | medium | Tara's bubble tail points away from Tara and leaves a gap in the bubble border. All four slips.
+- s14 | low | hint card ~32pt black, blue task above it 18pt.
+- s8 | low | only task line "Use column addition." 16pt black in a small card, no pencil or book sign.
+- Worksheets p3 | low | GD slips unequal: top row 115mm, bottom 182mm with 77mm blank each, no cut line at foot.
+- Worksheets p2 vs p1 | low | problem story indented 20mm on Expected slips, at margin on Below.
+- answers p1 | low | Below (2) reads "three exchanges leave 000."
+- wall p1 | low | "Thousands" ~5.6mm tall filling its cell, small beside 18mm title.
+HELD: sl2 (word card s3 after starter); sl5/sl6 (decorations in title band only, pairs keep drawings); sl8 (s11, s14 tasks blue with pencil, s16 talk sign); p1 (bolt s8, s14, s16, none on Our Turn s6; s11 failed); cx8 (starter sums ~85pt fill slide, no topic line); ct5 (no "small 1", says "exchanged amount"); s3 (no green, given digits black); s4 (all portrait); s5 (Below cells 12mm, Total blank 25mm; GD missing-digit box 4.6x5.5mm but on a book slip; round two 2mm); s9 (Tara's claim before 2a); cx14 (no slip lines, sums two across); carry row 6mm solid; w2 (wall chart 163x108mm vs 97x102); w3 (pins >=3mm from digits); pr5.
+Not seen (unticked): cx4 (no random blank chart slide), cx9, cx11, cx18. ct6 improved: s16 asks "Which column helped you decide?".
+Run notes: slide designer and decorator could not draw pages; fits s11 overlap and s14 strip.
+OVERALL vs lesson 26: better starter, criteria wording, wall size, slips, Apply question, no random blank chart slide. Worse: empty notes on 8 answer slides, new overlap s11, Freya's claim shrunk. Unchanged: heading strip with no rows, Below column order, mixed bold on answers, s11 no bolt.

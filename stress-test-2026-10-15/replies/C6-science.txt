@@ -1,0 +1,24 @@
+CAME BACK
+- p2 | s2, s18, s19 | medium | empty notes on all three answer slides. Round two s2, s16.
+- pc5 | s11-14, wall, sheets | high | "caterpillar" is a swallowtail caterpillar photographed in Estonia (Papilio machaon), not an oak feeder, under "Caterpillars eat oak leaves". Round two a grass feeder on a dock leaf. Rabbit possibly an American cottontail on a concrete kerb (low).
+- sl5 | s16-19 | medium | criteria flipchart sign inside the criteria panel; on s18-19 (30% panel) it covers "ia" of "Criteria". s18-19 decorations inside the chain card (rose, bee, flowers, fern, acorn).
+- s4 | Worksheets | medium | Expected landscape, GD portrait in one PDF. Round two all portrait.
+- his round-two point "producer picture not in line" | s4, s12 | low | word-card photo frames do not line up: left edges 760 vs 733px, different widths; s12 700 vs 858px.
+- ct2 | s7 | medium conf | the one rehearsal is again "Which is the producer? Which are consumers?" over three photos, nothing recorded. Same pick-a-name beat he called very weak. Card bottoms differ 480/452/425px.
+- sl8 | s6, s9, s11, s13 | low | blue questions with no sign.
+- pr2 | Activity 1 all pages | medium conf | asks "What does one arrow tell us? Words you may need..." with nowhere to write; foot 78mm blank.
+- s6 | Worksheets p1 Expected Q2 | medium conf | 4-link chain with labels gets 108x55mm; Q1 3-link chain gets 108x99mm; 30mm blank under Q2.
+STILL THERE
+- ct7/ct8 + his Below point | high | still no fill-in chain (empty boxes joined by arrows) on any sheet; Below uses Expected unchanged; GD is one chain plus three explain lines: less drawing, more writing.
+- ct9 | wall | low | now a photo chain with green roles (much better than round two's 37mm text chain) but never says what a producer or consumer is.
+NEW
+- s18, s19 | high | every role label prints with a stray "||" in front ("||producer", "||consumer and prey"), 7 labels. Reveal mark not stripped from food-chain labels (starter's is stripped).
+- s18, s19 | low | answer chain small: photos 110-165px in a 710x530 card, ~130px blank above and below. Titles "Create your food chains - check - rose chain". Criteria text shrinks as panel narrows 40%->30%.
+- s16 | low | "Use each set of food facts" when one set shown; photo captions at different heights.
+- Activity 1 | low | captions ~11pt against 18pt instruction; arrow lines ~15mm.
+- Activity 2 / s15 | low conf | one 41mm line per living thing; frog needs three labels.
+- Worksheets | low | GD facts have blue "Food facts" heading, Expected none.
+- Deck 37MB: no photo at camera size; weight is 9 food-chain drawings saved as 3586px-wide PNGs with photos baked in (~26MB, s10 5.7MB, s9 5.5MB); each photo stored again per slide (rabbit 955KB x4).
+HELD: cx8, sl2, p1 (bolt s7 only, sheet sign s11/15/16/17), p4 (launch steps blue list), cx1/cr5 (criteria print beside cards s16-19), ct1 (opens with rabbit grazing scene, every chain photos), ct3 (food facts before instruction s11/15/16), ct5 (criteria clear steps), 1st/2nd/3rd gone (photo-to-photo lines, children draw arrowheads), s3, s8 (GD lines 8mm), s11 (no bold), pc1 (grass in photo), pc4, w2 (photos ~70mm, largest band 40mm vs round two 70mm), w1 w3-w6, pr4/pr1 (no cutting, Activity 2 two chains a page full width), pr5.
+Run notes: slide designer never saw its pages: "||" labels, flipchart over Criteria, small answer chains are what it would have caught. Reviewer's reorder visible and correct.
+OVERALL vs round two: much better. Photo chains throughout, real opening scene, criteria print, no 1st/2nd/3rd, picture-led wall. Still wrong: "||", wrong caterpillar, empty answer notes, mixed directions, no fill-in chain for Below.

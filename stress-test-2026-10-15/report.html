@@ -1,0 +1,412 @@
+<title>Lesson V4 Stress Test, Round Three</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:wght@600;800&display=swap">
+<style>
+/* Layout: one reading column; each finding is a row with a "how many lessons" meter on the left. Same look as the first report so the two read as a pair. */
+:root {
+  --bg: #f3f6f8; --panel: #ffffff; --fg: #17222b; --muted: #55646f; --rule: #d5dde3;
+  --accent: #1f5fa8; --high: #b3261e; --mid: #a15c00; --ok: #1d7044; --meter: #c9d6e2; --back: #7a2e8c;
+  --display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+  --body: "Atkinson Hyperlegible", Verdana, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121a20; --panel: #1a252d; --fg: #e6edf2; --muted: #9fb0bc; --rule: #2f3d48;
+  --accent: #7db4ef; --high: #ff8a80; --mid: #f0b35a; --ok: #6fd09a; --meter: #33444f; --back: #d9a1ea; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121a20; --panel: #1a252d; --fg: #e6edf2; --muted: #9fb0bc; --rule: #2f3d48;
+  --accent: #7db4ef; --high: #ff8a80; --mid: #f0b35a; --ok: #6fd09a; --meter: #33444f; --back: #d9a1ea; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 17px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; }
+main { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
+h1 { font-family: var(--display); font-weight: 800; font-size: 2.1rem; line-height: 1.1; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 800; font-size: 1.45rem; margin: 0 0 4px; text-wrap: balance; }
+h3 { font-family: var(--display); font-weight: 600; font-size: 1.05rem; margin: 22px 0 6px; color: var(--accent); }
+p { margin: 0 0 8px; max-width: 65ch; }
+.lede { color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 6px; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.fact { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; }
+.fact b { display: block; font-family: var(--display); font-size: 1.6rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.fact span { color: var(--muted); font-size: .9rem; }
+.rows { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+.row { display: grid; grid-template-columns: 104px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.row > div { min-width: 0; }
+.n { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.n b { display: block; font-family: var(--display); font-size: 1.15rem; color: var(--fg); }
+.meter { height: 6px; background: var(--meter); border-radius: 3px; margin-top: 5px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); }
+.row strong { display: block; }
+.row p { margin: 2px 0 0; color: var(--muted); font-size: .95rem; }
+.row .was { font-size: .85rem; color: var(--back); margin-top: 4px; }
+.tag { display: inline-block; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; margin-right: 6px; }
+.tag.h { color: var(--high); } .tag.m { color: var(--mid); } .tag.g { color: var(--ok); } .tag.b { color: var(--back); }
+ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 7px; max-width: 68ch; }
+.note { background: var(--panel); border-left: 4px solid var(--accent); padding: 12px 14px; border-radius: 0 6px 6px 0; }
+.note.back { border-left-color: var(--back); }
+.note p:last-child { margin-bottom: 0; }
+nav { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .92rem; }
+a { color: var(--accent); } a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 480px) { .row { grid-template-columns: 1fr; gap: 4px; } .meter { max-width: 140px; } h1 { font-size: 1.7rem; } }
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 8px; font-size: .9rem; }
+.tools label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 700; color: var(--fg); }
+.tools input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--ok); cursor: pointer; }
+.tools button { font: inherit; font-weight: 700; color: var(--accent); background: var(--panel); border: 1px solid var(--rule); border-radius: 5px; padding: 4px 10px; cursor: pointer; }
+.tools button:hover { border-color: var(--accent); }
+.tools button:focus-visible, .tools input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tools .said { color: var(--ok); font-weight: 700; }
+pre.prompt { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 12px; margin: 8px 0 0; font-family: ui-monospace, Consolas, monospace; font-size: .78rem; line-height: 1.45; white-space: pre-wrap; overflow-wrap: anywhere; max-height: 340px; overflow: auto; color: var(--fg); }
+.ticked > div > strong, .ticked > div > p, li.ticked > .txt { opacity: .5; text-decoration: line-through; text-decoration-thickness: 1px; }
+#progress { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--bg); border-bottom: 1px solid var(--rule); padding: 8px 0; font-weight: 700; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+#progress .bar { flex: 1 1 160px; height: 8px; background: var(--meter); border-radius: 4px; overflow: hidden; }
+#progress .bar i { display: block; height: 100%; width: 0; background: var(--ok); transition: width .2s; }
+#progress small { font-weight: 400; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { #progress .bar i { transition: none; } }
+</style>
+<main>
+<header>
+  <p class="lede">15 October 2026 · Lesson V4 4.2.319 · three lessons on Codex</p>
+  <h1>Round three: what came back</h1>
+  <p class="lede" style="margin-top:10px">You built Year 4 maths lesson 27, history lesson 6 and science lesson 6 in Codex this morning. Every page was checked against the first report and what you ticked there as fixed.</p>
+  <p class="lede">Each finding has a prompt to copy into a new session, and a tick that saves itself. The first report is still at <a href="https://claude.ai/artifact/Aizj1gHfccokcbvA7fXuXX">its own page</a>.</p>
+  <nav>
+    <a href="#top">The big picture</a><a href="#back">Came back</a><a href="#yours">Your points</a><a href="#still">Still there</a><a href="#new">New</a><a href="#runs">How the runs behaved</a><a href="#held">What held</a><a href="#method">How this was checked</a>
+  </nav>
+</header>
+<div id="progress"><span id="pcount">0 done</span><div class="bar"><i id="pbar"></i></div><small id="psave">Ticks save as you go</small></div>
+
+<section id="top">
+  <h2>The big picture</h2>
+  <div class="facts">
+    <div class="fact"><b>33 to 62</b><span>minutes a lesson (round two's maths lesson took 98)</span></div>
+    <div class="fact"><b>0 of 3</b><span>decks needed a rescue repair (round two: 3 of 3)</span></div>
+    <div class="fact"><b>17</b><span>fixed things that came back, most in one lesson only (two found by you)</span></div>
+    <div class="fact"><b>30+</b><span>fixed things that held</span></div>
+  </div>
+  <p style="margin-top:12px"><strong>The runs are much better.</strong> Faster, no rescues, and the planner kept its memory all the way through.</p>
+  <p><strong>Science is the clearest proof.</strong> It is the same lesson as round two. This time: photo food chains, a real opening scene, criteria that print, no "1st, 2nd, 3rd", a picture-led wall.</p>
+  <p><strong>Two causes sit behind the worst of what came back.</strong></p>
+  <ul>
+    <li><strong>No worker could see its own slides.</strong> The tool that draws preview pictures crashed in all three lessons. So the drawings landed on words, the "||" marks printed, and a card covered the column headings, with nobody looking.</li>
+    <li><strong>Slides only ever shrink.</strong> Words go down to 18 or 19pt and pictures stay small while half the slide is empty. Sheets and walls had this fixed; slides never did.</li>
+    <li><strong>Also:</strong> empty teacher notes on answer slides came back in all three, and maths is worse than before: 8 of its 9 answer slides have no notes.</li>
+  </ul>
+</section>
+
+<section id="back">
+  <h2>Came back</h2>
+  <p class="lede">You ticked each of these as fixed on the first report. This run shows it again. Purple line: what it was on the first report.</p>
+  <div class="rows">
+    <div class="row"><div class="n"><b>3 of 3</b>lessons<div class="meter"><i style="width:100%"></i></div></div><div><strong><span class="tag h">High</span>Empty teacher notes on answer slides</strong><p>Maths: 8 of 9 answer slides blank (round two's lesson 26 had notes on all of them, so this went backwards). Science: slides 2, 18 and 19. History: slides 2 and 17.</p><div class="was">First report: "Answer slides have empty teacher notes" (smaller slide points), and round two's "Empty teacher notes on answer slides".</div></div></div>
+    <div class="row"><div class="n"><b>2 of 3</b>lessons<div class="meter"><i style="width:67%"></i></div></div><div><strong><span class="tag h">High</span>Slide drawings sitting on words</strong><p>History, five slides: a grey book over "An explanation" on the model answer (slide 14), houses over "with." (3), a glass over "get the" (6), a bottle over "cure the" (10), a sprig over "people" in the task (15). Science: the criteria flipchart covers "ia" of "Criteria" on 18 and 19, and five drawings sit inside the answer chain card. The decorator could not draw previews, so it placed them blind. You spotted slide 3 too.</p><div class="was">First report: "Decorations inside a teaching figure or speech bubble".</div></div></div>
+    <div class="row"><div class="n"><b>2 of 3</b>lessons<div class="meter"><i style="width:67%"></i></div></div><div><strong><span class="tag m">Medium</span>Pages facing different ways in one worksheet file</strong><p>History: Below landscape, Expected slips portrait. Science: Expected landscape, Greater Depth portrait (round two's science was all portrait). Maths was all portrait.</p><div class="was">First report: "Pages facing different ways in one PDF".</div></div></div>
+    <div class="row"><div class="n"><b>2 of 3</b>lessons<div class="meter"><i style="width:67%"></i></div></div><div><strong><span class="tag m">Medium</span>An answers slide jumps in layout from its question slide</strong><p>Maths 16 to 17: Freya, the questions and the criteria vanish, the chart grows from 330 to 510 pixels wide and moves, the digits go purple to black. Maths 14 to 15: the story goes and "tickets" sits alone in a black card. History 16 to 17: the question is gone from the answers slide. On maths 17 the chart also sits about 100 pixels lower than the explanation card beside it.</p><div class="was">You, 15 October, maths 17: "why is it not aligned together?"</div><div class="was">First report: "Two answer-slide rules contradict each other". Round two: "An answer slide changes layout from its question slide".</div></div></div>
+    <div class="row"><div class="n"><b>2 of 3</b>lessons<div class="meter"><i style="width:67%"></i></div></div><div><strong><span class="tag m">Medium</span>The story or claim is smaller than its instruction, or comes after it</strong><p>Maths Apply (16): Freya's claim is the smallest thing on the slide, about 18pt in a small bubble at the far right; the instruction is 28pt and appears twice. Round two's Anya bubble was the biggest thing. History 4, 9 and 13: the question sits above the information, with its answer printed straight under it. History Activity 1: the question at 11pt above the account at 22pt.</p><div class="was">Round two: "The instruction comes before the thing it is about".</div></div></div>
+    <div class="row"><div class="n"><b>2 of 3</b>lessons<div class="meter"><i style="width:67%"></i></div></div><div><strong><span class="tag m">Medium</span>A printed activity asks for writing with nowhere to write</strong><p>Science Activity 1: "What does one arrow tell us? Words you may need..." and no line, with 78mm blank at the foot of every page. History Activity 1: the slide shows a pencil, the account has no answer space (the notes say talk to a partner, so maybe fine).</p><div class="was">First report: "Nowhere to write on the activity sheet".</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag h">High</span>A Below sheet with the pencil mark and no lines</strong><p>History Below: the mark says write on the sheet, and the plan says children finish six printed sentence openings. The page has no lines at all, prints "Write your answer in your book" twice, and leaves 96mm blank at the foot. The 10 lines in the plan were dropped.</p><div class="was">First report: "Answer lines at uneven spacing... a question with no answer space at all".</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag h">High</span>A picture of the wrong animal</strong><p>Science: the "caterpillar" under "Caterpillars eat oak leaves" is a swallowtail caterpillar photographed in Estonia. It does not eat oak. It is on slides 11 to 14, the wall and every sheet. The rabbit may be an American cottontail on a concrete kerb (low confidence).</p><div class="was">First report and round two: "Pictures that are wrong for a classroom though they passed".</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Medium</span>The maths Below sheet runs down, not across</strong><p>1a then 1b down the left, 1c then 1d down the right. "Use column addition." sits above 1a only, so 1c starts 7.8mm higher. The adaptation designer asked for this order itself. The 14 October fix is in this version, and even when parts stay in columns it should lift "Use column addition." across both so they start level. That did not happen either. The line under Fluency is gone and Problem Solving is now on the left (those two held).</p><div class="was">You, 15 October: "I swear we fixed it where questions line up... should 1c be in line with 1a?"</div><div class="was">Round two: "The maths Below sheet is oddly laid out". Your 14 October ruling: parts of one question in rows across.</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Medium</span>Answer sheet: some answers bold, others not</strong><p>Maths: Below 1c and 1d bold, the rest plain; Expected all bold; Greater Depth mixed. History and science held (nothing bold).</p><div class="was">First report and round two: "Answer sheet: one answer bold, the rest not".</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Medium</span>A weak pick-a-name Do beat</strong><p>Science slide 7: "Which is the producer? Which are consumers?" over three photos, and nothing is recorded. The same beat you called very weak on round two's slide 6.</p><div class="was">Round two: "Weak Do beats".</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Medium</span>A Your Turn without the lightning bolt</strong><p>Maths slide 11 has the sheet sign and no bolt. The bolt is there on 8, 14 and 16. Slide 11 was built on a free layout.</p><div class="was">First report: "The lightning bolt shows on one Your Turn layout and not the other".</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Medium</span>A chain drawn small on the sheet</strong><p>Science Expected: the four-link chain with labels (Q2) gets a 108 x 55mm box; the three-link chain (Q1) gets 108 x 99mm, and 30mm stays blank under Q2. Medium confidence.</p><div class="was">First report: "A figure children draw on is drawn small".</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Low</span>Column headings drawn at three sizes</strong><p>Maths: about 22pt on slide 8, 20pt on 11, 16pt on 14 (under the 18pt floor). Low confidence.</p><div class="was">First report: "Chart headings and titles shrink below the floor".</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Low</span>Criteria that name topics, not steps; a lesson named three ways</strong><p>History criteria read "Cholera", "Help in Victorian times", "Plague" with sentence starters (low confidence). The lesson is "diseases and treatments" on the deck, "Explain how cholera and plague spread" on the answers, and "How diseases spread and were treated" in the build. The drive copies are fine.</p><div class="was">First report: "File names in one pack disagree". Round two: "Success criteria wording".</div></div></div>
+  </div>
+  <div class="note back" style="margin-top:10px"><p><strong>Blue questions with no sign</strong> showed up again in all three (history 4, 9, 13, 15; science 6, 9, 11, 13). Your ruling says a question is blue only when an instruction sits with it, so these may be fine. Left off the count; say if you want it looked at.</p></div>
+</section>
+
+<section id="yours">
+  <h2>Your points</h2>
+  <p class="lede">Added after you looked at the lessons yourself on 15 October. The checkers missed most of these, as they did last round.</p>
+  <div class="rows">
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag b">Came back</span>History: the pump comes from nowhere</strong><p>Slide 3 says Victorian families shared dirty toilets. Slide 4 jumps to "Which part of the pump would people move?" with a pump photo. Nothing says what a pump is, that the whole street got its drinking water there, or why that matters. The scene and the explaining are missing. The checker marked "scene set" as held because slide 3 has a street picture; your point overrides it.</p><div class="was">You: "the pump feels just random. Children learned that Victorian places are dirty, but now there's a pump. They don't know what it is, what it does, why it's important. This is lacking the explanation and the setting the scene stuff we've been working on." Round two: "no scene, mostly text" (ticked 14 October).</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag h">New</span>History: John Snow's words come before John Snow</strong><p>Slide 7 uses "an account from a doctor called John Snow". Slide 8 then says "Remember John Snow..." and properly introduces who he was and what he did. Children should meet him first, then read his words.</p><div class="was">You: "John Snow is introduced and his words before the slide about him, surely these would be swapped?"</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag h">New</span>Maths: a word problem that was never taught, numbered on</strong><p>The teaching cycle (My Turn 4, Our Turn 6, Your Turn 8) only models plain sums. Then two more slides are also titled "Your Turn": mixed sums (11) and a tickets word problem (14), numbered (10) because it carries on from the practice questions. Nothing models a word problem first, so it reads as random, and three slides called "Your Turn" make it look like extra cycles.</p><div class="was">You: "I just don't actually know why it's a question, is it part of the Your Turns before? But we didn't practise it, it just seemed like we were doing a cycle and then it did something random and numbered it."</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag b">Came back</span>Maths: success criteria better, not right</strong><p>"Small 1" is gone. But step 3 is two steps in one ("Add each column... including any exchanged amount. Total 10 or more? exchange 10 into the next column."), and "exchange 10" does not say ten of what. Step 4, "Write the ones digit of each total below", sounds like the ones column only. Steps 2 and 3 repeat each other ("start with the ones", "right to left").</p><div class="was">You: "is it improved and perfect from us trying to fix these?" Round two: "Success criteria wording" (ticked 13 October).</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">New</span>History: the end criteria lost their boxes</strong><p>Slides 16 and 17 use criteria as sentence starters under three headings ("Cholera", "Help in Victorian times", "Plague"), each with a pencil. No numbered green boxes like every other criteria panel. The headings are the same size and weight as the starters, so they do not read as headings.</p><div class="was">You: "why has it lost its boxes? The titles of each sentence stem don't look like a title either."</div></div></div>
+    <div class="row"><div class="n"><b>2 of 3</b>lessons<div class="meter"><i style="width:67%"></i></div></div><div><strong><span class="tag h">New</span>Slides shrink words instead of using the empty space</strong><p>Science slide 7: the two questions are 19pt in a short card across the top, with about 120 pixels empty under the photos. The build log lists 15 pieces of text shrunk under 20pt on science slides 7, 11, 16, 17, 18 and 19, and logs them as fine because they are above 18pt. Maths has the same (16pt and 18pt on 8, 11, 14). The slide engine gives a card a fixed share and shrinks the words to fit it, and never lends it the free space. Sheets and the wall had this fixed; slides did not.</p><div class="was">You: "why are the questions so small? There was so much dead space under the picture, why couldn't pictures have moved down and text is bigger? It's under the 20 limit." "There's a lot of small text on the slides." First report: "Things only scale down".</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag h">New</span>Slide pictures smaller than their card</strong><p>Science slide 15 onwards: the heron is about 95 pixels wide and the slug about 140, inside a card with room for twice that, with blank space between each name and its line. The same on the answer chains (18, 19). Same cause as the shrinking words.</p><div class="was">You: "the pictures on slide 15+ are also smaller, like it's obvious they could have filled the card or been bigger."</div></div></div>
+  </div>
+</section>
+
+<section id="still">
+  <h2>Still there</h2>
+  <p class="lede">These were on the first report and never ticked. Seen again.</p>
+  <div class="rows">
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag h">High</span>Column headings with no chart under them</strong><p>Maths slides 8, 11 and 14: a Th H T O heading strip with no rows. On 8 there is 3.1 inches blank between it and the sums; on 14 it is squeezed to the foot, 15 pixels from the edge. The plan meant it as a reminder of column order (children set out their own columns).</p><div class="was">You, 15 October: "If it's meant that's fine, but the questions could be bigger then, because there's so much dead space. But I do feel like it's a helper that has failed to draw." Round two: "weird".</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Medium</span>Photos and their cards not lined up</strong><p>Science slide 7: three photos of different shapes, so each card ends at a different height and the names sit at three heights (grass, rabbit, fox). Slides 4 and 12: the photo frames start 27 and 158 pixels apart and differ in width. This was your round two point and was never ticked, so it is still there rather than come back.</p><div class="was">You, 15 October: "why are the pictures, their cards etc not aligned, looks awful and I thought we fixed this."</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag h">High</span>No fill-in food chain on any sheet</strong><p>Science: no empty boxes joined by arrows anywhere. Below uses the Expected sheet unchanged, so the weakest children get the same blank box to draw in. Greater Depth is one chain plus three lines of explaining: less drawing, more writing.</p></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Low</span>The wall never says what a producer or consumer is</strong><p>Science: much better than round two (a photo chain with green roles, photos about 70mm, the widest blank band 40mm against 70mm before). It still gives no meaning for either word.</p></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Low</span>The carried 1s are tiny</strong><p>Maths: about 11pt beside 28pt digits on every chart, 5mm on the wall.</p></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Medium</span>One photo used again and again</strong><p>History: the same pump on slides 4, 7 and 9. A Welsh village pump with white litter at its base. The checker called it mild because it is the same pump each time; you did not.</p><div class="was">You, 15 October: "I feel the pump picture was used too much."</div></div></div>
+  </div>
+</section>
+
+<section id="new">
+  <h2>New</h2>
+  <div class="rows">
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag h">High</span>"||" printed in front of every label on the answer chains</strong><p>Science slides 18 and 19: "||producer", "||consumer and prey", seven labels in all. The hidden mark that sets up a reveal is stripped from the starter's answers but not from food chain labels.</p></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag h">High</span>The history answer sheet is six words</strong><p>The whole key for both levels is "Water vs fleas; cures failed; handle removed." for a five-sentence explanation. The full model answer is in the slide notes and never reaches the sheet.</p></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag h">High</span>A task card covers the column headings</strong><p>Maths slide 11: the white task card sits over the bottom of the Th H T O strip and touches the words. The final slide check passed it.</p></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Medium</span>Teacher notes that do not match their slide</strong><p>History: slide 15's notes say "Use the sentence starters" but the slide shows only word chips. Slide 16's notes repeat slide 14's script ("Look at the weak answer...") on a slide with no weak answer.</p></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Medium</span>A speech bubble that points away from its speaker</strong><p>Maths Greater Depth slips: Tara's bubble tail points down and right, away from Tara, and leaves a gap in the bubble's border. On all four slips.</p></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Medium</span>The science deck is 37MB</strong><p>No photo was left at camera size. The nine food chain drawings are saved as very large pictures with the photos inside them (about 26MB), and each photo is stored again on every slide that uses it. The other decks are 4 to 6MB.</p></div></div>
+  </div>
+  <h3>Small things, one lesson each</h3>
+  <ul>
+    <li>History: titles strand one word on a line ("pump." on 8, "do?" on 13); the "Not enough" panel on 14 is three lines in a box 75% empty; the chip row on 16 floats with blank space under it; Activity 2 lists the first two actions in the opposite order from slide 11.</li>
+    <li>Maths: the hint card on 14 is 32pt black under an 18pt blue task; the only task line on 8 is 16pt with no sign; the Greater Depth slips are unequal (115mm and 182mm rows) with no cut line at the foot; the story is indented on Expected slips and not on Below; the answer sheet says "three exchanges leave 000."; "Thousands" on the wall is 5.6mm tall beside an 18mm title.</li>
+    <li>Science: the answer chains on 18 and 19 are small in their card with blank above and below, titled "Create your food chains - check - rose chain"; slide 16 says "each set of food facts" with one set shown; photo captions at different heights; Activity 1 captions about 11pt; Activity 2 gives one 41mm line for a frog that needs three labels; Greater Depth's facts have a blue heading and Expected's none.</li>
+  </ul>
+</section>
+
+<section id="runs">
+  <h2>How the runs behaved</h2>
+  <div class="rows">
+    <div class="row"><div class="n"><b>3 of 3</b>lessons<div class="meter"><i style="width:100%"></i></div></div><div><strong><span class="tag b">Came back</span>No worker could see its own slides</strong><p>The program that draws preview pictures crashed for the slide designer in all three lessons, and for the decorator in maths and history. The science decorator worked round it by moving its temporary files and got its pictures. This is the cause of the drawings on words, the "||" labels and the covered headings.</p><div class="was">Round two: "The sandbox blocks the slide preview" (ticked 13 October).</div></div></div>
+    <div class="row"><div class="n"><b>3 of 3</b>lessons<div class="meter"><i style="width:100%"></i></div></div><div><strong><span class="tag b">Came back</span>Small tool slips</strong><p>Long reads came back cut off and were re-read in all three. The science picture maker shortened its prompt and lost track of the picture it made (the grass, which looks fine). PowerShell quoting errors in two lessons. Windows refused an arrow character twice.</p><div class="was">Round two: "Small tool slips" (ticked 13 October).</div></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Repeat</span>The planner's check shows one kind of fault at a time</strong><p>Maths: punctuation, then a banned number, then an empty list, then missing pupil instructions, each found on a separate pass. Its three tries ran out; a focused repair fixed it in 31 seconds. Round two's science did the same.</p></div></div>
+    <div class="row"><div class="n"><b>1 of 3</b>lessons<div class="meter"><i style="width:33%"></i></div></div><div><strong><span class="tag m">Friction</span>The maths slide designer spent three extra drafts on text size</strong><p>Drafts 1 and 2 were refused (the place value chart was left out, then a blue line that asked nothing). Drafts 3, 4 and 5 all passed and were spent trying to lift text to 20pt. "Use column addition." still prints at 16pt.</p></div></div>
+    <div class="row"><div class="n"><b>3 of 3</b>lessons<div class="meter"><i style="width:100%"></i></div></div><div><strong><span class="tag g">Better</span>Faster, no rescues, the planner kept its memory</strong><p>33, 43 and 62 minutes. No deck needed the slide designer's rescue repair (round two: all three). No lesson planner was squeezed for memory. With three lessons running at once, each end-of-run audit found its own record. The design reviewer sent history and science back once each, and both fixes are on the page.</p></div></div>
+  </div>
+</section>
+
+<section id="held">
+  <h2>What held</h2>
+  <p class="lede">Ticked on the first report, and checked on a page that could have shown it.</p>
+  <ul>
+    <li><strong>Starters</strong> fill the slide with no topic line under "Starter" (all three).</li>
+    <li><strong>Word cards</strong> come after the starter, standard colours, none hand-built (all three).</li>
+    <li><strong>The bolt</strong> is on Your Turn slides and never on an Our Turn (apart from maths 11); sheet tasks carry the sheet sign.</li>
+    <li><strong>A launch's steps</strong> are a blue list, criteria green (science).</li>
+    <li><strong>Criteria print in full</strong> beside cards and drawings (science 16 to 19: round two's empty green box is gone). No "small 1": maths says "exchanged amount".</li>
+    <li><strong>Scene first:</strong> science opens with the rabbit grazing; history sets a street and a sickbed scene, with a picture on every teaching slide.</li>
+    <li><strong>Story before instruction</strong> on science 11, 15, 16 and history 7.</li>
+    <li><strong>Food chains are photos</strong> with green roles, and children draw the arrowheads. "1st, 2nd, 3rd" is gone.</li>
+    <li><strong>The Apply's question</strong> no longer gives the answer away (maths: "Which column helped you decide?"). No random blank chart slide.</li>
+    <li><strong>Decorations in maths</strong> sit in the title band only, and stay put across each question and answer pair.</li>
+    <li><strong>Worksheets:</strong> no answer green on pupil sheets; given digits black; number cells 12mm; lines 8mm apart; carry row clear; the child's claim before the question; slips with no lines and sums two across.</li>
+    <li><strong>Pictures:</strong> every request got its own picture in history and science; John Snow and a real English cholera chest, no watermarks or name bands.</li>
+    <li><strong>Walls:</strong> the maths chart is 163 x 108mm (round two 97 x 102); pins clear of the digits; the science wall leads with photos. History made no wall and said why (the unit ends here).</li>
+    <li><strong>Printed activities:</strong> nothing to cut out; history's tick table and science's chains run full width.</li>
+  </ul>
+  <h3>Not tested by these three lessons</h3>
+  <p>Tables of text on slides, clocks, shapes and L-shapes, bar charts, fraction drawings, labelled photos, marked-up model texts, step-by-step answer runs on the board.</p>
+</section>
+
+<section id="method">
+  <h2>How this was checked</h2>
+  <ul>
+    <li><strong>Copies of what reached your E drive</strong> were drawn page by page (91 pages). Nothing on the drive or in the lesson folders was changed.</li>
+    <li><strong>One checker per lesson</strong> looked at every page with a list of everything you ticked, and compared maths and science with round two's pages.</li>
+    <li><strong>I looked myself</strong> at the three worst: the book over "An explanation", the "||" labels, and the card over the headings. All three are as described.</li>
+    <li><strong>The run records</strong> (each run's notes, the Codex session files, the refused slide drafts) gave the run section. All three lessons were built from 4.2.319.</li>
+    <li><strong>Your own points</strong> were added the same day, after you looked at the lessons. Where you disagreed with a checker (the pump scene, the pump photo), your view stands.</li>
+    <li><strong>Agreed next step:</strong> one slides job. First the preview crash, then slides that grow into free space (starting from the 12 October test copy, which never went live), then the smaller faults, then the same three lessons rebuilt on Codex.</li>
+  </ul>
+</section>
+</main>
+<script>
+(function () {
+var R = String.raw;
+var ROOT = R`C:\Users\Daniel\Projects\lessonv4\stress-test-2026-10-15`;
+var OLD = R`C:\Users\Daniel\Projects\lessonv4\stress-test-2026-10-07`;
+var PLUGIN = R`C:\Users\Daniel\Projects\lessonv4\plugins\lesson-v4`;
+var MEM = R`C:\Users\Daniel\.claude\projects\C--Users-Daniel-Projects-lessonv4\memory`;
+var LES = {
+  m: ["C4-maths", R`C:\Users\Daniel\Projects\lessonv4\output\working\year-4-maths-lesson-27-column-addition-multiple-exchanges`, "Year 4 maths lesson 27, column addition with multiple exchanges", R`C:\Users\Daniel\Projects\lessonv4\output\working\year-4-maths-lesson-26`, "C1-maths"],
+  h: ["C5-history", R`C:\Users\Daniel\Projects\lessonv4\lesson-output\working\year-4-history-lesson-6-diseases-and-treatments`, "Year 4 history lesson 6, diseases and treatments", "", ""],
+  s: ["C6-science", R`C:\Users\Daniel\Projects\lessonv4\output\working\year-4-science-lesson-6-create-simple-food-chains`, "Year 4 science lesson 6, create simple food chains (the same lesson as round two)", "", "C2-science"]
+};
+var F = {
+  WS: R`- worksheet-html\src\ : the worksheet engine (page.js, layouts.js, composition.js, slips.js, tokens.js, helpers\). Tests in worksheet-html\test\.
+- agents\worksheet-designer.md and agents\adaptation-designer.md.`,
+  SL: R`- builder\src\ : the slide engine (templates\, content\, layout.js, text-fit.js, validate.js). builder\scripts\check-slide-design.js is the check that refuses a draft. Tests in builder\test\.
+- agents\slide-designer.md.`,
+  DEC: R`- builder\src\decorations.js, shared\decorations.js, scripts\check-optional-pictures.py, scripts\measure-slide-room.py, agents\slide-decorator.md.`,
+  PIC: R`- scripts\ picture sources and picture stage (compile-picture-assignments.py, validate-image-scout.py, publish-picture.py), agents\image-scout.md, references\image-scout-search.md.`,
+  WALL: R`- working-wall-html\src\, agents\working-wall-designer.md, references\working-wall-*.md.`,
+  STK: R`- stick-in-sheets-html\src\, agents\stick-in-sheets-designer.md.`,
+  RUN: R`- skills\make-lesson\ (the run instructions), scripts\make-lesson-runtime.py, scripts\run-fixed-resource.py, builder\build.js and scripts\render-pages.py (how previews are drawn).`,
+  LD: R`- agents\lesson-designer.md, references\ (the subject and teaching-sequence guides), scripts\validate-lesson-design.py.`
+};
+function mem() { return Array.prototype.slice.call(arguments).map(function (n) { return "- " + MEM + "\\" + n; }).join("\n"); }
+// L: lessons (m, h, s). f: plugin areas. x: extra places. m: his rulings. n: note. q: questions. back: true when he had ticked it fixed.
+var P = {
+b1: { back: true, L: ["m", "h", "s"], f: ["SL", "LD"], m: mem("teaching-lives-on-slide-and-in-notes.md", "stress-test-2026-10-07.md"), n: R`Round two's maths lesson 26 had notes on every answer slide; lesson 27 has notes on 1 of 9. So something changed between 4.2.318 and 4.2.319, or the designer now treats an answers slide as needing none. Compare the two lessons' lesson-design.json and lesson.json, then git log between the two releases, before deciding where the fault sits.`, q: ["What do you want in the notes of an answers slide?"] },
+b2: { back: true, L: ["h", "s"], f: ["DEC", "RUN"], m: mem("slide-decorations-variety-rulings.md", "decorations-never-deleted.md", "decorations-kind-decides-closeness.md"), n: R`The decorator could not draw preview pictures in history (LibreOffice crashed, exit 3221226505), so it placed drawings from the spec without seeing them. The placement check should still have caught a drawing on words without pictures. Find why it did not, separately from the preview crash (which has its own finding). Never delete a decoration to fix this: move it.`, q: [] },
+b3: { back: true, L: ["h", "s"], f: ["WS"], m: mem("worksheet-rulings-2026-10-09.md", "worksheet-edge-and-trim-2026-10-06.md"), n: R`Check what he ruled on 9 October about direction across levels before treating every mix as a fault.`, q: ["Must every level in one worksheet file face the same way?"] },
+b4: { back: true, L: ["m", "h"], f: ["SL"], x: R`- builder\src\content\reveal-pair.js and builder\test\answer-shown-in-a-drawing.test.js.`, m: mem("stress-test-2026-10-07.md"), n: R`Repaired on 7 and 8 October and it holds on most pairs. These pairs (an Apply with a speech bubble in maths; a question card in history) escape it. Round two's maths 23 to 24 was the same kind of pair.`, q: [] },
+b5: { back: true, L: ["m", "h"], f: ["SL", "LD", "STK"], m: mem("story-before-its-instruction.md", "lesson-shape-principles-2026-09-28.md"), n: R`Built on 13 October (story, question, how-to; story biggest). In maths it did not reach the Apply slide; in history the question sits above its information with the answer printed under it. Find which step put them in that order: the plan, the slide designer or the printed activity.`, q: [] },
+b6: { back: true, L: ["s", "h"], f: ["STK"], m: mem("printed-activity-page-rulings-2026-10-10.md", "printed-activities-full-page.md"), q: ["When a printed activity asks a question, should it always carry a line or box to answer in?"] },
+b7: { back: true, L: ["h"], f: ["WS"], m: mem("worksheet-rulings-2026-10-09.md", "response-form-is-chosen-upstream.md"), n: R`The plan gave the six sentence openings 10 lines; the sheet prints "Write your answer in your book" twice under a pencil mark. Find where the lines were dropped and why the book prompt won.`, q: [] },
+b8: { back: true, L: ["s"], f: ["PIC"], m: mem("picture-choosing-rulings.md", "picture-stand-in-beats-blank.md"), n: R`picture-provenance.json in the working folder says where each picture came from and why it was accepted.`, q: ["Would you rather a wrong caterpillar or a plainer photo of a caterpillar on an oak leaf, even if it is not British?"] },
+b9: { back: true, L: ["m"], f: ["WS"], m: mem("worksheet-reads-as-a-grid.md"), n: R`The adaptation designer ordered the layout itself (adaptation.md line 92: "ordered (a), (b) down the left column, then (c), (d) down the right column"). So the 14 October ruling did not reach the adaptation designer's guidance.`, q: [] },
+b10: { back: true, L: ["m"], f: ["WS"], x: R`- worksheet-html\src\answer-sheet.js.`, m: mem("answer-sheet-mirrors-worksheet.md"), q: [] },
+b11: { back: true, L: ["s"], f: ["LD"], m: mem("do-beats-effective-not-quick.md", "half-listener-test.md", "three-do-beats-and-the-launch.md", "practical-do-beats-gap.md"), n: R`This is the same lesson he marked down in round two for the same beat. The design reviewer looked at it and passed it.`, q: ["What would a strong Do have been at that point?"] },
+b12: { back: true, L: ["m"], f: ["SL"], x: R`- builder\src\do-signs.js and the free layouts.`, m: mem("bolt-your-turn-only-book-when-sheet-is-task.md"), q: [] },
+b13: { back: true, L: ["s"], f: ["WS"], m: mem("worksheet-rulings-2026-10-09.md", "picture-chain-rulings-2026-10-13.md"), q: [] },
+b14: { L: ["s"], f: ["SL"], x: R`- builder\src\content\vocab.js, row.js and image.js (photos of different shapes in one row).`, n: R`Like columns in a row were made to line up in the 12 October slide engine test copy (evaluations\engine-sorts-it-2026-10-12), which never went live. Start there.`, q: [] },
+y1: { back: true, L: ["h"], f: ["LD"], m: mem("lesson-told-first-2026-09-27.md", "lesson-shape-principles-2026-09-28.md", "teach-shape-takeaway-because-example-not.md", "explaining-rulings-2026-10-14.md"), x: R`- referencessubject-history.md.`, n: R`Find at which step the pump arrived unexplained: design-decisions.md (the first telling), lesson-design.json, or lesson.json. The design reviewer passed it, so check what the reviewer is asked to look for too.`, q: ["How would you have brought the pump in?"] },
+y2: { L: ["h"], f: ["LD"], m: mem("lesson-told-first-2026-09-27.md", "invented-case-teaches-the-group.md"), q: [] },
+y3: { L: ["m"], f: ["LD"], x: R`- references\subject-maths.md and the teaching sequence guides.`, m: mem("maths-pace-is-practice-and-tricky-step-first.md", "three-do-beats-and-the-launch.md"), n: R`The design had teachingSequence units my-turn, our-turn, your-turn, practise, practise. The word problem is the second practise unit. Find why a practise unit can bring in a kind of question the cycle never modelled, and why every practise slide is titled "Your Turn".`, q: ["When a lesson ends with a word problem, should it get its own My Turn, or be the Apply?", "What should practice slides after the cycle be called?"] },
+y4: { back: true, L: ["m"], f: ["LD"], x: R`- references\slide-success-criteria.md.`, m: mem("success-criteria-rulings-2026-10-13.md", "success-criteria-short-route-smaller-points.md", "success-criteria-clarity-before-brevity.md"), q: ["How would you word the five steps for column addition with exchanging?"] },
+y5: { L: ["h"], f: ["SL"], x: R`- builder\src\content\sc-panel.js and success-criteria-panel.js (the sentence-starter kind of criteria).`, m: mem("success-criteria-rulings-2026-10-13.md", "criteria-sets-share-one-box.md"), q: ["Should sentence-starter criteria still sit in numbered green boxes?"] },
+y6: { L: ["s", "m"], f: ["SL"], x: R`- builder\src\text-fit.js, layout.js, content\stack.js and the 12 October test copy in C:\Users\Daniel\Projects\lessonv4\evaluations\engine-sorts-it-2026-10-12\ (never live).`, m: mem("engine-sorts-it-not-refuses.md", "room-by-need-test-version.md", "text-fit-less-cautious.md", "pace-means-listening-and-simplicity.md"), n: R`This is part of the slides job agreed on 15 October: the slide engine must grow words and pictures into free space, as sheets and walls already do. Show me before and after on science slides 7 and 15 and maths slide 8 before anything goes live.`, q: [] },
+y7: { L: ["s"], f: ["SL"], x: R`- builder\src\content\image.js and shared\visuals\process-chain-pictures.js.`, m: mem("engine-sorts-it-not-refuses.md", "picture-chain-rulings-2026-10-13.md"), n: R`Same slides job as the shrinking words.`, q: [] },
+b15: { back: true, L: ["m"], f: ["SL"], x: R`- shared\visuals\place-value-chart-svg.js.`, m: mem("chart-headings-18pt-titles-shrink-ok.md"), q: [] },
+b16: { back: true, L: ["h"], f: ["LD"], x: R`- references\slide-success-criteria.md and shared\text\filename.js.`, m: mem("success-criteria-short-route-smaller-points.md", "sheet-shows-the-objective-and-plain-names.md"), q: [] },
+t1: { L: ["m"], f: ["SL"], x: R`- shared\visuals\place-value-chart-svg.js and builder\src\templates\maths-your-turn.js.`, m: mem("column-headings-short-and-blank-frame-extra.md", "column-method-layout.md"), q: ["On a Your Turn done on the sheet, do you want a full blank chart on the board, or no chart at all?"] },
+t2: { L: ["s"], f: ["WS"], x: R`- agents\adaptation-designer.md and references\subject-science.md.`, m: mem("picture-chain-rulings-2026-10-13.md", "sheet-kind-of-learning-rule.md"), q: ["What should the Below food chain sheet look like?", "What makes Greater Depth harder here without more writing?"] },
+t3: { L: ["s"], f: ["WALL"], m: mem("wall-rulings-2026-10-10.md", "working-wall-point-at-test.md"), q: ["Should the wall carry what each word means?"] },
+t4: { L: ["m"], f: ["SL"], x: R`- shared\visuals\place-value-chart-svg.js and the wall's copy of it.`, m: mem("column-method-layout.md"), q: [] },
+t5: { L: ["h"], f: ["PIC"], m: mem("picture-choosing-rulings.md"), q: [] },
+n1: { L: ["s"], f: ["SL"], x: R`- builder\src\answer-text.js and verify-markers.js; shared\visuals\process-chain-pictures.js.`, n: R`The starter's "||" is stripped, so the strip exists but the food chain labels skip it. Check every other drawing that can carry a label for the same gap.`, q: [] },
+n2: { L: ["h"], f: ["WS"], x: R`- worksheet-html\src\answer-sheet.js and the answer key in worksheet.json.`, m: mem("answer-sheet-mirrors-worksheet.md"), q: ["For a written explanation, what should the answer sheet show: the full model answer, or the points to look for?"] },
+n3: { L: ["m"], f: ["SL"], x: R`- builder\src\content\stack.js and the free split layouts.`, n: R`The final slide check passed this overlap. Find why it cannot see a card over a drawing.`, q: [] },
+n4: { L: ["h"], f: ["SL", "LD"], m: mem("teaching-lives-on-slide-and-in-notes.md"), q: [] },
+n5: { L: ["m"], f: ["WS"], x: R`- the speech bubble helper in worksheet-html\src\helpers\ and shared\visuals\.`, q: [] },
+n6: { L: ["s"], f: ["SL"], x: R`- shared\visuals\process-chain-pictures.js and builder\src\content\ (how a drawing with photos becomes a picture on the slide).`, n: R`Nine food chain drawings at 3586 pixels wide make about 26MB of a 37MB deck, and each photo is stored again per slide. A deck that size is slow to open and email.`, q: [] },
+n7: { L: ["h", "m", "s"], f: ["SL", "WS"], n: R`These are small, separate faults listed together. Tell me which share a cause and which are cheap before building any.`, q: ["Which of these would you actually fix by hand before teaching?"] },
+r1: { back: true, L: ["m", "h", "s"], f: ["RUN"], m: mem("codex-slide-designer-ran-out-of-tries.md", "codex-sandbox-refuses-rename.md", "codex-sandbox-blocks-the-network.md"), n: R`LibreOffice exits 3221226505 inside the Codex sandbox. The science decorator got past it by pointing TEMP and TMP at the lesson's working folder; the others tried the same and still failed. This can only be reproduced on Codex: say plainly what you could and could not test here. Each worker's friction.md line and its Codex session file under C:\Users\Daniel\.codex\sessions\2026\10\15\ show what it tried.`, q: [] },
+r2: { back: true, L: ["m", "h", "s"], f: ["RUN", "PIC"], m: mem("codex-reads-cut-in-middle.md", "python-found-not-named.md"), q: [] },
+r3: { L: ["m"], f: ["LD"], n: R`The checks stop at the first kind of fault, so each pass finds one more. Find whether one pass could report every kind at once.`, q: [] },
+r4: { L: ["m"], f: ["SL"], x: R`- the slide-attempts folder in the maths working folder (five drafts and the check's words beside each).`, m: mem("text-fit-less-cautious.md"), q: [] }
+};
+var ORDER = {
+  back: ["b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8", "b9", "b10", "b11", "b12", "b13", "b15", "b16"],
+  yours: ["y1", "y2", "y3", "y4", "y5", "y6", "y7"],
+  still: ["t1", "b14", "t2", "t3", "t4", "t5"],
+  "new": ["n1", "n2", "n3", "n4", "n5", "n6", "n7", "n7", "n7"],
+  runs: ["r1", "r2", "r3", "r4"]
+};
+var SECTION = { back: "came back after being ticked as fixed", yours: "the teacher's own points from looking at the lessons",still: "still there, never ticked", "new": "new in round three", runs: "how the run itself behaved" };
+
+function clean(t) { return t.replace(/\s+/g, " ").trim(); }
+function faultOf(el) {
+  if (el.classList.contains("row")) {
+    var st = el.querySelector("strong").cloneNode(true);
+    var tag = st.querySelector(".tag"); if (tag) st.removeChild(tag);
+    var p = el.querySelector("p"), was = el.querySelector(".was"), n = el.querySelector(".n");
+    return { title: clean(st.textContent), body: p ? clean(p.textContent) : "", was: was ? clean(was.textContent) : "", count: n ? clean(n.textContent.replace(/([a-z0-9+])(lessons?)/i, "$1 $2")) : "" };
+  }
+  return { title: clean(el.querySelector(".txt").textContent), body: "", was: "", count: "" };
+}
+function build(key, sec, el) {
+  var d = P[key], f = faultOf(el), out = [];
+  out.push("/improving-agents-and-skills", "");
+  out.push("I want you to investigate one fault in the Lesson V4 plugin, find its real cause and fix it.", "");
+  out.push("THE FAULT, AS A TEACHER SEES IT");
+  out.push("Area: " + SECTION[sec] + ".");
+  out.push(f.title + (f.body ? "\n" + f.body : ""));
+  if (f.count) out.push("How often: " + f.count + " of the three lessons.");
+  if (d.back) out.push("This one I had ticked as FIXED after the first stress test. " + (f.was ? f.was + " " : "") + "So the first job is to find what was built then (git log, and the memory notes below) and why it did not hold here. Do not build a second fix on top of the first without knowing why the first failed.");
+  out.push("");
+  out.push("This came out of round three of the stress test: three real lessons built on Codex with version 4.2.319 on 15 October 2026, checked page by page. I want the general cause and a repair that holds across subjects and year groups, not a patch for these lessons.", "");
+  out.push("WHERE THE EVIDENCE IS");
+  out.push("This round's log: " + ROOT + "\\ledger.md. The page checkers' full findings: " + ROOT + "\\replies\\ (one file per lesson).");
+  out.push("The lessons that show it:");
+  d.L.forEach(function (k) {
+    var a = LES[k];
+    out.push("- " + a[2] + ". Finished files and a picture of every page: " + ROOT + "\\" + a[0] + "\\_inspect\\. Working folder (lesson.json with the notes, worksheet.json, working-wall.json, stick-in-sheets.json, the plan, slide-attempts\\, build-results\\, friction.md): " + a[1] + "\\");
+    if (a[4]) out.push("  Round two built " + (k === "s" ? "the same lesson" : "the lesson before it") + ": pages in " + OLD + "\\codex-round\\" + a[4] + "\\_inspect\\" + (a[3] ? ", working folder " + a[3] + "\\" : " (its working folder was overwritten by this run)") + ".");
+  });
+  out.push("Look at the page pictures yourself before you theorise. These are real lessons I am teaching: change nothing in their folders or on my school drive.");
+  out.push("The first report (rounds one and two) is https://claude.ai/artifact/Aizj1gHfccokcbvA7fXuXX and its log is " + OLD + "\\ledger.md.", "");
+  out.push("WHERE TO LOOK IN THE PLUGIN");
+  out.push("The live plugin is " + PLUGIN + " (never the teaching-plugins copy). Paths below start there.");
+  (d.f || []).forEach(function (g) { out.push(F[g]); });
+  if (d.x) out.push(d.x);
+  out.push("I have given you the area, not the exact line. Finding the exact place, and the tests that already cover it, is part of the job.", "");
+  if (d.m) { out.push("MY EARLIER RULINGS, READ THESE FIRST"); out.push("Some of what you find may be there because I asked for it. Read these before you form a view:"); out.push(d.m, ""); }
+  if (d.n) { out.push("WHAT YOU SHOULD KNOW BEFORE YOU START"); out.push(d.n, ""); }
+  out.push("ASK ME WHAT I REALLY WANT");
+  out.push("Once you understand the fault, and before you settle on a repair, ask me clarifying questions until you know what I actually want. Ask one question at a time, each about a real page from the lessons above.");
+  if (d.q && d.q.length) { out.push("Make sure your questions cover at least these:"); d.q.forEach(function (q) { out.push("- " + q); }); }
+  out.push("");
+  out.push("ABOUT THE REPO");
+  out.push("- Version 4.2.319 is committed locally and not pushed. Do not commit or push unless I ask.");
+  out.push("- The stress-test folders are evidence: work on copies in a scratch folder.");
+  out.push("- Do not run a whole lesson to test this. One spec through the relevant check or build is enough.");
+  out.push("- Tell me the repair you propose before you build it. When it is built, add one line to the end of " + ROOT + "\\ledger.md saying what changed.");
+  return out.join("\n");
+}
+
+var items = [];
+Object.keys(ORDER).forEach(function (sec) {
+  var els = document.querySelectorAll("#" + sec + " .rows > .row, #" + sec + " > ul > li");
+  ORDER[sec].forEach(function (key, i) {
+    var el = els[i]; if (!key || !el) return;
+    var host = el, id = key + (sec === "new" && key === "n7" ? "-" + i : "");
+    if (el.tagName === "LI") {
+      var span = document.createElement("span"); span.className = "txt";
+      while (el.firstChild) span.appendChild(el.firstChild);
+      el.appendChild(span);
+    } else { host = el.children[1]; }
+    var tools = document.createElement("div"); tools.className = "tools";
+    var label = document.createElement("label");
+    var box = document.createElement("input"); box.type = "checkbox"; box.id = "tick-" + id;
+    label.appendChild(box); label.appendChild(document.createTextNode("Done"));
+    tools.appendChild(label);
+    var copy = document.createElement("button"); copy.type = "button"; copy.textContent = "Copy prompt";
+    var show = document.createElement("button"); show.type = "button"; show.textContent = "Show prompt";
+    var said = document.createElement("span"); said.className = "said"; said.setAttribute("aria-live", "polite");
+    tools.appendChild(copy); tools.appendChild(show); tools.appendChild(said);
+    var pre = document.createElement("pre"); pre.className = "prompt"; pre.hidden = true; pre.tabIndex = 0;
+    var text = null;
+    function get() { if (text === null) { text = build(key, sec, el); pre.textContent = text; } return text; }
+    show.addEventListener("click", function () { get(); pre.hidden = !pre.hidden; show.textContent = pre.hidden ? "Show prompt" : "Hide prompt"; });
+    copy.addEventListener("click", function () {
+      var t = get();
+      function ok() { said.textContent = "Copied"; setTimeout(function () { said.textContent = ""; }, 1800); }
+      function fallback() {
+        pre.hidden = false; show.textContent = "Hide prompt";
+        var r = document.createRange(); r.selectNodeContents(pre);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        said.textContent = "Selected: press Ctrl+C";
+      }
+      try { navigator.clipboard.writeText(t).then(ok, fallback); } catch (e) { fallback(); }
+    });
+    host.appendChild(tools); host.appendChild(pre);
+    items.push({ key: id, el: el, box: box });
+    box.addEventListener("change", function () { setTick(id, box.checked); });
+  });
+});
+
+var state = {};
+var LS = "stress-test-round-3-ticks";
+try { state = JSON.parse(localStorage.getItem(LS) || "{}") || {}; } catch (e) { state = {}; }
+var pcount = document.getElementById("pcount"), pbar = document.getElementById("pbar"), psave = document.getElementById("psave");
+function paint() {
+  var done = 0;
+  items.forEach(function (it) { var on = !!state[it.key]; it.box.checked = on; it.el.classList.toggle("ticked", on); if (on) done++; });
+  pcount.textContent = done + " of " + items.length + " done";
+  pbar.style.width = (items.length ? (100 * done / items.length) : 0) + "%";
+}
+function keep() { try { localStorage.setItem(LS, JSON.stringify(state)); } catch (e) {} }
+var db = null, chain = {};
+function setTick(key, on) {
+  if (on) state[key] = true; else delete state[key];
+  keep(); paint();
+  if (!db) { psave.textContent = "Saved on this device"; return; }
+  psave.textContent = "Saving...";
+  var ref = db.doc("ticks/" + key);
+  chain[key] = (chain[key] || Promise.resolve()).then(function () {
+    return on ? ref.set({ done: true, at: new Date().toISOString() }) : ref.delete();
+  }).then(function () { psave.textContent = "Saved"; }, function () { psave.textContent = "Saved on this device only"; });
+}
+paint();
+if (window.claude && window.claude.use) {
+  window.claude.use("db").then(function (d) {
+    if (!d) { psave.textContent = "Ticks save on this device"; return; }
+    db = d;
+    d.collection("ticks").onSnapshot(function (snap) {
+      var next = {};
+      snap.docs.forEach(function (doc) { var v = doc.data(); if (v && v.done) next[doc.id] = true; });
+      state = next; keep(); paint();
+      psave.textContent = "Ticks save as you go";
+    }, function () { psave.textContent = "Ticks save on this device"; });
+  }, function () {});
+} else { psave.textContent = "Ticks save on this device"; }
+})();
+</script>

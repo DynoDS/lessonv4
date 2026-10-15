@@ -136,6 +136,66 @@ def test_libreoffice_refuses_an_over_limit_path_before_converting(tmp_path):
     assert str(MODULE.LEGACY_TOOL_PATH_LIMIT) in str(raised.value)
 
 
+def profile_path(uri):
+    """The plain folder path behind a file:// URI."""
+    from urllib.parse import urlparse, unquote
+    path = unquote(urlparse(uri).path)
+    if len(path) > 2 and path[0] == "/" and path[2] == ":":
+        path = path[1:]
+    return str(Path(path))
+
+
+def test_libreoffice_settings_folder_stays_short_inside_a_long_lesson_folder(tmp_path):
+    # LibreOffice writes a settings tree about 110 characters deeper than the
+    # folder it is given, and crashes (exit 3221226505) once that folder's path
+    # passes 148 characters. On 15 October 2026 every Codex slide preview
+    # crashed this way: the workers kept their scratch inside the lesson folder,
+    # whose name is long, and the settings folder went where the scratch went.
+    scratch = tmp_path
+    while len(str(scratch)) < 160:
+        scratch = scratch / "year-4-maths-lesson-27-column-addition"
+    scratch.mkdir(parents=True)
+    src = scratch / "staged-source.pptx"
+    src.write_bytes(b"pptx")
+    seen = []
+
+    def soffice(cmd, **_kwargs):
+        seen.append(next(a for a in cmd if a.startswith("-env:UserInstallation=")))
+        Path(scratch, src.stem + ".pdf").write_bytes(b"%PDF-1.4 stub")
+        return mock.Mock(returncode=0, stdout="", stderr="")
+
+    with (
+        mock.patch.object(MODULE, "find_soffice", return_value="soffice"),
+        mock.patch.object(MODULE.subprocess, "run", side_effect=soffice),
+    ):
+        MODULE.libreoffice_to_pdf(src, scratch / "out.pdf", scratch)
+
+    folder = profile_path(seen[0].split("=", 1)[1])
+    assert len(folder) <= MODULE.LIBREOFFICE_PROFILE_PATH_LIMIT, (
+        f"LibreOffice was given a {len(folder)}-character settings folder; it "
+        f"crashes past 148")
+    assert not Path(folder).exists(), "the settings folder was left behind"
+
+
+def test_libreoffice_settings_folder_stays_in_the_scratch_folder_when_it_fits(tmp_path):
+    src = tmp_path / "staged-source.pptx"
+    src.write_bytes(b"pptx")
+    seen = []
+
+    def soffice(cmd, **_kwargs):
+        seen.append(next(a for a in cmd if a.startswith("-env:UserInstallation=")))
+        Path(tmp_path, src.stem + ".pdf").write_bytes(b"%PDF-1.4 stub")
+        return mock.Mock(returncode=0, stdout="", stderr="")
+
+    with (
+        mock.patch.object(MODULE, "find_soffice", return_value="soffice"),
+        mock.patch.object(MODULE.subprocess, "run", side_effect=soffice),
+    ):
+        MODULE.libreoffice_to_pdf(src, tmp_path / "out.pdf", tmp_path)
+
+    assert Path(profile_path(seen[0].split("=", 1)[1])).parent == tmp_path
+
+
 def test_pdftoppm_refuses_an_over_limit_path_before_running(tmp_path):
     with mock.patch.object(MODULE.shutil, "which", return_value="pdftoppm"):
         with pytest.raises(RuntimeError) as raised:

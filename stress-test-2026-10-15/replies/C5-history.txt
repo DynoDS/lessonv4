@@ -1,0 +1,24 @@
+CAME BACK
+- sl5 | Deck s14, s3, s6, s10, s15 | high | Line drawings on words on five slides. s14 a grey book covers "An" in "An explanation" heading of the model answer card (about 70x85px). s3 houses over "with."; s6 a glass over "get" and "the"; s10 a bottle over "the" in "cure the"; s15 a sprig over "people" in the blue task. Round two C3 had none. Cause: decorator could not draw previews, placed from spec unseen.
+- s8 | Worksheets p1 (Below) | high | Mark says B with a pencil; build log says child completes six printed sentence openings; page has no lines, both frames print "Write your answer in your book" with a book mark. Spec's 10 lines dropped. Uses top 110mm, 96mm blank at foot.
+- s4 / cx15 | Worksheets p1-p2 | medium | Below landscape, Expected slips portrait. Same as round two C3.
+- p2 / cx10 | Deck s2, s17 | medium | Starter answers and final check slide have empty teacher notes.
+- sl8 | Deck s4, s9, s13, s15 | low (medium conf) | Blue questions with no sign.
+- ct3 | Deck s4, s9, s13; Activity 1 | medium (medium conf) | question above the information it is about; on s4, s9, s13 its answer printed straight under it. Activity 1 prints "How did cholera reach the women?" above the account, bold ~11pt vs account ~22pt. s7 follows story, question, how-to.
+- sl1 | Deck s16 to s17 | low | s16 short question card with chip row; s17 one full-height answer card; the question is gone from s17.
+- ct5 | criteria s16/17 | low conf | criteria are topic names ("Cholera", "Help in Victorian times", "Plague") with starters, not steps.
+STILL THERE
+- cx11-ish | s4, s7, s9 | low | one pump photo used three times (same thing each time; mild). Welsh village pump with white litter at its base.
+NEW
+- Answer sheet p1 | high | whole key for both levels is "Water vs fleas; cures failed; handle removed." Six-word gist for a five-sentence explanation. Full model answer in lesson.json s17 notes does not reach the sheet.
+- Deck s15, s16 notes | medium | s15 notes say "Use the sentence starters" but s15 shows only word chips; s16 notes repeat s14's script ("Look at the weak answer...") with no weak answer on the slide.
+- Deck s14 | low | "Not enough" panel: 3 lines in a box ~455px tall (75% empty).
+- Deck s16 | low | chip row floats mid-left ~22pt with ~230px blank under it.
+- Deck s8, s13 | low | titles strand one word: "pump." and "do?".
+- Activity 2 vs s11 | low | first two actions in opposite order on sheet and board.
+- pr5 | low conf | lesson named three ways: deck "diseases and treatments", answers header "Explain how cholera and plague spread", build name "How diseases spread and were treated".
+- pr2 | Activity 1 / s7 | low conf | s7 has pencil and sheet sign, printed account has nowhere to write (notes say talk to a partner).
+HELD: pc4 (7 requests, 7 pictures: 4 Wikimedia, 1 Openverse, 2 made); pc5 (John Snow portrait, real English cholera chest, no watermark); ct1 (scene on s3 street and s6 sickbed, picture on every teaching slide); ct2 (account inference s7, sort with a reason s11); cx8 (starter fills s1, no topic line); sl2 (word card s5 after starter, standard); s11 (nothing bold on answers); cx14 (Expected slips no lines, four to a page); s3 (green only on "germs"); cx18/pr4 (Activity 2 full-width tick table, no cutting); pr1 (account fills ~230x130mm); p1 (sheet sign s7, s11, s15, s16).
+No wall: reason stated ("No cards earned: lesson 6 closes the unit").
+Run notes: no visual self-read (LibreOffice crash) visible as s8/s13 stranded words and s16 dead space; decorator blind visible as drawings on words; redesign of the sort on the page.
+Pages: deck 17/17, worksheets 2/2, answers 1/1, Activity 1 and 2 16/16 each (one page repeated).
