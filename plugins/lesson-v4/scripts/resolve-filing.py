@@ -389,6 +389,9 @@ class SortedFiling:
             "day": DAYS[d.weekday()] if self.is_core else "",
             "bumped": bumped,
             "checked": bool(self.year_dir),
+            # The date itself, so a batch can lay the next lesson in the
+            # same subject on the teaching day after this one.
+            "date": d,
         }
 
     def run(self, today):

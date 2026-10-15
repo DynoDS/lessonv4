@@ -7,7 +7,8 @@ description: >
   decided by the lesson-designer; every artefact is rendered downstream from that single
   source of truth. Use this skill
   whenever a teacher asks to plan a lesson, make a lesson PowerPoint, build lesson
-  resources, or produce a lesson pack.
+  resources, or produce a lesson pack, including several lessons in one request
+  ("Monday's and Tuesday's maths", "these three lessons").
   If the teacher has pasted a learning objective, a lesson plan, or has asked
   "make me a lesson for Y[X] on [topic]", trigger this skill.
 ---
@@ -545,6 +546,19 @@ literal values. Replace the placeholders before launching the worker. Do not pas
 the brackets or a host-specific plugin-root variable to the worker or its shell.
 A worker whose prompt carries no `PYTHON:` line runs
 `node "[PLUGIN_ROOT]/scripts/find-python.js"` once and uses its answer.
+
+---
+
+## One lesson or several
+
+Before loading any runtime slice, count the lessons the teacher asked for. One
+lesson carries on below. More than one, or a request that could be read either
+way, goes to `[PLUGIN_ROOT]/references/several-lessons.md`: read it and follow
+it in place of the pipeline below. It plans the set and starts each lesson as
+an ordinary run of this skill, so a set never travels through one pipeline as
+a single muddled lesson. A message that already names one lesson to carry on
+or one save slot for it is a single lesson, which is how each lesson of a set
+arrives.
 
 ---
 
