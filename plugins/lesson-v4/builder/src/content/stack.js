@@ -889,6 +889,16 @@ function packToContent(items, zone, data, ctx) {
   };
 }
 
+// A row made only of pictures. The single-item measure above does not look
+// inside a row, so a row of three wide photographs kept its whole share and the
+// part they did not use stood empty at the foot of the slide (a Year 4 food
+// chains slide, 15 October 2026). A row of pictures can say how tall it is
+// drawn; a row holding anything else keeps its share as before.
+function isPictureRow(item) {
+  return Boolean(item) && item.type === 'row' && Array.isArray(item.items) && item.items.length > 0 &&
+    item.items.every(function (it) { return it && it.type === 'image'; });
+}
+
 function reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx) {
   if (!ctx) return;
   const { measureContentExtent } = require('./index');
@@ -904,6 +914,9 @@ function reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx) {
     let extent = null;
     try {
       extent = measureContentExtent(zoneFor(item, zone.y, heights[i]), item, ctx);
+      if (!extent && isPictureRow(item)) {
+        extent = require('./index').measureCompositionExtent(zoneFor(item, zone.y, heights[i]), item, ctx);
+      }
     } catch {
       extent = null;
     }
@@ -915,7 +928,8 @@ function reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx) {
       hugged.add(i);
     }
   });
-
+  if (released <= REFLOW_FLOOR) return;
+  released -= giveBackToShrunkWords(items, heights, released, zone, zoneFor, ctx);
   if (released <= REFLOW_FLOOR) return;
   if (!growers.length) {
     lendToDrawings(items, heights, hugged, released, zone, zoneFor, ctx);
@@ -925,6 +939,49 @@ function reflowToUseSpareHeight(items, heights, zone, zoneFor, ctx) {
   growers.forEach(function (i) {
     heights[i] += share;
   });
+}
+
+// ─── words squeezed below their size take back height nobody is using ───
+//
+// Height a hugging item hands back used to go only to a photograph, a fill card
+// or a drawing. Words in an ordinary card were never offered it, so a question
+// fitted into the small share its weight gave it stayed small beside the room
+// that share left over. On a Year 4 food chains slide (15 October 2026) the
+// question "Which is the producer? Which are consumers?" printed at 19pt over a
+// row of three wide photographs that could not use their share, and the
+// difference stood as an empty band at the foot of the slide. The teacher:
+// "why couldn't pictures have moved down and text is bigger?"
+//
+// So words that could not print at their full size in the height they hold are
+// offered the spare first, and take only what brings them up to that size: a
+// card is never stretched past its words. The pictures lose nothing, because
+// the spare is room they had already handed back. What is left goes on to
+// pictures and drawings as before.
+// Words grow back to an ordinary reading size on the board and no further. A
+// zone made for one big statement has a much higher ceiling (48pt and up), and
+// growing to it turned a route of six body parts into a poster louder than the
+// slide's own task (a Year 4 digestion slide, tried 15 October 2026).
+const GIVE_BACK_UP_TO_PT = 28;
+
+function giveBackToShrunkWords(items, heights, released, zone, zoneFor, ctx) {
+  const { TEXT_CEILINGS, FALLBACK_CEILING } = require('./text');
+  const ceiling = Math.min(TEXT_CEILINGS[zone.class] || FALLBACK_CEILING, GIVE_BACK_UP_TO_PT);
+  const shortBy = items.map(function (item, i) {
+    if (!item || item.type !== 'text') return 0;
+    const full = Math.floor(Number.isFinite(item.fontSize) ? item.fontSize : ceiling);
+    const need = textNeed(item, zoneFor(item, zone.y, heights[i]), full, ctx, true);
+    return Number.isFinite(need) ? Math.max(0, need - heights[i]) : 0;
+  });
+  const wanted = shortBy.reduce(function (a, b) { return a + b; }, 0);
+  if (wanted <= REFLOW_FLOOR) return 0;
+  const scale = Math.min(1, released / wanted);
+  let given = 0;
+  shortBy.forEach(function (short, i) {
+    if (!short) return;
+    heights[i] += short * scale;
+    given += short * scale;
+  });
+  return given;
 }
 
 // ─── spare height nobody claimed goes to a drawing that would use it ───

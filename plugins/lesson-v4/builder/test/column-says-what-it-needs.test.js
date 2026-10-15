@@ -120,24 +120,17 @@ test('whichever way the height is split, the same thing is said', () => {
   }
 });
 
-test('a column that weights can mend is given the weights, and they work', () => {
-  const short = check(labelOverSum(0.2, 6));
-  assert.equal(short.result.ok, false, 'the label is refused in the strip its weight gave it');
-  assert.equal(short.column.length, 1);
-  const found = /Weights that fit, in the same order: ([\d.]+), ([\d.]+) \(they are 0\.2, 6 now\)/.exec(
-    short.column[0].message
-  );
-  assert.ok(found, `the line names weights: ${short.column[0].message}`);
-
-  const mended = check(labelOverSum(Number(found[1]), Number(found[2])));
-  assert.equal(mended.result.ok, true, mended.result.stderr);
-  assert.equal(mended.column.length, 0, 'a column that fits says nothing');
-});
-
-test('the account only reports: the refusal beside it is the one there always was', () => {
-  const { result, refusals } = check(labelOverSum(0.2, 6));
-  assert.equal(result.reason, 'SCRATCH_BUILD_FAILED');
-  assert.deepEqual(refusals.map((item) => item.signal), ['TEXT_OVERLOAD']);
+// A column that weights could mend no longer needs them. This label over its
+// sum, at 0.2 and 6, used to be refused in its thin strip and handed the
+// weights that would fit. Since 15 October 2026 the sum hands back the height
+// it does not draw in and the squeezed label takes it, so the slide fits as
+// written and the column says nothing. Weight advice for a column that cannot
+// mend itself is pinned in weight-advice-works.test.js.
+test('a column that weights could mend now mends itself, and says nothing', () => {
+  const { result, column, refusals } = check(labelOverSum(0.2, 6));
+  assert.equal(result.ok, true, result.stderr);
+  assert.equal(column.length, 0, 'a column that fits says nothing');
+  assert.equal(refusals.length, 0);
 });
 
 // Asked of the drawing itself. On a slide a pair is never drawn under 18pt
