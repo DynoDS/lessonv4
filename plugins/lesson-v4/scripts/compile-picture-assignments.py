@@ -702,7 +702,21 @@ def compile_command(args) -> int:
 CODEX_MARKERS = ("CODEX_THREAD_ID", "CODEX_SESSION_ID", "CODEX_CI", "CODEX_SHELL", "CODEX_SANDBOX_NETWORK_DISABLED")
 
 
-def resolve_image_generation(requested: str, environ=None) -> str:
+def codex_bridge_ready() -> bool:
+    """Is there a signed-in Codex that codex-imagegen.py can make pictures with?"""
+    import subprocess
+    bridge = Path(__file__).resolve().parent / "codex-imagegen.py"
+    try:
+        done = subprocess.run(
+            [sys.executable, str(bridge), "check"], capture_output=True,
+            text=True, timeout=90, stdin=subprocess.DEVNULL,
+        )
+        return done.returncode == 0 and json.loads(done.stdout).get("available") is True
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return False
+
+
+def resolve_image_generation(requested: str, environ=None, codex_ready=codex_bridge_ready) -> str:
     """Can this host make a picture itself? It sets the whole picture ladder.
 
     An AI-fallback picture compiles to one search because generation is meant
@@ -717,6 +731,11 @@ def resolve_image_generation(requested: str, environ=None) -> str:
     flag is the same fault in a new place. Claude Code sets CLAUDECODE=1 in every
     shell it runs. Codex, and any other host, keeps the behaviour it always
     had, so a host this cannot recognise is treated as able to generate.
+
+    Claude Code can still make pictures when a signed-in Codex is on the same
+    computer: the scout hands each generation call to codex-imagegen.py, which
+    runs on the teacher's ChatGPT plan (15 October 2026). Only with no such
+    Codex is Claude Code a host with no generator.
     """
     if requested in ("available", "unavailable"):
         return requested
@@ -724,7 +743,7 @@ def resolve_image_generation(requested: str, environ=None) -> str:
     if any(env.get(name, "").strip() for name in CODEX_MARKERS):
         return "available"
     if env.get("CLAUDECODE", "").strip() == "1":
-        return "unavailable"
+        return "available" if codex_ready() else "unavailable"
     return "available"
 
 

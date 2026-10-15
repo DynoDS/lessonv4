@@ -13,14 +13,22 @@ Do not generate authentic evidence. Do not rewrite the checked initial prompt.
 
 ## Before each call
 
-1. Confirm the host's built-in image generation capability is available.
+1. Confirm the host's built-in image generation capability is available (on Claude Code, the Codex bridge below).
 2. Run the per-filename ledger status command.
 3. Read the recovery reference when history exists.
 4. Hash the exact prompt file and require the assignment hash.
 5. Reserve the call with `image-scout-attempts.py reserve` and `--prompt-file`.
 6. Make the generation or edit call only after reservation succeeds.
 
-Use the host's built-in OpenAI image generation route. Do not use an API key, CLI, Pollinations, another provider, or a web-search substitute.
+Use the host's built-in OpenAI image generation route. Do not use an API key, Pollinations, another provider, or a web-search substitute.
+
+On Claude Code, which has no image tool of its own, the built-in route is Codex's, reached through the bridge. The assignment is only marked able to generate there when the compiler found a signed-in Codex. Make each call, after its reservation, as:
+
+```
+"[PYTHON]" "<PLUGIN_ROOT>/scripts/codex-imagegen.py" generate --prompt-file <the reserved prompt file> --run-dir <WORK_ROOT>/codex/<entry>-a<attempt> [--base-image <staged picture to edit>]
+```
+
+It takes about a minute. On success its answer names `host_file`: pass exactly that to `record-generated --host-file`. A failed answer generated nothing usable, so it is a call that returned no image (below). Do not run Codex any other way, and on a host with its own image tool never use the bridge.
 
 The per-filename lifetime is at most two ImageGen calls. An interrupted call or returned-without-output call remains consumed. Never reset the ledger.
 

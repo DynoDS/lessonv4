@@ -122,7 +122,11 @@ class TheCompiledAssignment(unittest.TestCase):
 
     def test_the_host_is_read_from_its_own_environment(self):
         resolve = compiler.resolve_image_generation
-        self.assertEqual(resolve("auto", {"CLAUDECODE": "1"}), "unavailable")
+        self.assertEqual(resolve("auto", {"CLAUDECODE": "1"}, codex_ready=lambda: False), "unavailable")
+        # Claude Code with a signed-in Codex beside it makes pictures through it.
+        self.assertEqual(resolve("auto", {"CLAUDECODE": "1"}, codex_ready=lambda: True), "available")
+        # Every other host never asks.
+        self.assertEqual(resolve("auto", {"CODEX_THREAD_ID": "t"}, codex_ready=lambda: 1 / 0), "available")
         # Codex started from inside a Claude Code session inherits CLAUDECODE,
         # and is still Codex.
         self.assertEqual(resolve("auto", {"CLAUDECODE": "1", "CODEX_THREAD_ID": "t"}), "available")
