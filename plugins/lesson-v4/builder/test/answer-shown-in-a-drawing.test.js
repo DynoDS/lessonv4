@@ -117,3 +117,15 @@ test('an answers slide that repeats a blank drawing under black answers is still
     warningsOf({ type: 'text', value: '6 x 7 =' }, { type: 'text', value: '6 x 7 = 42' }),
     /looks like an answer slide/);
 });
+
+// The question's own card copied onto the answers slide with its question
+// mark, above green answers (Year 5 equivalent fractions, 13 October 2026).
+test('an answers slide that still shows a question mark where a number goes is warned', () => {
+  const body = (card) => ({ type: 'stack', items: [{ type: 'text', text: card }, { type: 'text', value: 'Equivalent: ||6/8' }] });
+  assert.match(warningsOf(body('3/4 = ?/8'), body('3/4 = ?/8')), /still shows "3\/4 = \?\/8"/);
+  assert.match(warningsOf(body('5 + ? = 9'), body('5 + ? = 9')), /still shows/);
+  assert.doesNotMatch(warningsOf(body('3/4 = ?/8'), body('3/4 = ||6/8')), /still shows/);
+  // A question mark that ends a sentence is not a missing number.
+  assert.doesNotMatch(warningsOf(body('What is 3/4 in eighths?'), body('What is 3/4 in eighths?')), /still shows/);
+  assert.doesNotMatch(warningsOf(body('Is it pointing at the <<3>>?'), body('Is it pointing at the <<3>>?')), /still shows/);
+});

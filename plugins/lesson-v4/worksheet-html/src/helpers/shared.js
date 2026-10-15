@@ -134,23 +134,47 @@ function colouringLoneAsks(run) {
   }
 }
 
+// A question inside quotation marks is somebody's words, not the question the
+// child is asked: a sentence starter's "Please can you help?" printed blue
+// beside a black "I'm worried about ___." on a Year 4 PSHE slip, as if it were
+// the task (the stress test of 7 October 2026, round two). Curly quotes open
+// and close; a straight double quote turns the quote on and off. A single
+// quote is not counted, because it is nearly always an apostrophe.
+const QUOTE_MARK = /“|”|&quot;|"/g;
+
+function sentencePieces(text) {
+  const pieces = String(text ?? "").match(SENTENCE) || [];
+  let open = false;
+  return pieces.map((piece) => {
+    const mark = piece.lastIndexOf("?");
+    let quoted = false;
+    let at = 0;
+    for (const found of piece.matchAll(QUOTE_MARK)) {
+      if (mark >= 0 && found.index > mark && at <= mark) quoted = open;
+      at = found.index;
+      open = found[0] === "“" ? true : found[0] === "”" ? false : !open;
+    }
+    if (mark >= 0 && at <= mark) quoted = open;
+    return { piece, asks: ASKS.test(piece) && !quoted };
+  });
+}
+
 // Whether a prompt holds a sentence that tells (anything that is not a
 // question), and whether it holds one that asks.
 function sentenceKinds(text) {
-  const pieces = String(text ?? "").match(SENTENCE) || [];
-  const words = pieces.filter((piece) => piece.trim());
-  const asks = words.filter((piece) => ASKS.test(piece)).length;
+  const words = sentencePieces(text).filter(({ piece }) => piece.trim());
+  const asks = words.filter((word) => word.asks).length;
   return { asks: asks > 0, tells: words.length > asks };
 }
 
 function colourAsks(escaped) {
-  const pieces = String(escaped).match(SENTENCE);
-  if (!pieces) return escaped;
-  const words = pieces.filter((piece) => piece.trim());
-  const asks = words.filter((piece) => ASKS.test(piece));
+  const pieces = sentencePieces(escaped);
+  if (!pieces.length) return escaped;
+  const words = pieces.filter(({ piece }) => piece.trim());
+  const asks = words.filter((word) => word.asks);
   if (!asks.length || (asks.length === words.length && !loneAsksColoured)) return escaped;
   return pieces
-    .map((piece) => (ASKS.test(piece) && piece.trim() ? piece.replace(/^(\s*)([\s\S]*?)(\s*)$/, '$1<span class="h-ask">$2</span>$3') : piece))
+    .map(({ piece, asks: isAsk }) => (isAsk && piece.trim() ? piece.replace(/^(\s*)([\s\S]*?)(\s*)$/, '$1<span class="h-ask">$2</span>$3') : piece))
     .join("");
 }
 
@@ -160,10 +184,17 @@ function escWithDigitBoxes(text) {
   return colourAsks(esc(text ?? "")).replace(DIGIT_BOX, DIGIT_BOX_HTML);
 }
 
+// A blank stays on the line with the word before it. Left to wrap, "I'm
+// worried about ___." printed "worried about" at the end of one line and its
+// blank alone at the start of the next (a Year 4 PSHE slip, the stress test of
+// 7 October 2026, round two). linesFor reads the no-break space as part of one
+// word, so the measure and the page agree.
+const BEFORE_BLANK = / +(?=_{2,})/g;
+
 function promptHtml(text, widthMm) {
   const width = blankWidth(widthMm);
   const style = widthMm == null ? "" : ` style="width:${width}mm"`;
-  return colourAsks(esc(text ?? ""))
+  return colourAsks(esc(String(text ?? "").replace(BEFORE_BLANK, NBSP)))
     .replace(BLANK_RUN, `<span class="h-blank"${style}></span>`)
     // A missing digit is typed upstream as an empty-box character ("2\u25A14 is
     // divisible by 6"), which the font draws smaller than a full stop is tall:
@@ -277,7 +308,7 @@ function linesFor(text, widthMm, blankWidthMm) {
   let lines = 0;
   // Tied words are set as one, as the page sets them (tieSentenceStarts).
   // The marks round a bold word are not printed, so they take no room.
-  for (const line of tieSentenceStarts(String(text ?? "").replace(/\*\*/g, "").replace(BLANK_RUN, BLANK_TOKEN)).split(/\r\n|\r|\n/)) {
+  for (const line of tieSentenceStarts(String(text ?? "").replace(/\*\*/g, "").replace(BEFORE_BLANK, NBSP).replace(BLANK_RUN, BLANK_TOKEN)).split(/\r\n|\r|\n/)) {
     lines += 1;
     let used = 0;
     for (const word of line.split(/[ \t\f\v]+/).filter(Boolean)) {
@@ -345,6 +376,8 @@ module.exports = {
   colouringLoneAsks,
   sentenceKinds,
   escWithDigitBoxes,
+  DIGIT_BOX,
+  DIGIT_BOX_HTML,
   BODY_PT,
   PT_MM,
   LINE_MM,

@@ -168,9 +168,13 @@ function renderRow(item, opts = {}) {
   const captionLines = Math.max(0, ...captions.map((c) => (c ? Math.ceil(c.length / captionChars) : 0)));
   const captionBandMm = captionLines ? captionLines * captionLineMm + 2 : 0;
 
-  const cells = figs.map((fspec, i) => {
+  const drawSpecs = figs.map((fspec) => {
     const { caption: _given, ...drawSpec } = fspec || {};
-    const { svg, w, h } = def.tightSvg(drawSpec);
+    return drawSpec;
+  });
+  const alike = def.alikeInARow ? def.alikeInARow(drawSpecs) : drawSpecs;
+  const cells = figs.map((fspec, i) => {
+    const { svg, w, h } = def.tightSvg(alike[i]);
     const scale = Math.min(boxWMm / w, boxHMm / h);
     const displayW = w * scale;
     const displayH = h * scale;

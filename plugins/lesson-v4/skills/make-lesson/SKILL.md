@@ -453,8 +453,19 @@ The command must exit successfully and print exactly one `PLUGIN_ROOT=` line.
 Store the value after `PLUGIN_ROOT=` as the literal absolute `PLUGIN_ROOT` for
 this run.
 
-If verification fails, stop before checking agents, creating output directories
-or spawning workers. Report the verifier's error exactly. Do not search parent
+A `PLUGIN_ROOT_BLOCKED:` line is not a failed verification. It means this
+session was refused access to the folder the plugin is installed in, which a
+sandboxed host (Codex on the teacher's computer) can do to an ordinary command,
+and it says nothing about the package: the same read-only check passes once the
+command has more access. Run the same command once more with a request for
+escalated permissions, as `SETUP_BLOCKED` does, and use that result. Wherever
+this verifier runs later in the run, do the same. If the second run is blocked
+too, or the host refuses the request, stop and report the line exactly: the
+teacher then knows it is the session's access to give, not a broken install.
+
+If verification fails with `PLUGIN_ROOT_ERROR:`, stop before checking agents,
+creating output directories or spawning workers. No retry applies: the package
+is missing or incomplete, and more access does not change that. Report the verifier's error exactly. Do not search parent
 directories, inspect unrelated repositories, use `pwd` as the package root, or
 fall back to another installed or source copy.
 
@@ -513,7 +524,21 @@ of each of these lines:
 ```text
 PLUGIN_ROOT: [literal verified PLUGIN_ROOT]
 PYTHON: [literal PYTHON found at start-up]
+SCRATCH_DIR: [WORKING_DIR]/_scratch/[this launch's task_name] (yours alone: every throwaway file goes here, never the host's shared scratch folder)
 ```
+
+`SCRATCH_DIR` is where that one worker keeps every throwaway file it makes: a
+helper script, a test copy of a picture, a trial build. The host hands every
+worker in a session the same scratch folder, and workers run side by side, so
+two that each save `check.py` there replace one another's file while it is in
+use (three reports in the 7 October 2026 stress test). The launch's task name
+is already unique in a run, which makes the folder the worker's alone; the
+worker creates it on first use. An image scout's `WORK_ROOT` is already its own,
+so its line names that folder and nothing new is made. The playbook's
+prompt templates print the path; send it with the words in brackets, and add the
+line to any worker prompt that has no template. When the run tidies its
+transient work at finalisation, delete `[WORKING_DIR]/_scratch/` with it, in a
+run with no picture stage too: nothing in it is a record.
 
 In every runtime prompt template, `[PLUGIN_ROOT]` and `[PYTHON]` mean those
 literal values. Replace the placeholders before launching the worker. Do not pass

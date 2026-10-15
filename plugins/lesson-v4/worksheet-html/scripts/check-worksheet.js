@@ -20,7 +20,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { resolveImages } = require("../src/images");
 const { prepareWorksheetDecorations } = require("../src/decorations");
-const { compositionAdvisories } = require("../src/composition");
+const { compositionAdvisories, printsAsSlips } = require("../src/composition");
 const {
   answerKeyOf,
   checkWorksheet,
@@ -677,10 +677,13 @@ async function main() {
     let browser = null;
     try {
       browser = await require("../src/chrome").launchBrowser();
-    } catch {
+    } catch (error) {
+      const why = require("../src/chrome").whyNoBrowser(error);
       console.warn(
-        "[measure] No browser on this machine, so heights are estimated and the " +
-          "printed page was not checked here. The build measures it."
+        /^BROWSER_BLOCKED/.test(why)
+          ? `[measure] ${why}. Until then heights are estimated and the printed page was not checked here.`
+          : "[measure] No browser on this machine, so heights are estimated and the " +
+              "printed page was not checked here. The build measures it."
       );
     }
     try {
@@ -702,6 +705,9 @@ async function main() {
       console.log(
         `AUTO_LAYOUT: ${choice.label} -> "${choice.layout}" ` +
           `(${choice.orientation}), ${choice.fillPct}% full.` +
+          (printsAsSlips((worksheet.sheets || {})[choice.sheet])
+            ? " This level is marked books, so it prints as upright question slips and this shape is only the sheet held in reserve in case slips cannot be made. Its orientation need not match the other levels."
+            : "") +
           (choice.splitFrom
             ? ` The engine set it out in ${choice.zoneCount} zones, in the order written, because it did not fit in ${choice.splitFrom}.`
             : "") +

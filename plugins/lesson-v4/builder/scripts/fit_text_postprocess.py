@@ -221,17 +221,26 @@ _BREAKABLE_WS = re.compile(r'[ \t\r\n\f\v]+')
 # fraction is 2.06 to 2.09 of its type size where an ordinary line is 1.2, at
 # 27pt and at 40pt alike. `fraction_extra_em` is that difference with a little
 # headroom.
+# A part to find may be typed as a run of underscores as well as a question
+# mark or an empty box: "3/4 = ___/8" in a sentence is a fraction too, with its
+# write-in line on the bar (the teacher, 13 October 2026: fractions "anywhere"
+# are top and bottom). A method frame draws its own (src/answer-box.js).
 FRACTION_RE = re.compile(
-    '(^|[^\\d/.,])(\\d{1,3}|\\?|[\u25A1\u25A2\u2610\u25FB\u25AB])/'
-    '(\\d{1,3}|\\?|[\u25A1\u25A2\u2610\u25FB\u25AB])(?![\\d/]|[.,]\\d)'
+    '(^|[^\\d/.,])(\\d{1,3}|\\?|_{2,}|[\u25A1\u25A2\u2610\u25FB\u25AB])/'
+    '(\\d{1,3}|\\?|_{2,}|[\u25A1\u25A2\u2610\u25FB\u25AB])(?![\\d/]|[.,]\\d)'
 )
 # How big the fraction is. A stacked fraction at the size of its words makes
 # its line nearly twice as tall, and a card planned for plain lines can only
 # hold that by shrinking every word on it (a Teach slide's three cards went
-# from 27pt to about 14pt). So each box takes the biggest of these sizes that
-# leaves its words the size they would have been with no fraction in them, and
-# the smallest when none does. The teacher's choice from the real slides,
-# 9 October 2026 ("biggest fraction that doesn't shrink the words").
+# from 27pt to about 14pt). The teacher's first choice from the real slides,
+# 9 October 2026, was "biggest fraction that doesn't shrink the words". On a
+# real Year 5 lesson that left 34pt words holding a 19pt fraction, which he
+# read as half size (13 October 2026), and from the same slides built three
+# ways he chose digits the size of the words "as long as the text is still
+# 20pt+". So each box takes the biggest of these sizes that keeps its words at
+# the board's 20pt or more; words already under 20 with no fraction in them
+# are not shrunk further for one; and the smallest size is what is left when
+# nothing bigger does either.
 #
 # The smallest is the size at which the pair stands inside an ordinary line
 # with a little room over: no card changes size for it and no words shrink.
@@ -837,12 +846,14 @@ def measure_shape(shape, ceiling, floor_pt):
         best, hit_floor, fill = at(0)
     else:
         # What the words alone would be given, then the biggest fraction that
-        # leaves them that.
+        # keeps them at the board's 20pt (or at their own size, when that is
+        # already smaller).
         words_alone, _, _ = at(0)
+        keep = min(words_alone, TARGET_PT)
         chosen = FRACTION_SCALES[-1]
         for scale in FRACTION_SCALES:
             best, hit_floor, fill = at(scale)
-            if not hit_floor and best >= words_alone:
+            if not hit_floor and best >= keep:
                 chosen = scale
                 break
         else:

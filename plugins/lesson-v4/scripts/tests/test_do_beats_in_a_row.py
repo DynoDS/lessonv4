@@ -142,12 +142,53 @@ class FromAChildsSeatTests(unittest.TestCase):
         self.assertTrue(any(line.startswith("  do ") and "True or false" in line for line in lines), lines)
         self.assertTrue(any("True or false" in line and "printed task sheet" in line for line in lines), lines)
 
+    def test_a_quick_check_after_the_main_work_is_not_a_task(self) -> None:
+        # The 20-lesson test, Year 6 staying safe online: a two-minute check
+        # after the main sort was counted, and the lesson read as three tasks.
+        base = json.loads(json.dumps(SEAT))
+        base["ending"] = {"included": True, "beat": {"kind": "apply", "sourceUnitId": "a", "label": "Is Freya right?",
+                                                      "minutes": 6, "pupilInstruction": "Explain how you know."}}
+        quick = json.loads(json.dumps(base))
+        quick["ending"]["beat"]["minutes"] = 2
+        counted = lambda design: next(line.rsplit(" ", 1)[1] for line in run_design(design).stdout.splitlines()
+                                      if line.startswith("  Tasks counted"))
+        self.assertEqual(int(counted(base).rstrip(".")) - 1, int(counted(quick).rstrip(".")))
+        self.assertIn("  After the main work they do 1 quick check.", run_design(quick).stdout.splitlines())
+
+    def test_a_further_idea_after_long_tasks_and_a_short_worksheet_are_looked_at_again(self) -> None:
+        # The 20-lesson test, Year 5 Athens and Sparta: 39 minutes of 45 and
+        # every count passed; the teacher said the class would be lost by the
+        # third idea, and the worksheet had been given the nine minutes left.
+        def lesson(first: int, second: int, sheet: int) -> str:
+            return run_design({
+                "lesson": {"durationMinutes": 45},
+                "worksheet": {"status": "generated"},
+                "starter": {"kind": "starter", "minutes": 4},
+                "teachingSequence": [
+                    {"kind": "teach", "label": "Who ran Athens?", "minutes": 3},
+                    {"kind": "do", "label": "Pericles", "minutes": first},
+                    {"kind": "teach", "label": "Why a soldier?", "minutes": 3},
+                    {"kind": "do", "label": "Xenophon", "minutes": second},
+                    {"kind": "teach", "label": "Who was left out?", "minutes": 3},
+                    {"kind": "practise", "label": "Which would you choose?", "minutes": sheet},
+                ],
+            }).stdout
+        full = lesson(7, 8, 9)
+        self.assertIn('LOOK AGAIN: "Who was left out?" starts new teaching after 15 minutes of tasks', full)
+        self.assertIn("LOOK AGAIN: the lesson prints a worksheet and its main work is planned at 9 minutes", full)
+        self.assertNotIn("WILL REFUSE", full)
+        # Two quick tasks leave the room: the same third idea is not questioned.
+        roomy = lesson(3, 3, 15)
+        self.assertNotIn("LOOK AGAIN", roomy)
+        # Honest numbers past the whole lesson are named before the check refuses them.
+        self.assertIn("THE DESIGN CHECK WILL REFUSE THIS: 51 is past 50", lesson(10, 10, 13))
+
     def test_a_task_after_the_main_work_is_counted_and_the_starter_is_not(self) -> None:
         design = json.loads(json.dumps(SEAT))
         design["ending"] = {"included": True, "beat": {"kind": "apply", "sourceUnitId": "a", "label": "Is Freya right?",
                                                         "pupilInstruction": "Explain how you know."}}
         seat = run_design(design).stdout
-        self.assertIn("  After the main work they do something 1 more time.", seat.splitlines())
+        self.assertIn("  After the main work they do 1 more task.", seat.splitlines())
         self.assertIn("Between the starter and the main work children do 2 tasks", seat)
 
 
@@ -235,7 +276,10 @@ class DoBeatsInARowTests(unittest.TestCase):
             + [{"kind": "practise", "label": "Worksheet", "minutes": 12}],
         }
         out = run_design(design).stdout
-        self.assertIn("Planned minutes add up to 29 of the lesson's 45, leaving 16", out)
+        self.assertIn("Where the 29 planned minutes go: starter 5; teaching 6; tasks before the main work 6 "
+                      "(2 + 2 + 2); the main work 12.", out)
+        self.assertIn("the lesson runs about 34 minutes", out)
+        self.assertNotIn("LOOK AGAIN", out)
         self.assertIn("Dos after each taught idea, before the next: Check for 4: 2; Check for 6: 1 (2 ideas, 3 Dos).", out)
 
         design["concepts"] = design["concepts"][:1]

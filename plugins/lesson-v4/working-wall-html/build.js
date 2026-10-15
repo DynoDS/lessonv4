@@ -327,9 +327,29 @@ async function build(specPath, outDir, options = {}) {
       pagePaddingMm
     );
 
+    // Clock faces standing side by side in one section are one size. Each part
+    // is drawn on its own, so a face with a digital time under it or a minute
+    // ring round it came out smaller than the plain face beside it; each now
+    // leaves the room its neighbours' take (`reserve` in clock-svg.js).
+    for (const card of cards) {
+      if (!card || card.type !== "diagramSection" || !Array.isArray(card.parts)) continue;
+      const clocks = card.parts.map((part) => part && part.visual).filter((v) => v && v.type === "clock");
+      const reserve = require("../shared/visuals/clock-svg").rowReserve(clocks);
+      if (reserve) clocks.forEach((v) => { v.reserve = reserve; });
+    }
+
     // Pre-render any SVG primitives the cards need (clock faces, step
     // badges) into PNG buffers before the render loop; one shared pre-render
     // pass feeds every wall renderer.
+    {
+      // A process chain's pictures are read before the chain is drawn.
+      let sharp = null;
+      try { sharp = require("sharp"); } catch (_) { sharp = null; }
+      const unread = await require("../shared/visuals/process-chain-svg").prepareChainsIn(spec, specDir, { sharp });
+      if (unread.length) {
+        throw new Error(`[working-wall] a process chain names ${unread.map((m) => `"${m.imagePath}"`).join(", ")}, which could not be read from ${specDir}.`);
+      }
+    }
     let svgImages = await preRenderSvgs(spec, specDir);
     // What each section part's drawing gives up, once the drawn page is read.
     const give = {};
@@ -434,7 +454,7 @@ async function build(specPath, outDir, options = {}) {
       try {
         browser = await chrome.launchBrowser();
       } catch (err) {
-        console.log(`WALL_PAGE_NOT_MEASURED: no browser to draw the page in, so the layout was checked by its sums alone (${err && err.message ? err.message.split("\n")[0] : err})`);
+        console.log(`WALL_PAGE_NOT_MEASURED: the page could not be drawn in a browser, so the layout was checked by its sums alone (${chrome.whyNoBrowser(err)})`);
       }
     }
     try {

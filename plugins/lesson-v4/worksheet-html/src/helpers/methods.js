@@ -2,11 +2,10 @@
 
 // The formal written methods: the taught algorithms a child performs on paper.
 //
-// Four of these are ruled grids of the same family as forms.js's
-// column-method-grid, and they deliberately share its geometry - the same cell
-// size, the same square cells, the same thick answer rule. A sheet that carries
-// an addition grid beside a multiplication grid must draw them the same size,
-// or the child reads two different systems for one method.
+// Short and long multiplication are the shared place value chart's written
+// calculation, the drawing forms.js's column-method-grid prints, so a sheet
+// that carries an addition beside a multiplication draws them as one system.
+// The two division grids are still ruled here, at the same cell size.
 //
 // The fifth, method-frame, is the other kind of written method: not an
 // algorithm in boxes but a taught mental strategy printed line by line, with
@@ -14,7 +13,10 @@
 // on the board, so a child meets one shape in both places.
 
 const { LINE_MM, esc, linesFor } = require("./shared");
-const { TYPE, INSET } = require("../tokens");
+const { TYPE, INSET, NUMBER_BOX_MM } = require("../tokens");
+const { MM_TO_PT } = require("../../../shared/visuals/surface-profiles");
+const { atPrintedWidth } = require("./at-printed-width");
+const placeValueChart = require("../../../shared/visuals/place-value-chart-svg");
 
 const PT_TO_MM = 0.3528;
 
@@ -45,12 +47,6 @@ function cellMm(cols, widthMm) {
   // The ceiling is applied here AND in the markup, so the drawn grid and the
   // height it was promised cannot disagree.
   return Math.min(widthMm, cols * GRID_CELL_MAX_MM) / cols;
-}
-
-function padDigits(value, width) {
-  const arr = String(value ?? "").split("");
-  while (arr.length < width) arr.unshift("");
-  return arr;
 }
 
 function cell(text, extraClass) {
@@ -89,121 +85,79 @@ function idMm(spec) {
   return hasId(spec) ? LINE_MM + 2 : 0; // one line, margin-bottom 2mm
 }
 
-// ─── short-multiplication-grid ───────────────────────────────────────────
-// Column multiplication by a single digit: the number, the multiplier under
-// its ones column beside a ×, a thick-topped answer row, and a shallow carry
-// row beneath.
+// ─── short-multiplication-grid and long-multiplication-grid ──────────────
+// Both are the shared place value chart's `calculation`, the drawing the
+// board and the working wall show and the one column-method-grid has printed
+// since 5 October 2026. Until 13 October 2026 these two ruled their own black
+// and white grid, so a child who had watched a long multiplication grow row by
+// row in coloured columns on the board met a different layout on the page: the
+// sheet put the answer's first digit under the multiplication sign, where the
+// board gives it a column of its own (stress test, 7 October 2026). The
+// sheet's fields are unchanged: top, multiplier or bottom, id.
 
-function shortMultGeometry(spec) {
-  const width = String(spec.top ?? "").length;
-  return { width, cols: width + 1 };
+const WHOLE_COLUMNS = ["M", "HTh", "TTh", "Th", "H", "T", "O"];
+const wholeDigits = (value) => {
+  const text = String(value ?? "").replace(/[,\s]/g, "");
+  return /^\d+$/.test(text) ? text : "";
+};
+
+// A column for every digit of the answer, so its first digit is never left to
+// be written outside the grid.
+function productColumns(top, by) {
+  const a = wholeDigits(top);
+  const b = wholeDigits(by);
+  if (!a || !b) return undefined;
+  const digits = Math.max(a.length, b.length, String(BigInt(a) * BigInt(b)).length);
+  return digits <= WHOLE_COLUMNS.length ? WHOLE_COLUMNS.slice(-digits) : undefined;
 }
 
-const SHORT_MULT_ROWS_EQUIV = 3 + CARRY_ROWS_EQUIV;
-
-function renderShortMultiplicationGrid(spec) {
-  const { width, cols } = shortMultGeometry(spec);
-  const topDigits = padDigits(spec.top, width);
-  // Right-aligned, so the multiplier sits under the ones digit - which is
-  // where the child starts, and the whole reason the method lines up.
-  const mulDigits = padDigits(spec.multiplier, width);
-
-  const rows =
-    row(cell("") + topDigits.map((d) => cell(d)).join("")) +
-    row(cell("×") + mulDigits.map((d) => cell(d)).join("")) +
-    row(blankCells(cols), "h-mgrid-answer") +
-    row(blankCells(cols), "h-mgrid-carry");
-
-  return `<div class="h-method">${idHtml(spec)}${grid(cols, rows)}</div>`;
-}
-
-function measureShortMultiplicationGrid(spec, widthMm) {
-  const { cols } = shortMultGeometry(spec);
-  return idMm(spec) + cellMm(cols, widthMm) * SHORT_MULT_ROWS_EQUIV;
-}
-
-function needsShortMultiplicationGrid(spec) {
-  const { cols } = shortMultGeometry(spec);
+function toShortMultiplication(spec) {
+  const columns = productColumns(spec.top, spec.multiplier);
   return {
-    // A four-digit number needs a column more than a three-digit one; a
-    // constant per helper cannot know that.
-    minWidthMm: cols * GRID_CELL_MIN_MM,
-    minHeightMm: idMm(spec) + GRID_CELL_MIN_MM * SHORT_MULT_ROWS_EQUIV,
+    headings: spec.showHeadings === true,
+    ...(columns ? { columns } : {}),
+    calculation: { operator: "x", numbers: [spec.top, spec.multiplier] },
   };
 }
 
-// ─── long-multiplication-grid ────────────────────────────────────────────
-// The long multiplication shape: the two numbers, a thick line, one partial
-// product row PER DIGIT of the multiplier, a second thick line, the total, and
-// a carry row.
-//
-// The Word builder always draws two partial rows. Here the count follows the
-// multiplier, because a three-digit multiplier needs three partial products
-// and a grid one row short is a grid the method does not fit in. Two is the
-// floor, so the ordinary 2-digit case is drawn exactly as it always was.
-
-// The grid is one column wider than the longer number, and that spare column
-// (under the multiplication sign) takes the answer's leading digit, as it does on the
-// short multiplication grid. A 4-digit by 2-digit product can run to SIX
-// digits (4,326 x 52 = 224,952), which is two more than the longer number, so
-// such a sum had nowhere to put its first digit and the child had to write it
-// outside the grid (7 October 2026). The grid now grows to hold the product.
-function productDigits(spec) {
-  const digitsOnly = (value) => String(value ?? "").replace(/[^0-9]/g, "");
-  const top = digitsOnly(spec.top);
-  const bottom = digitsOnly(spec.bottom);
-  if (!top || !bottom) return 0;
-  return String(BigInt(top) * BigInt(bottom)).length;
-}
-
-function longMultGeometry(spec) {
-  const width = Math.max(String(spec.top ?? "").length, String(spec.bottom ?? "").length);
-  const partials = Math.max(2, String(spec.bottom ?? "").length);
-  return { width, cols: Math.max(width + 1, productDigits(spec)), partials };
-}
-
-function longMultRowsEquiv(spec) {
-  const { partials } = longMultGeometry(spec);
-  return 2 + partials + 1 + CARRY_ROWS_EQUIV; // numbers, partials, total, carry
-}
-
-function renderLongMultiplicationGrid(spec) {
-  const { cols, partials } = longMultGeometry(spec);
-  // Both numbers stay right-aligned under the ones column whatever the
-  // grid's width; the sign keeps the first column.
-  const topDigits = padDigits(spec.top, cols - 1);
-  const bottomDigits = padDigits(spec.bottom, cols - 1);
-
-  const partialRows = Array.from({ length: partials }, (unused, i) =>
-    // Only the FIRST partial row carries the thick rule: it is the line drawn
-    // under the two numbers, not a border between working rows.
-    row(blankCells(cols), i === 0 ? "h-mgrid-answer" : "")
-  ).join("");
-
-  const rows =
-    row(cell("") + topDigits.map((d) => cell(d)).join("")) +
-    row(cell("×") + bottomDigits.map((d) => cell(d)).join("")) +
-    partialRows +
-    row(blankCells(cols), "h-mgrid-answer") +
-    row(blankCells(cols), "h-mgrid-carry");
-
-  return `<div class="h-method">${idHtml(spec)}${grid(cols, rows)}</div>`;
-}
-
-function measureLongMultiplicationGrid(spec, widthMm) {
-  const { cols } = longMultGeometry(spec);
-  return idMm(spec) + cellMm(cols, widthMm) * longMultRowsEquiv(spec);
-}
-
-function needsLongMultiplicationGrid(spec) {
-  const { cols } = longMultGeometry(spec);
+// `upTo` prints the working as far as a stage ("ones row", "tens zero",
+// "tens row"), for a sheet that gives a child the first row and asks for the
+// rest. Left out, every row is the child's to write.
+function toLongMultiplication(spec) {
+  const worksOut = wholeDigits(spec.top) && wholeDigits(spec.bottom).length >= 2;
   return {
-    minWidthMm: cols * GRID_CELL_MIN_MM,
-    // Grows with the multiplier too: more digits, more partial products,
-    // more rows to fit.
-    minHeightMm: idMm(spec) + GRID_CELL_MIN_MM * longMultRowsEquiv(spec),
+    headings: spec.showHeadings === true,
+    calculation: {
+      operator: "x",
+      numbers: [spec.top, spec.bottom],
+      ...(worksOut
+        ? { upTo: spec.upTo == null ? "set out" : spec.upTo }
+        : { partials: Math.max(2, String(spec.bottom ?? "").length) }),
+    },
   };
 }
+
+// The shared drawing, with the question's number above it and set against the
+// left edge under that number, where the old grid sat.
+function sharedGrid(toSpec) {
+  const drawn = atPrintedWidth(placeValueChart, {
+    toSpec,
+    minWidthMm: (spec) => Math.ceil(placeValueChart.minWidthPt(toSpec(spec), "worksheets") / MM_TO_PT),
+  });
+  return {
+    ...drawn,
+    render: (spec, width) =>
+      `<div class="h-method">${idHtml(spec)}${drawn.render(spec, width).replace('class="h-figure"', 'class="h-figure h-mgrid-shared"')}</div>`,
+    measure: (spec, width) => idMm(spec) + drawn.measure(spec, width),
+    needs: (spec) => {
+      const needs = drawn.needs(spec);
+      return { minWidthMm: needs.minWidthMm, minHeightMm: idMm(spec) + needs.minHeightMm };
+    },
+  };
+}
+
+const shortMultiplicationGrid = sharedGrid(toShortMultiplication);
+const longMultiplicationGrid = sharedGrid(toLongMultiplication);
 
 // ─── bus-stop-grid ───────────────────────────────────────────────────────
 // Short division. The answer row sits ON TOP, under the roof; the divisor sits
@@ -287,8 +241,10 @@ function needsLongDivisionGrid(spec) {
 // SAME frame is given fully worked, part-given, or all blank - which is how a
 // set fades from a worked example to independent work.
 
-const BOX_W_MM = 11; // the Word builder's 620 DXA: room for a 2 - 3 digit answer
-const BOX_H_MM = 9; //  and its 520 DXA
+// The one box for one number (tokens.js). It was 11mm by 9mm, the Word
+// builder's size, beside 12mm squares elsewhere on the same sheet.
+const BOX_W_MM = NUMBER_BOX_MM;
+const BOX_H_MM = NUMBER_BOX_MM;
 const SEG_MARGIN_MM = 1.25; // above and below a box, so two rows never touch
 const SEG_ROW_MM = BOX_H_MM + SEG_MARGIN_MM * 2;
 const SEG_CHAR_MM = 2.8; // a bold body character, measured generously
@@ -348,7 +304,34 @@ function labelAboveMm(line, widthMm) {
   return linesFor(label, widthMm) * LINE_MM + LABEL_ABOVE_GAP_MM;
 }
 
-function tokenize(content) {
+// A fraction with a part to find is one piece, not a box beside a loose "/6".
+//
+// A line used to be cut at every blank before anything looked for a fraction,
+// so "2/3 = ___/6" printed a stacked 2/3, a box, then "/6" typed on the line:
+// the one fraction the child had to finish was the only one not written top
+// and bottom (stress test, 12 October 2026). The teacher's choice, from the
+// real Year 5 sheet (13 October 2026): the box a child writes in sits on the
+// bar, the size of every other box in the frame, with the number under it.
+//
+// When the whole fraction is missing ("___/___") a younger child gets a box
+// over a box with the bar between, and an older one a single tall box (his
+// line, the same day: Years 1 to 4 and every Below sheet are younger). The
+// sheet says which with `fractionBlank` (src/worksheet.js).
+const BLANK_PART = "(?:_{2,}|□)";
+const BLANK_FRACTION = new RegExp(
+  `(${BLANK_PART})\\s?/\\s?(${BLANK_PART}|\\d{1,3})(?![\\d/]|[.,]\\d)|(?<![\\d/.,])(\\d{1,3})\\s?/\\s?(${BLANK_PART})`,
+  "g"
+);
+const FRAC_BAR_GAP_MM = 0.8; // between the bar and what sits above and below it
+const FRAC_BAR_MM = 0.4;
+const FRAC_DIGIT_MM = TYPE.body * PT_TO_MM * 1.05; // the room a printed part is given
+const FRAC_ONE_BOX_MM = BOX_H_MM + FRAC_BAR_GAP_MM * 2 + FRAC_BAR_MM + FRAC_DIGIT_MM;
+const FRAC_TWO_BOX_MM = BOX_H_MM * 2 + FRAC_BAR_GAP_MM * 2 + FRAC_BAR_MM;
+const FRAC_TALL_BOX_MM = NUMBER_BOX_MM + 4; // one box a whole fraction is written in
+const PUNCT_MM = 2;
+const PUNCT_ONLY = /^[,.;:]$/;
+
+function tokenizePlain(content) {
   return String(content == null ? "" : content)
     .split(/(_{2,}|□)/)
     .filter((p) => p !== "")
@@ -356,8 +339,44 @@ function tokenize(content) {
     .filter((seg) => seg.box || seg.text.length > 0);
 }
 
+// `top` and `bottom` are the printed number, or null for the part to write.
+function tokenize(content) {
+  const source = String(content == null ? "" : content);
+  const segs = [];
+  let at = 0;
+  for (const m of source.matchAll(BLANK_FRACTION)) {
+    segs.push(...tokenizePlain(source.slice(at, m.index)));
+    const top = m[1] !== undefined ? null : m[3];
+    const lower = m[1] !== undefined ? m[2] : m[4];
+    // `box` too: a fraction with a part to write is a line the child still
+    // has to finish, wherever a line's boxes are counted.
+    segs.push({ box: true, frac: { top, bottom: /^\d/.test(lower) ? lower : null } });
+    at = m.index + m[0].length;
+  }
+  segs.push(...tokenizePlain(source.slice(at)));
+  return segs;
+}
+
+function wholeBlank(seg) {
+  return Boolean(seg.frac) && seg.frac.top === null && seg.frac.bottom === null;
+}
+
+function segHeightMm(seg, spec) {
+  if (!seg.frac) return BOX_H_MM;
+  if (!wholeBlank(seg)) return FRAC_ONE_BOX_MM;
+  return spec && spec.fractionBlank === "boxes" ? FRAC_TWO_BOX_MM : FRAC_TALL_BOX_MM;
+}
+
+// One row of a line: its tallest piece and the margin above and below it.
+function rowMm(line, spec) {
+  const tallest = tokenize(line && line.content).reduce((h, s) => Math.max(h, segHeightMm(s, spec)), BOX_H_MM);
+  return tallest + SEG_MARGIN_MM * 2;
+}
+
 function segMm(seg) {
-  return seg.box ? BOX_W_MM : Math.max(SEG_MIN_MM, seg.text.length * SEG_CHAR_MM + SEG_PAD_MM);
+  if (seg.box || seg.frac) return BOX_W_MM;
+  if (PUNCT_ONLY.test(seg.text)) return PUNCT_MM;
+  return Math.max(SEG_MIN_MM, seg.text.length * SEG_CHAR_MM + SEG_PAD_MM);
 }
 
 function lineWidthMm(line) {
@@ -366,12 +385,27 @@ function lineWidthMm(line) {
 
 // How tall ONE method line comes out at a given width: the segments wrap
 // within what the label column leaves them, and the label itself can wrap.
-function lineHeightMm(line, availMm, labelMm) {
+function lineHeightMm(line, availMm, labelMm, spec) {
   const rows = Math.max(1, Math.ceil(lineWidthMm(line) / Math.max(20, availMm)));
-  const segsMm = rows * SEG_ROW_MM;
+  const segsMm = rows * rowMm(line, spec);
   if (labelMm <= 0) return segsMm;
   const labelRows = Math.max(1, Math.ceil((labelOf(line).length * LABEL_CHAR_MM + 3.5) / labelMm));
-  return Math.max(segsMm, labelRows * LINE_MM + LABEL_PAD_MM);
+  return Math.max(segsMm, labelRows * LINE_MM + labelPadMm(line, spec));
+}
+
+// The label holds the centre line of its line's first row, however tall a
+// fraction makes that row.
+function labelPadMm(line, spec) {
+  return rowMm(line, spec) / 2 - LINE_MM / 2;
+}
+
+function fractionHtml(seg, spec) {
+  const box = `<span class="h-mframe-box"></span>`;
+  if (wholeBlank(seg) && !(spec && spec.fractionBlank === "boxes")) {
+    return `<span class="h-mframe-box h-mframe-box-tall"></span>`;
+  }
+  const part = (value) => (value === null ? box : `<span class="h-mframe-frac-n">${esc(value)}</span>`);
+  return `<span class="h-mframe-frac">${part(seg.frac.top)}<span class="h-mframe-frac-bar"></span>${part(seg.frac.bottom)}</span>`;
 }
 
 function inlineBold(text) {
@@ -409,13 +443,19 @@ function renderMethodFrame(spec) {
     .map((line) => {
       const segs = tokenize(line && line.content)
         .map((s) =>
-          s.box
-            ? `<span class="h-mframe-box"></span>`
-            : `<span class="h-mframe-seg">${esc(s.text)}</span>`
+          s.frac
+            ? fractionHtml(s, spec)
+            : s.box
+              ? `<span class="h-mframe-box"></span>`
+              : PUNCT_ONLY.test(s.text)
+                ? `<span class="h-mframe-seg h-mframe-punct">${esc(s.text)}</span>`
+                : `<span class="h-mframe-seg">${esc(s.text)}</span>`
         )
         .join("");
       const label =
-        labelMm > 0 ? `<span class="h-mframe-label">${esc(labelOf(line))}</span>` : "";
+        labelMm > 0
+          ? `<span class="h-mframe-label"${rowMm(line, spec) > SEG_ROW_MM ? ` style="padding-top:${mm(labelPadMm(line, spec))}"` : ""}>${esc(labelOf(line))}</span>`
+          : "";
       const labelLine =
         above && labelOf(line).trim()
           ? `<div class="h-mframe-label-above">${esc(labelOf(line))}</div>`
@@ -426,7 +466,9 @@ function renderMethodFrame(spec) {
 
   const title = spec.title ? `<p class="h-mframe-title">${esc(spec.title)}</p>` : "";
 
-  return `<div class="h-mframe" style="--h-mframe-label:${mm(labelMm)}">${stem}<div class="h-mframe-panel${framed ? " h-mframe-framed" : ""}${worked ? " h-mframe-worked" : ""}">${title}${body}</div></div>`;
+  const match = Number.isFinite(spec.matchWidthMm) ? `; --h-mframe-match:${mm(spec.matchWidthMm)}` : "";
+
+  return `<div class="h-mframe" style="--h-mframe-label:${mm(labelMm)}${match}">${stem}<div class="h-mframe-panel${framed ? " h-mframe-framed" : ""}${worked ? " h-mframe-worked" : ""}">${title}${body}</div></div>`;
 }
 
 function measureMethodFrame(spec, widthMm) {
@@ -442,11 +484,23 @@ function measureMethodFrame(spec, widthMm) {
   const chromeMm = PANEL_PAD_V_MM * 2 + (framed ? PANEL_BORDER_MM : 0);
   const availMm = widthMm - PANEL_PAD_H_MM * 2 - labelMm;
   const linesMm = lines.reduce(
-    (h, l) => h + lineHeightMm(l, availMm, labelMm) + (above ? labelAboveMm(l, availMm) : 0),
+    (h, l) => h + lineHeightMm(l, availMm, labelMm, spec) + (above ? labelAboveMm(l, availMm) : 0),
     0
   );
 
   return stemMm + titleMm + linesMm + chromeMm;
+}
+
+// How wide a frame's panel is when it hugs its lines: the label column, the
+// longest line and the panel's own inset. The sheet uses it to give the frames
+// of one question's parts the same width (src/worksheet.js).
+function frameContentWidthMm(spec) {
+  const lines = frameLines(spec);
+  const widestMm = lines.reduce((w, l) => Math.max(w, lineWidthMm(l)), 0);
+  const labelMm = labelsAbove(spec)
+    ? 0
+    : labelColumnMm(lines);
+  return Math.round((labelMm + widestMm + PANEL_PAD_H_MM * 2) * 10) / 10;
 }
 
 const FRAME_MAX_MIN_MM = 240; // a minimum wider than the page can never be met,
@@ -505,6 +559,8 @@ const css = `
     color: var(--colour-question);
     line-height: 1.35;
   }
+  /* a multiplication grid drawn by the shared drawing: at the left, under its number */
+  .h-figure.h-mgrid-shared { justify-content: flex-start; }
   .h-mgrid { display: flex; flex-direction: column; width: 100%; }
   .h-mgrid-row {
     display: grid;
@@ -562,7 +618,17 @@ const css = `
     color: var(--colour-question); font-weight: bold;
     font-size: var(--type-questionNumber);
   }
-  .h-mframe-panel { padding: ${PANEL_PAD_V_MM}mm ${PANEL_PAD_H_MM}mm; }
+  /* The panel is only as wide as its longest line, at the left under its
+     question, as the board's frame hugs its lines. It filled its column, so a
+     frame of short lines was half empty tint (a Year 5 sheet: 110mm of frame
+     round 55mm of lines; stress test, 12 October 2026). Frames of one
+     question's parts share the widest one's width (--h-mframe-match). */
+  .h-mframe-panel {
+    box-sizing: border-box;
+    width: fit-content; max-width: 100%;
+    min-width: min(var(--h-mframe-match, 0mm), 100%);
+    padding: ${PANEL_PAD_V_MM}mm ${PANEL_PAD_H_MM}mm;
+  }
   .h-mframe-framed {
     background: var(--colour-tint);
     border: var(--rule-line) solid var(--colour-ink);
@@ -613,23 +679,30 @@ const css = `
   }
   .h-mframe-seg { padding: 0 ${SEG_PAD_MM / 2}mm; font-weight: bold; color: var(--colour-ink); }
   .h-mframe-box { width: ${BOX_W_MM}mm; border: var(--rule-line) solid var(--colour-ink); }
+  /* A fraction with a part to write: the box sits on the bar. */
+  .h-mframe-frac {
+    display: inline-flex; flex-direction: column; align-items: center;
+    margin: ${SEG_MARGIN_MM}mm 0; font-weight: bold; color: var(--colour-ink);
+  }
+  .h-mframe-frac .h-mframe-box { margin: 0; }
+  .h-mframe-frac-bar {
+    align-self: stretch; height: ${FRAC_BAR_MM}mm; margin: ${FRAC_BAR_GAP_MM}mm 0;
+    background: var(--colour-ink);
+  }
+  /* The sheet's own line height, in a slot only as tall as the digits. */
+  .h-mframe-frac-n {
+    height: ${mm(FRAC_DIGIT_MM)}; line-height: 1.35;
+    display: flex; align-items: center;
+  }
+  .h-mframe-box-tall { height: ${FRAC_TALL_BOX_MM}mm; }
+  .h-mframe-punct { padding: 0; margin-left: -${SEG_GAP_MM}mm; width: ${PUNCT_MM}mm; }
 `;
 
 const helpers = {
-  "short-multiplication-grid": {
-    render: renderShortMultiplicationGrid,
-    measure: measureShortMultiplicationGrid,
-    needs: needsShortMultiplicationGrid,
-    // Cells must stay SQUARE for the place value to line up. Extra height
-    // without extra width would only stretch them out of square.
-    greed: 0,
-  },
-  "long-multiplication-grid": {
-    render: renderLongMultiplicationGrid,
-    measure: measureLongMultiplicationGrid,
-    needs: needsLongMultiplicationGrid,
-    greed: 0,
-  },
+  // Cells stay SQUARE for the place value to line up, so neither takes spare
+  // height: extra height without extra width would only pull them out of square.
+  "short-multiplication-grid": shortMultiplicationGrid,
+  "long-multiplication-grid": longMultiplicationGrid,
   "bus-stop-grid": {
     render: renderBusStopGrid,
     measure: measureBusStopGrid,
@@ -655,4 +728,4 @@ const helpers = {
   },
 };
 
-module.exports = { helpers, css };
+module.exports = { helpers, css, frameContentWidthMm };

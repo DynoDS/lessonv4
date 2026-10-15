@@ -25,6 +25,7 @@ const placeValueChart = require("../../../shared/visuals/place-value-chart-svg")
 const placeValueMini = require("../../../shared/visuals/place-value-mini-svg");
 const baseTenBlocks = require("../../../shared/visuals/base-ten-blocks-svg");
 const counterGroup = require("../../../shared/visuals/counter-group-svg");
+const tenFrame = require("../../../shared/visuals/ten-frame-svg");
 const multGrid = require("../../../shared/visuals/mult-grid-svg");
 const pyramid = require("../../../shared/visuals/pyramid-svg");
 const digitCards = require("../../../shared/visuals/digit-cards-svg");
@@ -45,7 +46,17 @@ const minMm = (module, floorMm) => (spec) =>
 // a digit a child cannot circle.
 const digitCardsMinMm = (spec) => Math.ceil(digitCards.maxWidthPt(spec, "worksheets") / MM_TO_PT);
 
+// ─── ten-frame ───────────────────────────────────────────────────────────
+// Two rows of five boxes holding counters, or empty for a child to draw their
+// own in: the board's ten frame from the same fields. A box under 9mm is too
+// small for a five year old to draw a counter in, so that sets the narrowest
+// zone; a pair that cannot sit side by side at that size goes one above the
+// other, so the pair asks for no more width than one frame.
+const TEN_FRAME_BOX_MIN_MM = 9;
+const tenFrameMinMm = (spec) => Math.ceil(tenFrame.minWidthPt(spec, "worksheets", TEN_FRAME_BOX_MIN_MM * MM_TO_PT) / MM_TO_PT);
+
 const helpers = {
+  "ten-frame": atPrintedWidth(tenFrame, { minWidthMm: tenFrameMinMm }),
   "base-ten-blocks": atPrintedWidth(baseTenBlocks, { minWidthMm: minMm(baseTenBlocks, 60) }),
   // The counters on their own, under the claim they are evidence for: a counter
   // is a fixed object, so height above it is a hole and it never stretches.

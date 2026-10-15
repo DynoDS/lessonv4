@@ -21,6 +21,7 @@ const {
   rulerKey,
   timelineKey,
   processChainKey,
+  cycleKey,
   classificationKeyKey,
   conceptMapKey,
   annotatedTextKey,
@@ -56,6 +57,7 @@ const {
   placeValueMiniKey,
   baseTenBlocksKey,
   counterGroupKey,
+  tenFrameKey,
   partWholeModelKey,
   pyramidKey,
   multGridKey,
@@ -85,6 +87,7 @@ const VISUAL_KEY_FNS = {
   "ruler": rulerKey,
   "timeline": timelineKey,
   "process-chain": processChainKey,
+  cycle: cycleKey,
   "classification-key": classificationKeyKey,
   "concept-map": conceptMapKey,
   "annotated-text": annotatedTextKey,
@@ -121,6 +124,7 @@ const VISUAL_KEY_FNS = {
   "place-value-mini": placeValueMiniKey,
   "base-ten-blocks": baseTenBlocksKey,
   "counter-group": counterGroupKey,
+  "ten-frame": tenFrameKey,
   "part-whole-model": partWholeModelKey,
   "pyramid": pyramidKey,
   "mult-grid": multGridKey,
@@ -377,6 +381,11 @@ function defaultVisualLabel(visual) {
   if (visual.label) return visual.label;
   if (visual.type === "clock") {
     if (visual.colourCoded) return "";
+    // A face that was asked for no digital time, or that draws one hand, does
+    // not get the time back as its caption: 4:45 under a quarter to 5 clock is
+    // what the readout was turned off to avoid, and under a single hand it
+    // gives away the hand that was left off.
+    if (visual.readout === false || (typeof visual.hands === "string" && !/^(true|both)$/i.test(visual.hands.trim()))) return "";
     if (visual.time) return visual.time;
   }
   if ((visual.type === "fractionCircle" || visual.type === "fractionBar") && visual.numerator != null && visual.denominator != null) {

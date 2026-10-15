@@ -126,6 +126,35 @@ def test_wrong_root_does_not_search_a_valid_parent():
         assert "PLUGIN_ROOT=" not in result.stdout
 
 
+def test_refused_access_is_reported_apart_from_a_broken_package(capsys=None):
+    # A sandbox that refuses the folder is not a missing package: the run asks
+    # for access once on BLOCKED and stops on ERROR, so the two must not share
+    # a name or an exit code.
+    import contextlib
+    import io as _io
+
+    original = root_verifier.Path.resolve
+
+    def refused(self, *args, **kwargs):
+        raise PermissionError(5, "Access is denied")
+
+    err = _io.StringIO()
+    root_verifier.Path.resolve = refused
+    try:
+        with contextlib.redirect_stderr(err):
+            code = root_verifier.main([str(ROOT)])
+    finally:
+        root_verifier.Path.resolve = original
+    assert code == 3
+    assert err.getvalue().startswith("PLUGIN_ROOT_BLOCKED: ")
+    assert "PLUGIN_ROOT_ERROR" not in err.getvalue()
+
+    with tempfile.TemporaryDirectory() as tmp:
+        result = run_verifier(str(Path(tmp).resolve()))
+        assert result.returncode == 2
+        assert result.stderr.startswith("PLUGIN_ROOT_ERROR: ")
+
+
 def test_source_root_requires_a_git_checkout():
     with tempfile.TemporaryDirectory() as tmp:
         source_root = Path(tmp) / "lesson-resources"

@@ -21,12 +21,23 @@
 // ─── the spec ────────────────────────────────────────────────────────────
 //
 //   time          "H:MM", e.g. "3:45". The hands point at it.
-//   hands         true (default) draws the hands; false is a blank face for
-//                 the child to draw them on
+//   hands         true (default) draws both hands; false is a blank face for
+//                 the child to draw them on; "minute" draws only the long
+//                 hand and "hour" only the short one, each where it sits at
+//                 `time`, for teaching one hand before the two are read
+//                 together (where the long hand points at quarter to; which
+//                 two numbers the short hand is between)
 //   colourCoded   the hour hand red and the minute hand blue, with a matching
 //                 digital readout under the face ("3" red, ":", "40" blue), so
 //                 a child glancing up sees the long blue hand is the blue
 //                 minutes. The readout replaces a caption.
+//   readout       whether the digital time prints under the face. It follows
+//                 `colourCoded` unless it is said: false keeps the coloured
+//                 hands and drops the readout, because 4:45 under a quarter
+//                 to 5 clock says the thing Year 2 are learning not to say
+//                 (7 October 2026); true prints it under black hands, in
+//                 black. A face with one hand prints none unless it is asked
+//                 for, since the readout would give away the hand not drawn.
 //   pastTo        the face shaded in two halves: the right half, where the
 //                 minute hand is "past" the hour, in pale blue, and the left
 //                 half, where it is coming up "to" the next, in pale orange
@@ -34,9 +45,16 @@
 //   minuteRing    ":00 :05 ... :55" outside the numerals at every five-minute
 //                 mark, for a lesson teaching minutes past, so the child reads
 //                 the minute value rather than multiplying by five in their head
-//   clocks        a row: [{ time, hands, colourCoded, minuteRing }, ...], every
-//                 face the same size (the sheet's clock-row)
+//   clocks        a row: [{ time, hands, colourCoded, readout, minuteRing,
+//                 pastTo }, ...], every face the same size whatever each one
+//                 carries (the sheet's clock-row)
 //   letters       true prints (a) (b) (c) above the faces of a row
+//   reserve       set by a surface, never by a designer: { readout, minuteRing }
+//                 keeps the room for a readout or a minute ring this face does
+//                 not print, because a neighbour drawn beside it does. A slide
+//                 row and a stick-in strip draw their faces one at a time, and
+//                 a face with a readout under it would otherwise come out
+//                 smaller than the plain face next to it (`rowReserve`).
 //
 // A board caption (`label`, with its "||" answer reveal) is typed text the
 // board sets under the placed picture, not part of this drawing.
@@ -83,6 +101,13 @@ const MAX_FACE_EM = 24; // widest a face grows on paper, in ems of the profile f
 
 const TIME = /^\s*(\d{1,2}):(\d{2})\s*$/;
 
+// Which hands a face draws, in the words a designer might use for them.
+const HANDS = {
+  true: 'both', both: 'both', false: 'none', none: 'none',
+  minute: 'minute', minutes: 'minute', long: 'minute', 'minute hand': 'minute', 'long hand': 'minute',
+  hour: 'hour', hours: 'hour', short: 'hour', 'hour hand': 'hour', 'short hand': 'hour',
+};
+
 function f2(n) {
   return Math.round(n * 100) / 100;
 }
@@ -104,7 +129,14 @@ function asProfile(profileOrSurface, box) {
 // child is meant to fill in, so it is refused by name.
 function normaliseFace(raw, inherit) {
   const face = raw && typeof raw === 'object' ? raw : {};
-  const hands = face.hands !== false;
+  const which = face.hands == null ? 'both' : HANDS[String(face.hands).trim().toLowerCase()];
+  if (!which) {
+    throw new Error(
+      `CLOCK_HANDS_UNKNOWN: "hands": ${JSON.stringify(face.hands)} is not one this clock draws. ` +
+        'Use true (both hands), false (a blank face), "minute" (only the long hand) or "hour" (only the short hand).'
+    );
+  }
+  const hands = which !== 'none';
   const time = face.time == null || face.time === '' ? null : String(face.time);
   let h = null;
   let m = null;
@@ -116,12 +148,18 @@ function normaliseFace(raw, inherit) {
     h = Number(match[1]);
     m = Number(match[2]);
   }
+  const drawn = hands && time != null;
+  const colourCoded = (face.colourCoded != null ? face.colourCoded : inherit.colourCoded) === true;
+  const readout = face.readout != null ? face.readout : inherit.readout;
   return {
     time: hands ? time : null,
     h,
     m,
-    hands: hands && time != null,
-    colourCoded: (face.colourCoded != null ? face.colourCoded : inherit.colourCoded) === true,
+    hands: drawn,
+    minuteHand: drawn && which !== 'hour',
+    hourHand: drawn && which !== 'minute',
+    readout: drawn && (readout != null ? readout === true : colourCoded && which === 'both'),
+    colourCoded,
     minuteRing: (face.minuteRing != null ? face.minuteRing : inherit.minuteRing) === true,
     pastTo: (face.pastTo != null ? face.pastTo : inherit.pastTo) === true,
   };
@@ -130,18 +168,42 @@ function normaliseFace(raw, inherit) {
 function normalise(spec = {}) {
   const list = Array.isArray(spec.clocks) && spec.clocks.length ? spec.clocks : [spec];
   const faces = list.map((c) => normaliseFace(c, spec));
-  return { faces, letters: spec.letters === true && faces.length > 0 };
+  const out = { faces, letters: spec.letters === true && faces.length > 0 };
+  const held = spec.reserve && typeof spec.reserve === 'object' ? spec.reserve : null;
+  if (held && (held.readout === true || held.minuteRing === true)) {
+    out.reserve = { readout: held.readout === true, minuteRing: held.minuteRing === true };
+  }
+  return out;
+}
+
+// What faces drawn one at a time must each leave room for so they come out one
+// size: null when they already agree, so a row of like faces draws exactly as
+// it did before there was anything to reserve.
+function rowReserve(specs) {
+  const faces = (Array.isArray(specs) ? specs : []).map((s) => {
+    try {
+      return normalise(s).faces[0];
+    } catch (_) {
+      return null; // an unreadable time is refused where it is drawn
+    }
+  }).filter(Boolean);
+  if (faces.length < 2) return null;
+  const mixed = (key) => faces.some((f) => f[key]) && !faces.every((f) => f[key]);
+  const reserve = { readout: mixed('readout'), minuteRing: mixed('minuteRing') };
+  return reserve.readout || reserve.minuteRing ? reserve : null;
 }
 
 // Every face in a row is one size; solve that size from the room.
 function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
   const profile = asProfile(profileOrSurface, box);
-  const { faces, letters } = normalise(spec);
+  const { faces, letters, reserve } = normalise(spec);
   const n = faces.length;
   const T = Math.max(profile.fontPt, profile.minFontPt);
   const floor = profile.minFontPt;
-  const coded = faces.some((c) => c.colourCoded && c.hands);
-  const ringed = faces.some((c) => c.minuteRing);
+  // One face with a readout keeps the band under every face, so a row that
+  // mixes them still draws its faces level and the same size.
+  const coded = faces.some((c) => c.readout) || Boolean(reserve && reserve.readout);
+  const ringed = faces.some((c) => c.minuteRing) || Boolean(reserve && reserve.minuteRing);
   const letterBand = letters ? LETTER_BAND * T : 0;
 
   // How far past the face a ring of minute labels reaches, as a share of r;
@@ -242,22 +304,32 @@ function facePart(face, cx, cy, L, parts, points, prefix = '') {
     const hourW = coded ? CODED_HOUR_W * r : HOUR_W * r;
     const minRad = toRad(face.m * 6 - 90);
     const hourRad = toRad((face.h % 12) * 30 + face.m * 0.5 - 90);
-    parts.push(
-      `<line x1="${f2(cx)}" y1="${f2(cy)}" x2="${f2(cx + minuteLen * Math.cos(minRad))}" y2="${f2(cy + minuteLen * Math.sin(minRad))}" stroke="${minuteColour}" stroke-width="${f2(Math.max(minuteW, MINUTE_W_MIN))}" stroke-linecap="round"/>`
-    );
-    parts.push(
-      `<line x1="${f2(cx)}" y1="${f2(cy)}" x2="${f2(cx + hourLen * Math.cos(hourRad))}" y2="${f2(cy + hourLen * Math.sin(hourRad))}" stroke="${hourColour}" stroke-width="${f2(Math.max(hourW, HOUR_W_MIN))}" stroke-linecap="round"/>`
-    );
+    // A hand drawn alone is the same length, weight and colour as it is beside
+    // the other, so the child meets the hand they will read on the full clock.
+    if (face.minuteHand) {
+      parts.push(
+        `<line x1="${f2(cx)}" y1="${f2(cy)}" x2="${f2(cx + minuteLen * Math.cos(minRad))}" y2="${f2(cy + minuteLen * Math.sin(minRad))}" stroke="${minuteColour}" stroke-width="${f2(Math.max(minuteW, MINUTE_W_MIN))}" stroke-linecap="round"/>`
+      );
+    }
+    if (face.hourHand) {
+      parts.push(
+        `<line x1="${f2(cx)}" y1="${f2(cy)}" x2="${f2(cx + hourLen * Math.cos(hourRad))}" y2="${f2(cy + hourLen * Math.sin(hourRad))}" stroke="${hourColour}" stroke-width="${f2(Math.max(hourW, HOUR_W_MIN))}" stroke-linecap="round"/>`
+      );
+    }
   }
   parts.push(`<circle cx="${f2(cx)}" cy="${f2(cy)}" r="${f2(Math.max(DOT_R * r, DOT_R_MIN))}" fill="${c.ink}"/>`);
 
-  if (face.colourCoded && face.hands) {
+  if (face.readout) {
     const pt = Math.max(r * READOUT_SHARE, L.T);
     const top = cy + L.slot / 2;
     const [hStr, mStr] = face.time.trim().split(':');
+    // The digits take the colours of the hands they are read from, so under
+    // black hands they are black.
+    const hourFill = face.colourCoded ? c.arrow : c.ink;
+    const minuteFill = face.colourCoded ? c.jump : c.ink;
     parts.push(
       `<text x="${f2(cx)}" y="${f2(top + pt * 1.02)}" text-anchor="middle" font-family="${font}" font-size="${f2(pt)}" font-weight="bold">` +
-        `<tspan fill="${c.arrow}">${esc(hStr)}</tspan><tspan fill="${c.ink}">:</tspan><tspan fill="${c.jump}">${esc(mStr)}</tspan></text>`
+        `<tspan fill="${hourFill}">${esc(hStr)}</tspan><tspan fill="${c.ink}">:</tspan><tspan fill="${minuteFill}">${esc(mStr)}</tspan></text>`
     );
   }
 }
@@ -297,9 +369,9 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
 // readable minute ring): what a sheet asks for before it will place a row.
 function minWidthPt(spec = {}, profileOrSurface = 'worksheets', box) {
   const profile = asProfile(profileOrSurface, box);
-  const { faces } = normalise(spec);
+  const { faces, reserve } = normalise(spec);
   const n = faces.length;
-  const ringed = faces.some((c) => c.minuteRing);
+  const ringed = faces.some((c) => c.minuteRing) || Boolean(reserve && reserve.minuteRing);
   const r = Math.max(profile.minFontPt / NUM_MAX_SHARE, ringed ? profile.minFontPt / RING_MAX_SHARE : 0);
   const reach = ringed ? 1 + RING_GAP + 2 * RING_MAX_SHARE + FACE_W : 1 + FACE_W;
   // A little over the exact figure, so rounding never lands a sheet one hair
@@ -312,4 +384,4 @@ function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   return `clock:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(normalise(spec))}`;
 }
 
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, minWidthPt };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, minWidthPt, rowReserve };

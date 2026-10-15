@@ -84,10 +84,24 @@ class TheTeachersWayOfExplaining(unittest.TestCase):
         self.assertGreater(lines.index("### How this teacher explains"), output)
         self.assertGreater(lines.index("### The launch"), lines.index("### How this teacher explains"))
         section = section_by_heading(CONTENT, "### How this teacher explains", 0)
-        self.assertIn("**This is how this teacher usually explains anything, on a Teach board in any kind of lesson or "
-                      "wherever else something is explained: the takeaway, then a because or so that explains that one "
-                      "key point, then an example or what it does not mean.**", section)
-        self.assertIn("It is how he usually explains, not a template", section)
+        # His account of 14 October 2026: the way in is chosen idea by idea, and
+        # the parts are one of his ways, used only where an idea needs explaining.
+        self.assertIn("**This teacher first chooses the way in, idea by idea, and then explains it; this holds on a "
+                      "Teach board in any kind of lesson and wherever else something is explained.**", section)
+        for way in ("**A situation to read**", "**How something works:**", "**Several things to know or do**",
+                    "**A process, or a cause the class cannot see:**", "**A picture or diagram that carries the idea:**",
+                    "**An idea that has to be explained**"):
+            self.assertIn(way, section)
+        # His day and night, 14 October 2026: the ways in combine, and a told
+        # idea still starts where the class is.
+        self.assertIn("The ways in he uses are not a menu of one", section)
+        self.assertIn("`It's not that the Sun and Moon know when to come out.`", section)
+        self.assertIn("`What do you notice about Amara?`", section)
+        self.assertIn("`Where does the rabbit get its food?`", section)
+        self.assertIn("one thing per board, each with its own picture, and six such boards in a row is fine", section)
+        self.assertIn("**When an idea has to be explained, he usually gives the takeaway, then a because or so that "
+                      "explains that one key point, then an example or what it does not mean, then comes back to the "
+                      "point.** It is one of his ways, not a template", section)
         # One sentence names each route's field, one the two exceptions and where they live.
         for field in ("`explanation` on this route's Teach and on a skill lesson's `teach`",
                       "`activity` on a skill `prepare` in `explanation` mode",
@@ -109,7 +123,7 @@ class TheTeachersWayOfExplaining(unittest.TestCase):
 
     def test_the_bundled_reader_hands_each_section_over_whole(self) -> None:
         for heading, first, last in (
-                ("How this teacher explains", "**This is how this teacher usually explains anything",
+                ("How this teacher explains", "**This teacher first chooses the way in, idea by idea",
                  "a card that restates the headline with one detail added is yours to refuse."),
                 ("The launch", "`launch` is `null` when children can begin from the question alone",
                  "the words that connect it.")):
@@ -159,8 +173,10 @@ class TheTeachersWayOfExplaining(unittest.TestCase):
                       "`read-reference.py --select`", designer)
         self.assertIn("read `teaching-sequence-content-based.md::The launch` the same way", designer)
         self.assertIn("in the order and with the exceptions " + HOW + " gives", designer)
-        self.assertIn("Read each Teach board for the four parts the teacher teaches in (" + HOW + ")", text(REV))
-        self.assertIn("(" + HOW + " owns the four parts and their exceptions)", text(REF / "preferences.md"))
+        self.assertIn("First read whether its way in fits the idea (" + HOW + ")", text(REV))
+        self.assertIn("Then read each Teach board for the four parts the teacher teaches in, wherever its way in "
+                      "places them", text(REV))
+        self.assertIn("(" + HOW + " owns the ways in, the four parts and their exceptions)", text(REF / "preferences.md"))
         self.assertIn("An explanation usually goes the way this teacher explains (" + HOW + "); that is how he "
                       "usually explains, not a template.", text(REF / "teacher-voice.md"))
 

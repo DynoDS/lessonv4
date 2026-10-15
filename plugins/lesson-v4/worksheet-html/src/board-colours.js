@@ -35,6 +35,11 @@ const hex = (value) => {
   return m ? m[1].toUpperCase() : null;
 };
 
+// The fields a drawing's chosen colours live in. A ten frame has two, one for
+// each part of a number bond, and a sheet that copied only the first would
+// print the board's blue beside its own default yellow.
+const COLOUR_FIELDS = ["colour", "secondColour"];
+
 const repOf = (node) =>
   node && node.helperUse && typeof node.helperUse === "object" ? node.helperUse.representationId || null : null;
 
@@ -55,9 +60,12 @@ function boardColours(lesson) {
   walk(lesson, (node) => {
     const rep = repOf(node);
     if (!rep || typeof node.type !== "string") return;
-    const key = `${node.type}|${rep}`;
-    if (!seen.has(key)) seen.set(key, new Set());
-    seen.get(key).add(hex(node.colour));
+    for (const field of COLOUR_FIELDS) {
+      if (field !== "colour" && node[field] == null) continue;
+      const key = `${node.type}|${rep}${field === "colour" ? "" : `|${field}`}`;
+      if (!seen.has(key)) seen.set(key, new Set());
+      seen.get(key).add(hex(node[field]));
+    }
   });
   const out = new Map();
   for (const [key, colours] of seen) {
@@ -81,9 +89,12 @@ function withBoardColours(worksheet, lesson) {
     for (const [key, value] of Object.entries(node)) out[key] = copy(value);
     const rep = repOf(node);
     const type = typeof node.helper === "string" ? BOARD_TYPE.get(node.helper) : null;
-    if (rep && type && node.colour == null && board.has(`${type}|${rep}`)) {
-      out.colour = board.get(`${type}|${rep}`);
-      adopted++;
+    for (const field of COLOUR_FIELDS) {
+      const key = `${type}|${rep}${field === "colour" ? "" : `|${field}`}`;
+      if (rep && type && node[field] == null && board.has(key)) {
+        out[field] = board.get(key);
+        adopted++;
+      }
     }
     return out;
   };

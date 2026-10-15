@@ -336,25 +336,21 @@ class LadderSchedule(unittest.TestCase):
                 # The designer's own profile still runs, behind it.
                 self.assertIn(profile.split("-")[0], [step["source"] for step in steps])
 
-    def test_an_ordinary_picture_with_an_ai_fallback_gets_no_extra_real_search(self):
-        """The contract has already said a faithful generated picture teaches
-        the same thing, so a second real SEARCH before generation is a rung
-        nobody needed: one search, then generate.
+    def test_an_ordinary_picture_with_an_ai_fallback_gets_one_second_library(self):
+        """One search, a second library, then generate.
 
-        The rung behind it is a standby, not a search. It is walked only after
-        a transport outage that survived its retry, so on a healthy run nothing
-        touches it and the cost argument above is untouched. It exists because
-        a single-rung schedule had nothing to fall to when the one source was
-        unreachable, and a lesson generated both its photographs without ever
-        searching for either (19 September 2026)."""
+        The second rung began as a reserve walked only after an outage, added
+        when a lesson generated both its photographs without ever searching for
+        either (19 September 2026). On 13 October 2026 the teacher ruled that a
+        second library comes before a made picture, held to the same standard
+        as any photograph: looking takes about 30 seconds and making nearly two
+        minutes. So it is an ordinary step, and never the library just
+        searched."""
         steps = compiler.source_schedule(self.photo(
             acquisition_mode="ordinary-real", source_profile="unsplash-only",
             fallback_action="ai"))
-        searched = [s["source"] for s in steps if not s.get("standby_only")]
-        self.assertEqual(searched, ["unsplash"])
-        standby = [s for s in steps if s.get("standby_only")]
-        self.assertEqual(len(standby), 1)
-        self.assertNotEqual(standby[0]["source"], "unsplash")
+        self.assertEqual([s["source"] for s in steps], ["unsplash", "openverse"])
+        self.assertFalse(any("standby_only" in s for s in steps))
 
     def test_an_ordinary_picture_that_cannot_be_generated_still_gets_openverse(self):
         """With no AI substitute authorised, a real photograph is the only
@@ -441,7 +437,11 @@ class ControlledAiIsEarnedByStagingTests(unittest.TestCase):
 
 
 class StandbyRungIsWalkedOnlyAfterAnOutage(unittest.TestCase):
-    """The standby rung costs nothing on a healthy run, and exists on a blocked one.
+    """A job compiled before 13 October 2026 still carries a standby rung.
+
+    The compiler no longer writes `standby_only` (the second library became an
+    ordinary step), but a lesson folder resumed from before that date holds
+    assignments that do, and the check reads them as it always did.
 
     Compiled behind a single-source `fallback_action: ai` entry after 19
     September 2026, when a blocked socket made both of a lesson's photographs

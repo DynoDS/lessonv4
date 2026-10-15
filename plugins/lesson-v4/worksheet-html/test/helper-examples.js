@@ -145,10 +145,20 @@ module.exports = {
     colNotLabel: "does not lay eggs",
     shapes: [],
   },
+  // A four-quadrant grid with one lettered shape to translate. Leaving `min`
+  // off gives the first-quadrant grid; `showImage: true` on the shape adds its
+  // dashed image for an answer copy.
   "coordinate-grid": {
-    cols: 10,
-    rows: 10,
-    points: [{ x: 3, y: 4, label: "A" }],
+    min: -5,
+    max: 5,
+    shapes: [
+      {
+        points: [[2, 3], [5, 3], [5, 5]],
+        labels: ["A", "B", "C"],
+        translate: { dx: -7, dy: -6 },
+        showImage: false,
+      },
+    ],
   },
   geoboard: { cols: 5, rows: 5, shapes: [] },
   "grid-map": {
@@ -270,8 +280,8 @@ module.exports = {
   // ─── drawn here, as inline SVG ───
   "clock-row": {
     clocks: [
-      { time: "3:45", hands: true },
-      { time: "11:00", hands: true },
+      { time: "3:45", hands: "minute" },
+      { time: "3:45", colourCoded: true, readout: false },
       { hands: false },
     ],
     letters: true,
@@ -298,7 +308,9 @@ module.exports = {
     ],
   },
   "fraction-wall": {
-    fractions: [1, 2, 4, 8],
+    fractions: [1, 2, 3, 4, 6, 8],
+    line: "1/2",
+    shade: "family",
   },
 
   // ─── things a child writes on or into ───
@@ -429,6 +441,12 @@ module.exports = {
   "base-ten-blocks": {
     counts: { thousands: 2, hundreds: 4, tens: 3, ones: 6 },
   },
+  // A number bond to 10 in two colours: 6 and 4. Leave both counts off for
+  // the empty frame a child fills.
+  "ten-frame": {
+    count: 6,
+    second: 4,
+  },
   // The counters on their own, under the claim they are evidence for. Two of
   // these sit side by side where two charts could not. `statement` is the
   // claim exactly as the question words it; the groups depict one side of it,
@@ -528,7 +546,17 @@ module.exports = {
   shape: {
     shapes: [
       { name: "rectangle", aspect: 2.5, sideLabels: ["8 cm", "3 cm"], label: "A" },
-      { name: "isosceles-triangle", sideLabels: ["5 cm", "4 cm", "5 cm"], angleLabels: ["40°"], label: "B" },
+      // An L-shape from its corners, already split into two rectangles: each
+      // part is two opposite corners, and the dashed line is worked out.
+      {
+        vertices: [[0, 0], [10, 0], [10, 3], [4, 3], [4, 8], [0, 8]],
+        sideLabels: ["10 cm", "3 cm", "6 cm", "5 cm", "4 cm", "8 cm"],
+        parts: [
+          { corners: [[0, 0], [10, 3]], label: "1" },
+          { corners: [[0, 3], [4, 8]], label: "2" },
+        ],
+        label: "B",
+      },
     ],
   },
   "area-grid": {
@@ -693,6 +721,12 @@ module.exports = {
     text: "Write the food chain in order. Use the word bank.",
     // A given first box and blanks after it: the "complete the sequence" shape.
     boxes: ["grass", null, null],
+  },
+  cycle: {
+    text: "Complete the life cycle of a butterfly. Write what happens beside each arrow.",
+    // Two stages given and two to write, with a line beside every arrow.
+    boxes: ["egg", null, "chrysalis", null],
+    arrowLine: true,
   },
 
   // ─── joining one thing to another ───

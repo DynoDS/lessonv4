@@ -575,11 +575,12 @@ function makeCompose({
           const gap = gapAboveMm(items, i);
           const above = gap + (i === downAt ? down : 0);
           const space = above ? ` style="margin-top:${above}mm"` : "";
-          // A heading marks itself, so it takes the step without the rule.
+          // A new section heading is ruled off from what came before it, the
+          // same as a new question: Problem Solving under Fluency with nothing
+          // between them read as more Fluency (the teacher, 14 October 2026).
           const divided =
             gap === QUESTION_START_GAP_MM &&
             startsQuestion(items, i) &&
-            item.helper !== "section-label" &&
             !isStimulus(items[i - 1]);
           // A data table that is the last thing in the stack, under nothing but
           // headings, is a page that IS the table: it may take the rest of a
@@ -588,7 +589,7 @@ function makeCompose({
             item && item.helper === "data-table" &&
             i === items.length - 1 &&
             items.slice(0, i).every(introduces);
-          return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}${divided ? " h-stack-item--new-question" : ""}${tableRest ? " h-stack-item--table-rest" : ""}"${content.numberAt === i ? " data-number-here" : ""}${space}>${renderContent(item, widthMm)}</div>`;
+          return `<div class="h-stack-item${grows ? " h-stack-item--grows" : ""}${divided ? " h-stack-item--new-question" : ""}${tableRest ? " h-stack-item--table-rest" : ""}"${content.numberAt === i ? (content.numberStaysAtSum ? ' data-number-here="sum"' : " data-number-here") : ""}${space}>${renderContent(item, widthMm)}</div>`;
         })
         .join("");
       return `<div class="h-stack">${cells}</div>`;

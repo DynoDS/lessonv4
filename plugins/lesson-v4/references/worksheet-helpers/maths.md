@@ -58,6 +58,18 @@ there is no fixed fully-partly-blank pattern. Render the progression that was
 approved upstream. A set of frames that all stay fully blank, or all stay
 partly worked, is a real design and not a fade somebody forgot.
 
+**A fraction with a part to find is typed as a fraction.** Write the blank
+where the missing part goes and keep the slash: `2/3 = ___/6` for a missing
+numerator, `3/___ = 6/8` for a missing denominator, `2/3 = ___/___` when the
+child writes the whole fraction. The frame prints each one top and bottom with
+a write-in box on the bar, because a fraction on the page is always written
+the way the child is taught to read it. A bare `___` is a box for one number,
+so a whole fraction typed that way gets a box too small for it and no bar. A
+line holding one of these is about 7mm taller than a line of whole numbers, so
+measure the frame before settling the page. For a whole fraction the sheet
+chooses the form itself: a box over a box in Years 1 to 4 and on any Below
+sheet, one tall box otherwise.
+
 The board draws the same frame, so the child meets one picture in both places. A frame that shows worked numbers, one line or more worked right through, is a worked example and takes the worked-example purple on its edge and heading, as on the board; a frame the child fills in every line keeps its ink edge and blue heading.
 
 ## Place value
@@ -132,7 +144,30 @@ into it. That refusal is the helper working. A scaled ruler still looks like a
 ruler, and it makes every answer a child measures wrong on a page that looks
 completely normal. If it will not fit, the layout changes.
 
-`clock-row` for time. `coin-strip` for money, with the coins drawn at their real
+`clock-row` for time, the same clock as the board's, so copy a slide's clocks face
+for face. Three choices on each face are worth making on purpose.
+
+Which hands. `"hands": "minute"` prints only the long hand and `"hands": "hour"`
+only the short one, each where it sits at the time given. Print one hand when the question
+is about one hand (where does the long hand point at quarter to; which two numbers
+is the short hand between) or when the child draws the other: with both printed
+the child is asked about one hand while looking at two, and reading the wrong hand
+is the commonest mistake in the topic. `"hands": false` is the blank face for
+drawing both.
+
+Whether the digital time prints. `colourCoded` draws the hour hand red and the
+minute hand blue and prints the time in digits under the face. Add
+`"readout": false` to keep the colours and drop the digits on any face the child
+reads the time from, because the digits are the answer, and wherever the time is
+said in words: 4:45 under a quarter to 5 clock is the wording Year 2 are learning
+not to use. Leave the digits on when the sheet is about matching hands to a
+digital time.
+
+What else is on the face. `minuteRing` prints :00 to :55 round it and `pastTo`
+shades the past half and the to half; both work with one hand. Faces in one row
+are always the same size, however they differ.
+
+`coin-strip` for money, with the coins drawn at their real
 sizes relative to one another for the same reason.
 
 ## The part-whole model
@@ -232,6 +267,19 @@ point: the child decides whether the claim is true, and the sheet must not tint,
 tick or total its way to the answer first. Keep the two panels visually matched
 and give each its own room to explain, directly under it.
 
+`ten-frame` is the Year 1 and Year 2 picture of a number to 10 or 20: two rows
+of five boxes with a counter in each full one, the board's ten frame from the
+same fields. `count` is the number shown and the empty boxes are how many more
+make ten, so a frame beside "7 + __ = 10" lets a child count the answer rather
+than recall it; `second: 4` puts the other part of a bond in a second colour;
+`frames: 2` (or any number past ten) draws the pair for teen numbers and for
+adding by making ten; `crossedOut` crosses out the last counters for taking
+away. With no counts it is the empty frame a child draws counters in, at boxes
+big enough for a five year old's circle. Copy the slide's object so the sheet
+shows the frame the class saw. Leave the counters off a frame when filling it is
+the question, and for a set of short questions put each frame in a `row` beside
+its sum, where the frames print smaller and all the same size.
+
 ## Shape and space
 
 `shape` carries the measurements a child reads to find a perimeter, an area or a
@@ -242,6 +290,23 @@ being given more room.
 `coordinate-grid`, `reflection-grid`, `translation-shape` and `geoboard` all
 square up: more columns need more width, or the numbers along the bottom crowd
 into each other.
+
+`coordinate-grid` is the first-quadrant grid until it is given a negative
+minimum. Its catalogue example is the four-quadrant grid, both axes through
+(0, 0) and numbered either side of zero, which is the grid a Year 6 child plots
+and translates on. It takes the board's own fields, so copy the slide's grid
+onto the sheet rather than describing it again. Print what the child is given
+and leave off what they are there to produce: a shape to translate goes on
+without its image, and the answer copy is the same grid with the image switched
+on, drawn from the shape's own translation, so the answer cannot disagree with
+the question. A grid copied from an answers slide may keep its answer marks
+("answer" on a point, shape or path, "imageAnswer" on a shape): the pupil sheet
+leaves every marked answer off and prints the question, and the same grid given
+as the answer key's picture prints them in green, so one copy serves both. One
+grid can serve every question on a sheet. A grid ten squares
+across needs about 100mm, which gives squares of roughly a centimetre to plot
+on and still stands beside a column of questions on a portrait page; a wider
+range needs the page width to itself.
 
 ## The reasoning grids
 

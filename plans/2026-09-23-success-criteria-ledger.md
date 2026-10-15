@@ -1387,3 +1387,7 @@ added or dropped.
 ## After the voice guide release (topic 8, release 5, 26 September 2026)
 
 - **SC-D42** moved with the voice guide release (topic 8, release 5), on the voice guide's list (`2026-09-23-teacher-voice-ledger.md`), whose mapping is `2026-09-26-teacher-voice-mapping.md`: the lesson designer's read line no longer lists the guide's sections one by one, so its "§10 success criteria" is now the guide's own route, "success criteria §10" (its settled item 1: the guide's route names all four most-missed kinds, each with its reason, and the lesson designer reads the guide by that route instead of keeping a shorter copy of it). The designer's pointer to the preference sections (the row's second quote) is unchanged.
+
+## Place words in a column method (14 October 2026)
+
+- **SC-J02** moved in place, with Daniel's approval of 14 October 2026: the `((thousands))` line now ends by saying that a step naming a column's place in a column method marks the place word as a picture part (`Multiply by the ((tens)) digit.`) rather than in orange, because the long multiplication drawing colours each digit of the multiplier and its row in that place's column colour, and an orange `<<tens digit>>` beside a differently coloured tens row was the clash he saw. Scoped to steps naming a column place. The row's pin, the home's pin and the home's paragraph list were moved to the new words together; no row was added or dropped.

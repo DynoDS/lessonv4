@@ -124,6 +124,25 @@ test('the stick-in copy prints in ink: no house colour survives the photocopy', 
   for (const hex of ['#0070C0', '#00B050', '#C65911', '#CC0000', '#7030A0', '#F8CBAD']) assert.ok(!svg.includes(hex), `${hex} on a photocopied piece`);
 });
 
+// The page a child marks up, as the teacher chose it from pictures of a Year 6
+// text (11 October 2026): about 30mm clear each side inside a frame, and a
+// printed text's ordinary line gap. The roomy form set the same words at 12pt
+// on a page that holds them at 17pt.
+test('on a printed activity page the write-on form has a framed margin each side and the line gap of a marked text', () => {
+  const page = A.describeLayout({ ...PROSE, marks: [], space: 'annotate' }, 'stickin', { widthMm: 250 });
+  const left = page.textX;
+  const right = page.usedW - page.textX - page.textW;
+  const mm = (pt) => (pt / 72) * 25.4;
+  assert.ok(mm(left) >= 28 && mm(right) >= 28, `the margins are ${mm(left).toFixed(0)}mm and ${mm(right).toFixed(0)}mm: no room to write beside the text`);
+  assert.ok(mm(left) <= 40, `a ${mm(left).toFixed(0)}mm margin takes the page from the words`);
+  assert.ok(page.pitch / page.pt < 2, 'the lines are double spaced, which costs the words their size');
+  assert.ok(page.pitch / page.pt >= 1.5, 'the lines leave no gap for an underline');
+  assert.ok(A.tightSvg({ ...PROSE, space: 'annotate' }, 'stickin', { widthMm: 250 }).svg.includes('annotated-text-frame'), 'no frame says the margins belong to the text');
+  // A text nobody writes on, and the worksheet's own write-on form, are as they were.
+  assert.ok(!A.tightSvg(PROSE, 'stickin', { widthMm: 250 }).svg.includes('annotated-text-frame'));
+  assert.ok(!A.tightSvg({ ...PROSE, space: 'annotate' }, 'worksheets', { widthMm: 180 }).svg.includes('annotated-text-frame'));
+});
+
 test('the write-on form leaves wide margins and a ruled line for an empty note', () => {
   const L = A.describeLayout({ ...PROSE, space: 'annotate' }, 'worksheets', { widthMm: 180 });
   assert.ok(L.textX > 0.2 * L.usedW, 'the margins are not wide enough to annotate in');

@@ -234,6 +234,22 @@ chose and tells the child it is a quiz. This holds for any sheet in any subject
 - an open task is not a Below concession; Expected and Greater Depth resources
 declare them too.
 
+**Where the adaptation hands you a measured layout, build that sheet from it.**
+A `Page budget check` line may name `adaptation-measured-below.json` or
+`adaptation-measured-greaterDepth.json` in the working folder: the zone entries
+the adaptation designer measured in the browser, with the total it planned to.
+Use those entries as that sheet's content, and add what a finished sheet needs
+and a measurement does not (group ids, the recording mark, representation
+ties, the answer key). The plan's words are loose enough to be built two ways:
+a sum line written as its own question where the plan had measured a line of
+print, and one question set out as four pieces, made a sheet 22mm taller than
+the one measured to fit, and it was refused. You still own the page. Where a
+different helper or arrangement is more faithful or prints better, or the file
+disagrees with the adaptation's wording (the wording wins), change it, and run
+`--measure` on your version before the first preflight, so the change is one
+you made knowing its height. When no file is named, the level was priced from
+the list and you compose it as usual.
+
 **Count what upstream offered, and account for every one of it.** When you
 finish, each question the lesson design and the adaptation gave you is either
 on a sheet or named in `notes`. Nothing leaves without a line.
@@ -275,7 +291,7 @@ contract is an approved request; design to its promised filename without waiting
 for publication. Promotion reads your finished spec to settle which pictures
 the sheet keeps. The check stands a picture still coming in at its promised
 shape, so a layout test needs no stand-in of your own; if you make one, keep it
-in your scratchpad. Never copy into, rename or delete anything in the lesson's
+in your `SCRATCH_DIR`. Never copy into, rename or delete anything in the lesson's
 picture folders: a published picture belongs to the picture stage, and a test
 copy left over one prints the wrong photograph under the right caption. The content-gap rule below is only for a ref genuinely absent
 from that contract.
@@ -424,8 +440,9 @@ to the same command and it prints, for every entry and each part inside it,
 the least width it needs and its measured height at each width a sheet gives,
 for its actual wording - the numbers the preflight and the build use. That answers what is too big, and by how much,
 without reading the engine's source or writing a script of your own to find
-out. The adaptation's page budget is an estimate made before the wording
-existed; where this disagrees with it, this is right, and a protected set that
+out. An adaptation's page budget priced from the list is an estimate, and one that
+names a measured layout holds only for the entries in that file; where this
+disagrees with it, this is right, and a protected set that
 truly measures over the page goes back through the existing route rather than
 being squeezed.
 

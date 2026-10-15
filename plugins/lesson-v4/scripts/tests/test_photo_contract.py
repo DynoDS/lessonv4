@@ -187,6 +187,10 @@ class PhotoContractTests(unittest.TestCase):
                 "lesson_design": None,
                 "receipt": str(receipts / "adaptation-photo-provisional.json"),
             })()
+            # The voice editor's second pass has settled this adaptation.
+            (adaptation.parent / 'orchestration-receipts').mkdir(exist_ok=True)
+            (adaptation.parent / 'orchestration-receipts' / 'adaptation-voice.json').write_text(
+                json.dumps({'adaptationSha256': photo_contract.sha256_file(adaptation)}), encoding='utf-8')
             self.assertEqual(photo_contract.cmd_build_provisional(args), 0)
             self.assertEqual(self.select(root, adaptation_accepted=True), 0)
 
@@ -233,6 +237,10 @@ class PhotoContractTests(unittest.TestCase):
             "lesson_design": None,
             "receipt": str(receipts / "adaptation-photo-provisional.json"),
         })()
+        # The voice editor's second pass has settled this adaptation.
+        (adaptation.parent / 'orchestration-receipts').mkdir(exist_ok=True)
+        (adaptation.parent / 'orchestration-receipts' / 'adaptation-voice.json').write_text(
+            json.dumps({'adaptationSha256': photo_contract.sha256_file(adaptation)}), encoding='utf-8')
         photo_contract.cmd_build_provisional(build_args)
 
         worksheet = root / "worksheet.json"

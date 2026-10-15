@@ -167,6 +167,13 @@ on `"auto"` is not a decision either way - the engine settles each sheet on its
 own and a set can drift apart without anyone stating a thing, which is how three
 real sets went out mixed in one week. The preflight reports a set that disagrees.
 
+This is about the levels that print as whole sheets. A `"books"` level prints as
+a page of question slips, always upright and cut up before a child sees it, so
+its `orientation` only shapes the sheet held in reserve and is left out of the
+comparison: a landscape Below sheet beside two `"books"` levels is not a mixed
+set and needs no note. Leave a `"books"` level's orientation to whatever fits
+its own content.
+
 A layout's zones are lettered `a`, `b`, `c`… and the letters mean position and
 nothing else. **A zone knows it is 180mm by 70mm. It does not know what goes in
 it.** There is no stimulus zone and no reasoning zone; naming a zone after a

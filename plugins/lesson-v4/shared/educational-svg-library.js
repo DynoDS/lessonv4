@@ -23,6 +23,7 @@ const path = require("node:path");
 const zlib = require("node:zlib");
 const https = require("node:https");
 const transport = require("./github-file-fetch");
+const { moveIntoPlace } = require("./final-name");
 const { proxyFor } = transport;
 
 const STYLES = Object.freeze(["standard", "cartoon", "solid", "inkbrush", "blockprint"]);
@@ -290,7 +291,7 @@ async function fetchDrawing(libraryId, { env, root } = {}) {
   const incoming = `${target}.${process.pid}.${Date.now()}.incoming`;
   fs.writeFileSync(incoming, answer.body);
   try {
-    fs.renameSync(incoming, target);
+    moveIntoPlace(incoming, target);
   } catch (error) {
     try {
       fs.unlinkSync(incoming);

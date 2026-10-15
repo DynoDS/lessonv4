@@ -204,6 +204,8 @@ For each question, part or open task, write:
 - `Support:` — any word bank, stem, given labels, representation or reference;
 - `Visual requirements:` — required content, sourcing and composition information.
 
+**Mark the child's exact words apart from your notes.** After you finish, the lesson voice editor reads every word a child will read on these sheets, and a check lets it reword the child's words while leaving your notes to the worksheet designer untouched. It can only tell the two apart by how you write them. A `Pupil prompt` written on one line with nothing but the child's words needs no marks (`- Pupil prompt: Put a comma after the adverbial.`). Whenever a child's words share an entry with a note of yours, put each printed line of theirs inside backticks and leave your note outside: a prompt with a second printed line or lettered parts set on the lines beneath it (``- (a) `Tell us when: ___ the fox went to sleep.` ``), and every stem, word bank heading, bank entry and help panel in `Support` (`` A labelled bank above the parts, headed `Word bank`: `at bedtime` `on the roof` ``). Words left unmarked beside a note are read as your note, so they reach the child with no second reader; that is how a Below sheet came to ask `What does your small 1 in Tens mean?`. Keep the label itself as `- Pupil prompt:` or `- Support:`, with any remark about the entry (`one instruction, three lettered parts`) in the heading above it.
+
 **`Response form:` is where the `Getting the answer down` dial is actually turned.** Match, tick, sort, circle, label and complete-a-stem are the values of that dial, so a Below sheet that names the dial in its support decision and then writes ruled lines under every question has not turned it. The tier does not choose the form on its own, though: a child who can explain aloud but not in writing needs the form to change, and a child whose barrier is the subject needs the question to change while the form stays as the class's. Say which in `Support and representation decision:`. The same field carries Greater Depth the other way - `correct-the-example` and `mark-on-a-visual` raise the demand on the same objective, where a longer line only asks for more of the same writing.
 
 A word bank is written under `Support` and remains a visibly separate labelled block.
@@ -239,13 +241,31 @@ If the task genuinely qualifies for the two-page central-write-on-visual excepti
 
 Price the protected set against the page first, and write that count as the `Page budget check` line. One A4 side gives 248mm of stacked height in portrait (a strip is left clear at the foot so the sheet goes into a book unfolded, under the date and objective), with no title or objective printed above it; the rough per-item prices are in `preferences.md` → Worksheets. Then identify the essential content and the lower-priority items the worksheet designer may remove first, lowest value first with the reason each is the one that goes. Answer room (handwriting lines, a working area) is priced so the sum is true if the sheet prints, and it is never listed as protected content: the worksheet designer decides afterwards whether a level prints as a sheet or as a book slip, and on a slip the child's book supplies that room. Protect what the child reads or works on, such as the prompt, the paragraph starts and the word bank.
 
-**Measure the pieces a rough price cannot tell you about.** The rough prices are heights for ordinary items that take the page's full width. Two kinds of piece are not that: anything you plan to set side by side, where the question is width and the price list only knows height, and anything whose size depends on its own content, such as a table, a labelled diagram, a tick list or a method grid. When the plan rests on one of those, ask the worksheet engine before you write the budget, because a guess here is what comes back unbuilt three agents later. Write those pieces as helper entries in a temporary JSON file (outside the lesson's working files; the catalogue shows each helper's fields, a `row` holds pieces side by side, a `stack` holds them one above another, and `"question": true` on a piece counts its printed number), then run:
+**Measure the pieces a rough price cannot tell you about.** The rough prices are heights for ordinary items that take the page's full width. Two kinds of piece are not that: anything you plan to set side by side, where the question is width and the price list only knows height, and anything whose size depends on its own content, such as a table, a labelled diagram, a tick list or a method grid. When the plan rests on one of those, ask the worksheet engine before you write the budget, because a guess here is what comes back unbuilt three agents later. Write those pieces in a temporary JSON file, outside the lesson's working files. Each piece is a helper entry, whose fields the catalogue shows. `row` and `stack` are not helpers: they are the wrappers pieces sit in, a `row` setting them side by side and a `stack` one above another, and either can hold the other. `"question": true` on a piece or a wrapper counts its printed number. The file is a list with one entry for each thing you want priced:
+
+```json
+[
+  { "row": [
+    { "question": true, "helper": "questions", "items": ["What is 3 + 4?"] },
+    { "question": true, "stack": [
+      { "helper": "questions", "items": ["What is 5 + 2?"] },
+      { "helper": "questions", "items": ["How do you know?"] }
+    ] }
+  ] }
+]
+```
+
+That is two numbered questions side by side, the second made of two pieces one above the other.
+
+Then run:
 
 ```
 node "[PLUGIN_ROOT]/worksheet-html/scripts/suggest.js" "<file>" "<YEAR_GROUP>" --measure
 ```
 
-It prints the work area of a portrait and a landscape sheet, and for each entry and each part inside it the least width it needs and its height at every width a sheet really gives (the full width, a single column kept narrow, one of two columns), measured in the browser that prints the sheet: the figures the worksheet designer's check will use. Take each piece's height at the width your plan gives it, because words grow taller as their column narrows and a height read at the wrong width is how a plan that looked as if it fitted came back over the page. Write those into the `Page budget check` line in place of the rough prices, and say they are measured. A whole level written as one `stack` entry is measured with the gaps between its questions counted, which is the surest total. If a row needs more width than the sheet has, or the total is more than the page's height, change the plan now: fewer side by side, the other orientation, or a named removal. This checks the two or three pieces the fit depends on; it does not lay the sheet out. The worksheet designer still chooses the helpers and the arrangement and may choose differently, so price everything else from the list, and skip the measurement on a sheet of plain questions and writing lines, where the list is already close.
+It prints the work area of a portrait and a landscape sheet, and for each entry and each part inside it the least width it needs and its height at every width a sheet really gives (the full width, a single column kept narrow, one of two columns), measured in the browser that prints the sheet: the figures the worksheet designer's check will use. Take each piece's height at the width your plan gives it, because words grow taller as their column narrows and a height read at the wrong width is how a plan that looked as if it fitted came back over the page. Write those into the `Page budget check` line in place of the rough prices, and say they are measured. A whole level written as one `stack` entry is measured with the gaps between its questions counted, which is the surest total. If a row needs more width than the sheet has, or the total is more than the page's height, change the plan now: fewer side by side, the other orientation, or a named removal. Measuring two or three pieces checks what the fit depends on without laying the sheet out, so price everything else from the list, and skip the measurement on a sheet of plain questions and writing lines, where the list is already close.
+
+**When the budget rests on a whole level measured as one stack, hand that stack on.** Save the file whose total you quote as `[WORKING_DIR]/adaptation-measured-below.json` or `[WORKING_DIR]/adaptation-measured-greaterDepth.json`, and name it with its total on the `Page budget check` line. The worksheet designer builds that sheet from it, so the page that was measured is the page that is made. Words do not carry a measurement: "the written sums above the grids", measured as plain lines of print, came back built as four numbered questions with answer blanks, and a sheet planned at 247mm was refused at 269mm. So the file and the plan describe one sheet: its wording is each item's exact wording, its questions are numbered and grouped as your items are, and a plan changed after measuring is measured again and saved again. Save only the stack you measured and whose total fits the page; trial files stay outside the working folder, and a level priced from the list has no file. The worksheet designer still owns the page and may arrange it differently where that prints better, measuring its own version first.
 
 Where the design selected them, a Tier 2 climb's class-sized final item and a Tier 3 resource's `Reaches towards:` item are essential and protected. They are the last thing on the sheet, which makes them the obvious thing to lose when the page runs short, and losing them turns the resource back into the parallel work it was built to avoid. Something earlier in the run goes first. A sheet whose line reads `Not selected` has nothing to protect there and nothing to make room for.
 
@@ -422,7 +442,7 @@ For each generated question, part or task:
 - Photo refs: [photo-### or adaptation-photo-### IDs used by this item, or None]
 
 Fit priority:
-- Page budget check: [the protected items priced against one A4 side, and the total]
+- Page budget check: [the protected items priced against one A4 side, and the total; when the whole level was measured as one stack, the saved file's name]
 - Essential and protected: [...]
 - Pre-authorised removal, if any: [...]
 - Central write-on visual exception: [Not needed / Eligible — exact reason]
@@ -478,7 +498,7 @@ Reading-access check:
 [how the wording remains light and independently accessible; phonic accessibility is a guide, not a formal test; name any essential difficult vocabulary and its support]
 
 Fit priority:
-- Page budget check: [the protected items priced against one A4 side, and the total]
+- Page budget check: [the protected items priced against one A4 side, and the total; when the whole level was measured as one stack, the saved file's name]
 - Essential and protected: [...]
 - Pre-authorised removal, if any: [...]
 - Central write-on visual exception: [Not needed / Eligible — exact reason]

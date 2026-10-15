@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import hashlib
 import json
 import shutil
 import subprocess
@@ -490,6 +491,30 @@ class SettleKeepsWhatIsInTheLane(unittest.TestCase):
         self.assertEqual(settled["teachingSequence"][0]["content"]["focus"],
                          "Lead with 'Roads open up the forest' and keep it short.")
 
+    # 7 October 2026: in two lessons the answer key repeated the shown model
+    # without its last line to the class, so the whole never matched, nothing
+    # followed, and the key kept the wording the board had lost.
+    def test_a_copy_that_leaves_off_the_last_line_still_follows(self) -> None:
+        old = "Point: phones can be used unkindly. Because: a photo can be sent in seconds.\n\n(Your points will be different.)"
+        new = "Point: people can be unkind on phones. Because: a photo can be sent in seconds.\n\n(Your points will be different.)"
+        pairs = checker.carry_pairs({("a",): old}, {("a",): new}, {("a",)})
+        key = "Point: phones can be used unkindly. Because: a photo can be sent in seconds."
+        self.assertEqual(checker.carried(key, pairs),
+                         "Point: people can be unkind on phones. Because: a photo can be sent in seconds.")
+        self.assertEqual(checker.carried("Look for a point about unkindness.", pairs), "Look for a point about unkindness.")
+        base, curr = {("a",): old, ("k",): key}, {("a",): new, ("k",): checker.carried(key, pairs)}
+        self.assertEqual(checker.with_twins([("a",)], base, curr), [("a",), ("k",)])
+
+    def test_lines_are_never_paired_when_the_rewording_changed_their_number(self) -> None:
+        self.assertEqual(checker.reworded_parts("One line here.\nTwo lines here.", "One line here and two."), [])
+
+    # 7 October 2026: `That's A.` / `That's B.` in a script was refused as two
+    # people the lesson never named.
+    def test_an_options_letter_is_not_a_name(self) -> None:
+        packet = checker.load_packet()
+        self.assertEqual(checker.name_runs("If you think so, that's A. That's B. That's A.", packet), set())
+        self.assertEqual(checker.name_runs("That's Samuel Pepys.", packet), {"Samuel Pepys"})
+
     def test_a_short_label_is_not_carried_into_prose(self) -> None:
         pairs = checker.carry_pairs({("a",): "Starter"}, {("a",): "Warm up"}, {("a",)})
         self.assertEqual(pairs, [])
@@ -525,7 +550,24 @@ ADAPTATION = """# Adaptation
 - Pupil prompt: Use column addition.\\n3,248 + 135 =
 - Support: The class criteria stay on the board.
 
+### Question 2 - Reasoning
+- Pupil prompt: Jonah multiplies 3,415 by a 2-digit number.\\nWhat could the tens digit of Jonah's number be?
+- Response form: short-answer
+- Support: None.
+
+### Question 3
+- Pupil prompt: Should mobile phones be banned in primary schools?
+  Plan both sides. Write each point in a few words, then its because.
+- Support: The "Stuck?" panel, kept because it gives a way in: "Stuck? Choose one of these people."
+
 ## Below
+
+**Question 1** (one instruction, two lettered parts)
+- Pupil prompt (the group's instruction): `Put the comma in each sentence.`
+  - (a) `Slowly the fox went home.` then, on the line below it, `___ the fox went home.`
+- Support: A separate labelled block, above the parts.
+  Word bank
+  `at bedtime` `on the roof`
 
 ### Question 3b - Reasoning
 - Pupil prompt: What does your small 1 in Tens mean?\\n\\nExplain your answer.
@@ -537,11 +579,15 @@ Answers for Below:
 
 
 class TheSecondPassOverTheAdaptedSheets(unittest.TestCase):
-    """The Below and Greater Depth questions are worded after the first pass.
+    """The Below and Greater Depth sheets are worded after the first pass.
 
     On 5 October 2026 a Below sheet printed `What does your small 1 in Tens
-    mean?` and nobody but its writer had read it. The second pass may reword a
-    pupil prompt and nothing else in the adaptation designer's file.
+    mean?` and nobody but its writer had read it. On 7 October the pass that
+    repaired that saw the words of one instruction in nine on a Year 4 sheet,
+    because it read only what followed `- Pupil prompt:` on that one line. The
+    teacher's rule for the editor is "my eyes on all wording children ever read
+    or see": the second pass reads every instruction whole and the help printed
+    on the sheet, and may reword the child's words and nothing else.
     """
 
     def setUp(self) -> None:
@@ -565,12 +611,62 @@ class TheSecondPassOverTheAdaptedSheets(unittest.TestCase):
         view = (self.dir / checker.ADAPTATION_VIEW).read_text(encoding="utf-8")
         self.assertIn("### Below - Question 3b - Reasoning", view)
         self.assertIn("> What does your small 1 in Tens mean?", view)
-        self.assertNotIn("completed grid", view)
+
+    def test_the_view_prints_an_instruction_whole_however_it_is_set_out(self) -> None:
+        view = (self.dir / checker.ADAPTATION_VIEW).read_text(encoding="utf-8")
+        # A second printed line, a qualified label, lettered parts, and a
+        # heading written in bold instead of with `###`.
+        self.assertIn("> Plan both sides. Write each point in a few words, then its because.", view)
+        self.assertIn("### Below - Question 1 (one instruction, two lettered parts)", view)
+        self.assertIn("> `Put the comma in each sentence.`", view)
+        self.assertIn("> - (a) `Slowly the fox went home.` then, on the line below it, `___ the fox went home.`", view)
+
+    def test_the_view_prints_the_help_on_the_sheet(self) -> None:
+        view = (self.dir / checker.ADAPTATION_VIEW).read_text(encoding="utf-8")
+        self.assertIn("Help on the sheet:\n> The \"Stuck?\" panel", view)
+        self.assertIn("> `at bedtime` `on the roof`", view)
+        self.assertIn("Help on the sheet (to read, not to change):\n> The child's completed grid", view)
+        self.assertNotIn("> None.", view)
 
     def test_a_reworded_prompt_passes(self) -> None:
         self.swap("What does your small 1 in Tens mean?", "What does the small 1 in the tens column stand for?")
         self.assertEqual(self.faults(), [])
         self.assertEqual(checker.adaptation_check(self.dir, settle_it=False), 0)
+
+    def test_every_line_of_an_instruction_may_be_reworded(self) -> None:
+        self.swap("then its because.", "then write its because.")
+        self.swap("`Put the comma in each sentence.`", "`Put a comma after the adverbial in each sentence.`")
+        self.swap("`Slowly the fox went home.`", "`Slowly the fox walked home.`")
+        self.assertEqual(self.faults(), [])
+
+    def test_beside_a_note_only_the_marked_words_may_change(self) -> None:
+        self.swap("then, on the line below it,", "underneath,")
+        self.assertTrue(any("inside the marks" in f for f in self.faults()))
+        self.swap("underneath,", "then, on the line below it,")
+        self.swap("- Pupil prompt (the group's instruction): `Put", "- Pupil prompt: `Put")
+        self.assertTrue(any("inside the marks" in f for f in self.faults()))
+
+    def test_marked_help_may_be_reworded_and_the_note_around_it_may_not(self) -> None:
+        self.swap('"Stuck? Choose one of these people."', '"Stuck? Pick one of these people."')
+        self.assertEqual(self.faults(), [])
+        self.swap("kept because it gives a way in", "kept as a way in")
+        self.assertTrue(any("inside the marks" in f for f in self.faults()))
+
+    def test_unmarked_help_is_read_and_not_changed(self) -> None:
+        self.swap("  Word bank\n", "  Words to use\n")
+        self.assertTrue(any("not words a child reads" in f for f in self.faults()))
+
+    def test_a_number_may_be_said_again_and_may_not_arrive_or_swap(self) -> None:
+        # 7 October 2026: `Jonah's 2-digit number` was refused because the 2
+        # then appeared twice, and the ambiguity it cleared up reached the page.
+        self.swap("tens digit of Jonah's number", "tens digit of Jonah's 2-digit number")
+        self.assertEqual(self.faults(), [])
+        self.swap("by a 2-digit number", "by a 3-digit number")
+        self.assertTrue(any("numbers changed" in f for f in self.faults()))
+
+    def test_a_blank_keeps_its_place(self) -> None:
+        self.swap("`___ the fox went home.`", "`The fox went home.`")
+        self.assertTrue(any("blank came or went" in f for f in self.faults()))
 
     def test_a_changed_number_a_changed_support_line_and_a_lost_line_are_refused(self) -> None:
         self.swap("3,248 + 135", "3,248 + 136")
@@ -589,6 +685,25 @@ class TheSecondPassOverTheAdaptedSheets(unittest.TestCase):
         self.assertIn("stand for?", text)
         self.assertIn("3,248 + 135", text)
         self.assertEqual(checker.adaptation_check(self.dir, settle_it=False), 0)
+
+    def receipt(self) -> dict:
+        return json.loads((self.dir / checker.ADAPTATION_RECEIPT).read_text(encoding="utf-8"))
+
+    def test_settle_leaves_a_receipt_for_the_file_as_it_now_is(self) -> None:
+        self.assertFalse((self.dir / checker.ADAPTATION_RECEIPT).exists())
+        self.swap("What does your small 1 in Tens mean?", "What does the small 1 in the tens column stand for?")
+        self.assertEqual(checker.adaptation_check(self.dir, settle_it=True), 0)
+        self.assertEqual(self.receipt()["state"], "settled")
+        self.assertEqual(self.receipt()["adaptationSha256"], hashlib.sha256(self.file.read_bytes()).hexdigest())
+
+    def test_a_settled_snapshot_is_never_used_against_a_later_adaptation(self) -> None:
+        """The adaptation designer may run again after the pass. Settling its
+        new file against the old snapshot would put its repairs back."""
+        self.assertEqual(checker.adaptation_check(self.dir, settle_it=True), 0)
+        self.swap("The child's completed grid stays above the prompt.", "A repaired support line.")
+        self.assertEqual(checker.adaptation_check(self.dir, settle_it=True), 0)
+        self.assertIn("A repaired support line.", self.file.read_text(encoding="utf-8"))
+        self.assertEqual(self.receipt()["state"], "not-read")
 
 
 class TheCommand(unittest.TestCase):

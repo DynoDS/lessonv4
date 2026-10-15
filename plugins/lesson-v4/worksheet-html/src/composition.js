@@ -105,10 +105,21 @@ function settledSheets(worksheet) {
 // mid-function.
 const ORIENTATION_WORDS = /(landscape|portrait|orientation)/i
 
+// A level marked books prints as a page of question slips in place of its
+// sheet, and a slip page is always upright and is cut up before a child sees
+// it, so which way that page faces is nobody's stack and nobody's comparison
+// (the teacher, 13 October 2026, on a landscape Below sheet beside two pages of
+// slips: "yes thats fine"). Only the levels that print as whole sheets are
+// compared. The approved two-page level is never slips, so it still counts.
+function printsAsSlips(sheet) {
+  return Boolean(sheet) && sheet.recording === "books" && !Array.isArray(sheet.pages);
+}
+
 function setShapeAdvisories(worksheet, advisories) {
   const sheets = settledSheets(worksheet);
   const byOrientation = new Map();
   for (const [name, sheet] of Object.entries(sheets)) {
+    if (printsAsSlips(sheet)) continue;
     const orientation = orientationOf(sheet);
     if (!orientation) continue;
     if (!byOrientation.has(orientation)) byOrientation.set(orientation, []);
@@ -162,4 +173,4 @@ function compositionAdvisories(worksheet) {
   return advisories;
 }
 
-module.exports = { compositionAdvisories, SPRAWL_RUN };
+module.exports = { compositionAdvisories, printsAsSlips, SPRAWL_RUN };

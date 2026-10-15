@@ -64,6 +64,24 @@
 //              (the two rules are the "big equals sign"), and a shallow row
 //              UNDER the answer for the small carried digit. `columns` may be
 //              left out, and is then read off the longest number.
+//              LONG MULTIPLICATION is the same field with rows of working
+//              between the numbers and the answer, one for each digit of the
+//              second number: { operator: "x", numbers: ["2314", "32"],
+//              upTo: "tens zero" }. `upTo` says how far the working has got
+//              ("set out", "ones row", "tens zero", "tens row", "total") and
+//              the drawing does the arithmetic, so a row, its place-holder
+//              zero and its carried digits can never disagree with the
+//              numbers. `partials: ["4628", "6942"]` writes the rows by hand
+//              instead (a mistake the class inspects), and `partials: 2` is
+//              the empty frame. `ring: "T"` rings the digit being multiplied
+//              by. `colours: { "tens zero": "E46C0A" }` gives one stage its
+//              own ink, which is how the wall ties a row to its step.
+//              Each row says what it is: `look: "labelled"` (left out, the
+//              same) puts "x 6", "x 30", "add" at the left of the rows, and
+//              `look: "explained"` puts "24 x 6 = 144" over "the 6 ones"
+//              beside each row instead (see longRowColour). Paper is
+//              always labelled. The row under the total for a carried digit
+//              is left out when the addition carries nothing.
 //
 // Older spellings still draw: the sheet's counter chart
 // ({ columns: ["thousands", ...], counts: { thousands: 2 } }) is a chart whose
@@ -302,6 +320,53 @@ const CALC_HEAVY_W = 0.16;     // the two thick rules, at least three times a ce
 const CALC_PAPER_COL_MM = { worksheets: [10, 12], stickin: [14, 15] };
 const calcPaperColPt = (profile) => (CALC_PAPER_COL_MM[profile.surface] || CALC_PAPER_COL_MM.stickin).map((mm) => (mm * 72) / 25.4);
 const CALC_MAX_NUMBERS = 4;
+const CALC_MAX_PARTIALS = 4;   // rows of working in a long multiplication
+
+// ── long multiplication: what each row IS ───────────────────────────────────
+// The teacher, a Year 4 teacher, looked at the finished 24 x 36 (14 October
+// 2026) and could not tell what the rows were. Every UK scheme he could be
+// pointed at explains it as parts: 24 x 36 is 24 x 6 plus 24 x 30, and each row
+// is one of those parts. So each digit of the multiplier and the row it makes
+// share a colour, and every row says what it is in one of two looks, which he
+// chose from mock-ups:
+//   "explained"  beside each row its sentence, "24 x 6 = 144" over a small
+//                "the 6 ones", "24 x 30 = 720" over "the 3 tens, so a 0 goes
+//                in first", "144 + 720 = 864" over "add the two rows"; a row
+//                not yet written has its sentence with no answer ("24 x 6 =").
+//                For modelling, where the teacher talks the method through.
+//   "labelled"   a short label at the left of each row, "x 6", "x 30", "add".
+//                For practice, answers and paper, where the child writes in
+//                the rows and a sentence would only be read instead.
+// The colour is the place's own, the darkened column colour a success
+// criterion gives `((ones))` or `((tens))` (SAME_COLOURS): the ones digit and
+// its row in the ones column's red, the tens digit and its row in the tens
+// column's gold, a hundreds row in the hundreds green, the total in the
+// answer's green. The mock-ups had used orange and blue, and beside a
+// criterion colouring "tens digit" orange the tens row was blue (the teacher,
+// 14 October 2026); the place's own colour is the one the criteria, the column
+// headings and the "same" under a chart already use. A row's label cell is its
+// colour mixed pale, so a surface that recolours a row (the wall's step sheet)
+// recolours its band too.
+const longRowColour = (k) => SAME_COLOURS[WHOLE_COLUMNS[k]] || '#404040';
+const LONG_LABEL_FONT = 0.78;    // a row's label, as a share of D (the row label's size)
+const LONG_SAY_FONT = 0.9;       // a row's sentence, a little under the digits
+const LONG_NOTE_FONT = 0.75;     // the small line under it
+// On a slide the sentences and their small lines print at the board's label
+// size, 20pt, and at 18pt only when 20pt will not fit beside the sum (the
+// teacher's ruling for labels on the board, 8 October 2026). At the room's
+// 18pt floor beside a success criteria panel the small lines were too small to
+// read from the back (14 October 2026).
+const LONG_SLIDE_WORDS_PT = 20;
+const LONG_NOTE_INK = '#404040';
+const LONG_ARROW = 1.5;          // the arrow from a sentence to its row, in D
+const LONG_SIDE_GAP = 0.45;      // either side of that arrow, in D
+const LONG_COL_OF_D = 1.8;       // beside sentences a column keeps the board's
+const LONG_COL_MAX_OF_D = 2.6;   // proportions, and grows no wider than this
+// Where the small digits carried WHILE MULTIPLYING go is still open (a Year 6
+// teacher's view is awaited): today a shallow row under each row of working.
+// `partialCarry: false` on a spec draws without them; change this one default
+// to change every long multiplication.
+const LONG_CARRY_ROWS = true;
 
 const COLOURS = {
   grid: '#666666',
@@ -628,6 +693,218 @@ function hexColour(value) {
   return /^[0-9a-fA-F]{6}$/.test(text) ? `#${text.toUpperCase()}` : '';
 }
 
+// ─── long multiplication ───────────────────────────────────────────────────
+// The stages a long multiplication is worked through, in the order they are
+// written: each digit of the second number makes a row, and every row after
+// the first begins with its place-holder zero.
+function longStages(digits) {
+  const stages = ['set out'];
+  for (let k = 0; k < digits; k += 1) {
+    const place = COLUMN_PLACE[WHOLE_COLUMNS[k]];
+    if (k > 0) stages.push(`${place} zero`);
+    stages.push(`${place} row`);
+  }
+  stages.push('total');
+  return stages;
+}
+
+// The whole of a long multiplication, worked: each row with what is carried
+// while multiplying, then the total with what is carried while adding. A digit
+// carried out of the last column is written straight into the row, as it is by
+// hand, so it is never also shown small.
+function workLongMultiplication(top, bottom) {
+  const t = top.split('').reverse().map(Number);
+  const rows = bottom.split('').reverse().map(Number).map((d, k) => {
+    let carried = 0;
+    const digits = [];
+    const carry = {};
+    t.forEach((digit, j) => {
+      const v = digit * d + carried;
+      carried = Math.floor(v / 10);
+      digits.push(v % 10);
+      if (carried && j < t.length - 1) carry[WHOLE_COLUMNS[j + 1 + k]] = String(carried);
+    });
+    if (carried) digits.push(carried);
+    return { value: digits.reverse().join('') + '0'.repeat(k), carry };
+  });
+  const width = Math.max(...rows.map((r) => r.value.length));
+  const digitAt = (value, i) => Number(value[value.length - 1 - i] || 0);
+  let carried = 0;
+  const total = [];
+  const carry = {};
+  for (let i = 0; i < width; i += 1) {
+    const v = rows.reduce((sum, r) => sum + digitAt(r.value, i), 0) + carried;
+    carried = Math.floor(v / 10);
+    total.push(v % 10);
+    if (carried && i < width - 1) carry[WHOLE_COLUMNS[i + 1]] = String(carried);
+  }
+  if (carried) total.push(carried);
+  return { rows, total: total.reverse().join(''), carry };
+}
+
+// `upTo` in the words a lesson uses for it.
+function stageAsked(value, stages) {
+  let asked = str(value).toLowerCase().replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
+  asked = asked.replace(/place ?holders?( zeros?)?/, 'zero').replace(/zeros$/, 'zero');
+  if (asked === '' || asked === 'blank' || asked === 'frame' || asked === 'setout') asked = 'set out';
+  if (asked === 'answer' || asked === 'all' || asked === 'finished' || asked === 'add') asked = 'total';
+  if (asked === 'zero' && stages.length === 5) asked = 'tens zero';
+  return stages.indexOf(asked);
+}
+
+// How far a long multiplication given with `upTo` has been worked: its stages
+// in order and the one it has reached, or null for any other calculation. A
+// surface that colours each step's writing (the wall) asks this, so it never
+// has to know the order a long multiplication is worked in.
+function longMultiplicationProgress(calculation) {
+  if (!isObj(calculation) || calculation.upTo == null) return null;
+  const second = str(asList(calculation.numbers)[1]).replace(/[,\s]/g, '');
+  if (!/^\d{2,}$/.test(second)) return null;
+  const stages = longStages(second.length);
+  const at = stageAsked(calculation.upTo, stages);
+  return at === -1 ? null : { stages, at };
+}
+
+// `look` in the words a lesson might use for it (see longRowColour).
+const LONG_LOOKS = {
+  explained: 'explained', explain: 'explained', explaining: 'explained', sentences: 'explained', model: 'explained', modelling: 'explained', modeling: 'explained',
+  labelled: 'labelled', labeled: 'labelled', label: 'labelled', labels: 'labelled', practice: 'labelled',
+};
+
+// A whole number as a class reads it: 2,314 and 69,420, never 69420.
+function grouped(digits) {
+  const s = String(digits).replace(/^0+(?=\d)/, '');
+  return s.length < 4 ? s : s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+const LONG_PLACE_ONE = ['one', 'ten', 'hundred', 'thousand'];
+const LONG_PLACE_MANY = ['ones', 'tens', 'hundreds', 'thousands'];
+const LONG_ZEROS_FIRST = ['', 'a 0 goes', 'two 0s go', 'three 0s go'];
+const LONG_HOW_MANY = ['', 'one', 'two', 'three', 'four'];
+
+// What row k of a long multiplication is: its label, its sentence and the
+// small line under the sentence. `top` and `by` are whole numbers or '' when
+// the frame has none; `value` is the row once written, '' until then, so a
+// sentence never gives away a row the class has not reached.
+function rowMeaning(top, by, k, value) {
+  if (!by) return { label: '', say: '', note: '' };
+  const d = Number(by[by.length - 1 - k]);
+  const part = grouped(String(d) + (d ? '0'.repeat(k) : ''));
+  const note = `the ${d} ${d === 1 ? LONG_PLACE_ONE[k] : LONG_PLACE_MANY[k]}${k ? `, so ${LONG_ZEROS_FIRST[k]} in first` : ''}`;
+  return {
+    label: `× ${part}`,
+    say: top ? `${grouped(top)} × ${part} =${value ? ` ${grouped(value)}` : ''}` : '',
+    note,
+  };
+}
+
+// What the total is: "add", and "144 + 720 = 864" over "add the two rows".
+// Before the rows are written the sentence is the instruction alone.
+function totalMeaning(rows, total, count) {
+  const add = `add the ${LONG_HOW_MANY[count] || count} rows`;
+  if (!rows || rows.some((r) => !r)) return { label: 'add', say: add, note: '' };
+  return { label: 'add', say: `${rows.map(grouped).join(' + ')} =${total ? ` ${grouped(total)}` : ''}`, note: add };
+}
+
+// The rows of working a long multiplication has, or null for any other
+// calculation. `upTo` works them out; `partials` writes them by hand.
+function normaliseLong(c, operator, numbers) {
+  if (c.partials == null && c.upTo == null) return null;
+  const refuse = (why) => {
+    throw new Error(`PLACE_VALUE_CALCULATION_INVALID: ${why}`);
+  };
+  if (operator !== '×') {
+    refuse('`partials` and `upTo` are the rows of working of a long multiplication, so the operator is "x". Any other column calculation has one answer row: give `answer`.');
+  }
+  if (numbers.length !== 2) refuse('a long multiplication has exactly two `numbers`: the number being multiplied, then the number it is multiplied by.');
+  const whole = (n) => !n.placed && n.frac === '' && n.whole !== '';
+  const multiplier = numbers[1];
+  const digits = whole(multiplier) ? multiplier.whole.length : 0;
+  const placeOf = (k) => COLUMN_PLACE[WHOLE_COLUMNS[k]] || '';
+  const colours = {};
+  if (isObj(c.colours)) {
+    Object.keys(c.colours).forEach((key) => {
+      const hex = hexColour(c.colours[key]);
+      if (hex) colours[key.toLowerCase().trim()] = hex;
+    });
+  }
+  const look = c.look == null || c.look === '' ? 'labelled' : LONG_LOOKS[str(c.look).toLowerCase().trim()];
+  if (!look) {
+    refuse(`\`look\` is "${str(c.look)}". A long multiplication is drawn "explained" (each row's sentence beside it, for modelling the method) or "labelled" (a short label at the left of each row, for practice, answers and paper).`);
+  }
+  const top = whole(numbers[0]) ? numbers[0].whole : '';
+  const by = whole(multiplier) ? multiplier.whole : '';
+
+  if (c.upTo != null) {
+    if (!whole(numbers[0]) || !whole(multiplier) || digits < 2) {
+      refuse('`upTo` works a long multiplication out from two whole numbers, the second with two digits or more (["2314", "32"]). For anything else write the rows yourself in `partials`, and for a one-digit multiplier give `answer`.');
+    }
+    if (digits > CALC_MAX_PARTIALS) refuse(`a long multiplication is drawn with at most ${CALC_MAX_PARTIALS} rows of working.`);
+    if (c.partials != null || (c.answer != null && c.answer !== '') || isObj(c.carry) || Array.isArray(c.carry)) {
+      refuse('`upTo` works out every row, the total and what is carried from the two numbers, so leave `partials`, `answer` and `carry` out beside it (they could only disagree with it).');
+    }
+    const stages = longStages(digits);
+    const at = stageAsked(c.upTo, stages);
+    if (at === -1) {
+      refuse(`\`upTo\` is "${str(c.upTo)}", which is not a stage of this long multiplication. Its stages, in order: ${stages.map((s) => `"${s}"`).join(', ')}.`);
+    }
+    const done = workLongMultiplication(numbers[0].whole, multiplier.whole);
+    const reached = (stage) => at >= stages.indexOf(stage);
+    const rowDone = done.rows.map((r, k) => reached(`${placeOf(k)} row`));
+    return {
+      productDigits: done.total.length,
+      colours,
+      look,
+      meanings: done.rows.map((r, k) => rowMeaning(top, by, k, rowDone[k] ? r.value : '')),
+      total: totalMeaning(rowDone.every(Boolean) ? done.rows.map((r) => r.value) : null, reached('total') ? done.total : '', digits),
+      // The finished sentences, which the layout is sized by at every stage,
+      // so the slides of one build line up however far each has got.
+      sizeBy: done.rows.map((r, k) => rowMeaning(top, by, k, r.value)).concat(totalMeaning(done.rows.map((r) => r.value), done.total, digits)),
+      addCarries: Object.keys(done.carry).length > 0,
+      rows: done.rows.map((r, k) => {
+        const place = placeOf(k);
+        if (reached(`${place} row`)) return { value: splitNumber(r.value), carry: r.carry, zeros: k, place };
+        if (k > 0 && reached(`${place} zero`)) return { value: splitNumber('0'.repeat(k)), carry: null, zeros: k, place };
+        return { value: splitNumber(''), carry: null, zeros: k, place };
+      }),
+      answer: reached('total') ? done.total : '',
+      carry: reached('total') ? done.carry : {},
+    };
+  }
+
+  let rows;
+  if (Array.isArray(c.partials)) rows = c.partials.slice();
+  else if (typeof c.partials === 'number' && Number.isFinite(c.partials)) rows = Array.from({ length: Math.floor(c.partials) }, () => '');
+  else if (c.partials === true) rows = [];
+  else refuse('`partials` is the rows of working, top to bottom: ["4628", "69420"] finished, ["4628", ""] with the tens row still to do, or a number of empty rows (2) for a frame the class sets out itself.');
+  // One row for each digit of the second number, however few were written.
+  while (rows.length < (digits || 2)) rows.push('');
+  if (rows.length > CALC_MAX_PARTIALS) refuse(`a long multiplication is drawn with at most ${CALC_MAX_PARTIALS} rows of working.`);
+  const bothWhole = whole(numbers[0]) && whole(multiplier);
+  // Rows written by hand may be wrong on purpose, so their sentences never say
+  // what a row comes to: "3,152 x 40 =" beside a row missing its zero is the
+  // question the class answers. The row under the total for a carried digit
+  // stays unless the true working shows the addition carries nothing.
+  const matches = bothWhole && by.length === rows.length;
+  const givenCarry = (isObj(c.carry) && Object.keys(c.carry).length > 0) || (Array.isArray(c.carry) && c.carry.some((v) => !['', '0'].includes(str(v).trim())));
+  return {
+    productDigits: bothWhole ? String(BigInt(numbers[0].whole) * BigInt(multiplier.whole)).length : 0,
+    colours,
+    look,
+    meanings: rows.map((r, k) => rowMeaning(top, matches ? by : '', k, '')),
+    total: totalMeaning(null, '', rows.length),
+    addCarries: givenCarry || !matches || Object.keys(workLongMultiplication(top, by).carry).length > 0,
+    rows: rows.map((r, k) => ({
+      value: splitNumber(isObj(r) ? r.answer : r, `row ${k + 1} of the working`),
+      carry: isObj(r) ? r.carry : null,
+      zeros: k,
+      place: placeOf(k),
+    })),
+    answer: null,
+    carry: null,
+  };
+}
+
 function normaliseCalculation(spec) {
   const c = isObj(spec.calculation) ? spec.calculation : {};
   // `operator: ""` leaves the sign's place empty, for a problem where choosing
@@ -641,12 +918,17 @@ function normaliseCalculation(spec) {
   if (numbers.length < 2 || numbers.length > CALC_MAX_NUMBERS) {
     throw new Error(`PLACE_VALUE_CALCULATION_INVALID: a column calculation needs its \`numbers\`, between two and ${CALC_MAX_NUMBERS} of them, for example ["3426", "237"] (or ["", ""] with \`columns\` for the empty frame the class sets a calculation out in).`);
   }
-  const answer = splitNumber(c.answer, 'the answer');
-  const all = numbers.concat(answer);
+  const long = normaliseLong(c, operator, numbers);
+  const answer = splitNumber(long && long.answer != null ? long.answer : c.answer, 'the answer');
+  const all = numbers.concat(answer, long ? long.rows.map((r) => r.value) : []);
 
   let given = Array.isArray(spec.columns) ? spec.columns.map(str) : [];
   if (given.length === 0) {
-    const whole = Math.max(1, ...all.map((n) => (n.placed ? n.placed.length : n.whole.length)));
+    // A long multiplication still to be worked keeps a column for every digit
+    // of its answer: the first digit of 4,326 x 52 = 224,952 once had nowhere
+    // to go but under the sign (stress test, 7 October 2026).
+    const product = long ? long.productDigits : 0;
+    const whole = Math.max(1, product, ...all.map((n) => (n.placed ? n.placed.length : n.whole.length)));
     const frac = Math.max(0, ...all.map((n) => n.frac.length));
     if (whole > WHOLE_COLUMNS.length || frac > FRACTION_COLUMNS.length) {
       throw new Error('PLACE_VALUE_CALCULATION_INVALID: these numbers are longer than the place value columns a chart has.');
@@ -685,22 +967,35 @@ function normaliseCalculation(spec) {
     return cells;
   };
 
-  const carry = columns.map(() => '');
   const small = (v) => {
     const t = str(v).trim().split('').map((ch) => SUPERSCRIPTS[ch] || ch).join('');
     return t === '0' ? '' : t;
   };
-  if (Array.isArray(c.carry)) {
-    c.carry.slice(0, columns.length).forEach((v, i) => { if (columns[i] !== '.') carry[i] = small(v); });
-  } else if (isObj(c.carry)) {
-    Object.keys(c.carry).forEach((key) => {
-      const at = columns.indexOf(canonicalColumn(key));
-      if (at === -1 || columns[at] === '.') {
-        throw new Error(`PLACE_VALUE_CALCULATION_INVALID: a digit is carried into "${key}", a column this chart does not have (${given.join(', ')}).`);
-      }
-      carry[at] = small(c.carry[key]);
-    });
-  }
+  const carryCells = (raw) => {
+    const out = columns.map(() => '');
+    if (Array.isArray(raw)) {
+      raw.slice(0, columns.length).forEach((v, i) => { if (columns[i] !== '.') out[i] = small(v); });
+    } else if (isObj(raw)) {
+      Object.keys(raw).forEach((key) => {
+        const at = columns.indexOf(canonicalColumn(key));
+        if (at === -1 || columns[at] === '.') {
+          throw new Error(`PLACE_VALUE_CALCULATION_INVALID: a digit is carried into "${key}", a column this chart does not have (${given.join(', ')}).`);
+        }
+        out[at] = small(raw[key]);
+      });
+    }
+    return out;
+  };
+  const carry = carryCells(long && long.carry ? long.carry : c.carry);
+  // Each row of working: its digits, what was carried while multiplying, and
+  // which of its cells are place-holder zeros (the rightmost, one for the tens
+  // row and two for the hundreds), so a stage's ink can be told apart.
+  const partials = !long ? null : long.rows.map((r, k) => ({
+    cells: cellsOf(r.value, `row ${k + 1} of the working`),
+    carry: carryCells(r.carry),
+    zeros: columns.map((col, i) => col !== '.' && i > ones - r.zeros && i <= ones),
+    place: r.place,
+  }));
 
   return {
     columns,
@@ -718,11 +1013,28 @@ function normaliseCalculation(spec) {
       // exchanges above the top number and has nothing to write beneath. A
       // lesson taught before exchanging is met says `carry: false`, so the
       // class is not shown a row nobody has explained yet.
-      carryRow: operator !== '−' && c.carry !== false,
+      // A long multiplication's total keeps that row only when its addition
+      // carries: on 24 x 36 an empty row under 864 was one more row nobody
+      // could explain (the teacher, 14 October 2026).
+      carryRow: operator !== '−' && c.carry !== false && !(long && !long.addCarries),
       worked: c.worked === true,
       exchange: normaliseCalcExchanges(c, columns, operator, cellsOf(numbers[0], 'number 1')),
       ring: ringColumn(c, columns),
       ringColour: hexColour(c.ringColour),
+      ...(long ? {
+        partials,
+        // A shallow row under each row of working for what is carried while
+        // multiplying, and a thick line under the total as well as above it.
+        // Both are on unless a spec turns one off, which only the comparison
+        // pictures made for the teacher do.
+        partialCarry: c.carry !== false && (c.partialCarry == null ? LONG_CARRY_ROWS : c.partialCarry !== false),
+        closingRule: c.closingRule !== false,
+        colours: long.colours,
+        look: long.look,
+        meanings: long.meanings,
+        total: long.total,
+        sizeBy: long.sizeBy || long.meanings.concat(long.total),
+      } : {}),
     },
   };
 }
@@ -1264,6 +1576,79 @@ function calculationUnits(chart) {
   return { grid, total: grid + CALC_OP_W };
 }
 
+// What a long multiplication adds to the written calculation's layout: its
+// look, the inks that tie each digit of the multiplier to its row, the label
+// column's width and the sentences' width, each as a function of D so the
+// layout can size the digits and the words together. Null for any other sum.
+function longParts(chart, profile, paper) {
+  const calc = chart.calculation;
+  const partials = calc.partials || [];
+  if (!partials.length || !calc.meanings) return null;
+  const pal = paletteFor(profile);
+  const ink = profile.palette === 'ink';
+  const all = calc.sizeBy;
+  const side = !paper && calc.look === 'explained' && calc.meanings.some((m) => m.say);
+  const inset = CELL_INSET_OF_N * profile.fontPt * DIGIT_OF_FONT;
+  const words = { floor: profile.surface === 'slides' ? Math.max(profile.minFontPt, LONG_SLIDE_WORDS_PT) : profile.minFontPt };
+  const floor = profile.minFontPt;
+  const labelPt = (D) => Math.max(floor, LONG_LABEL_FONT * D);
+  const sayPt = (D) => Math.max(words.floor, LONG_SAY_FONT * D);
+  const notePt = (D) => Math.max(words.floor, LONG_NOTE_FONT * D);
+  const labelEm = side ? 0 : Math.max(0, ...all.map((m) => (m.label ? textWidthEm(m.label, true) : 0)));
+  const sayEm = Math.max(0, ...all.map((m) => textWidthEm(m.say, true)));
+  // A small line too wide for the room breaks once, at its comma: "the 3
+  // tens," over "so a 0 goes in first". It is the widest thing beside a
+  // 4-digit by 2-digit sum, and breaking it is what lets that sum keep its
+  // sentences beside a success criteria panel at the room's 18pt floor.
+  const linesOf = (m, wrap) => (!m.note ? [] : wrap && m.note.includes(', ') ? [m.note.slice(0, m.note.indexOf(', ') + 1), m.note.slice(m.note.indexOf(', ') + 2)] : [m.note]);
+  const noteEm = (wrap) => Math.max(0, ...all.map((m) => Math.max(0, ...linesOf(m, wrap).map((l) => textWidthEm(l, false)))));
+  // A row's own colour: the one the surface gave its stage, or the look's.
+  const colourOf = (k) => (calc.colours && calc.colours[`${partials[k].place} row`]) || longRowColour(k);
+  const mix = (hex, share) => {
+    const n = parseInt(hex.slice(1), 16);
+    const c = [n >> 16, (n >> 8) & 255, n & 255].map((v) => Math.round(v * share + 255 * (1 - share)));
+    return `#${c.map((v) => v.toString(16).padStart(2, '0')).join('').toUpperCase()}`;
+  };
+  // A column beside sentences is never narrower than its short heading needs
+  // at the size it prints (on a slide never under the room's floor): squeezed
+  // for the sentences on the wall, "TTh" and "Th" ran into one word.
+  const headEm = chart.headings ? Math.max(0, ...chart.columns.map((c) => (c === '.' ? 0 : textWidthEm(c, true)))) : 0;
+  const headFloor = profile.surface === 'slides' ? profile.minFontPt : 0;
+  const headNeed = (D) => (headEm ? headEm * Math.max(headFloor, HEAD_FONT * D) + inset : 0);
+  const parts = {
+    side,
+    wrap: false,
+    // The words fall to the room's floor only when the board's size cannot fit.
+    smallestWords: () => { words.floor = floor; },
+    headNeed,
+    labelPt,
+    sayPt,
+    notePt,
+    // a label keeps half its size clear each side, so "× 30" never touches the rule
+    labelW: (D) => (labelEm ? labelEm * labelPt(D) + 2 * Math.max(inset, labelPt(D) / 2) : 0),
+    sideW: (D) => (side ? (2 * LONG_SIDE_GAP + LONG_ARROW) * D + Math.max(sayEm * sayPt(D), noteEm(parts.wrap) * notePt(D)) : 0),
+    // Where a row's sentence and its small line(s) go, from the row's top: the
+    // sentence level with the row's digits and its arrow, the small line under
+    // it; a small line broken in two lifts the sentence by half a line.
+    place: (m, D, rowH) => {
+      const lines = linesOf(m, parts.wrap);
+      const lineH = notePt(D) * (lines.length > 1 ? 1.15 : 1.25);
+      const sayTop = rowH / 2 - sayPt(D) * 0.6 - Math.max(0, lines.length - 1) * lineH * 0.5;
+      const noteTop = sayTop + sayPt(D) * 1.2;
+      return { sayTop, lines, lineH, noteTop, bottom: noteTop + lines.length * lineH };
+    },
+    // The label, the multiplier's digit, the arrow and the sentence of row k.
+    ink: (k) => (ink ? pal.text : colourOf(k)),
+    // The digits written in row k: the row's colour where answers are coloured,
+    // the given ink on a pupil sheet, purple in a worked example.
+    digitInk: (k) => (calc.worked ? pal.worked : ink ? pal.answer : answerColour(profile, colourOf(k), pal.text)),
+    tint: (k) => (ink ? pal.labelFill : mix(colourOf(k), 0.2)),
+    totalInk: ink ? pal.text : (calc.colours && calc.colours.total) || answerColour(profile, COLOURS.ring, pal.text),
+    noteInk: ink ? pal.text : LONG_NOTE_INK,
+  };
+  return parts;
+}
+
 function describeCalculation(chart, profile) {
   const calc = chart.calculation;
   const cols = chart.columns;
@@ -1282,28 +1667,96 @@ function describeCalculation(chart, profile) {
   if (!profile.heightPt) colW = Math.min(colW, paper ? calcPaperColPt(profile)[1] : COL_MAX * hi);
 
   const digitEm = textWidthEm('8', true);
-  const rowsOf = calc.numbers.length + 1;
+  // A long multiplication's rows of working, each with its own shallow row
+  // beneath for what is carried while multiplying.
+  const partials = calc.partials || [];
+  // ...and what each row is, in the look asked for. Paper, where the child
+  // writes in the rows, is always the labelled look, and so is a frame with no
+  // numbers yet, which has no sentences to say.
+  const long = longParts(chart, profile, paper);
+  const rowsOf = calc.numbers.length + 1 + partials.length;
   const rowH = (D) => (paper ? Math.max(colW, ROW_H * D) : ROW_H * D);
-  const carryH = (D) => (!calc.carryRow ? 0 : paper ? rowH(D) * CALC_CARRY_OF_ROW : CALC_CARRY_H * D);
+  const shallowH = (D) => (paper ? rowH(D) * CALC_CARRY_OF_ROW : CALC_CARRY_H * D);
+  const carryH = (D) => (!calc.carryRow ? 0 : shallowH(D));
+  const partialCarryH = (D) => (partials.length && calc.partialCarry ? shallowH(D) : 0);
   const titleH = (D) => (chart.title ? D * TITLE_FONT * 1.3 + TITLE_GAP * D : 0);
   const headH = (D) => (chart.headings ? HEADER_H * D : 0);
   // A subtraction with exchanges keeps a shallow band above its top number,
   // inside that number's own cells, for the digit written over a crossed-out one.
   const exchange = calc.exchange;
   const exchangeH = (D) => (!exchange ? 0 : paper ? rowH(D) * CALC_CARRY_OF_ROW : CALC_CARRY_H * D);
-  const heightIn = (D) => titleH(D) + headH(D) + rowsOf * rowH(D) + carryH(D) + exchangeH(D);
+  // An explained total's sentence may reach below the last rule.
+  const belowH = (D) => (!long || !long.side ? 0 : Math.max(0, long.place(calc.sizeBy[calc.sizeBy.length - 1], D, rowH(D)).bottom - rowH(D) - carryH(D)));
+  const heightIn = (D) => titleH(D) + headH(D) + rowsOf * rowH(D) + carryH(D) + partials.length * partialCarryH(D) + exchangeH(D) + belowH(D);
 
-  let D = Math.min(hi, Math.max(1, colW - inset) / digitEm);
-  if (profile.heightPt) {
-    for (let k = 0; k < 40 && heightIn(D) > profile.heightPt && D > lo; k += 1) {
-      D = Math.max(lo, D * Math.min(0.98, profile.heightPt / heightIn(D)));
+  let D;
+  if (long) {
+    // A long multiplication's left column widens for its labels, and the
+    // explained look's sentences take the width beside the grid, so the
+    // column width and the digit size are found together: the largest digit
+    // whose columns, labels and sentences fit the width (and the height).
+    // Beside sentences a column is never narrower than its heading needs, or
+    // than a handwritten digit needs while a row is still to be written.
+    const writing = cols.some((c, i) => c !== '.' && calc.answer[i] === '') || partials.some((p) => p.cells[cols.indexOf('O')] === '');
+    const minCol = (d) => Math.max(long.headNeed(d), writing && writeIn.colPt ? writeIn.colPt : 0);
+    const colFor = (d) => {
+      const room = profile.widthPt - long.sideW(d);
+      let c = room / units.total;
+      if (CALC_OP_W * c < long.labelW(d)) c = (room - long.labelW(d)) / units.grid;
+      if (!profile.heightPt) c = Math.min(c, paper ? calcPaperColPt(profile)[1] : COL_MAX * hi);
+      return long.side ? Math.min(c, Math.max(LONG_COL_MAX_OF_D * d, minCol(d))) : c;
+    };
+    const fits = (d) => {
+      colW = colFor(d);
+      if (d > (colW - inset) / digitEm + 0.01) return false;
+      if (long.side && colW < Math.max(LONG_COL_OF_D * d, minCol(d)) - 0.01) return false;
+      return !profile.heightPt || heightIn(d) <= profile.heightPt;
+    };
+    if (long.side && !fits(lo)) long.wrap = true;
+    if (long.side && !fits(lo)) long.smallestWords();
+    if (fits(hi)) D = hi;
+    else if (!fits(lo)) D = lo;
+    else {
+      let [a, b] = [lo, hi];
+      for (let k = 0; k < 30; k += 1) {
+        const m = (a + b) / 2;
+        if (fits(m)) a = m;
+        else b = m;
+      }
+      D = a;
+    }
+    colW = colFor(D);
+    if (long.side && colW < Math.max(digitEm * D + inset, minCol(D)) - 0.5) {
+      const need = units.total * Math.max(LONG_COL_OF_D * lo, minCol(lo)) + long.labelW(lo) + long.sideW(lo);
+      throw new Error(
+        `PLACE_VALUE_CHART_TOO_NARROW: this long multiplication explained, its sentence beside each row, needs ${(need / 72).toFixed(2)}in of width ` +
+          `at the smallest size the room reads, but its zone offers ${(profile.widthPt / 72).toFixed(2)}in. Give it a wider zone or its own slide, ` +
+          'or draw it `"look": "labelled"` where the rows have already been explained.'
+      );
+    }
+    // The labels too need room beside the columns, and a column narrower than
+    // its digit or its heading is refused rather than drawn: the wall, trying
+    // narrower and narrower layouts to fit a room, took one whose labels had
+    // squeezed the columns until "TTh" and "Th" ran together (14 October 2026).
+    if (!long.side && !paper && colW < Math.max(digitEm * D + inset, long.headNeed(D)) - 0.5) {
+      throw new Error(
+        `PLACE_VALUE_CHART_TOO_NARROW: at ${(profile.widthPt / 72 * 25.4).toFixed(0)}mm this long multiplication's labels leave each column ` +
+          `${(colW / 72 * 25.4).toFixed(1)}mm, too narrow for its digits and headings. Give it more width.`
+      );
+    }
+  } else {
+    D = Math.min(hi, Math.max(1, colW - inset) / digitEm);
+    if (profile.heightPt) {
+      for (let k = 0; k < 40 && heightIn(D) > profile.heightPt && D > lo; k += 1) {
+        D = Math.max(lo, D * Math.min(0.98, profile.heightPt / heightIn(D)));
+      }
     }
   }
   if (D < lo) D = lo;
   if (profile.heightPt && heightIn(D) > profile.heightPt + 0.5) {
     throw new Error(
       `PLACE_VALUE_CHART_DOES_NOT_FIT: this column calculation needs at least ${(heightIn(lo) / 72).toFixed(2)}in of height at its smallest readable size ` +
-        `(${calc.numbers.length} numbers, the answer${calc.carryRow ? ' and the carry row' : ''}), but its zone offers ${(profile.heightPt / 72).toFixed(2)}in. ` +
+        `(${calc.numbers.length} numbers, ${partials.length ? `${partials.length} rows of working, ` : ''}the answer${calc.carryRow ? ' and the carry row' : ''}), but its zone offers ${(profile.heightPt / 72).toFixed(2)}in. ` +
         'Give it a taller zone, or its own slide.'
     );
   }
@@ -1313,7 +1766,9 @@ function describeCalculation(chart, profile) {
         'too narrow to print a digit readably. Give it more width.'
     );
   }
-  const blankAnswer = cols.some((c, i) => c !== '.' && calc.answer[i] === '');
+  const onesAt = cols.indexOf('O');
+  // A row of working is somebody's to write while its ones cell is empty.
+  const blankAnswer = cols.some((c, i) => c !== '.' && calc.answer[i] === '') || partials.some((p) => p.cells[onesAt] === '');
   if (blankAnswer && writeIn.colPt && clearlyUnder(colW, writeIn.colPt - 0.01, { surface: profile.surface, what: "a column calculation's write-in columns" })) {
     throw new Error(
       `PLACE_VALUE_WRITE_IN_TOO_NARROW: this calculation's answer row is blank for somebody to write in, but each column is only ` +
@@ -1325,7 +1780,7 @@ function describeCalculation(chart, profile) {
 
   // A sum drawn without its heading row has no heading to size or to refuse.
   const heading = chart.headings ? headingsFor(chart, colW, D, profile, inset) : { labels: chart.columns, font: 0 };
-  const opW = CALC_OP_W * colW;
+  const opW = Math.max(CALC_OP_W * colW, long ? long.labelW(D) : 0);
   const colWs = cols.map((c) => (c === '.' ? colW * POINT_W : colW));
   const chartW = opW + colWs.reduce((a, b) => a + b, 0);
   const rule = Math.max(1, GRID_W * D);
@@ -1369,8 +1824,19 @@ function describeCalculation(chart, profile) {
   }
 
   // `head` is room above the digits inside the same cells (the exchange band).
-  const row = (role, digits, h, pt, fill, sign, name, head = 0) => {
-    cells.push({ role: 'label', x: 0, y, w: opW, h: h + head, fill: pal.labelFill });
+  // `fill` is one colour, or a function of the column for a row whose cells
+  // were written at different stages (a place-holder zero, then the row).
+  // `side` is a long multiplication's: the label cell's tint and its label.
+  const row = (role, digits, h, pt, fill, sign, name, head = 0, side = {}) => {
+    const inkOf = (i) => (typeof fill === 'function' ? fill(i) : fill);
+    const shallow = role === 'carry' || role === 'partial-carry';
+    cells.push({ role: 'label', x: 0, y, w: opW, h: h + head, fill: side.tint || pal.labelFill });
+    if (side.label) {
+      texts.push({ role: 'row-label', of: role, text: side.label, x: opW / 2, y: y + head, h, pt: side.pt, fill: side.ink });
+      // "row 1 label", "answer label": where a wall's step is pinned to a row
+      // from the left, so its arrow lands on the label and never crosses it.
+      point(`${name} label`, opW / 2, y + head, h, side.label, side.pt);
+    }
     const cellTop = y;
     y += head;
     if (sign) {
@@ -1381,10 +1847,10 @@ function describeCalculation(chart, profile) {
     const any = cols.some((c, i) => c !== '.' && digits[i] !== '');
     let x = opW;
     cols.forEach((c, i) => {
-      const text = c === '.' ? (any && role !== 'carry' ? '.' : '') : digits[i];
-      const cellRole = role === 'carry' ? 'carry' : text === '' && role === 'answer' ? 'write' : 'digit';
+      const text = c === '.' ? (any && !shallow ? '.' : '') : digits[i];
+      const cellRole = shallow ? 'carry' : text === '' && (role === 'answer' || role === 'partial') ? 'write' : 'digit';
       cells.push({ role: cellRole, row: role, column: c, x, y: cellTop, w: colWs[i], h: h + head, fill: columnFills(profile, c)[1] });
-      if (text !== '') texts.push({ role: role === 'carry' ? 'carry' : 'digit', row: role, column: c, text, x: x + colWs[i] / 2, y, h, pt, fill });
+      if (text !== '') texts.push({ role: shallow ? 'carry' : 'digit', row: role, column: c, text, x: x + colWs[i] / 2, y, h, pt, fill: inkOf(i) });
       if (COLUMN_PLACE[c]) point(`${COLUMN_PLACE[c]} ${name}`, x + colWs[i] / 2, y, h, text, pt);
       x += colWs[i];
     });
@@ -1397,7 +1863,10 @@ function describeCalculation(chart, profile) {
   const strikes = [];
   const rings = [];
   calc.numbers.forEach((digits, i) => {
-    marks.numbers.push(row('number', digits, rowH(D), D, given, i === calc.numbers.length - 1 ? calc.operator : '', `number ${i + 1}`, i === 0 ? exchangeH(D) : 0));
+    const last = i === calc.numbers.length - 1;
+    // Each digit of the multiplier is the colour of the row it makes.
+    const ink = long && last ? (j) => (onesAt - j >= 0 && onesAt - j < partials.length ? long.ink(onesAt - j) : given) : given;
+    marks.numbers.push(row('number', digits, rowH(D), D, ink, last ? calc.operator : '', `number ${i + 1}`, i === 0 ? exchangeH(D) : 0));
   });
   if (exchange) {
     // Each exchange's marks share one colour: the worked colour, or the colour a
@@ -1451,20 +1920,67 @@ function describeCalculation(chart, profile) {
     const i = cols.indexOf(calc.ring);
     const left = opW + colWs.slice(0, i).reduce((a, b) => a + b, 0);
     const inset = RING_INSET * D;
-    const first = marks.numbers[0];
+    // In a long multiplication the ring is round the one digit being
+    // multiplied by: every digit of the top number meets it in turn.
     const last = marks.numbers[marks.numbers.length - 1];
+    const first = partials.length ? last : marks.numbers[0];
     rings.push({ role: 'working-column', column: calc.ring, x: left + inset, y: first.y + inset, w: colWs[i] - 2 * inset, h: last.y + last.h - first.y - 2 * inset, sw: Math.max(3, RING_W * D), stroke: calc.ringColour || pal.ring });
   }
   const rules = [y];
-  marks.answer = row('answer', calc.answer, rowH(D), D, worked, '', 'answer');
-  rules.push(y);
-  if (calc.carryRow) marks.carry = row('carry', calc.carry, carryH(D), CALC_CARRY_FONT * D, worked, '', 'carry');
+  // A stage's ink: the colour a surface gave it, or the worked colour. A row of
+  // working's is its row's colour, its place-holder zero included; the wall's
+  // step sheet gives each stage its step's colour instead.
+  const stageInk = (stage) => (calc.colours && calc.colours[stage]) || worked;
+  const polys = [];
+  if (partials.length) {
+    marks.partials = partials.map((p, k) => {
+      const rowInk = (calc.colours && calc.colours[`${p.place} row`]) || long.digitInk(k);
+      const zeroInk = (calc.colours && calc.colours[`${p.place} zero`]) || rowInk;
+      const tint = long.tint(k);
+      const label = long.side ? {} : { label: calc.meanings[k].label, pt: long.labelPt(D), ink: long.ink(k) };
+      const at = row('partial', p.cells, rowH(D), D, (i) => (p.zeros[i] ? zeroInk : rowInk), '', `row ${k + 1}`, 0, { tint, ...label });
+      if (calc.partialCarry) at.carry = row('partial-carry', p.carry, partialCarryH(D), CALC_CARRY_FONT * D, rowInk, '', `row ${k + 1} carry`, 0, { tint });
+      return at;
+    });
+    rules.push(y);
+  }
+  const totalInk = partials.length ? stageInk('total') : worked;
+  const totalLabel = long && !long.side ? { label: calc.total.label, pt: long.labelPt(D), ink: long.totalInk } : {};
+  marks.answer = row('answer', calc.answer, rowH(D), D, totalInk, '', 'answer', 0, totalLabel);
+  if (!partials.length || calc.closingRule) rules.push(y);
+  if (calc.carryRow) marks.carry = row('carry', calc.carry, carryH(D), CALC_CARRY_FONT * D, totalInk, '', 'carry');
   // The two thick rules, across the whole calculation: the big equals sign.
   rules.forEach((ry) => lines.push({ role: 'heavy-rule', x1: 0, y1: ry, x2: chartW, y2: ry, sw: heavy, stroke: pal.text }));
 
+  // The explained look: beside each row, an arrow to it and what it is.
+  let w = chartW;
+  let h = y;
+  if (long && long.side) {
+    const sayPt = long.sayPt(D);
+    const notePt = long.notePt(D);
+    const arrowX = chartW + LONG_SIDE_GAP * D;
+    const textX = arrowX + LONG_ARROW * D + LONG_SIDE_GAP * D;
+    const say = (m, at, ink, role) => {
+      const cy = at.y + at.h / 2;
+      const spot = long.place(m, D, at.h);
+      const shaft = Math.max(2, 0.12 * D);
+      const head = 0.55 * D;
+      lines.push({ role: 'say-arrow', x1: arrowX + head * 0.9, y1: cy, x2: arrowX + LONG_ARROW * D, y2: cy, sw: shaft, stroke: ink });
+      polys.push({ points: [[arrowX, cy], [arrowX + head, cy - head * 0.5], [arrowX + head, cy + head * 0.5]], fill: ink });
+      texts.push({ role, text: m.say, x: textX, y: at.y + spot.sayTop, h: sayPt * 1.2, pt: sayPt, fill: ink, anchor: 'start' });
+      spot.lines.forEach((line, i) => texts.push({ role: `${role}-note`, text: line, x: textX, y: at.y + spot.noteTop + i * spot.lineH, h: spot.lineH, pt: notePt, fill: long.noteInk, anchor: 'start', weight: 'normal' }));
+      h = Math.max(h, at.y + spot.bottom);
+    };
+    // Sized by the finished sentences, so a build's slides are one size.
+    w = chartW + long.sideW(D);
+    h = Math.max(h, y + belowH(D));
+    marks.partials.forEach((at, k) => say(calc.meanings[k], at, long.ink(k), 'say'));
+    say(calc.total, marks.answer, long.totalInk, 'say');
+  }
+
   return {
-    form: 'calculation', D, N, colW, colWs, labelW: opW, chartW, w: chartW, h: y, rule, heavy, pal,
-    headings: heading, labelFonts: [], labels: [], cells, texts, circles: [], rings, lines, polys: [], bars: [], strikes,
+    form: 'calculation', D, N, colW, colWs, labelW: opW, chartW, w, h, rule, heavy, pal,
+    headings: heading, labelFonts: [], labels: [], cells, texts, circles: [], rings, lines, polys, bars: [], strikes,
     rows: marks, anchor: 'middle', points,
   };
 }
@@ -1818,7 +2334,7 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const parts = [];
   const text = (t) => {
     const baseline = t.y + t.h / 2 + t.pt * 0.35;
-    return `<text x="${f2(t.x)}" y="${f2(baseline)}" text-anchor="middle" font-family="${font}" font-size="${f2(t.pt)}" font-weight="bold" fill="${t.fill}">${esc(t.text)}</text>`;
+    return `<text x="${f2(t.x)}" y="${f2(baseline)}" text-anchor="${t.anchor || 'middle'}" font-family="${font}" font-size="${f2(t.pt)}" font-weight="${t.weight || 'bold'}" fill="${t.fill}">${esc(t.text)}</text>`;
   };
   L.bars.forEach((b) => parts.push(`<rect x="${f2(b.x)}" y="${f2(b.y)}" width="${f2(b.w)}" height="${f2(b.h)}" rx="${f2(b.r)}" ry="${f2(b.r)}" fill="${b.fill}"${b.stroke ? ` stroke="${b.stroke}" stroke-width="${f2(b.sw)}"` : ''}/>`));
   L.cells.forEach((c) => parts.push(`<rect x="${f2(c.x)}" y="${f2(c.y)}" width="${f2(c.w)}" height="${f2(c.h)}" fill="${c.fill}" stroke="${L.pal.grid}" stroke-width="${f2(L.rule)}"/>`));
@@ -1872,11 +2388,17 @@ function minWidthPt(spec = {}, profileOrSurface = 'worksheets') {
   if (chart.form === 'calculation') {
     // Every digit column at the width one handwritten digit needs where the
     // answer is written in, and the bleed the layout keeps clear.
-    const blank = chart.columns.some((c, i) => c !== '.' && chart.calculation.answer[i] === '');
+    const blank = chart.columns.some((c, i) => c !== '.' && chart.calculation.answer[i] === '') ||
+      (chart.calculation.partials || []).some((p) => p.cells[chart.columns.indexOf('O')] === '');
     const paper = profile.surface === 'worksheets' || profile.surface === 'stickin';
     const writeInPt = paper ? calcPaperColPt(profile)[0] : writeInFor(profile).colPt;
     const colPt = Math.max(COL_W * profile.minFontPt, blank ? writeInPt : 0);
-    return calculationUnits(chart).total * colPt + 2 * 1.5 + 1;
+    // A long multiplication's labels widen its left column, and the explained
+    // look's sentences stand beside it.
+    const long = longParts(chart, profile, paper);
+    const D = Math.min(hi, (colPt - CELL_INSET_OF_N * N) / textWidthEm('8', true));
+    const extra = long ? Math.max(0, long.labelW(D) - CALC_OP_W * colPt) + long.sideW(profile.minFontPt) : 0;
+    return calculationUnits(chart).total * colPt + extra + 2 * 1.5 + 1;
   }
   const units = unitsOf(chart);
   const writeIn = writeInFor(profile);
@@ -1919,4 +2441,5 @@ module.exports = {
   counterValue,
   labelledCounterGrid,
   counterGridCols,
+  longMultiplicationProgress,
 };

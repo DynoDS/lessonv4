@@ -500,3 +500,29 @@ test("no helper asks for more room than a page can ever give it", () => {
     );
   }
 });
+
+// ─── a given number in a number sentence is the box a child writes in ───────
+// A worked first line, "A ( −3 , 1 )", printed its two given numbers on tiles
+// as wide as their digits, narrower than the empty boxes of "B ( _ , _ )"
+// under it and the "1" narrower than the "−3" (Year 6 translation sheet, 14
+// October 2026). The teacher's ruling of 13 October: one box for one number.
+
+test("a given number in a number sentence is exactly as wide as the empty box beside or below it", () => {
+  const given = render("number-sentence", { terms: ["A (", { value: "−3" }, ",", { value: "1" }, ")"] });
+  const blank = render("number-sentence", { terms: ["B (", { blank: true, chars: 2 }, ",", { blank: true, chars: 2 }, ")"] });
+  const widths = (html, pattern) => [...html.matchAll(pattern)].map((m) => Number(m[1]));
+  const tiles = widths(given, /class="h-ns-boxed" style="width:([\d.]+)mm"/g);
+  const boxes = widths(blank, /class="h-ns-box" style="width:([\d.]+)mm"/g);
+  assert.equal(tiles.length, 2);
+  assert.deepEqual(tiles, boxes, "both given numbers take the empty box's width");
+  // The box's height too, so the given row and the empty row line up.
+  assert.match(css, /\.h-ns-boxed \{[^}]*height: max\([^;]*var\(--ns-tile-h\)\)/);
+  // A number longer than the box still gets the room its digits need.
+  const long = widths(render("number-sentence", { terms: [{ value: "4,000,000" }, "+", { blank: true, chars: 2 }] }), /class="h-ns-boxed" style="width:([\d.]+)mm"/g);
+  assert.ok(long[0] > boxes[0]);
+});
+
+test("beside a digit frame a given digit keeps the digit cell's width (the 4 October ruling)", () => {
+  const html = render("number-sentence", { terms: [{ value: "72" }, "−", { value: "2" }, { cells: 1 }, "=", { value: "4" }, { cells: 1 }] });
+  assert.doesNotMatch(html, /h-ns-boxed/);
+});

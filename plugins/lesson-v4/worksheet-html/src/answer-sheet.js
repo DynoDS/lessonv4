@@ -115,7 +115,9 @@ function longAnswerAdvisories(answerKey) {
 
 function pictureHtml(picture, where, problems) {
   try {
-    return `<div class="a-picture">${renderContent(picture, ANSWER_TEXT_MM)}</div>`;
+    // `showAnswers` tells a drawing that marks its own answers (the coordinate
+    // grid) that this is the teacher's page: a pupil sheet leaves them off.
+    return `<div class="a-picture">${renderContent({ ...picture, showAnswers: true }, ANSWER_TEXT_MM)}</div>`;
   } catch (error) {
     // The answer still prints, as words: a drawing that cannot be made at
     // column width never costs the teacher the key.

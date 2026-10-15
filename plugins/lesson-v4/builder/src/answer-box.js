@@ -21,11 +21,36 @@ const ANSWER_BOX_FONT_MAX = 28;
 // Keep the method-frame blank syntax and the row-end answer cue on one parser.
 // A run of underscores or a square is an empty write-in box. Other text stays
 // untouched so the method-frame renderer preserves its existing layout.
-function tokenizeWriteInContent(content) {
+function tokenizePlainWriteIn(content) {
   return String(content == null ? '' : content)
     .split(/(_{2,}|□)/)
     .filter((part) => part !== '')
     .map((part) => (/^(_{2,}|□)$/.test(part) ? { box: true } : { text: part }));
+}
+
+// A fraction with a part to find is one piece: `___/8` is a box on the bar
+// over an 8, not a box beside a loose "/8". A line used to be cut at every
+// blank before anything looked for a fraction, so the one fraction the class
+// had to finish was the only one on the board not written top and bottom
+// (stress test, 12 October 2026; the teacher, 13 October 2026: fractions
+// "anywhere" are top and bottom). `___/___` is a whole fraction to write.
+// `top` and `bottom` are the printed number, or null for the part to write.
+const BLANK_FRACTION =
+  /((?:_{2,}|□))\s?\/\s?((?:_{2,}|□)|\d{1,3})(?![\d/]|[.,]\d)|(?<![\d/.,])(\d{1,3})\s?\/\s?((?:_{2,}|□))/g;
+
+function tokenizeWriteInContent(content) {
+  const source = String(content == null ? '' : content);
+  const segs = [];
+  let at = 0;
+  for (const m of source.matchAll(BLANK_FRACTION)) {
+    segs.push(...tokenizePlainWriteIn(source.slice(at, m.index)));
+    const top = m[1] !== undefined ? null : m[3];
+    const lower = m[1] !== undefined ? m[2] : m[4];
+    segs.push({ frac: { top, bottom: /^\d/.test(lower) ? lower : null } });
+    at = m.index + m[0].length;
+  }
+  segs.push(...tokenizePlainWriteIn(source.slice(at)));
+  return segs;
 }
 
 // With answerBoxes enabled, the normal || reveal marker supplies the value for

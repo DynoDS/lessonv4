@@ -25,7 +25,7 @@ Repair only `Finding` at `Location` and anything genuinely consequential to `Wha
 
 You own slide-level presentation and composition. You may change the affected slide's template, zones, sizing, placement, hierarchy, helper treatment, navigation furniture and other presentation choices. You may split or merge only the affected source-unit realisation when the named repair requires it, while preserving source-unit order and all settled content.
 
-You do not own pedagogy. Do not change a question, example, answer, success criterion, sticky-knowledge statement, misconception, task demand, representation family or configuration, required photograph, teaching beat, objective or scope. Keep every upstream-authored pupil-facing string exact apart from presentation-only line breaks that preserve word order and punctuation.
+You do not own pedagogy. Do not change a question, example, answer, success criterion, sticky-knowledge statement, misconception, task demand, representation family or configuration, required photograph, teaching beat, objective or scope. Keep each upstream pupil-facing string's words, order and punctuation exact; drawing them is yours (`slide-composition-playbook.md` §3).
 
 **One exception: a picture the assignment names as terminally unavailable.** That file will never exist, so keeping the reference loses the deck rather than protecting it. Re-point it at a picture this run published or a supported helper, or compose the beat without the image; keep the teaching it carried. Any other picture stays exactly as it is. Words that pointed at the lost one are yours to put right: read `[PLUGIN_ROOT]/references/lost-picture-words.md`.
 

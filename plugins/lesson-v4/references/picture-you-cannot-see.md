@@ -24,11 +24,12 @@ Two things follow that are easy to get wrong.
 
 ## What to do, in this order
 
-**1. Make a fresh copy and look at that.** Write it to your scratchpad, never
-into the lesson folder:
+**1. Make a fresh copy and look at that.** Write it to your own scratch folder
+(the `SCRATCH_DIR` in your prompt, or `WORK_ROOT` for an image scout), never
+beside the lesson's pictures:
 
 ```
-python "[PLUGIN_ROOT]/scripts/picture_plain.py" copy --source "<the picture>" --output "<your scratchpad>/<name>.jpg"
+python "[PLUGIN_ROOT]/scripts/picture_plain.py" copy --source "<the picture>" --output "<your scratch folder>/<name>.jpg"
 ```
 
 Open that copy on its own, with no other picture in the same step, so a

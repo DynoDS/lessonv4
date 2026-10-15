@@ -4068,7 +4068,7 @@
    "present": [
     {
      "file": "agents/lesson-designer.md",
-     "text": "**Continuity:** Brief says continues prior → reuse prior SC, sticky, vocab, rep verbatim - no paraphrase. If brief signals change, audit together.",
+     "text": "**Continuity:** Brief says continues prior \u2192 reuse prior sticky, vocab, rep verbatim - no paraphrase. Prior SC: keep the method, the order and the taught words, and hold the wording to today's standard (next line). If brief signals change, audit together.",
      "section": {
       "heading": "## Before You Design Anything",
       "occurrence": 0,
@@ -4084,7 +4084,7 @@
    "present": [
     {
      "file": "agents/lesson-designer.md",
-     "text": "Where today continues it, reuse its `criteria.steps`, vocabulary definitions, sticky knowledge and representation word for word, because a reworded step reads to a child as a new rule.",
+     "text": "Where today continues it, reuse its vocabulary definitions, sticky knowledge and representation word for word, and carry on its method: the same steps in the same order, in the same taught words, because a reworded step reads to a child as a new rule. That reason holds for a list the teacher would put up, so first read the earlier `criteria.steps` against `teacher-voice.md` \u2192 Success criteria as you would a list you had just written. A list that passes is reused word for word. One that does not is rewritten to that standard and the rewrite is the list from today on: a Year 4 column addition list the teacher had rejected (`write a small 1`, six full sentences in one run) was copied word for word through the next three lessons, because each planner found it in the lesson before and nothing asked whether it was still wanted. Say in `design-decisions.md` which you did.",
      "section": {
       "heading": "## Before You Design Anything",
       "occurrence": 0,

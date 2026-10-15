@@ -610,6 +610,26 @@ function validateLesson(lesson, lessonDir) {
       if (!hasGreenHelper && !drawingReveals && !strings.some((s) => s.includes('||'))) {
         warnings.push(`slide ${n} ("${answerLabel}") looks like an answer slide but carries no "||" reveal marker anywhere, so the answers would render plain black at question size instead of answer green. On a labelled diagram put the marker inside the label ("1||North America"); a drawing that shows its answer (bars shaded, a chart filled in) is a reveal already. The one fair exception is a model-answer slide whose whole body IS the answer, where there is no question to reveal it against.`);
       }
+      // A line that still asks. The question's own card (`3/4 = ?/8`) was
+      // copied onto the answers slide with its question mark, above the
+      // answer in green everywhere else on the slide (Year 5 equivalent
+      // fractions, 13 October 2026). Only a `?` standing where a number goes
+      // is read, never the one that ends a sentence.
+      const MISSING_NUMBER = /(?:^|[\s=(×+\-÷<>])\?\/\d|\d\/\?(?![\w?])|=\s*\?\s*$|(?:^|[\s(])\?\s*[=×+\-÷]/;
+      const stillAsks = [];
+      (function scan(node) {
+        if (Array.isArray(node)) { node.forEach(scan); return; }
+        if (!node || typeof node !== 'object') return;
+        if (node.type === 'text') {
+          [node.value, node.text].forEach((line) => {
+            if (typeof line === 'string' && !line.includes('||') && MISSING_NUMBER.test(line)) stillAsks.push(line);
+          });
+        }
+        Object.keys(node).forEach((key) => { if (key !== 'decorations') scan(node[key]); });
+      })(slide);
+      stillAsks.forEach((line) => {
+        warnings.push(`slide ${n} ("${answerLabel}") still shows "${line}" with its question mark, so the answers slide asks the question again where the class looks for the answer. Write the answer in its place with the reveal marker ("3/4 = ||6/8" for "3/4 = ?/8"), and pair the two blocks with revealPair so the card keeps its size and place.`);
+      });
     }
   });
 

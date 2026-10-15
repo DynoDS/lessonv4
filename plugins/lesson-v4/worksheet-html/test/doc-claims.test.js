@@ -342,3 +342,22 @@ test("check-render draws the four widths the catalogue's preamble claims", () =>
       "change both together (build-catalogue.js, then npm run catalogue)"
   );
 });
+
+test("the measuring file the adaptation designer is shown is one the engine measures (adaptation-designer)", () => {
+  // The role file shows how side by side and one above another are written,
+  // because five designers in twenty lessons guessed `"helper": "row"` and read
+  // the engine's source to find the form (7 October 2026). An example the
+  // engine refuses would send the next one straight back there.
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const { needsContent } = require("../src/helpers");
+  const role = fs.readFileSync(
+    path.join(__dirname, "..", "..", "agents", "adaptation-designer.md"),
+    "utf8"
+  );
+  const shown = role.match(/```json\r?\n(\[\r?\n  \{ "row"[\s\S]*?)```/);
+  assert.ok(shown, "the role file no longer shows a measuring file with a row in it");
+  const entries = JSON.parse(shown[1]);
+  assert.ok(JSON.stringify(entries).includes('"stack"'), "the example no longer shows a stack");
+  for (const entry of entries) assert.ok(needsContent(entry).minWidthMm > 0);
+});

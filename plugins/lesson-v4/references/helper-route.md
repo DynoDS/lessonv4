@@ -31,6 +31,7 @@ Launch `helper-builder` with its bundled role file and exactly:
 ```text
 PLUGIN_ROOT: [literal verified PLUGIN_ROOT]
 WORKING_DIR: [WORKING_DIR]
+SCRATCH_DIR: [WORKING_DIR]/_scratch/[task_name] (yours alone: every throwaway file goes here, never the host's shared scratch folder)
 
 HELPERS: [count]
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import stat
 import sys
 from pathlib import Path
 
@@ -39,6 +40,19 @@ class RootError(ValueError):
     """Raised when an explicit plugin-root candidate is unusable."""
 
 
+class RootBlocked(RootError):
+    """Raised when this session was refused access to the candidate.
+
+    A sandboxed host (Codex on the teacher's computer) can refuse an ordinary
+    command the right to open the folder the plugin is installed in. That says
+    nothing about the package: the same check passes once the host grants the
+    command more access. It is reported apart from a missing or broken package
+    so the run can ask for that access once, where every other failure stops
+    the run (two Codex runs stopped on a healthy 4.2.318 install, 10 October
+    2026).
+    """
+
+
 def verify(candidate_text: str, *, source: bool = False) -> Path:
     candidate = Path(candidate_text).expanduser()
     if not candidate.is_absolute():
@@ -46,6 +60,10 @@ def verify(candidate_text: str, *, source: bool = False) -> Path:
 
     try:
         root = candidate.resolve(strict=True)
+    except PermissionError as exc:
+        raise RootBlocked(
+            f"this session was refused access to {candidate}: {exc}"
+        ) from None
     except OSError as exc:
         raise RootError(
             f"candidate cannot be resolved: {candidate}: {exc}"
@@ -56,7 +74,15 @@ def verify(candidate_text: str, *, source: bool = False) -> Path:
 
     for relative in REQUIRED_PACKAGE_PATHS:
         required = root / relative
-        if not required.is_file():
+        try:
+            present = stat.S_ISREG(required.stat().st_mode)
+        except PermissionError as exc:
+            raise RootBlocked(
+                f"this session was refused access to {required}: {exc}"
+            ) from None
+        except OSError:
+            present = False
+        if not present:
             raise RootError(f"required package path is missing: {required}")
 
     if source:
@@ -162,6 +188,9 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         root = verify(args[0], source=source)
+    except RootBlocked as exc:
+        print(f"{prefix}_BLOCKED: {exc}", file=sys.stderr)
+        return 3
     except RootError as exc:
         print(f"{prefix}_ERROR: {exc}", file=sys.stderr)
         return 2

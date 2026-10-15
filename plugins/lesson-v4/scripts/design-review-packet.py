@@ -509,7 +509,7 @@ def run_exact(command: list[str], label: str) -> str:
         result = subprocess.run(
             command,
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8", errors="replace", env={**os.environ, "PYTHONIOENCODING": "utf-8"},
         )
     except OSError as exc:
         raise PacketError(f"{label} could not run: {exc}") from exc
@@ -1762,6 +1762,9 @@ def build_do_beside_teach(design: dict) -> list[str]:
         declared = row.declaration_line()
         if declared:
             lines.append(f"- {declared}")
+        half = row.half_listener_line()
+        if half:
+            lines.append(f"- {half} Where they reach it, the beat is `guessable`.")
         lines.append("")
         count += 1
     if not count:

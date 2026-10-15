@@ -153,7 +153,7 @@ const PRIMITIVES = [
     note: 'A parametric teaching schematic comparing two model parachutes after a practical: exact 3:1 billowed-sheet widths, equal calculated cord lengths, identical loads and qualitative force arrows. All four surfaces draw it from parachute-forces-svg.js; the sheet and the stick-in pack joined on 13 September 2026.' },
   { id: 'polygon', depicts: 'data',         slides: 'polygon',         worksheets: 'shape',                          wall: 'polygon',         stickin: 'polygon',
     geometrySource: 'shared/visuals/polygon-svg.js',
-    note: 'One drawing since 13 September 2026: the board\'s named shapes with their symmetry teaching (every line, a candidate line, the fold, a verdict) and the sheet\'s measured sides and angles, which were two separate pictures. The sheet key is still `shape`, and its older single-shape spelling (type, labels, style) still draws. The symmetry maths stays in shared/visuals/polygon-symmetry.js.' },
+    note: 'One drawing since 13 September 2026: the board\'s named shapes with their symmetry teaching (every line, a candidate line, the fold, a verdict) and the sheet\'s measured sides and angles, which were two separate pictures. The sheet key is still `shape`, and its older single-shape spelling (type, labels, style) still draws. The symmetry maths stays in shared/visuals/polygon-symmetry.js. Since 13 October 2026 a rectilinear shape drawn from its corners can be split into numbered rectangles by a dashed line (parts), and any shape can have its edge or its inside picked out.' },
 
   // ── Other cross-engine figures (separate implementations per engine, not a single
   //    shared/visuals module, but the same concept the child should meet in each place).
@@ -182,7 +182,7 @@ const PRIMITIVES = [
     successCriteriaHelpers: [
       { key: 'plot-grid', mode: 'both', fullSize: { type: 'coordinate-grid', max: 3, route: [2, 2] }, inline: { treatment: 'simplified', spec: { cols: 3, rows: 3, numbers: false, route: [2, 2] } } }
     ],
-    note: 'The grid has two distinct uses, split by whether it is BLANK or PLOTTED. A BLANK numbered grid is a live practice/write-on surface: the child plots on it (stickin - a grid they cannot rule accurately by hand in a squared book). A PLOTTED/JOINED grid (points marked, optionally join:true into a shape) is a WORKED EXAMPLE - a plotted point or a joined shape on a numbered grid - which is exactly what a wall reference card shows, so wall added: the wall draws the plotted form (before this, coordinate lessons fell back to a geoboard, losing the axis numbers the whole unit turns on). Slides, worksheet, wall and stick-in uses draw from the one shared module shared/visuals/coordinate-grid-svg.js, including the across-then-up route used by the full-size model and its number-free Success Criteria treatment.' },
+    note: 'The grid has two distinct uses, split by whether it is BLANK or PLOTTED. A BLANK numbered grid is a live practice/write-on surface: the child plots on it (stickin - a grid they cannot rule accurately by hand in a squared book). A PLOTTED/JOINED grid (points marked, optionally join:true into a shape) is a WORKED EXAMPLE - a plotted point or a joined shape on a numbered grid - which is exactly what a wall reference card shows, so wall added: the wall draws the plotted form (before this, coordinate lessons fell back to a geoboard, losing the axis numbers the whole unit turns on). Slides, worksheet, wall and stick-in uses draw from the one shared module shared/visuals/coordinate-grid-svg.js, including the across-then-up route used by the full-size model and its number-free Success Criteria treatment. Grown on 7 October 2026 from a first-quadrant grid to a four-quadrant one (`min`), with whole `shapes`, a translated image and counted arrows, after a Year 6 translation lesson could not plot a negative coordinate on any grid the package had. The Success Criteria treatment is unchanged: across-then-up from the origin is the same movement in every quadrant. Since 13 October 2026 each surface tells the grid the size it prints at, and the grid sizes its axis numbers and letters for that surface, as large as one square holds; the board places it through content/shared-figure.js so it is drawn at the size it is shown.' },
   { id: 'point-route', depicts: 'data', slides: false, worksheets: false, wall: false, stickin: false,
     successCriteriaSource: 'shared/visuals/point-route-svg.js',
     successCriteriaHelpers: [
@@ -302,10 +302,15 @@ const PRIMITIVES = [
     geometrySource: 'shared/visuals/base-ten-blocks-svg.js' },
   { id: 'counter-group', depicts: 'data', slides: 'counter-group', worksheets: 'counter-group', wall: 'counter-group', stickin: 'counter-group',
     geometrySource: 'shared/visuals/counter-group-svg.js' },
+  { id: 'ten-frame', depicts: 'data', slides: 'ten-frame', worksheets: 'ten-frame', wall: 'ten-frame', stickin: 'ten-frame',
+    geometrySource: 'shared/visuals/ten-frame-svg.js',
+    note: 'Two rows of five boxes holding counters in up to two colours, empty for a child to fill, or as a pair for numbers to 20. Built 13 October 2026: until then a ten frame could only be drawn as a shaded-fraction grid of two rows of five, and three designers in one Year 1 number bonds lesson searched for "ten frame" and reported it missing (stress test, 7 October 2026). The fraction grid still draws as it did; this is the name and the picture a lesson uses when it means a ten frame.' },
   { id: 'ruler', depicts: 'data', slides: 'ruler', worksheets: 'ruler', wall: 'ruler', stickin: 'ruler',
     geometrySource: 'shared/visuals/ruler-svg.js' },
   { id: 'process-chain', depicts: 'data', slides: 'process-chain', worksheets: 'process-chain', wall: 'process-chain', stickin: 'process-chain',
     geometrySource: 'shared/visuals/process-chain-svg.js' },
+  { id: 'cycle', depicts: 'data', slides: 'cycle', worksheets: 'cycle', wall: 'cycle', stickin: 'cycle',
+    geometrySource: 'shared/visuals/cycle-svg.js' },
   { id: 'classification-key', depicts: 'data', slides: 'classification-key', worksheets: 'classification-key', wall: 'classification-key', stickin: 'classification-key',
     geometrySource: 'shared/visuals/classification-key-svg.js' },
   { id: 'digit-cards', depicts: 'data', slides: 'digit-cards', worksheets: 'digit-cards', wall: 'digit-cards', stickin: 'digit-cards',
@@ -380,8 +385,10 @@ const SUCCESS_CRITERIA_AUDIT = Object.freeze({
   'draw-box-row': { classification: 'unsuitable', reason: 'A tiny blank write-on strip gives no actionable cue.' },
   'base-ten-blocks': { classification: 'full-size', reason: 'The number of each block is the value being read.' },
   'counter-group': { classification: 'full-size', reason: 'The counters and their grouping are the value being read.' },
+  'ten-frame': { classification: 'full-size', reason: 'How many boxes are full and how many are empty is the number being read, and it changes with every question.' },
   ruler: { classification: 'full-size', reason: 'The scale and the measured length must match the question.' },
   'process-chain': { classification: 'full-size', reason: 'The stages and their order are content-specific.' },
+  cycle: { classification: 'full-size', reason: 'The stages, their order and the words beside the arrows are content-specific.' },
   'classification-key': { classification: 'full-size', reason: 'The questions and branches are the content.' }
 });
 

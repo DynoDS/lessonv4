@@ -24,6 +24,22 @@ test("a tall figure takes the whole page under its task, one copy between two", 
   assert.ok(laid.widthMm > 150, `the figure was printed ${laid.widthMm}mm wide, not grown to the page`);
 });
 
+// A task that says "using the key" needs the key on the paper: the board's
+// key goes when its slide does (the teacher, 11 October 2026).
+test("a piece's key prints in one plain line under its task, and only when it has one", async () => {
+  const text = {
+    visual: "annotated-text",
+    task: "Mark up the rest of the text, using the key.",
+    spec: { passage: "Dogs make good pets because they keep you company. On the other hand, they cost a lot to feed.", space: "annotate" },
+  };
+  const keyed = await laidFigure({ ...text, key: "box = a point  ·  underline = a reason" });
+  assert.match(keyed.pages[0], /using the key\.<\/div><div[^>]*>Key: box = a point/);
+  assert.match(keyed.pages[0], /annotated-text-frame/);
+  const plain = await laidFigure(text);
+  assert.doesNotMatch(plain.pages[0], /Key:/);
+  assert.ok(keyed.heightMm <= plain.heightMm, "the key took no room from the text beneath it");
+});
+
 test("a short wide figure prints two to a page with a line to trim between them", async () => {
   const laid = await laidFigure({ visual: "number-line", task: "Mark 45 on the line.", spec: { start: 0, end: 100, step: 10 } });
   assert.strictEqual(laid.perPage, 2);

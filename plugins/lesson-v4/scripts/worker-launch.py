@@ -205,6 +205,18 @@ def resolve(role: str, host: str) -> dict[str, str]:
         fields["read_instructions_with"] = (
             f'"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role {role} --page 1'
         )
+    # A Codex worker sets its own output limit on every command, and usually a
+    # small one. The reader's pages are sized for the host's ceiling (about
+    # 10,000 tokens), not for the worker's own figure, so in the three lessons
+    # of 10 and 11 October 2026 a worker that asked for 5,000 lost the middle of
+    # an 8,000-token page: 36 of 500 paged reads, in 22 of the 35 workers that
+    # used the reader. Nothing had told them how big a page is.
+    if host == "codex":
+        fields["full_reads"] = (
+            "On every command that reads your instructions, guidance or a lesson file, ask for "
+            "10000 tokens of output (max_output_tokens: 10000). Codex cuts the middle out of "
+            "anything longer than the command asked for, and one page of a paged read can be 8,000."
+        )
     return {
         **fields,
         "task_name": task_name_for(role),
@@ -253,7 +265,8 @@ def spec_command(args: argparse.Namespace) -> int:
     print(
         "Copy these fields verbatim into the launch. Where a role has "
         "read_instructions_with, its prompt says to read its instructions with that "
-        "command and each page it names, in place of the path alone. Append a run-specific suffix "
+        "command and each page it names, in place of the path alone. Where a role has "
+        "full_reads, its prompt carries that sentence as written. Append a run-specific suffix "
         "to task_name when one launch is not enough (image_scout_p1, "
         "lesson_designer_redesign_1); keep the role prefix so the launch stays "
         "auditable."

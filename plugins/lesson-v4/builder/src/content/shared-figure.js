@@ -43,7 +43,11 @@ const PX_PER_PT = 4;
 //                  zone never drives the picture to nothing
 //   bandKey        the zone field a row sets so every sibling reserves the
 //                  largest band any of them needs and all draw at one size
-const CAPTION = Object.freeze({ h: 0.86, hAnswer: 1.16, gap: 0.06, font: 28, fontAnswer: 26, maxShare: 0.6, bandKey: null });
+//   steady         the band is kept for a `label` that is there but empty, and
+//                  the caption sits directly under the picture, so a question
+//                  slide (`"label": ""`) and its answers slide (`"label":
+//                  "||6 and 4"`) place the picture identically
+const CAPTION = Object.freeze({ h: 0.86, hAnswer: 1.16, gap: 0.06, font: 28, fontAnswer: 26, maxShare: 0.6, bandKey: null, steady: false });
 
 // type -> the shared module that draws it, and a plain name for the marker a
 // slide shows if a picture could not be made. `caption` (an object, possibly
@@ -69,6 +73,7 @@ const FIGURES = {
   ruler: { module: require('../../../shared/visuals/ruler-svg'), name: 'ruler' },
   timeline: { module: require('../../../shared/visuals/timeline-svg'), name: 'timeline' },
   'process-chain': { module: require('../../../shared/visuals/process-chain-svg'), name: 'process chain' },
+  cycle: { module: require('../../../shared/visuals/cycle-svg'), name: 'cycle' },
   'classification-key': { module: require('../../../shared/visuals/classification-key-svg'), name: 'classification key' },
   'concept-map': { module: require('../../../shared/visuals/concept-map-svg'), name: 'concept map' },
   'annotated-text': { module: require('../../../shared/visuals/annotated-text-svg'), name: 'annotated text' },
@@ -88,12 +93,24 @@ const FIGURES = {
   // match the triangle and angle captions so a mixed row shares a baseline.
   polygon: { module: require('../../../shared/visuals/polygon-svg'), name: 'shape', caption: { bandKey: 'polygonLabelBandH' } },
   'translation-grid': { module: require('../../../shared/visuals/translation-grid-svg'), name: 'translation grid' },
+  // The coordinate grid is told its zone, so its axis numbers and letters are
+  // sized for the board and the picture is made at the size it is shown. It
+  // used to be drawn once at 700 pixels before any zone was known and
+  // stretched, which left a ten-square grid's numbers at 8 to 9pt and its
+  // diagonals soft (stress test, 7 October 2026).
+  'coordinate-grid': { module: require('../../../shared/visuals/coordinate-grid-svg'), name: 'coordinate grid' },
   'area-grid': { module: require('../../../shared/visuals/area-grid-svg'), name: 'area grid' },
   'comparison-slot': { module: require('../../../shared/visuals/comparison-svg'), name: 'comparison slot' },
   'place-value-chart': { module: require('../../../shared/visuals/place-value-chart-svg'), name: 'place value chart' },
   'place-value-mini': { module: require('../../../shared/visuals/place-value-mini-svg'), name: 'place value picture' },
   'base-ten-blocks': { module: require('../../../shared/visuals/base-ten-blocks-svg'), name: 'base-ten blocks' },
   'counter-group': { module: require('../../../shared/visuals/counter-group-svg'), name: 'counters' },
+  // A ten frame's `label` ("(a)", "||6 and 4 make 10") is the board's typed
+  // caption, as it was when a ten frame was drawn as a fraction grid. One band
+  // for a plain caption and an answer (two lines of "(a) 8 and 2 make 10" in a
+  // third of a row), so an answers slide that adds counters and a green
+  // caption leaves the frame where the question had it.
+  'ten-frame': { module: require('../../../shared/visuals/ten-frame-svg'), name: 'ten frame', caption: { h: 0.9, hAnswer: 0.9, font: 26, fontAnswer: 26, steady: true } },
   'part-whole-model': { module: require('../../../shared/visuals/part-whole-model-svg'), name: 'part-whole model' },
   pyramid: { module: require('../../../shared/visuals/pyramid-svg'), name: 'pyramid' },
   'mult-grid': { module: require('../../../shared/visuals/mult-grid-svg'), name: 'multiplication grid' },
@@ -104,8 +121,8 @@ function captionFor(type, data) {
   const row = FIGURES[type];
   if (!row || !row.caption) return null;
   const label = data && data.label != null ? String(data.label) : '';
-  if (!label) return null;
   const c = { ...CAPTION, ...row.caption };
+  if (!label && !(c.steady && data && data.label != null)) return null;
   const answer = label.includes('||');
   return { label, answer, c, natural: answer ? c.hAnswer : c.h };
 }
@@ -180,19 +197,29 @@ function build(type, zone, data) {
   // nothing; a chart with no clean exchange in it draws as it always did.
   const overrides = type === 'place-value-chart' ? { pairExchangeMarks: true } : undefined;
   const profile = profileFor('slides', { widthPt: box.w * 72, heightPt: box.h * 72, overrides });
-  const built = module.tightSvg(data, profile);
-  return { box, inner, band, cap, built, key: module.cacheKey(data, profile) };
+  // A clock in a row leaves the room its neighbours' readout or minute ring
+  // takes, so the row's faces are one size (row.js).
+  const spec = type === 'clock' && zone.clockRowReserve ? { ...data, reserve: zone.clockRowReserve } : data;
+  const built = module.tightSvg(spec, profile);
+  // A steady caption belongs to its picture: the two are centred as one block,
+  // so the words sit under the frame and not at the foot of a tall card.
+  if (cap && cap.c.steady && band > 0) {
+    const h = Math.min(box.h, built.h / 72);
+    box.y += (box.h - h) / 2;
+    box.h = h;
+  }
+  return { box, inner, band, cap, built, key: module.cacheKey(spec, profile) };
 }
 
 function drawCaption(slide, laid) {
   const { cap, band, inner, box } = laid;
-  if (!cap || band <= 0.05) return;
+  if (!cap || band <= 0.05 || !cap.label) return;
   slide.addText(splitAnswerRuns(cap.label, cap.answer), {
     x: inner.x, y: box.y + box.h + cap.c.gap,
     w: inner.w, h: Math.max(0.1, band - cap.c.gap),
     fontFace: FONT, fontSize: cap.answer ? cap.c.fontAnswer : cap.c.font, color: COLOURS.body,
     bold: cap.answer,
-    align: 'center', valign: 'middle', margin: 0, fit: FIT
+    align: 'center', valign: cap.c.steady ? 'top' : 'middle', margin: 0, fit: FIT
   });
 }
 

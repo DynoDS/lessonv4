@@ -41,6 +41,17 @@ OPEN_WEB_SOURCE = "web"
 AI_PROMPT_FIELDS = {"physical_state", "must_avoid", "text_rule", "composition"}
 PROMPT_USES = {"slide", "worksheet", "both"}
 STYLE_RULE = "photorealistic, generic, classroom-suitable, no decorative extras"
+# Said to the generator on every picture, because no designer should have to
+# remember it. On 12 October 2026 six real things were made without these lines
+# and each came back convincing with small facts invented: a museum card and
+# catalogue number beside a fire bucket, a royal cypher fifty years late, a
+# gilt inscription on a portrait. With them, none did.
+TRUTH_RULE = (
+    "Invent nothing. Show what is described above and only what is certain to be true of it. "
+    "A detail you are unsure of is left out or kept too plain to be wrong. "
+    "Nothing in the picture claims where the thing is kept, who made it or when: "
+    "no museum case, catalogue card, nameplate, caption, inscription or signature."
+)
 
 
 class AssignmentError(ValueError):
@@ -158,7 +169,8 @@ def render_prompt(photo: dict) -> str:
         f"MUST AVOID:\n{avoid}\n\n"
         f"TEXT RULE:\n{prompt['text_rule']}\n\n"
         f"COMPOSITION:\n{prompt['composition']}\n\n"
-        f"STYLE:\n{STYLE_RULE}"
+        f"STYLE:\n{STYLE_RULE}\n\n"
+        f"TRUTH:\n{TRUTH_RULE}"
     )
 
 def avoid_list(photo: dict) -> list[str]:
@@ -329,6 +341,26 @@ def select_expected(photos: list[dict], expected_filenames) -> list[dict]:
     return chosen
 
 
+def batch_stem(prefix: str, requirements_path: Path) -> str:
+    """The start of every batch name in one wave: `p`, `a`, or `w9-`.
+
+    Phase 2 and the early adaptation wave each compile once a run, so `p1` and
+    `a1` are theirs alone. A supplemental wave can compile more than once (a
+    worksheet top-up, then a lost-picture wave), and each batch name decides
+    the scout's work root and result folder. On 7 October 2026 a Year 1 plants
+    run compiled `w1` and `w2` twice, the second wave pointed at the first
+    wave's folders, and the old ones had to be moved aside by hand. The wave
+    number is read from the snapshot the wave compiles, `photo-requirements-w-N.json`,
+    so wave 9 owns `w9-1` and wave 10 owns `w10-1`. The compiler and its
+    validator both name batches through here, so they cannot disagree.
+    """
+    if prefix == "w":
+        match = re.fullmatch(r"photo-requirements-w-(\d+)\.json", requirements_path.name)
+        if match:
+            return f"w{int(match.group(1))}-"
+    return prefix
+
+
 def no_generator_schedule(photo: dict, sources: list[str]) -> list[dict]:
     """The whole real ladder, for an AI-fallback picture on a host that cannot generate.
 
@@ -397,10 +429,9 @@ def source_schedule(photo: dict, generation_available: bool = True) -> list[dict
     # picture", because the rung that answers first is the only one that gets
     # paid for.
     #
-    # Openverse earns a rung only where a real photograph is the sole
-    # acceptable answer. When `fallback_action` is `ai`, a faithful generated
-    # picture teaches the same thing by the contract's own admission, so
-    # another real search before generation is a rung nobody needed.
+    # Where a real photograph is the sole acceptable answer, Openverse joins
+    # the designer's own profile. When `fallback_action` is `ai` the picture
+    # gets one second library and is then made (see the branch below).
     if photo["fallback_action"] != "ai":
         ladder = {"source": LADDER_SOURCE, "round": 1, "candidate_count": count}
         if photo["acquisition_mode"] == "authentic-real":
@@ -413,38 +444,33 @@ def source_schedule(photo: dict, generation_available: bool = True) -> list[dict
         else:
             steps.append(ladder)
     else:
-        # A standby rung, walked only when every rung above it was UNREACHABLE.
+        # A second library before the picture is made.
         #
-        # The paragraph above is right about a search that RAN and came back
-        # empty: the contract has already said a generated picture teaches the
-        # same thing, so paying for another search first buys nothing. It is
-        # wrong about a search that never happened. On 19 September 2026 both
-        # pictures in a Year 4 maths lesson were `ordinary-real` with an AI
-        # fallback, so each compiled to a single Unsplash rung; Unsplash was
-        # unreachable on the call and on its authorised retry (`[WinError 10013]`,
-        # a socket forbidden by the host), and both were generated. Nothing was
-        # ever searched, so "real photographs do not have this" was never
-        # established - and "library books" is a picture Unsplash has thousands
-        # of. On a host where that block is permanent, every ordinary-real
-        # picture in every lesson silently becomes AI for ever.
+        # Until 13 October 2026 this rung was a standby, marked `standby_only`
+        # and walked only when the rung above it was unreachable (the 19
+        # September 2026 lesson whose two photographs were both generated
+        # because a blocked socket meant nothing was ever searched). The
+        # reasoning was cost: a second search is another inspection pass, and
+        # the contract already allows a generated picture.
         #
-        # `standby_only` is what keeps the cost argument intact: the scout may
-        # only walk this rung when an earlier one recorded a transport failure
-        # that survived its retry, or a spent quota (`rate_limit`, never
-        # retried), which is the outage `step_stayed_unreachable`
-        # in validate-image-scout.py already knows how to recognise and accept.
-        # On a healthy run the rung above completes and this one is never
-        # touched, so it costs nothing at all.
-        standby = next(
+        # The Codex lessons of 10 and 11 October 2026 measured the other side.
+        # A look in a second library took about 30 seconds a picture and making
+        # one took nearly two minutes and spends the teacher's allowance, and
+        # the scouts were walking the standby anyway, because one instruction
+        # said to skip it and another said to generate only after every
+        # compiled step. The check then accepted a photograph taken from it and
+        # refused a scout that looked and took nothing. The teacher's ruling:
+        # second library first, held to the same standard as any photograph,
+        # and the picture is made when nothing clean and right is there.
+        #
+        # So it is an ordinary step. It also still covers the outage it was
+        # first written for, because a rung that stayed unreachable is walked
+        # past to this one.
+        second = next(
             (src for src in (sources[0], LADDER_SOURCE) if src != steps[-1]["source"]),
             LADDER_SOURCE,
         )
-        steps.append({
-            "source": standby,
-            "round": 1,
-            "candidate_count": count,
-            "standby_only": True,
-        })
+        steps.append({"source": second, "round": 1, "candidate_count": count})
 
     # The open web needs the scout's own search before this script can fetch
     # anything, so it is a model turn whichever way round it goes. It stays
@@ -601,6 +627,16 @@ def build_assignment(requirements_path: Path, photos: list[dict], batch_id: str,
     return assignment
 
 
+def result_folder(working_dir: Path, batch_id: str) -> None:
+    """Make the folder the run tells this batch's scout to write its result in.
+
+    The run names `picture-results/<batch id>/result.json` and nothing made the
+    folder, so a scout whose file tool does not create folders had its first
+    write and its first check fail (11 October 2026) before it made one by hand.
+    """
+    (working_dir / "picture-results" / batch_id).mkdir(parents=True, exist_ok=True)
+
+
 def write_json_immutable(path: Path, value: dict) -> None:
     immutable_write(path, (json.dumps(value, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
 
@@ -610,6 +646,7 @@ def compile_command(args) -> int:
     requirements = read_json(requirements_path, "requirements")
     photos = select_expected(validate_requirements(requirements), args.expected_filename)
     prefix = args.expected_prefix
+    stem = batch_stem(prefix, requirements_path)
     output_dir = Path(args.output_dir).resolve()
     working_dir = Path(args.working_dir).resolve()
     batches = pack_batches(photos)
@@ -617,13 +654,14 @@ def compile_command(args) -> int:
     generation_available = generation == "available"
     manifest_rows = []
     for number, batch in enumerate(batches, 1):
-        batch_id = f"{prefix}{number}"
+        batch_id = f"{stem}{number}"
         assignment_path = (output_dir / f"{batch_id}.json").resolve()
         assignment = build_assignment(
             requirements_path, batch, batch_id, prefix, output_dir, working_dir,
             generation_available=generation_available,
         )
         write_json_immutable(assignment_path, assignment)
+        result_folder(working_dir, batch_id)
         manifest_rows.append({
             "batch_id": batch_id,
             "assignment": str(assignment_path),
@@ -748,6 +786,7 @@ def repair_command(args) -> int:
         repaired["image_generation"] = assignment["image_generation"]
     repaired["repair"] = repair
     write_json_immutable(output, repaired)
+    result_folder(Path(args.working_dir).resolve(), args.batch_id)
     summary = {"schema_version": 2, "kind": "picture-repair-slice", "assignment": str(assignment_path), "output": str(output), "fault_sha256": fault_hash, "previous_receipt_sha256": receipt_hash, "additional_real_searches": 1}
     write_json_immutable(Path(args.summary_output).resolve(), summary)
     print(f"PICTURE_REPAIR_ASSIGNMENT_OK: {output}")

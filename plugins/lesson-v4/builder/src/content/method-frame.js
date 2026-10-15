@@ -25,6 +25,7 @@
 
 const { FONT, COLOURS, FIT } = require('../styles');
 const { tokenizeWriteInContent } = require('../answer-box');
+const { answerPieces } = require('./method-frame-answers');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
 const PANEL_PAD       = 0.14;   // inches, inside the frame panel
@@ -56,6 +57,15 @@ const CHAR_W_FACTOR   = 0.66;   // estimated glyph width as a fraction of font s
 const SEG_GAP_FACTOR  = 0.10;   // gap between segments as a fraction of font size (pt)
 const BOX_W_FACTOR    = 1.55;   // write-in box width as a multiple of font size (pt) — room for 2–3 digits
 const BOX_H_FACTOR    = 1.45;   // write-in box height as a multiple of font size (pt)
+// A fraction with a part to write (answer-box.js): the box sits on the bar. Its
+// box is a little shallower than a line's own box, so a line holding one costs
+// the frame as little height as it can; a teacher's pen needs less room on the
+// board than a child's pencil on paper.
+const FRAC_BOX_H_FACTOR  = 1.15;  // a fraction's write-in box, as a multiple of font size
+const FRAC_DIGIT_FACTOR  = 1.0;   // the printed part's own line
+const FRAC_TEXT_BOX_FACTOR = 1.4; // the text box that holds the printed part
+const FRAC_BAR_GAP_FACTOR = 0.12; // bar to what sits above and below it
+const FRAC_TALL_FACTOR   = 2.0;   // one tall box for a whole fraction (Years 5 and 6)
 const BOX_FILL        = 'FFFFFF';
 const BOX_LINE        = '444444';
 const BOX_LINE_W      = 1.25;   // pt
@@ -73,7 +83,7 @@ function lineWidth(segs, font, boxW, segGap) {
   let w = 0;
   segs.forEach((seg, i) => {
     if (i > 0) w += segGap;
-    if (seg.box) w += boxW;
+    if (seg.box || seg.frac) w += boxW;
     else w += segTextW(seg.text, font);
   });
   return w;
@@ -86,17 +96,30 @@ function lineWidth(segs, font, boxW, segGap) {
 // marker also says where the working ends. Without a box or a marker, a
 // line's text up to its last `=` is working and the rest is the answer, so a
 // filled frame keeps its answers in the same column as a blank one's boxes.
-function splitLead(segs) {
+//
+// The marker says where the first answer starts, not where an answer ends, so
+// a line that knows what its question slide asked (`asked`, set before the
+// slides are drawn: method-frame-answers.js) colours only what stands where a
+// box stood: `4 × ||2 = 8` asked as `4 × ___ = 8` prints the given `= 8` black.
+function splitLead(segs, asked) {
   const only = segs.length === 1 && !segs[0].box ? String(segs[0].text) : null;
   const marker = only ? only.indexOf('||') : -1;
   if (marker !== -1) {
+    const pieces = asked ? answerPieces(asked, only) : null;
+    if (pieces) {
+      const first = pieces.findIndex((piece) => piece.answer);
+      return {
+        lead: first > 0 ? [{ text: pieces.slice(0, first).map((piece) => piece.text).join(' ') }] : [],
+        tail: pieces.slice(first)
+      };
+    }
     const work = only.slice(0, marker).trim();
     return {
       lead: work ? [{ text: work }] : [],
       tail: [{ text: only.slice(marker + 2).trim(), answer: true }]
     };
   }
-  let cut = segs.findIndex((seg) => seg.box);
+  let cut = segs.findIndex((seg) => seg.box || seg.frac);
   if (cut === -1) {
     const text = only;
     const eq = text ? text.lastIndexOf('=') : -1;
@@ -146,6 +169,29 @@ const STEP_FILL       = '00B050';
 const STEP_D_FACTOR   = 1.15;   // step circle diameter as a multiple of font size
 const STEP_GAP        = 0.12;   // inches between the step circle and the label
 
+// A whole fraction to write is a box over a box with the bar between for a
+// younger class and one tall box for an older one. The teacher's line (13
+// October 2026): Years 1 to 4 are younger. build.js says which year the deck
+// is for; a deck with no year group, or a frame measured outside a build,
+// takes the two boxes, the form that always reads as a fraction. A frame that
+// states its own `fractionBlank` ("boxes" or "tall") keeps it.
+let deckFractionBlank = 'boxes';
+function setYearGroup(yearGroup) {
+  const year = /([1-6])\s*$/.exec(String(yearGroup == null ? '' : yearGroup).trim());
+  deckFractionBlank = year && Number(year[1]) >= 5 ? 'tall' : 'boxes';
+}
+function tallBox(seg, data) {
+  const whole = seg.frac.top === null && seg.frac.bottom === null;
+  return whole && (data.fractionBlank || deckFractionBlank) === 'tall';
+}
+
+// How tall a fraction with a part to write stands, in inches at this size.
+function fractionHeight(seg, font, data) {
+  if (tallBox(seg, data)) return (FRAC_TALL_FACTOR * font) / 72;
+  const part = (value) => (value === null ? FRAC_BOX_H_FACTOR : FRAC_DIGIT_FACTOR);
+  return ((part(seg.frac.top) + part(seg.frac.bottom) + 2 * FRAC_BAR_GAP_FACTOR) * font) / 72;
+}
+
 function drawMethodFrame(pptx, slide, zone, data) {
   const { textBoxWidthIn } = require('../glyph-width');
   const lines = Array.isArray(data.lines) ? data.lines : [];
@@ -166,7 +212,7 @@ function drawMethodFrame(pptx, slide, zone, data) {
       label: String((l && l.label) || ''),
       step: l && Number.isFinite(l.step) ? l.step : i + 1,
       segs,
-      ...splitLead(segs)
+      ...splitLead(segs, l && l.asked)
     };
   });
 
@@ -201,7 +247,8 @@ function drawMethodFrame(pptx, slide, zone, data) {
       const extent = stacked
         ? Math.max(labelW + labelGap, leadW)
         : labelW + (labelW ? labelGap : 0) + leadW;
-      const rowH = Math.max(boxH, lineCount * lineH) + padH;
+      const tallest = t.segs.reduce((h, seg) => (seg.frac ? Math.max(h, fractionHeight(seg, font, data)) : h), boxH);
+      const rowH = Math.max(tallest, lineCount * lineH) + padH;
       return { labelLines, labelW, leadW, rowH, stacked, extent };
     });
     const answerX = rows.reduce((m, r) => Math.max(m, r.extent), 0);
@@ -314,7 +361,41 @@ function drawMethodFrame(pptx, slide, zone, data) {
       const segY = row.stacked ? midY : rowY;
       const segH = row.stacked ? lineH : rowH;
       const boxMid = row.stacked ? midY + lineH / 2 : midY;
-      if (seg.box) {
+      if (seg.frac) {
+        const fracH = fractionHeight(seg, font, data);
+        const box = (y, h) => slide.addShape(pptx.shapes.RECTANGLE, {
+          x: cx, y, w: m.boxW, h,
+          fill: { color: BOX_FILL },
+          line: { color: BOX_LINE, width: BOX_LINE_W }
+        });
+        if (tallBox(seg, data)) {
+          box(boxMid - fracH / 2, fracH);
+        } else {
+          const gap = (FRAC_BAR_GAP_FACTOR * font) / 72;
+          const partH = (value) => ((value === null ? FRAC_BOX_H_FACTOR : FRAC_DIGIT_FACTOR) * font) / 72;
+          const part = (value, y) => {
+            if (value === null) { box(y, partH(value)); return; }
+            // The text box is a full line tall, centred on the digit's own
+            // slot: a box only as tall as the digit reads as too small to hold
+            // a line, and the spare above and below is empty.
+            const lineBox = (FRAC_TEXT_BOX_FACTOR * font) / 72;
+            slide.addText(String(value), {
+              x: cx, y: y + partH(value) / 2 - lineBox / 2, w: m.boxW, h: lineBox,
+              fontFace: FONT, fontSize: font, bold: true,
+              color: COLOURS.body, align: 'center', valign: 'middle', margin: 0, fit: FIT, wrap: false
+            });
+          };
+          const top = boxMid - fracH / 2;
+          const barY = top + partH(seg.frac.top) + gap;
+          part(seg.frac.top, top);
+          slide.addShape(pptx.shapes.LINE, {
+            x: cx - 0.03, y: barY, w: m.boxW + 0.06, h: 0,
+            line: { color: COLOURS.body, width: Math.max(1.25, font * 0.07) }
+          });
+          part(seg.frac.bottom, barY + gap);
+        }
+        cx += m.boxW + m.segGap;
+      } else if (seg.box) {
         slide.addShape(pptx.shapes.RECTANGLE, {
           x: cx, y: boxMid - m.boxH / 2, w: m.boxW, h: m.boxH,
           fill: { color: BOX_FILL },
@@ -343,4 +424,4 @@ function methodFrameFont(zone, data) {
   return drawMethodFrame({ shapes: {} }, { addShape: noop, addText: noop, addImage: noop }, zone, data);
 }
 
-module.exports = { drawMethodFrame, methodFrameFont };
+module.exports = { drawMethodFrame, methodFrameFont, setYearGroup };

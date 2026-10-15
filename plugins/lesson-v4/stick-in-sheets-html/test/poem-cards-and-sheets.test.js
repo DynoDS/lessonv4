@@ -59,7 +59,7 @@ test("a stanza card keeps its own lines, each on one printed line, when the set 
   const html = pageDivs[0];
   assert.match(html, /A grey heron waits,<br>standing still on one long leg\.<br>Snap! It has the fish\./);
   // Filled: the cards print larger than the standard 12pt.
-  const sizes = [...html.matchAll(/font-size:([\d.]+)pt;color/g)].map((m) => Number(m[1]));
+  const sizes = [...html.matchAll(/font-size:([\d.]+)pt;line-height:[\d.]+mm;color/g)].map((m) => Number(m[1]));
   assert.ok(Math.max(...sizes) > 12, `cards printed at ${Math.max(...sizes)}pt, not grown to the page`);
 });
 
@@ -69,7 +69,7 @@ test("printed cards carry the letters the board gives the same cards", () => {
   const { kits, pageDivs } = buildKits([stanzaKit()], 32, dir);
   assert.deepEqual(kits[0].cards.map((c) => c.letter), ["A", "B", "C", "D", "E", "F"]);
   for (const letter of "ABCDEF") {
-    assert.match(pageDivs[0], new RegExp(`font-weight:bold;font-size:\\d+pt;margin-bottom:1\\.5mm">${letter}<`));
+    assert.match(pageDivs[0], new RegExp(`data-part="letter" style="font-weight:bold;font-size:\\d+pt;[^"]*">${letter}<`));
   }
 });
 

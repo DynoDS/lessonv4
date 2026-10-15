@@ -351,5 +351,66 @@ class TheStampIsWhatThePagesWereDrawnFromTests(unittest.TestCase):
         self.assertNotIn("SLIDE_ROOM_PAGES_ARE_OLDER", said)
 
 
+class TheStampIsTheDeckNotHowItWasSavedTests(unittest.TestCase):
+    """The builder reads 1.0 and 1 as the same number and draws the same page.
+    On 7 October 2026 two decorators added their drawings by saving the deck
+    through JavaScript, which writes 1.0 as 1; the stamp changed with no slide
+    touched, and the picture check told them the deck had moved and every
+    drawing had to be placed again (Year 2 noun phrases, Year 5 perimeter).
+    """
+
+    AS_DESIGNED = {"slides": [{"title": "Area", "zones": [{"share": 1.0}, {"share": 3.0}, {"share": 0.5}]}]}
+    SAVED_AGAIN = {"slides": [{"title": "Area", "zones": [{"share": 1}, {"share": 3}, {"share": 0.5}]}]}
+    RESIZED = {"slides": [{"title": "Area", "zones": [{"share": 1.5}, {"share": 3.0}, {"share": 0.5}]}]}
+
+    def stamp(self, named, kept=None):
+        return TheStampIsWhatThePagesWereDrawnFromTests.stamp(self, named, kept)
+
+    def checker(self):
+        import importlib.util
+
+        script = ROOT / "scripts" / "check-optional-pictures.py"
+        spec = importlib.util.spec_from_file_location("check_optional_pictures", script)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        return module
+
+    def test_the_two_files_are_saved_differently(self):
+        # Otherwise the tests below would pass for no reason.
+        self.assertIn("1.0", json.dumps(self.AS_DESIGNED))
+        self.assertNotIn("1.0", json.dumps(self.SAVED_AGAIN))
+
+    def test_a_whole_number_saved_without_its_point_is_the_same_deck(self):
+        _, designed = self.stamp(self.AS_DESIGNED)
+        said, saved_again = self.stamp(self.SAVED_AGAIN, kept=self.AS_DESIGNED)
+        self.assertEqual(saved_again, designed)
+        self.assertNotIn("SLIDE_ROOM_PAGES_ARE_OLDER", said)
+        _, alone = self.stamp(self.SAVED_AGAIN)
+        self.assertEqual(alone, designed)
+
+    def test_a_number_that_really_changed_is_still_a_different_deck(self):
+        _, designed = self.stamp(self.AS_DESIGNED)
+        said, resized = self.stamp(self.RESIZED, kept=self.AS_DESIGNED)
+        self.assertEqual(resized, designed)
+        self.assertIn("SLIDE_ROOM_PAGES_ARE_OLDER", said)
+        _, alone = self.stamp(self.RESIZED)
+        self.assertNotEqual(alone, designed)
+
+    def test_the_picture_check_stamps_a_deck_exactly_as_the_measurement_does(self):
+        # Two scripts work the stamp out, one writing it and one comparing it.
+        check = self.checker()
+        for deck in (self.AS_DESIGNED, self.SAVED_AGAIN, self.RESIZED):
+            with self.subTest(deck=deck):
+                _, measured = self.stamp(deck)
+                self.assertEqual(check.composition_fingerprint(deck), measured)
+
+    def test_the_picture_check_accepts_the_deck_saved_again_and_refuses_a_moved_one(self):
+        check = self.checker()
+        _, designed = self.stamp(self.AS_DESIGNED)
+        self.assertEqual(check.composition_fingerprint(self.SAVED_AGAIN), designed)
+        self.assertNotEqual(check.composition_fingerprint(self.RESIZED), designed)
+
+
 if __name__ == "__main__":
     unittest.main()

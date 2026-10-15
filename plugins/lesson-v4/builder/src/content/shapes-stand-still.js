@@ -14,6 +14,12 @@
 // layout: the rule a labelled photograph already follows (label-diagram.js,
 // standStillGroups). A slide that gives the shape a different slot or a
 // different amount of room places it afresh, and shares nothing.
+//
+// The same goes for the parts a shape is split into to find its area. The
+// answers slide adds the dashed line, the numbered parts and sometimes a
+// bracketed length to the shape the question showed, and a length written
+// outside the shape, or sums listed under it, take room too. So every shape is
+// also told the parts any slide of its group draws (`roomForParts`).
 
 const { textWidthEm } = require('../../../shared/text/comic-glyph-width');
 
@@ -51,6 +57,18 @@ function keepShapesStill(lesson) {
           const label = text == null ? '' : String(text);
           if (textWidthEm(label, true) > textWidthEm(widest[side] || '', true)) widest[side] = label;
         });
+      }
+      const parts = new Map();
+      for (const member of members) {
+        const own = (member.shapes[i] && member.shapes[i].parts) || [];
+        (Array.isArray(own) ? own : []).forEach((part) => {
+          if (part && typeof part === 'object') parts.set(JSON.stringify(part), part);
+        });
+      }
+      if (parts.size) {
+        for (const member of members) {
+          if (member.shapes[i]) member.shapes[i].roomForParts = [...parts.values()];
+        }
       }
       if (!widest.some(Boolean)) continue;
       const roomFor = Array.from(widest, (label) => label || '');

@@ -1164,7 +1164,7 @@
     },
     {
      "file": "agents/lesson-designer.md",
-     "text": "A third kind of printed piece is yours to choose here, and it is not a stick-in: **the printed version of a sort children do at tables.** Every sort and every order is printed as well as shown on the board, so the teacher chooses on the day (1 October 2026), and a sort placed on whiteboards from the board is a different activity from the same items in children's hands: they can change their mind, and the class is off the carpet, which is the calm move to table work the teacher asked for after a Year 4 history lesson spent three whiteboard sorts on the carpet (15 September 2026). An order is a sort too, its groups the places (`1st`, `2nd`, `3rd`...), with one more place when a card never happened, so write a story children put in order as a sort; a Shaftesbury design left its story ordering as loose boxes, and the pack had nothing it could print. Choose the form: `sheet` by default, every item large on one uncut page for children to mark (the place written in a box, or a tick in a table when words are sorted into a few groups), which costs the teacher nothing but printing; `cards` only when moving the items round is how children decide. The sort's `taskStructure` carries `handling` (`output-template.md` → Source-unit contract owns the shape: who shares a set, with a group count stated rather than guessed, and a one-line `where` for the teacher), its `levels.printed` names form `sort`, the unit is a stick-in `candidate`, and the orientation says what to prepare. The printed sort carries the unit's own items, headings and key, so the sort rules above apply to what children will hold, and its `acceptanceCondition` carries any second placement you would accept. It is part of the lesson, not a bonus sheet: the run cannot close complete without it, and the sort is not repeated on the lesson's worksheet.",
+     "text": "A third kind of printed piece is yours to choose here, and it is not a stick-in: **the printed version of a sort children do at tables.** Every sort and every order is printed as well as shown on the board, so the teacher chooses on the day (1 October 2026), and a sort placed on whiteboards from the board is a different activity from the same items in children's hands: they can change their mind, and the class is off the carpet, which is the calm move to table work the teacher asked for after a Year 4 history lesson spent three whiteboard sorts on the carpet (15 September 2026). An order is a sort too, its groups the places (`1st`, `2nd`, `3rd`...), with one more place when a card never happened, so write a story children put in order as a sort; a Shaftesbury design left its story ordering as loose boxes, and the pack had nothing it could print. The form is `sheet`: every item on one uncut page for children to mark (a number in a box on each picture of an order, each item's letter in a box under its heading for a sort under named headings, a tick in a table when words are sorted into a few groups), which costs the teacher nothing but printing. `cards` is for a request that asks for cutting or for cards to move, and then `handling.where` quotes the teacher's words that asked; a request that only names the items (`event cards to sequence`) is asking for the events and gets the sheet (`preferences.md` → `A hands-on task has a board version`). Word the task so it is true of the board and the sheet alike: `Which day did each thing happen?` works on both, and `Put one card under each day` only with cards in hand. The sort's `taskStructure` carries `handling` (`output-template.md` → Source-unit contract owns the shape: who shares a set, with a group count stated rather than guessed, and a one-line `where` for the teacher), its `levels.printed` names form `sort`, the unit is a stick-in `candidate`, and the orientation says what to prepare. The printed sort carries the unit's own items, headings and key, so the sort rules above apply to what children will hold, and its `acceptanceCondition` carries any second placement you would accept. It is part of the lesson, not a bonus sheet: the run cannot close complete without it, and the sort is not repeated on the lesson's worksheet.",
      "section": {
       "heading": "### Printed extras: stick-in piece and wall",
       "occurrence": 0,
@@ -1302,7 +1302,7 @@
    "present": [
     {
      "file": "references/preferences.md",
-     "text": "**Time: a lesson runs about 45 minutes end to end; when children are expected to work independently afterwards, the taught input is about 30.**",
+     "text": "**Time: a whole lesson runs about 45 to 50 minutes.**",
      "section": {
       "heading": "## Classroom Norms",
       "occurrence": 0,
@@ -1327,7 +1327,7 @@
    "present": [
     {
      "file": "agents/lesson-designer.md",
-     "text": "The lesson runs about 45 minutes end to end, and the beats may take 40 of them between them; the rest is books out, the date and objective, and moving children to tables and back.",
+     "text": "A whole lesson runs about 45 to 50 minutes, and about 5 of them are books out, the date and objective, and moving children to tables and back, which no beat plans",
      "section": {
       "heading": "### The Teach → Do Rhythm",
       "occurrence": 0,
@@ -6109,7 +6109,7 @@
    "present": [
     {
      "file": "references/subject-maths.md",
-     "text": "> - **Scaffold a taught mental strategy as a fill-in method frame.** A strategy the lesson teaches can be practised as a printed equation or stem the child completes, for example `= ___ + ___ =` for redistribution, or `First add ___ + ___. Then adjust ___ - ___.` for adjusting, with the blanks growing across the set as above. The `method-frame` helper renders this on the sheet and on the board, and it takes the blanks per line, so the same frame can be given fully worked, part-given or all blank across the set.",
+     "text": "> - **Scaffold a taught mental strategy as a fill-in method frame.** A strategy the lesson teaches can be practised as a printed equation or stem the child completes, for example `= ___ + ___ =` for redistribution, or `First add ___ + ___. Then adjust ___ - ___.` for adjusting, with the blanks growing across the set as above. The `method-frame` helper renders this on the sheet and on the board, and it takes the blanks per line, so the same frame can be given fully worked, part-given or all blank across the set. Label each line with the step's short name (`First, add:`, `Biggest denominator:`), a cue the working beside it completes, because the frame prints at the size its longest label allows: a Year 5 ordering frame labelled with four full questions (`What order do the numerators go in, smallest first?`) printed at 16 to 17pt, and at 20pt or more once each label was a cue. A label is a question only when the line is a decision the child answers (`Is the total in the 3 times table?`).",
      "section": {
       "heading": "## Making practice generative",
       "occurrence": 0,

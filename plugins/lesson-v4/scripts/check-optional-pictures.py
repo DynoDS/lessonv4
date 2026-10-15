@@ -239,7 +239,7 @@ def resolve_library_root() -> tuple[Path | None, str]:
         completed = subprocess.run(
             ["node", str(RESOLVER_SCRIPT), "--resolve-root"],
             capture_output=True,
-            text=True,
+            text=True, encoding="utf-8", errors="replace",
             timeout=120,
         )
     except (OSError, subprocess.SubprocessError) as exc:
@@ -366,7 +366,7 @@ def prefetch_searches(library_root: Path, groups: list[list[str]]) -> None:
         completed = subprocess.run(
             ["node", str(SEARCH_SCRIPT), "--no-fetch", "--batch-file", handle.name,
              "--limit", "24"],
-            capture_output=True, text=True, timeout=300,
+            capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=300,
         )
     except (OSError, subprocess.SubprocessError):
         return
@@ -407,7 +407,7 @@ def run_search(library_root: Path, queries: list[str]) -> list[str]:
         argv += ["--query", query]
     argv += ["--limit", "24"]
     try:
-        completed = subprocess.run(argv, capture_output=True, text=True, timeout=120)
+        completed = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
     except (OSError, subprocess.SubprocessError):
         return []
     for line in completed.stdout.splitlines():
@@ -755,12 +755,15 @@ VISIBLE_FRACTION = 0.5
 
 def composition_fingerprint(lesson: object) -> str:
     """The deck's composition, drawings excluded: the same hash
-    `measure-slide-room.py` stamps into its measurement."""
+    `measure-slide-room.py` stamps into its measurement, with a whole number
+    hashed as a whole number whether the file says 1.0 or 1."""
     def stripped(node):
         if isinstance(node, dict):
             return {k: stripped(v) for k, v in node.items() if k != "decorations"}
         if isinstance(node, list):
             return [stripped(item) for item in node]
+        if isinstance(node, float) and node.is_integer():
+            return int(node)
         return node
 
     payload = json.dumps(stripped(lesson), sort_keys=True, ensure_ascii=False)

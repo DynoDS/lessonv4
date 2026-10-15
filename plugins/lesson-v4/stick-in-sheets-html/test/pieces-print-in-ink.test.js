@@ -54,6 +54,7 @@ const SAMPLES = {
   ruler: [{ end: 10, unit: "cm", object: { from: 0, to: 6, label: "pencil" } }],
   timeline: [{ start: 1066, end: 1500, events: [{ year: 1066, label: "Battle of Hastings" }, { year: 1215, label: "Magna Carta" }] }],
   "process-chain": [{ boxes: ["egg", null, "butterfly"] }],
+  cycle: [{ boxes: ["egg", null, "chrysalis", "butterfly"], arrowLine: true }, { boxes: ["heart", "lungs", "heart", "body"], arrows: ["to the lungs", "back with oxygen", "to the body", "back for more"] }],
   "classification-key": [{ tree: { q: "Wings?", no: { leaf: "ANT" }, yes: { leaf: "BEE" } } }],
   "concept-map": [{ centre: "Cacao", spokes: [{ label: "Money", relationship: "used as" }, { label: "Power" }, { label: "Religion" }] }],
   "annotated-text": [{ lines: ["Puddles fill the street.", "", "I jump into the puddle"], marks: [{ find: "Puddles", style: "circle", colour: "blue" }, { find: "puddle", id: "p2", style: "highlight", colour: "orange", note: "" }], links: [{ from: "Puddles", to: "p2" }] }],
@@ -74,7 +75,15 @@ const SAMPLES = {
     { kind: "equilateral", symmetryLines: true, symmetryLinesAnswer: true },
   ],
   "reflection-grid": [{ cols: 8, rows: 6, mirror: { orientation: "vertical", at: 4 }, shape: [[1, 1], [3, 1], [3, 3]], showReflection: true }],
-  "coordinate-grid": [{ cols: 8, rows: 6, points: [{ x: 1, y: 1, label: "A" }, { x: 4, y: 1, label: "B" }, { x: 4, y: 4, label: "C" }], join: true, route: [4, 4] }],
+  "coordinate-grid": [
+    { cols: 8, rows: 6, points: [{ x: 1, y: 1, label: "A" }, { x: 4, y: 1, label: "B" }, { x: 4, y: 4, label: "C" }], join: true, route: [4, 4] },
+    {
+      min: -5, max: 5, tintQuadrants: true, pointStyle: "cross", highlight: "top left",
+      points: [{ x: -3, y: 5, label: "T", coords: true }],
+      shapes: [{ points: [[1, 2], [4, 2], [1, 5]], labels: ["A", "B", "C"], inside: "1", translate: { dx: -6, dy: -4 }, showImage: true }],
+      arrows: [{ from: [-5, 1], to: [1, -4], steps: true, count: true }],
+    },
+  ],
   "translation-shape": [{ cols: 10, rows: 8, points: [{ x: 1, y: 1 }, { x: 3, y: 1 }, { x: 3, y: 3 }], translate: { dx: 4, dy: 2 }, showImage: true }],
   geoboard: [{
     cols: 5, rows: 5, emphasiseVertices: true,
@@ -121,6 +130,7 @@ const SAMPLES = {
   "place-value-chart": [{ columns: ["Th", "H", "T", "O"], rows: [{ label: "3,462", cells: ["3", "4", "6", "2"] }, { label: "10 more", cells: ["3", "4", "7", "2"], highlight: ["T"] }] }],
   "place-value-mini": [{ mode: "placeholder", number: "4050" }],
   "base-ten-blocks": [{ counts: { Th: 2, H: 4, T: 3, O: 6 } }],
+  "ten-frame": [{ count: 6, second: 4 }, { count: 13, look: "boxes", crossedOut: 2 }, { count: 7, highlight: "empty" }],
   "counter-group": [{ statement: "5,009 = 5,000 + 9", joiner: "+", groups: [{ value: "1000", count: 5 }, { value: "1", count: 9 }] }],
   "part-whole-model": [{ whole: "45", parts: ["27", "18"] }],
   pyramid: [{ rows: [{ cells: 1, items: ["||42"] }, { cells: 2, items: ["20", "22"] }, { cells: 3, items: ["8", "12", "10"] }] }],

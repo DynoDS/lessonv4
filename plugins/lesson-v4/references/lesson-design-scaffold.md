@@ -210,7 +210,7 @@ A placeholder in a vocabulary `visual` means replace the whole value with the fi
 
 A placeholder in a generated worksheet's `activityArchitecture`, `fitPriority`, `centralWriteOnVisualException` or `contentBlocks` means replace the whole value with the final object, `null` or array required by the settled worksheet design.
 
-If the generated scaffold does not support the structure you actually decided, fix the scaffold request and rerun the scaffold before filling it. Do not hand-edit mechanical IDs to force an invalid request through.
+If the generated scaffold does not support the structure you actually decided, fix the scaffold request and rerun the scaffold before filling it. That route closes once any field holds a decision, because the builder then refuses to run rather than discard the design. A part you find you need after that (one more configuration on a representation, say) is added by hand in the shape of the entry beside it, and the validator checks it like the rest. Do not hand-edit mechanical IDs to force an invalid request through.
 
 ## Resource opportunities
 

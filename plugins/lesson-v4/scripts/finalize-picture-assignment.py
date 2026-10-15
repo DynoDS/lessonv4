@@ -144,7 +144,7 @@ def validator_command(args, script_dir: Path) -> list[str]:
 
 def run_validator(args, script_dir: Path) -> tuple[list[str], str]:
     command = validator_command(args, script_dir)
-    result = subprocess.run(command, capture_output=True, text=True)
+    result = subprocess.run(command, capture_output=True, text=True, encoding="utf-8", errors="replace", env={**os.environ, "PYTHONIOENCODING": "utf-8"})
     text = (result.stdout + result.stderr).strip()
     if result.returncode != 0 or "PICTURE_RESULT_OK" not in result.stdout.splitlines():
         raise FinalizeError(f"independent picture-result validation failed: {text}")
@@ -348,7 +348,7 @@ def publish_one(script_dir: Path, working: Path, source: Path, filename: str, re
         return False, f"prepare publication staging for {filename}: {exc}", 1
     command = [sys.executable, str(script_dir / "publish-picture.py"), "publish", "--source", str(slot), "--filename", filename, "--working-dir", str(working), "--replace", replace]
     try:
-        completed = subprocess.run(command, capture_output=True, text=True)
+        completed = subprocess.run(command, capture_output=True, text=True, encoding="utf-8", errors="replace", env={**os.environ, "PYTHONIOENCODING": "utf-8"})
         return completed.returncode == 0, " ".join(command), completed.returncode
     finally:
         try:
@@ -507,11 +507,26 @@ def assignment_command(args) -> int:
     # teacher bare. Nothing in that run was wrong except that nobody was told.
     if lost_essential:
         summary["lostEssential"] = lost_essential
+        # The lesson is about to be revised under designers who are never held
+        # for pictures. Keeping it as they read it, here and without being
+        # asked, is what later lets the run say which pages the revision
+        # reached instead of stopping every designer to wait (7 October 2026).
+        kept = subprocess.run(
+            [sys.executable, str(Path(__file__).resolve().parent / "design-revision-catch-up.py"),
+             "mark", "--working-dir", str(working)],
+            capture_output=True, text=True, encoding="utf-8", errors="replace", env={**os.environ, "PYTHONIOENCODING": "utf-8"}, check=False,
+        )
+        if kept.returncode == 0:
+            print(kept.stdout.strip())
         print(
             "PICTURE_ESSENTIAL_LOST: " + ", ".join(lost_essential) + " - the "
             "design marked these essential and they are terminal. This is the "
             "content-gap picture wave, not a reconcile: revise the design and "
-            "re-review it before any track re-points these references."
+            "re-review it before any track re-points these references. "
+            "Designers already working carry on: stop none of them, build "
+            "nothing from what they return until the revised design is "
+            "reviewed, then catch each resource up as "
+            "references/records-after-a-revision.md sets out."
         )
     if lost_to_allowance:
         # Not waited for and not retried: on 30 September 2026 a run sat out an

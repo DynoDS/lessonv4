@@ -541,6 +541,31 @@ console.log('SHEET_STANDS_IN: Below - the Expected sheet stands in for Below, an
         self.assertEqual(summary["omittedSheets"], [])
         self.assertIn("FIXED_RESOURCE_FLAGGED worksheets: Below", completed.stdout)
 
+    def test_a_level_that_uses_the_expected_sheet_reaches_the_summary(self) -> None:
+        # Daniel, 14 October 2026: the run, not the pack, says that Greater
+        # Depth uses the Expected slips. It is said, not flagged.
+        self.js_writer(
+            "worksheet-html/scripts/build-worksheet.js",
+            """const fs=require('fs'); const p=require('path');
+const out=process.argv[3];
+const pdf=p.join(out, 'Lesson - Worksheets.pdf');
+const answer=p.join(out, 'Lesson - Answers.pdf');
+fs.writeFileSync(pdf, 'pdf');
+fs.writeFileSync(answer, 'answers');
+console.log('Built answers: ' + answer);
+console.log('Built: ' + pdf);
+console.log("SHEET_SHARED: Greater Depth - no separate sheet. Greater Depth children use the Expected slips (the plan's choice: the open task already stretches them.)");
+""",
+        )
+        completed = self.run_script("worksheets", "--lesson-name", "Lesson")
+        summary = json.loads(
+            (self.root / "summary.json").read_text(encoding="utf-8")
+        )
+        self.assertTrue(summary["ok"])
+        self.assertEqual([s["sheet"] for s in summary["sharedSheets"]], ["Greater Depth"])
+        self.assertIn("use the Expected slips", summary["sharedSheets"][0]["line"])
+        self.assertIn("FIXED_RESOURCE_OK worksheets", completed.stdout)
+
     def publish_pictures(self) -> None:
         # Two published pictures and one that never arrived, recorded the way
         # finalize-picture-assignment.py records them.

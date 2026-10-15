@@ -33,6 +33,7 @@ const measuringJugShared = require("../../shared/visuals/measuring-jug-svg");
 const rulerShared = require("../../shared/visuals/ruler-svg");
 const timelineShared = require("../../shared/visuals/timeline-svg");
 const processChainShared = require("../../shared/visuals/process-chain-svg");
+const cycleShared = require("../../shared/visuals/cycle-svg");
 const classificationKeyShared = require("../../shared/visuals/classification-key-svg");
 const conceptMapShared = require("../../shared/visuals/concept-map-svg");
 const annotatedTextShared = require("../../shared/visuals/annotated-text-svg");
@@ -51,6 +52,7 @@ const placeValueChart = require("../../shared/visuals/place-value-chart-svg");
 const placeValueMini = require("../../shared/visuals/place-value-mini-svg");
 const baseTenBlocks = require("../../shared/visuals/base-ten-blocks-svg");
 const counterGroup = require("../../shared/visuals/counter-group-svg");
+const tenFrame = require("../../shared/visuals/ten-frame-svg");
 const partWholeModel = require("../../shared/visuals/part-whole-model-svg");
 const pyramid = require("../../shared/visuals/pyramid-svg");
 const multGrid = require("../../shared/visuals/mult-grid-svg");
@@ -143,6 +145,8 @@ const SOURCE_COPY_CHAR_MM = 2.2;
 //     a square one but both keep the same usable square.
 // The number-line entry supplies the write-on extension of the existing
 // numberline family.
+const COORDINATE_GRID_HEIGHT_MM = 88;
+const COORDINATE_GRID_PAGE_MM = 277;
 const VISUALS = {
   // 130mm: the child MARKS this line, so what has to be comfortable is the gap
   // between two ticks and the band underneath for their handwriting, not the
@@ -179,6 +183,7 @@ const VISUALS = {
   ruler: sharedPiece(rulerShared, 120, { widthMmFor: (spec) => rulerShared.trueWidthMm(spec) }),
   timeline: sharedPiece(timelineShared, 200),
   "process-chain": sharedPiece(processChainShared, 160),
+  cycle: sharedPiece(cycleShared, 160),
   "classification-key": sharedPiece(classificationKeyShared, 160),
   "concept-map": sharedPiece(conceptMapShared, 180),
   // A passage the child annotates needs its margins, so it is a wide piece.
@@ -214,7 +219,15 @@ const VISUALS = {
   // a point on. Sizing by height (width follows the grid's aspect, which includes
   // the axis-number gutters) keeps that square comfortable whatever the grid's
   // shape. The BLANK form (no points) is what the spec carries — the child plots.
-  "coordinate-grid": scaledPiece(coordinateGrid, { fitHeightMm: 88 }),
+  // The grid is told that height, so it sizes its axis numbers for the pack
+  // (about 11pt on a ten-square grid, where a fixed third of a square printed
+  // them under 8pt). The width it is offered is the whole landscape page, so
+  // the height is what decides.
+  "coordinate-grid": {
+    geometry: coordinateGrid,
+    tightSvg: (spec) => coordinateGrid.tightSvg(spec, profileFor("stickin", { widthMm: COORDINATE_GRID_PAGE_MM, heightMm: COORDINATE_GRID_HEIGHT_MM })),
+    fitHeightMm: COORDINATE_GRID_HEIGHT_MM,
+  },
   // 88mm tall: the numbered translation grid is the artefact a child plots the
   // translated image ON, so usability is the printed square size, not the overall
   // width — sized exactly like the reflection/coordinate grids so two rows stack
@@ -355,17 +368,22 @@ const VISUALS = {
   // drawing grows its shapes for handwriting before this width matters.
   "triangle-square": sharedPiece(triangleSquare, 70),
   // 70mm: a shape to draw lines of symmetry on or measure. The child's copy
-  // never carries the answer overlay, the fold or the verdict from a slide.
+  // never carries the answer overlay, the fold or the verdict from a slide,
+  // nor the split an answers slide draws (`partsAnswer`): the child draws
+  // that line. A split the lesson hands the child as given is not an answer
+  // and stays.
   polygon: sharedPiece(polygon, 70, {
     specFn: (s) => {
       const out = Object.assign({}, s);
       delete out.symmetryLines;
       delete out.symmetryLinesAnswer;
+      delete out.partsAnswer;
       if (Array.isArray(s.shapes)) {
         out.shapes = s.shapes.map((shape) => {
           const one = Object.assign({}, shape);
           delete one.verdict;
           delete one.fold;
+          if (s.partsAnswer === true) delete one.parts;
           return one;
         });
       }
@@ -398,6 +416,9 @@ const VISUALS = {
   "base-ten-blocks": sharedPiece(baseTenBlocks, 150),
   // 120mm: the counters stay big enough to read the value on each.
   "counter-group": sharedPiece(counterGroup, 120),
+  // 80mm: one frame with boxes a child can draw a counter in. A whole page
+  // enlarges it, two to a page, until a real counter or a cube fits a box.
+  "ten-frame": sharedPiece(tenFrame, 80),
   // 110mm: the circles a child writes a part or whole into.
   "part-whole-model": sharedPiece(partWholeModel, 110),
   // 100mm: bricks a child writes a number into.
@@ -429,7 +450,15 @@ const ROW_VISUALS = {
   // A strip of clock faces, each with its own line for the child to write the
   // time: the sheet's clock-row as a glued piece. 44mm keeps every face's
   // numerals at the pack's readable size.
-  "clock-row": { ...sharedPiece(clock, 44), defaultFigureWidthMm: 44, boxHeightMm: 44 },
+  // Its faces are drawn one at a time, so each leaves the room a neighbour's
+  // digital time or minute ring takes and the strip's faces stay one size.
+  "clock-row": {
+    ...sharedPiece(clock, 44), defaultFigureWidthMm: 44, boxHeightMm: 44,
+    alikeInARow: (specs) => {
+      const reserve = clock.rowReserve(specs);
+      return reserve ? specs.map((s) => ({ ...s, reserve })) : specs;
+    },
+  },
 };
 
 const BOXES_PER_ROW = 3; // draw-box-row wraps at this count (same as ROW_PER_ROW)
@@ -486,6 +515,7 @@ function missingQuestionContent(item) {
     case "place-value-mini":
     case "base-ten-blocks":
     case "counter-group":
+    case "ten-frame":
     case "part-whole-model":
     case "pyramid":
     case "mult-grid":

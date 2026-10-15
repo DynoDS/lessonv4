@@ -266,15 +266,79 @@ const RENDERED_FIT_PROBE = `(() => {
 // build prints every sheet plus up to three reshape retries each, so paying
 // the launch once per PAGE multiplied the slowest step by a dozen. A caller
 // with several pages launches once, prints them all, and closes it.
+//
+// The browser is spoken to down a pipe, not over a connection to this
+// computer's own address. A sandboxed host (Codex on the teacher's computer)
+// refuses that connection as it refuses the network, so Chrome started and
+// could not be reached (`connect EACCES 127.0.0.1`), every check said "no
+// browser on this machine", and three real lessons had their sheets and walls
+// sized from sums (stress test, 10 and 11 October 2026). The pipe needs no
+// connection and measures the same page.
 async function launchBrowser() {
   // Required here rather than at the top so that finding Chrome, and building
   // HTML-only on a machine without it, never needs the packages installed.
   const puppeteer = require("puppeteer-core");
-  return puppeteer.launch({
-    executablePath: findChrome(),
-    headless: true,
-    args: ["--no-sandbox", "--disable-dev-shm-usage"],
+  const executablePath = findChrome();
+  surviveAFailedStart();
+  try {
+    return await puppeteer.launch({
+      executablePath,
+      headless: true,
+      pipe: true,
+      args: ["--no-sandbox", "--disable-dev-shm-usage"],
+    });
+  } catch (error) {
+    stopAStrandedBrowser(executablePath);
+    throw error;
+  }
+}
+
+// A browser that started and could not be used is still running, and a command
+// waits for every program it started: the check would print its answer and
+// then never finish. So the one this command started is stopped and let go.
+function stopAStrandedBrowser(executablePath) {
+  const handles = typeof process._getActiveHandles === "function" ? process._getActiveHandles() : [];
+  for (const handle of handles) {
+    if (!handle || handle.spawnfile !== executablePath) continue;
+    try {
+      handle.kill();
+      for (const stream of handle.stdio || []) if (stream && stream.unref) stream.unref();
+      handle.unref();
+    } catch {
+      // Already gone.
+    }
+  }
+}
+
+// A browser that started and could not be used is closed by puppeteer, which
+// then clears that browser's own temporary folder while Chrome still holds the
+// files in it. The refusal (EBUSY) arrives as an error nobody is waiting for
+// and ended the whole command as "failed" after it had printed a sound answer.
+// Only that one error is let go; anything else ends the command as it always did.
+let failedStartSurvived = false;
+function surviveAFailedStart() {
+  if (failedStartSurvived) return;
+  failedStartSurvived = true;
+  process.on("unhandledRejection", (reason) => {
+    const leftover =
+      reason &&
+      ["EBUSY", "EPERM", "ENOTEMPTY"].includes(reason.code) &&
+      /puppeteer_dev_chrome_profile/.test(String(reason.path || reason.message));
+    if (!leftover) throw reason;
   });
+}
+
+// Why a browser could not be used, in words a worker can act on. Two different
+// things were once reported as one: a machine with no Chrome at all, where the
+// sums are all there is, and a Chrome this session was not allowed to use,
+// where the same command run with more access measures the real page.
+function whyNoBrowser(error) {
+  const detail = String((error && error.message) || error).split("\n")[0];
+  if (/^NO_CHROME/.test(detail)) return "no browser on this machine";
+  return (
+    `BROWSER_BLOCKED: a browser is on this machine but this session could not use it (${detail}). ` +
+    "Run this same command once more with a request for more access, and use that result"
+  );
 }
 
 // The HTML owns its own margins, so the PDF is printed edge to edge. This
@@ -317,6 +381,9 @@ const PLACE_QUESTION_NUMBERS = `(() => {
       return null;
     };
     const own = (el) => el && owner(el) === block;
+    // A question that opens with a sum keeps its number beside the sum: the sum
+    // is the work, not context to read past (Daniel, 14 October 2026).
+    if (Array.from(block.querySelectorAll('[data-number-here="sum"]')).some(own)) continue;
     // The innermost one: a part flagged inside its material may itself hold the
     // line its words sit on (an answer beside its prompt), and the number goes there.
     const flagged = Array.from(block.querySelectorAll("[data-number-here]")).filter(own).pop();
@@ -385,6 +452,7 @@ module.exports = {
   findChrome,
   htmlToPdf,
   launchBrowser,
+  whyNoBrowser,
   candidatePaths,
   downloadedCandidates,
   PINNED_CHROME_VERSION,

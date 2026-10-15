@@ -46,9 +46,41 @@ child to name it by walking the branches. The features are what make the task
 work, because a child who is given the name has nothing left to follow the key
 for.
 
-`process-chain` is boxes joined by arrows: a food chain, a life cycle, the order
-of events. **The arrows are the helper.** They carry the "this leads to that"
+`process-chain` is links joined by arrows in a line that ends: a food chain, the
+order of events. **The arrows are the helper.** They carry the "this leads to that"
 the task is about, which is why a chain is not a row of cards.
+
+**A task that has the child make a chain prints the chain to fill in**, not a
+blank space with an instruction to draw one. The empty boxes, the joins and any
+lines for role words are the page's shape of the answer, and a child who is
+still learning what a food chain looks like has nothing to start from on an
+empty box (a Below sheet of 11 October 2026 asked for "every label that fits
+beside each living thing on your chain" over 55mm of blank paper). Leave a box
+empty for each link the child writes (`"boxes": [null, null, null]`), list the
+named pictures to place (`"bank": [{ "text", "imagePath" }]`, in the sheet's own
+mixed-up order, in place of a separate row of picture cards), set
+`arrowHeads: false` when the child decides which way each arrow points, and
+`labelLine: true` when the task asks for the roles. A level can be given
+more: a box already named, the arrows already drawn. A drawing space is still
+right when the adaptation asks for the child's own drawing of each living thing.
+
+`cycle` is the same idea bent into a loop: the last stage joins back to the
+first, which is what makes a life cycle, the water cycle, the seasons or blood
+round the body a cycle and not a list. Choose it over a chain whenever the board
+taught the process as going round, so the sheet asks about the picture the
+class was shown. Its stages are written as a chain's links are (words, a named
+picture, or an empty entry for a box the child writes in), and it prints as two
+rows that read clockwise from the top left. Its `"arrows"` list puts a few words
+beside each arrow, in the order of the stages. When naming what happens between
+stages is the task (evaporation, condensation), leave that list off and set
+`arrowLine: true`: every arrow then has a line to write on. `arrowHeads: false`
+and `labelLine: true` work as they do on a chain. A cycle copied from an
+answers slide may keep its answers marked (`{ "text": "caterpillar", "answer":
+true }` for a stage or an arrow's words): the pupil sheet prints an empty box or
+a writing line in each one's place, and the same cycle given as the answer
+key's picture prints them in green. Two rows of photographs are
+deep (about 115mm for four), so a pictured cycle is most of a sheet's one
+question, while a cycle of words takes 30 to 50mm.
 
 ---
 

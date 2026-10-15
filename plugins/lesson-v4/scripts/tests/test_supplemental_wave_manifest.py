@@ -166,6 +166,55 @@ class SupplementalWaveManifestTests(unittest.TestCase):
         self.assertEqual(validated.returncode, 0, validated.stderr)
         self.assertIn("PICTURE_MANIFEST_OK", validated.stdout)
 
+    def test_a_second_wave_shares_no_folder_with_the_first(self) -> None:
+        """Two supplemental waves in one run keep their own work roots.
+
+        On 7 October 2026 a Year 1 plants run compiled a worksheet top-up and
+        then a lost-picture wave. Both named their batches `w1` and `w2`, so
+        the second wave's scouts were pointed at the first wave's work roots
+        and result folders, and the run moved the old ones aside by hand.
+        """
+        self.assertEqual(self.compile_wave([self.promoted[0]]).returncode, 0)
+        first = json.loads((self.output / "manifest.json").read_text(encoding="utf-8"))
+
+        second_snapshot = self.root / "photo-requirements-w-2.json"
+        second_snapshot.write_bytes(self.snapshot.read_bytes())
+        second_output = self.root / "picture-assignments" / "w-2"
+        wave = [
+            "--requirements", str(second_snapshot),
+            "--expected-prefix", "w",
+            "--working-dir", str(self.root),
+            "--expected-filename", self.promoted[1],
+        ]
+        compiled = subprocess.run(
+            [sys.executable, str(COMPILE), "compile", *wave,
+             "--output-dir", str(second_output),
+             "--summary-output", str(self.root / "w-2-summary.json"),
+             "--image-generation", "available"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(compiled.returncode, 0, compiled.stderr)
+        validated = subprocess.run(
+            [sys.executable, str(VALIDATE), "manifest", *wave,
+             "--manifest", str(second_output / "manifest.json")],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(validated.returncode, 0, validated.stderr)
+        second = json.loads((second_output / "manifest.json").read_text(encoding="utf-8"))
+
+        def roots(manifest: dict) -> set[str]:
+            return {
+                json.loads(Path(row["assignment"]).read_text(encoding="utf-8"))["work_root"]
+                for row in manifest["assignments"]
+            }
+
+        def names(manifest: dict) -> set[str]:
+            return {row["batch_id"] for row in manifest["assignments"]}
+
+        self.assertEqual(names(first), {"w1-1"})
+        self.assertEqual(names(second), {"w2-1"})
+        self.assertFalse(roots(first) & roots(second))
+
     def test_the_playbook_hands_the_wave_the_filename_list_twice(self) -> None:
         """The compile command always carried the list; the validation command
         was left as prose, so the orchestrator had to invent its arguments and

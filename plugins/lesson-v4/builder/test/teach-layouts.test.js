@@ -53,6 +53,8 @@ const EXAMPLES = {
   'picture-steps': { pictures: [picture(TALL)], steps: ['A tooth bites something hard.', 'A piece breaks off.'] },
   'picture-with-statement': { pictures: [picture(WIDE)], lead: 'The same object can mean different things.' },
   'one-speaker': { pictures: [picture(WIDE)], speakers: [{ name: 'Sam', child: 'mr-sear', speech: 'A candle is only for light.' }] },
+  'speaker-lines': { speakers: [{ name: 'Sam', child: 'boy-1', speech: 'I keep thinking about the swimming lesson.' }],
+    lines: ['His words are a clue.', 'He might be worried.'], question: 'Which words tell us?' },
   'two-speakers': { statement: 'A symbol can matter in different ways.', speakers: [{ name: 'Chloe', child: 'miss-brooker', speech: 'It reminds me of church.' }, { name: 'Sam', child: 'mr-sear', speech: 'It reminds me of my grandad.' }] },
   'statement-support-sticky': { lead: 'A symbol stands for something else.', lines: ['It sends a message without words.'], sticky: 'A symbol works when people know it.' },
   'two-cards-bar': { lines: ['Knowing about a belief.', { value: 'Believing it yourself.', orange: true }], sticky: 'You can understand without sharing.' },
@@ -467,6 +469,106 @@ test('a Teach slide with no instruction in its design is not asked for a task', 
   designFor(dir, TEACH_WITH_SCRIPT);
   const result = runSlideDesignCheck(specPath);
   assert.doesNotMatch(result.stdout || '', /TEACH_TASK_OUTSIDE_ITS_SLOT/);
+});
+
+// ─── success criteria and a speaker on a Teach slide ─────────────────────────
+//
+// Round two of the stress test (11 October 2026): a Year 4 science deck left the
+// Teach layouts on three slides because none held a food chain with its
+// criteria, and a PSHE deck lost a speech bubble because a speaker could stand
+// beside a picture only.
+
+const CRITERIA = { type: 'sc-panel', criteriaRef: 'sc-001',
+  content: { type: 'steps', steps: ['Start with the producer.', 'Draw each arrow.'] } };
+
+function find(node, type, out = []) {
+  if (Array.isArray(node)) node.forEach((v) => find(v, type, out));
+  else if (node && typeof node === 'object') {
+    if (node.type === type) out.push(node);
+    Object.values(node).forEach((v) => find(v, type, out));
+  }
+  return out;
+}
+
+test('a Teach layout holds a picture, its explanation and the success criteria together', () => {
+  ['lead-picture-lines', 'question-lines-picture'].forEach((layout) => {
+    const lesson = expandTeachLayouts({ slides: [teachSlide(layout, { criteria: CRITERIA })] });
+    const slide = lesson.slides[0];
+    assert.equal(find(slide, 'sc-panel').length, 1, layout);
+    assert.equal(find(slide, 'image').length, 1, layout);
+    const said = strings(slide);
+    strings(EXAMPLES[layout]).filter((w) => /\s/.test(w)).forEach((w) => {
+      assert.ok(said.some((x) => x.includes(w)), `${layout} lost "${w}"`);
+    });
+  });
+});
+
+test('bare steps or a table in the criteria slot are drawn as the criteria panel', () => {
+  const table = { type: 'table', columns: ['Label', 'What it does'], rows: [['producer', 'makes its own food']] };
+  const lesson = expandTeachLayouts({ slides: [teachSlide('lead-picture-lines', { criteria: table })] });
+  const panels = find(lesson.slides[0], 'sc-panel');
+  assert.equal(panels.length, 1);
+  assert.deepEqual(panels[0].content, table);
+});
+
+test('a criteria panel in the picture slot is refused with the slot it belongs in', () => {
+  const stacked = { type: 'stack', items: [picture(WIDE), CRITERIA] };
+  [CRITERIA, stacked].forEach((wrong) => {
+    assert.throws(() => expandTeachLayouts({ slides: [teachSlide('lead-picture-lines', { pictures: [wrong] })] }),
+      (error) => error instanceof TeachLayoutError && /"criteria"/.test(error.message) &&
+        /lead-picture-lines/.test(error.message) && !/is words, not a picture/.test(error.message));
+  });
+});
+
+test('a layout with no place for the criteria names the layouts that hold the whole slide', () => {
+  assert.throws(() => expandTeachLayouts({ slides: [teachSlide('picture-three-cards', { criteria: CRITERIA })] }),
+    (error) => error instanceof TeachLayoutError &&
+      /take everything this slide has[^:]*: .*question-lines-picture/.test(error.message));
+});
+
+test('one speaker stands on the left with the explanation and the question beside them', () => {
+  const lesson = expandTeachLayouts({ slides: [teachSlide('speaker-lines')] });
+  const slide = lesson.slides[0];
+  assert.equal(slide.template, 'speech-bubbles-1');
+  assert.equal(slide.statementSide, 'right');
+  assert.equal(slide.speakers[0].speech, 'I keep thinking about the swimming lesson.');
+  assert.deepEqual(texts(slide.statement).map((x) => x.value),
+    ['His words are a clue.', 'He might be worried.', 'Which words tell us?']);
+  const withPanel = expandTeachLayouts({ slides: [teachSlide('speaker-lines', { lines: undefined, criteria: CRITERIA })] });
+  assert.equal(find(withPanel.slides[0], 'sc-panel').length, 1);
+});
+
+test('a speaker given explanation lines on one-speaker is sent to the layout that holds both', () => {
+  assert.throws(() => expandTeachLayouts({ slides: [Object.assign(teachSlide('speaker-lines'), { layout: 'one-speaker' })] }),
+    (error) => error instanceof TeachLayoutError && /speaker-lines/.test(error.message));
+});
+
+test('a table copied from the lesson design with "columns" is on the built slide', async (t) => {
+  const dir = tmpDir(t, 'teach-layouts-table-');
+  const table = { type: 'table', columns: ['Label', 'What it does'],
+    rows: [['producer', 'makes its own food'], ['consumer', 'eats plants or animals']] };
+  const specPath = writeLesson(dir, [
+    teachSlide('question-lines-picture', { sticky: undefined, criteria: { type: 'sc-panel', content: table } }),
+    { template: 'split-h-50-50', title: 'Free', speakerNotes: 'Say to children: look.',
+      primary: { type: 'text', value: 'Each label has a meaning.' },
+      secondary: { type: 'sc-panel', content: table } }
+  ]);
+  const result = spawnSync(process.execPath, [path.join(ROOT, 'build.js'), specPath, dir], { encoding: 'utf8' });
+  assert.equal(result.status, 0, (result.stdout || '') + (result.stderr || ''));
+  const deck = path.join(dir, fs.readdirSync(dir).find((n) => n.endsWith('.pptx')));
+  for (const n of [1, 2]) {
+    const said = (await slideShapes(deck, n)).map((s) => s.text).join(' | ');
+    assert.match(said, /makes its own food/, `slide ${n}`);
+    assert.match(said, /What it does/, `slide ${n}`);
+  }
+});
+
+test('a table with rows and no headings says so instead of drawing nothing in silence', (t) => {
+  const dir = tmpDir(t, 'teach-layouts-table-empty-');
+  const specPath = writeLesson(dir, [{ template: 'body-full', title: 'Free', speakerNotes: 'Say to children: look.',
+    body: { type: 'table', rows: [['producer', 'makes its own food']] } }]);
+  const result = spawnSync(process.execPath, [path.join(ROOT, 'build.js'), specPath, dir], { encoding: 'utf8' });
+  assert.match((result.stdout || '') + (result.stderr || ''), /TABLE_DREW_NOTHING/);
 });
 
 // ─── the catalogue the designer reads is the catalogue that exists ─────────

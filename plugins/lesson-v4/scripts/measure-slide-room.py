@@ -409,6 +409,12 @@ def composition_fingerprint(lesson_path: Path) -> str | None:
     out: adding them must not invalidate the page they were placed on. Anything
     else moving - a line of text, a card, a picture, a template - moves the clear
     space with it.
+
+    It is a hash of the deck, not of how the file was saved. The builder reads
+    1.0 and 1 as one number and draws one page, but JavaScript saves 1.0 as 1,
+    and on 7 October 2026 two decorators who added their drawings that way were
+    told the deck had moved. A whole number is hashed as a whole number however
+    it was written. `check-optional-pictures.py` works out the same hash.
     """
     try:
         lesson = json.loads(lesson_path.read_text(encoding="utf-8"))
@@ -420,6 +426,8 @@ def composition_fingerprint(lesson_path: Path) -> str | None:
             return {k: stripped(v) for k, v in node.items() if k != "decorations"}
         if isinstance(node, list):
             return [stripped(item) for item in node]
+        if isinstance(node, float) and node.is_integer():
+            return int(node)
         return node
 
     payload = json.dumps(stripped(lesson), sort_keys=True, ensure_ascii=False)

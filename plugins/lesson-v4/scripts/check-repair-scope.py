@@ -179,7 +179,55 @@ PRESENTATION_KEYS = {
     # A pure viewport resize read "71" as a new word a child reads
     # (18 September 2026).
     "imageHeightMm",
+    # Which house colour a line or a category takes: question blue, task blue,
+    # the purple of a worked example. None of them is green, the validator
+    # refuses green in both, and a repair that moves a question to a template
+    # which no longer colours it must be able to say "blue" itself. A plain
+    # `color` and the `emphasis` marks are read in `Census._visit`, where
+    # green, the one colour that tells children something, is kept.
+    "colorRole",
+    "categoryColor",
 }
+
+# How a word is DRAWN, as opposed to what the word is. Bold, question blue and
+# the orange of a supplied value are written inside the string, so compared
+# letter for letter a line that gained a mark read as a line that had been
+# deleted and a new one authored. A template that prints its questions blue by
+# itself was swapped for a roomier one that does not, the repair wrapped the
+# same line in `[[ ]]` to keep it blue, and was refused (Year 4 Maths, 10
+# October 2026). So these come off before a string is counted.
+#
+# Green stays on. `{{ }}` is the answer and the taught word, and `||` opens an
+# answer reveal: turning one of three options green gives the answer away
+# without changing a letter. With the mark left in the string, adding or
+# removing it reads as the change of wording it amounts to.
+DRAWING_MARKS = re.compile(r"\*\*|\[\[|\]\]|<<|>>")
+GREEN = "00B050"
+GREEN_EMPHASIS_ROLES = {"vocabulary"}
+
+
+def said(text: str) -> str:
+    """A string as a child reads it: its words, in order, and what is green.
+
+    Line breaks and spacing are how the words are laid out, and the repair
+    guidance has always allowed them to change. The check did not: three facts
+    with a blank line between each were closed up to three plain lines and
+    refused as a lost sentence (Year 4 Science, 10 October 2026).
+    """
+    return " ".join(DRAWING_MARKS.sub("", text).split())
+
+
+# Boxes that only hold other things in place, and the plain box of words. A row
+# or a stack is where things sit, which is what a repair changes; and a text
+# box's words are every one of them counted as content, so the box adds nothing
+# the words do not already say. Counted as content objects, unwrapping a row
+# read as "type:row: 1 before the repair, 0 after" with every word still on the
+# slide (Year 4 PSHE, 10 October 2026), and so would taking out an empty spacer.
+LAYOUT_ONLY_TYPES = {"row", "stack", "text"}
+
+# The lists whose entries are whole pages, so a group of cards split over two
+# pages can be told from one scattered through the lesson.
+PAGE_LIST_KEYS = {"slides", "pages", "cards"}
 
 # Sizes a repair may legitimately grow. Counting "4" as content would call a
 # blank widened from four characters to six a lost word, so these are read by
@@ -279,12 +327,12 @@ def printed_part(item: object) -> str:
         # unnoticed while the bag of cell values stays identical. A null cell
         # is the child's own space and is written out, so a row cannot quietly
         # trade its blanks for the row above's given words.
-        return " | ".join(BLANK if cell is None else str(cell) for cell in item)
+        return " | ".join(BLANK if cell is None else said(str(cell)) for cell in item)
     if not isinstance(item, dict):
-        return str(item)
+        return said(str(item))
     for field in ("value", "text", "caption", "label"):
         if field in item and not isinstance(item[field], bool):
-            printed = str(item[field]).strip()
+            printed = said(str(item[field]))
             if printed:
                 return printed
     return BLANK
@@ -310,6 +358,26 @@ def value_sequence(items: list) -> tuple | None:
     if all(part == BLANK for part in out):
         return None
     return tuple(out)
+
+
+def is_card_group(items: list) -> bool:
+    """A list of slide objects, as opposed to a list of values.
+
+    Three task cards in a stack are flat records, so they used to be read like
+    the summands of a number sentence: one chain, protected as one string. But
+    each card's words are already counted on their own, and what the chain was
+    protecting - that the cards stay, in their order, together - does not
+    depend on which box holds them. Read as one string, a plan-then-write task
+    could not be split over two slides unless the pieces landed in boxes of
+    exactly the right shape, and the repair gave up and printed everything
+    twice (Year 4 PSHE, 10 October 2026). So a group of cards is checked for
+    what matters instead: see `scattered_card_groups`.
+    """
+    return all(
+        isinstance(item, dict)
+        and any(isinstance(item.get(field), str) and item.get(field) for field in DISCRIMINATORS)
+        for item in items
+    )
 
 
 # ─── what a case is ──────────────────────────────────────────────────────
@@ -415,6 +483,10 @@ class Census:
 
     def __init__(self, node: object) -> None:
         self.objects: Counter = Counter()
+        # Whether the walk met anything that says what it is, a plain box of
+        # words included, so an artefact of text alone is still one this check
+        # read rather than one it did not recognise.
+        self.recognised = 0
         self.content: Counter = Counter()
         self.teacher: Counter = Counter()
         self.script: list[str] = []
@@ -431,6 +503,15 @@ class Census:
         # each list of a single value, which is no order on its own but may be
         # the last piece of one (a wall card keeping one fact after a split).
         self.pieces: list[tuple[str, str, tuple, int, bool]] = []
+        # Everything a child reads, in the order the walk met it, with the page
+        # it is on; and each group of cards, by what its cards say.
+        self.stream: list[tuple[int, str]] = []
+        self.card_groups: list[tuple] = []
+        # What stands as a page's title, so a split page may be titled from
+        # its own words.
+        self.titles: Counter = Counter()
+        self._page = 0
+        self._page_lists: set[int] = set()
         self._visit(node, 1, False, "pupil")
 
     # ─── one node's own room to write ───
@@ -502,7 +583,10 @@ class Census:
         holds_case = False
 
         if isinstance(value, list):
+            paged = id(value) in self._page_lists
             for item in value:
+                if paged:
+                    self._page += 1
                 if isinstance(item, (dict, list)):
                     sub, sub_room, sub_case = self._visit(
                         item, times, in_slot, channel, implicit_lines
@@ -535,6 +619,10 @@ class Census:
         for field in DISCRIMINATORS:
             kind = value.get(field)
             if isinstance(kind, str) and kind:
+                self.recognised += 1
+            if isinstance(kind, str) and kind and not (
+                field == "type" and kind in LAYOUT_ONLY_TYPES
+            ):
                 self.objects[f"{field}:{ALIASES.get(kind, kind)}"] += times
 
         # A stick-in piece names its figure as a bare string on ``visual``,
@@ -544,6 +632,7 @@ class Census:
         visual = value.get("visual")
         if isinstance(visual, str) and visual:
             self.objects[f"visual:{visual}"] += times
+            self.recognised += 1
 
         own: Counter = Counter()
         own_room = self._room_of(value, times)
@@ -565,6 +654,23 @@ class Census:
             if key == "parts" and is_width_split(child):
                 continue
             child_channel = channel_of(channel, key, child)
+            if key == "color" and isinstance(child, str):
+                # A colour is how a line is drawn, unless it is green.
+                if child.strip().lstrip("#").upper() == GREEN:
+                    self._note_key("green", "a whole line", times, own, child_channel)
+                continue
+            if key == "emphasis" and isinstance(child, list):
+                # Bold, underline and the orange line are drawing. The taught
+                # word's green is not, so it is counted and the rest is left.
+                for entry in child:
+                    if (isinstance(entry, dict) and entry.get("role") in GREEN_EMPHASIS_ROLES
+                            and isinstance(entry.get("text"), str)):
+                        self._note_key("green", said(entry["text"]), times, own, child_channel)
+                continue
+            if key == "title" and isinstance(child, str) and child_channel == "pupil":
+                self.titles[said(child)] += times
+            if key in PAGE_LIST_KEYS and isinstance(child, list):
+                self._page_lists.add(id(child))
             if key in DISCRIMINATORS or key == "visual":
                 # Already counted as an object, with a helper's aliases
                 # resolved. Counting the name again here would call a legal
@@ -580,7 +686,10 @@ class Census:
             if isinstance(child, (dict, list)):
                 if isinstance(child, list):
                     sequence = value_sequence(child)
-                    if sequence is not None:
+                    if sequence is not None and is_card_group(child):
+                        if child_channel == "pupil":
+                            self.card_groups.append(sequence)
+                    elif sequence is not None:
                         self._note_key(key, ", ".join(sequence), times, own, child_channel)
                         self.sequences.append((child_channel, key, sequence, times))
                         self.pieces.append((child_channel, key, sequence, times, False))
@@ -624,7 +733,7 @@ class Census:
         if isinstance(value, bool):
             return
         if isinstance(value, str):
-            text = value.strip()
+            text = said(value)
             if not text:
                 return
             key = text
@@ -640,6 +749,7 @@ class Census:
             return
         self.content[key] += times
         free[key] += times
+        self.stream.append((self._page, key))
 
     def _note_key(self, key: str, text: str, times: int, free: Counter,
                   channel: str) -> None:
@@ -728,6 +838,110 @@ def rejoin_split_sequences(before: "Census", after: "Census") -> None:
                     if after.content[piece] <= 0:
                         del after.content[piece]
                 break
+
+
+def recut_wording(before: Counter, after: Counter) -> None:
+    """Treat the same words in the same order, cut into different pieces, as unchanged.
+
+    One block of three sentences and three one-sentence lines put exactly the
+    same words in front of a child. Compared string by string they share
+    nothing, so giving each fact its own line was refused as two new things a
+    child reads (Year 4 Science, 10 October 2026). So a string that went
+    missing is looked for as a run of the strings that appeared, end to end,
+    and a string that appeared as a run of the ones that went missing. Only an
+    exact tiling counts, word for word: a changed, added or dropped word leaves
+    a piece over and is reported as it always was.
+    """
+    def spare(tally: Counter, other: Counter) -> Counter:
+        return Counter({
+            key: tally[key] - other.get(key, 0)
+            for key in tally
+            if isinstance(key, str) and tally[key] > other.get(key, 0)
+        })
+
+    def tiling(words: list[str], pieces: Counter) -> list[str] | None:
+        if not words:
+            return []
+        for piece in sorted(pieces):
+            cut = piece.split()
+            if pieces[piece] > 0 and cut and words[:len(cut)] == cut:
+                pieces[piece] -= 1
+                rest = tiling(words[len(cut):], pieces)
+                pieces[piece] += 1
+                if rest is not None:
+                    return [piece] + rest
+        return None
+
+    for whole_side, piece_side in ((before, after), (after, before)):
+        for whole in sorted(spare(whole_side, piece_side)):
+            while whole_side.get(whole, 0) > piece_side.get(whole, 0):
+                pieces = spare(piece_side, whole_side)
+                used = tiling(whole.split(), pieces)
+                if not used or len(used) < 2:
+                    break
+                whole_side[whole] -= 1
+                if whole_side[whole] <= 0:
+                    del whole_side[whole]
+                for piece in used:
+                    piece_side[piece] -= 1
+                    if piece_side[piece] <= 0:
+                        del piece_side[piece]
+
+
+def scattered_card_groups(before: "Census", after: "Census") -> list[str]:
+    """Groups of cards that no longer stand together, in their order.
+
+    Every card's words are counted on their own, so a dropped or reworded card
+    is caught there. What is left to protect is the group: the cards still come
+    in the order they were written, and on one page or two pages next to each
+    other. Other things may stand between them, and the story a task is about
+    may be repeated on both pages.
+    """
+    reports = []
+    still_there = {text for _, text in after.stream}
+    for group in before.card_groups:
+        # A card that is gone or reworded is the wording checks' to report, or
+        # to release when its words pointed at a picture that never arrived.
+        parts = [part for part in group if part in still_there]
+        if len(parts) < 2:
+            continue
+        for start, (first_page, text) in enumerate(after.stream):
+            if text != parts[0]:
+                continue
+            at, page = start, first_page
+            for part in parts[1:]:
+                at = next((i for i in range(at + 1, len(after.stream))
+                           if after.stream[i][1] == part), None)
+                if at is None:
+                    break
+                page = after.stream[at][0]
+            if at is not None and page - first_page <= 1:
+                break
+        else:
+            reports.append(" / ".join(part[:40] for part in parts)[:150])
+    return reports
+
+
+def lifted_from_the_page(title: str, before: Counter) -> bool:
+    """Whether a title is a run of words already in front of the class.
+
+    A page made by a split needs a title. Repeating the old one was always
+    allowed; a run of words taken exactly from a line already there says what
+    this page is for and authors nothing.
+    """
+    def bare(text: str) -> list[str]:
+        return [word.strip(".,;:!?\u201c\u201d\"'()") for word in text.split()]
+
+    words = bare(title)
+    if len(words) < 2:
+        return False
+    for line in before:
+        if not isinstance(line, str):
+            continue
+        source = bare(line)
+        if any(source[i:i + len(words)] == words for i in range(len(source) - len(words) + 1)):
+            return True
+    return False
 
 
 def losses(before: Counter, after: Counter) -> list[str]:
@@ -1052,6 +1266,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--after", required=True, help="The specification the repair produced")
     args = parser.parse_args(argv)
 
+    # A refusal quotes the page, and a page can hold a character the console
+    # cannot print. On Windows that ended the report in a traceback part-way
+    # through its list (Year 4 Science, 10 October 2026), so the repairer saw
+    # one missing line and not the rest.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="backslashreplace")
+
     # Only the picture stage's own receipts prove a picture will never arrive.
     # A file merely missing from disk is not proof: a published picture a
     # worker deleted by mistake (2 October 2026) is restored, not dropped.
@@ -1077,6 +1299,7 @@ def main(argv: list[str] | None = None) -> int:
 
     rejoin_split_sequences(before, after)
     pointing_words = release_pointing_words(before, after, lost_pages)
+    recut_wording(before.content, after.content)
 
     lost = losses(before.objects, after.objects)
     if lost:
@@ -1139,7 +1362,11 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
-    added = additions(before.content, after.content)
+    added = [
+        kind for kind in additions(before.content, after.content)
+        if not (after.titles.get(kind, 0) >= after.content[kind]
+                and lifted_from_the_page(kind, before.content))
+    ]
     if added:
         report(
             f"REPAIR_SCOPE_FAILED: {len(added)} thing(s) a child reads are new "
@@ -1150,7 +1377,21 @@ def main(argv: list[str] | None = None) -> int:
             "value printed where one was to be worked out all change the task "
             "even though nothing was taken away. Repeating wording already on "
             "the child's page is fine. Copying it off the teacher's copy is "
-            "not: the answer key is content, and it is not their channel.",
+            "not: the answer key is content, and it is not their channel. "
+            "Green is counted with the words: marking something green that was "
+            "not green before tells children it is the answer.",
+        )
+        return 1
+
+    scattered = scattered_card_groups(before, after)
+    if scattered:
+        report(
+            f"REPAIR_SCOPE_FAILED: {len(scattered)} group(s) of cards no longer "
+            "stand together in their order:",
+            scattered,
+            "A group of cards may move as a whole, or split over two pages "
+            "next to each other with every card in its original order. It may "
+            "not be reordered or spread through the lesson.",
         )
         return 1
 
@@ -1187,7 +1428,7 @@ def main(argv: list[str] | None = None) -> int:
     # through every worksheet and stick-in repair it was meant to guard. Zero
     # content objects means the walker did not recognise this artefact, not that
     # the artefact is empty: a real specification always holds some.
-    if not before.objects:
+    if not before.recognised:
         print(
             "REPAIR_SCOPE_FAILED: no content object was recognised in --before, "
             "so nothing could be compared."

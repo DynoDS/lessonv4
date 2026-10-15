@@ -35,7 +35,8 @@ class TeachLayoutError extends Error {
 
 const SLOT_KEYS = [
   'lead', 'lines', 'question', 'task', 'sticky', 'pictures', 'captions', 'sides',
-  'headingRole', 'speakers', 'statement', 'steps', 'columns', 'answers', 'extract'
+  'headingRole', 'speakers', 'statement', 'steps', 'columns', 'answers', 'extract',
+  'criteria'
 ];
 
 // Keys that belong to the whole slide and pass straight through to the expanded one.
@@ -215,9 +216,61 @@ function pictureSlot(value, where) {
       'written as its usual content object with a "type".');
   }
   if (CONTAINER_TYPES.has(value.type)) {
-    fail(where, `"${value.type}" is words, not a picture; words go in lines, lead, question or sticky.`);
+    // Say what the container holds, because the way forward differs. A chain
+    // stacked with its criteria was refused as "words, not a picture" and the
+    // designer left the Teach layouts altogether (11 October 2026).
+    const inside = Array.isArray(value.items) ? value.items.filter((x) => x && typeof x === 'object') : [];
+    if (inside.some((x) => x.type === 'sc-panel')) {
+      fail(where, `this "${value.type}" wraps a picture together with a success criteria panel. ` +
+        'Put the picture here on its own and the panel in "criteria" ' +
+        `(layouts that take it: ${usersOf('criteria').join(', ')}).`);
+    }
+    if (inside.length > 1 && inside.every((x) => !CONTAINER_TYPES.has(x.type))) {
+      fail(where, `this "${value.type}" wraps ${inside.length} pictures. Give each picture its own ` +
+        'entry in "pictures" on a layout that takes that many: two-pictures-captions, zigzag, ' +
+        'compare-pictures (2) or three-pictures-captions (3).');
+    }
+    fail(where, `"${value.type}" is words, not a picture; words go in lines, lead, question or sticky` +
+      ', and a person speaking goes in "speakers" (speaker-lines holds a speaker with the explanation).');
+  }
+  if (value.type === 'sc-panel') {
+    fail(where, 'a success criteria panel is not the slide\'s picture. Put it in "criteria" ' +
+      `(layouts that take it: ${usersOf('criteria').join(', ')}).`);
   }
   return value;
+}
+
+// The success criteria on a Teach slide: the unit's own list, shown where its
+// method is first modelled. It is the panel children know from every task
+// slide, standing down the right, so it is written as that panel
+// (`sc-panel`, with its `criteriaRef` and `flipchart`), or as the bare steps
+// or table, which is wrapped here.
+function criteriaSlot(value, where) {
+  if (!value || typeof value !== 'object' || Array.isArray(value) || typeof value.type !== 'string') {
+    fail(where, 'expected the success criteria as an "sc-panel" object, or its "steps" or "table".');
+  }
+  if (value.type === 'sc-panel') return value;
+  if (value.type !== 'steps' && value.type !== 'table') {
+    fail(where, `"${value.type}" is not success criteria; this slot takes an "sc-panel", "steps" or a "table".`);
+  }
+  return { type: 'sc-panel', content: value };
+}
+
+// A Teach slide with its criteria: the picture across the full width, so a
+// chain of four links or a number line keeps the width it needs, then the
+// cards on the left and the panel on the right beneath it, where the panel
+// stands on every task slide. Half the width of the lower band keeps the panel
+// well inside the half-slide limit. (Tried first with the panel the full depth
+// of the slide and the picture over the cards beside it: a four-link food
+// chain needed 179mm and had 151mm.)
+function withCriteria(picture, items, group, criteria) {
+  return {
+    type: 'stack',
+    items: [
+      withWeight(picture, 1),
+      { type: 'row', weight: 2, items: [column(items, group), criteria] }
+    ]
+  };
 }
 
 function listSlot(data, key, where, reader) {
@@ -300,12 +353,14 @@ const LAYOUTS = {
   // ── with pictures ──
   'lead-picture-lines': {
     use: 'The big idea across the top, one picture below it, the explanation beside the picture.',
-    slots: { lead: 1, pictures: [1, 1], lines: [1, 3], question: [0, 1], task: [0, 1], sticky: [0, 1] },
+    slots: { lead: 1, pictures: [1, 1], lines: [1, 3], question: [0, 1], task: [0, 1], sticky: [0, 1], criteria: [0, 1] },
     column: [1, 4],
     build: (s) => ({
       template: 'split-v-80-20', primarySide: 'bottom',
       secondary: toText(s.lead, 'lead'),
-      primary: { type: 'row', items: [s.pictures[0], column(s.columnItems, 'column')] }
+      primary: s.criteria
+        ? withCriteria(s.pictures[0], s.columnItems, 'column', s.criteria)
+        : { type: 'row', items: [s.pictures[0], column(s.columnItems, 'column')] }
     })
   },
   // A wide picture, the kind a report drawing or a panorama is (about 2.6:1),
@@ -357,13 +412,15 @@ const LAYOUTS = {
   },
   'question-lines-picture': {
     use: 'The question in a band across the top, then the explanation beside the picture that answers it.',
-    slots: { question: 1, pictures: [1, 1], lines: [1, 3], task: [0, 1], sticky: [0, 1] },
+    slots: { question: 1, pictures: [1, 1], lines: [1, 3], task: [0, 1], sticky: [0, 1], criteria: [0, 1] },
     column: [1, 4],
     columnSkipsQuestion: true,
     build: (s) => ({
       template: 'split-v-80-20', primarySide: 'bottom',
       secondary: toText(s.question, 'question'),
-      primary: { type: 'row', items: [column(s.columnItems, 'column'), s.pictures[0]] }
+      primary: s.criteria
+        ? withCriteria(s.pictures[0], s.columnItems, 'column', s.criteria)
+        : { type: 'row', items: [column(s.columnItems, 'column'), s.pictures[0]] }
     })
   },
   'compare-pictures': {
@@ -489,6 +546,25 @@ const LAYOUTS = {
     use: 'The object on one side and one person\'s claim on the other, for the class to test.',
     slots: { pictures: [1, 1], speakers: [1, 1] },
     build: (s) => ({ template: 'speech-bubbles-1', statement: s.pictures[0], speakers: s.speakers })
+  },
+  // One person speaking, with the teaching about what they said. Until
+  // 11 October 2026 a speaker could stand beside a picture only, so a Year 4
+  // PSHE Teach beat (a child's words, what they tell us, a question) lost its
+  // bubble and printed `Amara says: "..."` on a flat card. The speaker stands
+  // on the left because their words are read first; the explanation, and the
+  // success criteria when the unit carries them, are what the class reads next.
+  'speaker-lines': {
+    use: 'One person speaking on the left; the explanation of what they said, and the question, in cards beside them.',
+    slots: { speakers: [1, 1], lines: [0, 3], question: [0, 1], task: [0, 1], sticky: [0, 1], criteria: [0, 1] },
+    column: [1, 4],
+    build: (s) => ({
+      template: 'speech-bubbles-1', statementSide: 'right', statementRatio: s.criteria ? 0.62 : 0.58,
+      statement: s.criteria
+        ? { type: 'stack', items: [withWeight(s.criteria, 2),
+          Object.assign(column(s.columnItems, 'column'), { weight: 1 })] }
+        : column(s.columnItems, 'column'),
+      speakers: s.speakers
+    })
   },
   'two-speakers': {
     use: 'The idea across the top, two people underneath each saying what it means to them.',
@@ -634,8 +710,16 @@ function expandSlide(slide, slideNumber) {
   // A slot this layout does not arrange would be dropped from the board. Refuse it.
   SLOT_KEYS.forEach((key) => {
     if (slide[key] !== undefined && def.slots[key] === undefined) {
+      // Name the layouts that hold everything this slide has, not only the one
+      // slot that was refused: a designer sent to a layout that takes "lines"
+      // and then loses its speaker has spent a try and learnt nothing.
+      const supplied = SLOT_KEYS.filter((k) => slide[k] !== undefined && k !== 'headingRole');
+      const holdAll = Object.keys(LAYOUTS).filter((n) => supplied.every((k) => LAYOUTS[n].slots[k] !== undefined));
       fail(at, `this layout has nowhere to put "${key}", so it would not appear on the slide. ` +
-        `Layouts that use "${key}": ${usersOf(key).join(', ')}.`);
+        (holdAll.length
+          ? `Layouts that take everything this slide has (${supplied.join(', ')}): ${holdAll.join(', ')}.`
+          : `Layouts that use "${key}": ${usersOf(key).join(', ')}. No one layout takes ` +
+            `${supplied.join(', ')} together, so the beat is two slides: split it where its teaching turns.`));
     }
   });
   Object.keys(slide).forEach((key) => {
@@ -674,6 +758,9 @@ function expandSlide(slide, slideNumber) {
   });
   if (def.slots.task !== undefined && slide.task !== undefined) {
     s.task = taskSlot(slide.task, `${at} task`);
+  }
+  if (def.slots.criteria !== undefined && slide.criteria !== undefined) {
+    s.criteria = criteriaSlot(slide.criteria, `${at} criteria`);
   }
   if (def.oneOf && !def.oneOf.some((k) => s[k])) {
     fail(at, `needs one of ${def.oneOf.map((k) => `"${k}"`).join(' or ')} for the bar along the bottom.`);

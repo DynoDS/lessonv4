@@ -50,10 +50,23 @@ test("a row of zones under a zone gets one line across the gutter between them",
   assert.ok(Math.abs(left.left + left.width - right.left) < 0.01, "the left line runs on across the gutter to meet the right");
 });
 
-test("a zone that opens with a heading is not ruled, as a heading marks itself", () => {
+test("a new section heading under other work is ruled off from it", () => {
+  // Problem Solving under Fluency with no line between them read as more
+  // Fluency (the teacher, 14 October 2026).
   const html = sheet("halves-stacked", {
     a: { stack: [q("Work out 2 + 5 + 8.")] },
     b: { stack: [{ helper: "section-label", text: "Going Deeper" }, q("Is Omar correct?")] },
+  });
+  assert.equal(rules(html).length, 1);
+});
+
+test("no line under a zone that holds only a heading", () => {
+  // A band holding only "Fluency" put a line between the heading and its own
+  // questions (Year 4 column addition, 14 October 2026).
+  const html = sheet("band-two-cols", {
+    a: { stack: [{ helper: "section-label", text: "Fluency" }] },
+    b: { stack: [q("Work out 2 + 5 + 8.")] },
+    c: { stack: [q("Work out 9 + 3 + 1.")] },
   });
   assert.equal(rules(html).length, 0);
 });

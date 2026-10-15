@@ -5,7 +5,7 @@
 // science explanation or an RE text depending only on what is put in it.
 
 const { textWidthEm } = require("../../../shared/text/comic-glyph-width");
-const { BODY_PT, LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, PT_MM, BLANK_MM, esc, escWithDigitBoxes, promptHtml, linesFor } = require("./shared");
+const { BODY_PT, LINE_MM, NOTE_LINE_MM, WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, PT_MM, BLANK_MM, DIGIT_BOX, DIGIT_BOX_HTML, esc, escWithDigitBoxes, promptHtml, linesFor } = require("./shared");
 const { SPACE, TYPE, INSET } = require("../tokens");
 const { formatQuestionLabel } = require("../labels");
 
@@ -863,7 +863,9 @@ function measurePoem(spec, widthMm) {
 }
 
 function renderSourceText(spec) {
-  const paras = spec.paragraphs.map((p) => `<p>${esc(p)}</p>`).join("");
+  // A missing digit in a source ("3,2□8 + 14□ =") is drawn as a box a digit
+  // fits in, as it is in a question; the font's own character is tiny.
+  const paras = spec.paragraphs.map((p) => `<p>${esc(p).replace(DIGIT_BOX, DIGIT_BOX_HTML)}</p>`).join("");
   return `
     <div class="h-source">
       ${spec.heading ? `<h3>${esc(spec.heading)}</h3>` : ""}

@@ -16,7 +16,7 @@
 // paper.
 
 const { BODY_PT, PT_MM, LINE_MM, WRITING_LINE_MM, esc, linesFor } = require("./shared");
-const { TYPE, SPACE, RULE, INSET } = require("../tokens");
+const { TYPE, SPACE, RULE, INSET, NUMBER_BOX_MM } = require("../tokens");
 
 // Heights are measured at the WIDEST a zone could ever be, because text gets
 // shorter as it gets wider: the widest case is the shortest the content can
@@ -68,11 +68,12 @@ function questionNumber(spec) {
 
 // A follow-up prompt with ruled lines under it: "Explain how you worked it
 // out." Two lines a mark, which is the Word builder's own rule, and `marks: 0`
-// means a prompt with no lines rather than the default one mark.
+// means a prompt with no lines rather than the default one mark. A slip has
+// no lines at all: the explanation is written in the book (src/slips.js).
 const LINES_PER_MARK = 2;
 
-function followUpLineCount(followUp) {
-  if (!followUp) return 0;
+function followUpLineCount(followUp, spec) {
+  if (!followUp || (spec && spec.slip === true)) return 0;
   if (followUp.marks === 0) return 0;
   return Math.max(1, (followUp.marks ?? 1) * LINES_PER_MARK);
 }
@@ -86,7 +87,7 @@ function renderFollowUp(spec) {
   if (!followUp) return "";
   const lineMm = writingLineMm(spec);
   const lines = Array.from(
-    { length: followUpLineCount(followUp) },
+    { length: followUpLineCount(followUp, spec) },
     () => `<span class="h-cq-line" style="height:${lineMm}mm"></span>`
   ).join("");
   return `
@@ -103,7 +104,7 @@ function followUpMm(spec, widthMm) {
     SPACE.item + // margin-top on .h-cq-followup
     linesFor(followUp.text, widthMm) * LINE_MM +
     SPACE.hair + // margin-bottom on the prompt
-    followUpLineCount(followUp) * writingLineMm(spec)
+    followUpLineCount(followUp, spec) * writingLineMm(spec)
   );
 }
 
@@ -166,7 +167,7 @@ function stemMm(spec, widthMm) {
 // whole question, so it is sized for a child's pencil rather than for the
 // symbol it will hold.
 
-const COMPARE_BOX_MM = 12;
+const COMPARE_BOX_MM = NUMBER_BOX_MM; // the one box for one number or sign (tokens.js)
 const COMPARE_GAP_MM = SPACE.item; // either side of the box
 const COMPARE_VALUE_MIN_MM = 16; // a short value still gets room to sit in
 
@@ -231,7 +232,7 @@ const { atPrintedWidth } = require("./at-printed-width");
 // character. The one thing this helper must never do is print a box that
 // already has something in it.
 
-const INEQ_BOX_MM = 11; // a written digit, at the size the tokens print
+const INEQ_BOX_MM = NUMBER_BOX_MM; // the one box for one number or sign (tokens.js)
 const INEQ_TOKEN_MIN_MM = 6;
 const INEQ_TOKEN_PAD_MM = INSET.cell.h;
 const INEQ_PT = TYPE.sectionLabel; // the statement is displayed, not body text
@@ -242,12 +243,34 @@ function inequalityTokens(spec) {
   return String(spec.expression ?? "").trim().split(/\s+/).filter(Boolean);
 }
 
+// A box can also sit inside a number, the way a missing-digit question writes
+// it: "2,4□8 + 1,3□6 =". Only a box standing alone between spaces used to be
+// drawn, so those two printed as the font's empty-box character, about 2mm
+// square beside 6mm digits, on a Year 4 Greater Depth slip (stress test of 7
+// October 2026, round two). Such a token is split into its digits and its
+// boxes, kept together as one number with no gap between them.
+const BOX_PART = /([□▢☐◻▫]|_{2,})/;
+
 function isBoxToken(token) {
-  return token === "□" || /^_{2,}$/.test(token);
+  return new RegExp(`^${BOX_PART.source}$`).test(token);
+}
+
+function tokenParts(token) {
+  return token.split(BOX_PART).filter(Boolean);
+}
+
+function isGluedToken(token) {
+  return !isBoxToken(token) && tokenParts(token).some(isBoxToken);
 }
 
 function tokenWidthMm(token) {
   if (isBoxToken(token)) return INEQ_BOX_MM;
+  if (isGluedToken(token)) {
+    return tokenParts(token).reduce(
+      (w, part) => w + (isBoxToken(part) ? INEQ_BOX_MM : textWidthMm(part, INEQ_PT)),
+      INEQ_TOKEN_PAD_MM
+    );
+  }
   return Math.max(INEQ_TOKEN_MIN_MM, textWidthMm(token, INEQ_PT) + INEQ_TOKEN_PAD_MM);
 }
 
@@ -260,11 +283,16 @@ function inequalityRowMm(tokens) {
 
 function renderInequalityWithBoxes(spec) {
   const cells = inequalityTokens(spec)
-    .map((token) =>
-      isBoxToken(token)
-        ? `<span class="h-ineq-box"></span>`
-        : `<span class="h-ineq-token">${esc(token)}</span>`
-    )
+    .map((token) => {
+      if (isBoxToken(token)) return `<span class="h-ineq-box"></span>`;
+      if (!isGluedToken(token)) return `<span class="h-ineq-token">${esc(token)}</span>`;
+      const parts = tokenParts(token)
+        .map((part) =>
+          isBoxToken(part) ? `<span class="h-ineq-box"></span>` : `<span class="h-ineq-part">${esc(part)}</span>`
+        )
+        .join("");
+      return `<span class="h-ineq-glued">${parts}</span>`;
+    })
     .join("");
   return `
     <div class="h-ineq">
@@ -407,11 +435,34 @@ function termWidthMm(term, i, terms) {
     return Math.max(4, textWidthMm(String(term), NS_PT));
   }
   if (kind === "cells") return termCells(term) * NS_CELL_MM;
-  if (kind === "blank") {
-    return Math.max(NS_BOX_MIN_MM, termChars(term) * NS_CHAR_MM + 2 * INSET.card.h);
-  }
+  if (kind === "blank") return blankWidthMm(termChars(term));
+  if (kind === "value" && tileMatchesBlanks(terms)) return valueBoxMm(term);
   const text = kind === "value" ? String(term.value) : String(term.text);
   return Math.max(NS_TILE_MIN_MM, textWidthMm(text, NS_PT) + 2 * INSET.card.h);
+}
+
+function blankWidthMm(chars) {
+  return Math.max(NS_BOX_MIN_MM, chars * NS_CHAR_MM + 2 * INSET.card.h);
+}
+
+// A number handed over is drawn as the box a child would have written it in:
+// as wide as the blank for a number of its length, so "A ( −3 , 1 )" given
+// above "B ( [ ] , [ ] )" prints four boxes of one size. Each tile used to be
+// as wide as its own digits, and a worked first line printed narrower boxes
+// than the empty ones under it, its "1" narrower than its "−3" (Year 6
+// translation sheet, 14 October 2026). A number too long for that box still
+// gets the room its digits need.
+function valueBoxMm(term) {
+  const text = String(term.value);
+  return Math.max(blankWidthMm([...text].length), textWidthMm(text, NS_PT) + 2 * INSET.cell.h);
+}
+
+// Where a sentence's only places to write are digit cells, a tile keeps the
+// cell's width (the 4 October 2026 ruling: "2" beside a digit box is one box
+// of one size). Everywhere else a child writes a whole number in a blank, and
+// a given number matches that blank.
+function tileMatchesBlanks(terms) {
+  return !(Array.isArray(terms) && terms.some((t) => !isOperator(t) && termKind(t) === "cells"));
 }
 
 function numberSentenceRowMm(spec) {
@@ -497,6 +548,8 @@ function renderTerm(term, i, terms) {
       .map((d) => `<span class="h-ns-cell h-ns-cell--given${d.comma ? " h-ns-cell--comma" : ""}">${d.digit}</span>`)
       .join("");
     body = `<span class="h-ns-cells">${cells}</span>`;
+  } else if (kind === "value" && tileMatchesBlanks(terms)) {
+    body = `<span class="h-ns-boxed" style="width:${valueBoxMm(term)}mm"><span class="h-ns-tile">${esc(String(term.value))}</span></span>`;
   } else if (kind === "value") {
     body = `<span class="h-ns-tile">${esc(String(term.value))}</span>`;
   } else {
@@ -1021,6 +1074,15 @@ const css = `
     font-size: var(--type-sectionLabel); font-weight: bold;
     color: var(--colour-ink); line-height: 1.35;
   }
+  /* A number with a missing digit: its digits and box sit tight, one number. */
+  .h-ineq-glued {
+    display: inline-flex; align-items: center; flex: none;
+    padding: 0 ${INEQ_TOKEN_PAD_MM / 2}mm;
+  }
+  .h-ineq-part {
+    font-size: var(--type-sectionLabel); font-weight: bold;
+    color: var(--colour-ink); line-height: 1.35;
+  }
   .h-ineq-box {
     flex: none; box-sizing: border-box;
     width: ${INEQ_BOX_MM}mm; height: ${INEQ_BOX_MM}mm;
@@ -1065,6 +1127,13 @@ const css = `
     border-radius: 1.5mm;
     font-size: var(--type-sectionLabel); font-weight: bold;
     color: var(--colour-given); line-height: 1.35;
+  }
+  /* A given number drawn as the box a child writes one in: the blank's width
+     (set on the tile) and its height, the digits centred in it. */
+  .h-ns-boxed { flex: none; display: flex; height: max(${NS_BOX_H_MM}mm, var(--ns-tile-h)); }
+  .h-ns-boxed > .h-ns-tile {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding-top: 0; padding-bottom: 0; white-space: nowrap;
   }
   .h-ns-text {
     align-self: center; padding: var(--inset-card);

@@ -264,7 +264,7 @@ def run_photo_cap(path: Path) -> None:
     completed = subprocess.run(
         [sys.executable, str(script), str(path), "--stage", "run"],
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8", errors="replace", env={**os.environ, "PYTHONIOENCODING": "utf-8"},
     )
     if completed.returncode != 0:
         raise PhotoContractError(
@@ -277,7 +277,7 @@ def run_lesson_design_validator(lesson_design: Path, photo_requirements: Path) -
     completed = subprocess.run(
         [sys.executable, str(script), str(lesson_design), str(photo_requirements)],
         capture_output=True,
-        text=True,
+        text=True, encoding="utf-8", errors="replace", env={**os.environ, "PYTHONIOENCODING": "utf-8"},
     )
     if completed.returncode != 0 or "LESSON_DESIGN_OK" not in completed.stdout.splitlines():
         raise PhotoContractError(
@@ -335,6 +335,39 @@ def design_photo_base(initial: dict, canonical_path: Path | None) -> tuple[dict,
     return base, "canonical"
 
 
+def require_voice_second_pass(adaptation_path: Path) -> None:
+    """Refuse an adaptation the voice editor's second pass has not settled.
+
+    The second pass is a short entry in the playbook between two long ones, and
+    in the 20-lesson test of 7 October 2026 eleven runs went straight past it:
+    their Below and Greater Depth sheets were built on words nobody but their
+    writer had read, and nothing said so. This command is the next thing every
+    such run does and it already fingerprints the file, so it is where the
+    omission is caught. `adaptation-settle` writes the receipt whatever the
+    editor did, so this never ends a run; it only stops one going on unread.
+    """
+    root = Path(__file__).resolve().parent.parent
+    if not (root / "agents" / "lesson-voice-editor.md").exists():
+        return
+    receipt_path = adaptation_path.parent / "orchestration-receipts" / "adaptation-voice.json"
+    try:
+        settled = json.loads(receipt_path.read_text(encoding="utf-8")).get("adaptationSha256")
+    except (OSError, json.JSONDecodeError, AttributeError):
+        settled = None
+    if settled == sha256_file(adaptation_path):
+        return
+    script = (root / "scripts" / "check-voice-edit.py").as_posix()
+    work = adaptation_path.parent.resolve().as_posix()
+    raise PhotoContractError(
+        "the voice editor's second pass has not read this adaptation.md, so the easier and harder "
+        "sheets would be built on words only their writer has read. Do it now, then run this command "
+        f'again: (1) "{Path(sys.executable).as_posix()}" "{script}" adaptation-snapshot --working-dir '
+        f'"{work}"; (2) launch `lesson-voice-editor` with the message that prints; (3) the same script '
+        "with `adaptation-settle`. If the editor cannot be launched, run (1) and (3): the sheets go on "
+        "as written and the run report says the editor did not read them."
+    )
+
+
 def cmd_build_provisional(args) -> int:
     initial_path = Path(args.initial)
     adaptation_path = Path(args.adaptation)
@@ -342,6 +375,7 @@ def cmd_build_provisional(args) -> int:
     canonical_arg = getattr(args, "canonical", None)
     base, base_source = design_photo_base(initial, Path(canonical_arg) if canonical_arg else None)
     additions = adaptation_photos(adaptation_path)
+    require_voice_second_pass(adaptation_path)
     merged, new_ids, new_filenames = merge_photos(base, additions)
     output = Path(args.output)
     atomic_write_json(output, merged)

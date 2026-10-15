@@ -2,6 +2,7 @@
 
 const { COLOURS } = require('./styles');
 const { splitAnswerRuns, taughtWordsInGreen } = require('./answer-text');
+const { choiceOpening } = require('./choice-letters');
 
 const COLOR_ROLES = new Set([
   'default',
@@ -521,6 +522,25 @@ function sumLinesInBlue(runs, text, base, bold) {
   return out;
 }
 
+// A lettered choice's letter in house blue (src/choice-letters.js marks the
+// set). Only the opening `A:` changes colour, and only on a black card: a card
+// that is already a question or an answer keeps its one colour.
+function choiceLetterInBlue(runs, text, base, bold, owner) {
+  if (!owner || owner.choiceLetter !== true) return runs;
+  if (String(base).replace('#', '').toUpperCase() !== COLOURS.body.toUpperCase()) return runs;
+  const opening = choiceOpening(text);
+  if (!opening) return runs;
+  const plain = { color: base, bold: !!bold };
+  const list = typeof runs === 'string' ? [{ text: runs, options: plain }] : runs;
+  if (!Array.isArray(list) || !list.length || !String(list[0].text).startsWith(opening)) return runs;
+  const first = list[0];
+  const options = first.options || plain;
+  const rest = String(first.text).slice(opening.length);
+  return [{ text: opening, options: Object.assign({}, options, { color: COLOURS.title }) }]
+    .concat(rest ? [{ text: rest, options: options }] : [])
+    .concat(list.slice(1));
+}
+
 function presentationRuns(value, bold, baseColor, owner) {
   const text = String(value == null ? '' : value);
   const data = owner && typeof owner === 'object' && !Array.isArray(owner)
@@ -536,7 +556,9 @@ function presentationRuns(value, bold, baseColor, owner) {
   if (!Array.isArray(data.emphasis) || data.emphasis.length === 0) {
     const runs = adviceInBlack(sumLinesInBlue(splitAnswerRuns(text, bold, base), text, base, bold),
       base, bold, data.adviceAfterBreaks);
-    return wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(runs, base, bold) : runs);
+    return choiceLetterInBlue(
+      wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(runs, base, bold) : runs),
+      text, base, bold, data);
   }
 
   const ranges = data.emphasis
@@ -586,7 +608,9 @@ function presentationRuns(value, bold, baseColor, owner) {
   // word outside its emphasis spans is turned green here (answer-text.js).
   const withTaught = adviceInBlack(sumLinesInBlue(taughtWordsInGreen(runs, base, bold), text, base, bold),
     base, bold, data.adviceAfterBreaks);
-  return wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(withTaught, base, bold) : withTaught);
+  return choiceLetterInBlue(
+    wholeCalculationRuns(data.asksInBlue ? askingSentencesInBlue(withTaught, base, bold) : withTaught),
+    text, base, bold, data);
 }
 
 module.exports = {

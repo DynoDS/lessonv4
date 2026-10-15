@@ -29,7 +29,7 @@
 // better when they are uniform. A note is drawn landscape at the same height,
 // which is how the Word builder's trimmed assets came out.
 
-const { TYPE, RULE, INSET, SPACE } = require("../tokens");
+const { TYPE, RULE, INSET, SPACE, NUMBER_BOX_MM } = require("../tokens");
 const {
   BODY_PT,
   PT_MM,
@@ -161,11 +161,26 @@ const FRAC_BAR_MM = RULE.line; // the fraction bar, drawn as a border
 const FRAC_PAD_X_MM = INSET.cell.h;
 const FRAC_ROW_MM = FRAC_LINE_MM * 2 + FRAC_BAR_MM;
 const FRAC_GAP_MM = 3;
-const FRAC_BLANK_W_MM = 9; // the box a child writes a missing fraction into
+const FRAC_BLANK_W_MM = NUMBER_BOX_MM; // the box a child writes a missing fraction into (tokens.js)
 const FRAC_BORDER_MM = RULE.line;
 const FRAC_SEP_W_MM = 4;
 // Digits set bold run wider than the prose factor in shared.js allows for.
 const FRAC_CHAR_MM = FRAC_PT * PT_MM * 0.6;
+
+// A younger child's missing fraction is a box over a box with the bar between
+// (`fractionBlank: "boxes"`, set by the sheet: src/worksheet.js); an older
+// child's is the one tall box.
+const FRAC_TWO_BOX_MM = NUMBER_BOX_MM; // each of the two boxes
+const FRAC_TWO_GAP_MM = 0.8;
+const FRAC_TWO_ROW_MM = FRAC_TWO_BOX_MM * 2 + FRAC_TWO_GAP_MM * 2 + FRAC_BAR_MM;
+
+function twoBoxes(spec) {
+  return spec.fractionBlank === "boxes" && (spec.fractions || []).some(isBlank);
+}
+
+function fractionRowMm(spec) {
+  return twoBoxes(spec) ? FRAC_TWO_ROW_MM : FRAC_ROW_MM;
+}
 
 function isBlank(entry) {
   return entry === "?" || entry == null;
@@ -200,7 +215,11 @@ function renderFractionRow(spec) {
       cells.push(`<span class="h-frac-sep">${esc(spec.separator)}</span>`);
     }
     if (isBlank(entry)) {
-      cells.push(`<span class="h-frac-blank"></span>`);
+      cells.push(
+        spec.fractionBlank === "boxes"
+          ? `<span class="h-frac-two"><span class="h-frac-two-box"></span><span class="h-frac-two-bar"></span><span class="h-frac-two-box"></span></span>`
+          : `<span class="h-frac-blank"></span>`
+      );
     } else {
       cells.push(
         `<span class="h-frac">` +
@@ -217,7 +236,7 @@ function measureFractionRow(spec, widthMm) {
   // The row wraps, so a sequence too wide for its zone costs a second row
   // rather than overflowing. `needs` asks for enough width to keep it on one.
   const rows = Math.max(1, Math.ceil(fractionRowWidthMm(spec) / widthMm));
-  return rows * FRAC_ROW_MM + (rows - 1) * FRAC_GAP_MM;
+  return rows * fractionRowMm(spec) + (rows - 1) * FRAC_GAP_MM;
 }
 
 function renderStackedFraction(spec) {
@@ -245,11 +264,11 @@ function needsStackedFraction(spec) {
   const stemMm = spec.text
     ? linesFor(spec.text, minWidthMm) * LINE_MM + SPACE_TIGHT_MM
     : 0;
-  return { minWidthMm, minHeightMm: stemMm + FRAC_ROW_MM };
+  return { minWidthMm, minHeightMm: stemMm + fractionRowMm(spec) };
 }
 
 function needsFractionSequence(spec) {
-  return { minWidthMm: needsFractionRow(spec), minHeightMm: FRAC_ROW_MM };
+  return { minWidthMm: needsFractionRow(spec), minHeightMm: fractionRowMm(spec) };
 }
 
 // ─── chip-bank ───────────────────────────────────────────────────────────
@@ -536,6 +555,15 @@ const css = `
     width: ${FRAC_BLANK_W_MM}mm;
     height: ${f(FRAC_ROW_MM)}mm;
     border: ${FRAC_BORDER_MM}mm solid var(--colour-ink);
+  }
+  .h-frac-two { display: inline-flex; flex-direction: column; align-items: center; }
+  .h-frac-two-box {
+    box-sizing: border-box; width: ${FRAC_BLANK_W_MM}mm; height: ${FRAC_TWO_BOX_MM}mm;
+    border: ${FRAC_BORDER_MM}mm solid var(--colour-ink);
+  }
+  .h-frac-two-bar {
+    align-self: stretch; height: ${FRAC_BAR_MM}mm; margin: ${FRAC_TWO_GAP_MM}mm -1mm;
+    background: var(--colour-ink);
   }
   .h-frac-sep {
     font-size: var(--type-question); font-weight: bold;

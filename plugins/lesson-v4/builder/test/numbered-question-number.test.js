@@ -132,3 +132,18 @@ test('a question that wraps keeps its left edge', () => {
   );
   assert.equal(questionText(slide).options.align, 'left');
 });
+
+test('two short sums on a whole starter body grow to fill it', () => {
+  // A Year 4 column addition starter stopped at a 54pt ceiling, two sums in the
+  // left half and the rest of the slide empty; the teacher called it wasted dead
+  // space and chose the same sums grown to fill the slide (14 October 2026). The
+  // room decides the size now, not a ceiling.
+  const zone = { x: 0.22, y: 2.52, w: 12.89, h: 4.73 };
+  const slide = draw(zone, { questions: [{ text: '246 + 138 =' }, { text: '3,353 + 152 =' }] });
+  const texts = slide.texts.filter((entry) => /question-text-/.test(entry.options.objectName || ''));
+  assert.ok(texts.every((entry) => entry.options.fontSize >= 90), 'sums should be far past the old 54');
+  const cards = slide.shapes;
+  const used = cards.reduce((s, c) => s + c.options.h, 0) + 0.15;
+  assert.ok(used / zone.h > 0.85, 'the two cards should take most of the body height');
+  assert.ok(Math.max(...cards.map((c) => c.options.w)) / zone.w > 0.8, 'and most of its width');
+});

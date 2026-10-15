@@ -19,6 +19,8 @@
 // different task, and its room is the designer's to judge, so it is never
 // reported here.
 
+const fs = require("node:fs");
+const path = require("node:path");
 const { holdsBookAnswer } = require("./helpers");
 
 const WRITING = new Set(["written-answers", "writing-frame", "named-claim"]);
@@ -122,4 +124,37 @@ function sameQuestionProblems(sheets) {
   return problems;
 }
 
-module.exports = { sameQuestionProblems };
+// The levels the adaptation gives the Expected task unchanged, read from its
+// own "Resource decision: Use Expected unchanged" line under that level's
+// heading, with the reason it gives. Only a level with no sheet of its own.
+function sharedWithExpected(worksheet) {
+  const sheets = (worksheet && worksheet.sheets) || {};
+  const where = worksheet && worksheet.meta && worksheet.meta.adaptationPath;
+  if (!sheets.expected || typeof where !== "string") return [];
+  let text;
+  try {
+    text = fs.readFileSync(path.resolve(where), "utf8");
+  } catch {
+    return [];
+  }
+  const sections = text.split(/^##\s+/m);
+  const found = [];
+  for (const [key, heading] of [["greaterDepth", /^Greater Depth\b/i], ["below", /^Below\b/i]]) {
+    if (sheets[key]) continue;
+    const section = sections.find((part) => heading.test(part));
+    if (!section || !/Resource decision:\s*\**\s*Use Expected unchanged/i.test(section)) continue;
+    const reason = (/^\s*\**Reason:?\**:?\s*(.+)$/im.exec(section) || [])[1] || "";
+    const what = sheets.expected.recording === "books" ? "the Expected slips" : "the Expected sheet";
+    const label = key === "below" ? "Below" : "Greater Depth";
+    found.push({
+      key,
+      label,
+      line:
+        `no separate sheet. ${label} children use ${what}` +
+        (reason.trim() ? ` (the plan's choice: ${reason.trim()})` : " (the plan's choice).")
+    });
+  }
+  return found;
+}
+
+module.exports = { sameQuestionProblems, sharedWithExpected };

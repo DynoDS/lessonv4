@@ -102,6 +102,50 @@ class TheAnswerIsWhatCanBeWrong(unittest.TestCase):
         fault = row({"new": "Nutrients are inside the small intestine", "rehearsal": None}).fault()
         self.assertIn("the lesson had already said", fault)
 
+    def test_a_case_carried_on_in_old_words_goes_to_the_reviewer(self) -> None:
+        # The 20-lesson test, Year 5 day and night: the second task on the same
+        # two cousins was refused until its designer added story to the slide.
+        day = teach(
+            "Why is it day here and night there?",
+            "The Earth turns, so each place faces the Sun and then faces away.",
+            "The side of the Earth facing the Sun has daylight. The side facing away is in "
+            "darkness. The Earth makes half a turn in twelve hours.",
+        )
+        first = do(
+            "Midday", "Jun is in the UK. Noah is in New Zealand, on the other side of the world. "
+            "It is midday for Jun. Is it light or dark where Noah is?",
+            "Dark. New Zealand is facing away from the Sun.",
+            use={"new": "Noah is in New Zealand, on the other side of the world", "rehearsal": None},
+        )
+        second = do(
+            "Midnight", "Jun is in the UK. Noah is in New Zealand, on the other side of the world. "
+            "It is midnight for Jun. Is it light or dark where Noah is?",
+            "Light. The Earth has made half a turn in twelve hours, so New Zealand is now "
+            "facing the Sun and has daylight.",
+            use={"new": "It is midnight for Jun", "rehearsal": None},
+        )
+        turn = teach(
+            "What happens twelve hours later?",
+            "The Earth has made half a turn.",
+            "In twelve hours the Earth makes half a turn. The side that was facing the Sun now "
+            "faces away, and the side that had darkness now has daylight.",
+        )
+        rows = beside_teaching.read_beside({"teachingSequence": [day, first, turn, second]})
+        carried = rows[-1]
+        self.assertTrue(carried.asked)
+        self.assertLess(carried.share, beside_teaching.SAID_BACK_SHARE)
+        self.assertIsNone(carried.fault())
+        self.assertIn("LOOK AGAIN", carried.declaration_line())
+        self.assertNotIn("LOOK AGAIN", rows[0].declaration_line())
+
+    def test_the_teaching_said_back_is_refused_and_told_what_is_counted(self) -> None:
+        said_back = row({"new": "Nutrients are inside the small intestine", "rehearsal": None})
+        self.assertGreaterEqual(said_back.share, beside_teaching.SAID_BACK_SHARE)
+        fault = said_back.fault()
+        self.assertIn("at least 2 things the lesson has not named yet", fault)
+        self.assertIn("Adding detail to the task", fault)
+        self.assertIsNone(said_back.look_again())
+
     def test_a_new_that_is_not_in_the_task_is_refused(self) -> None:
         fault = row({"new": "a fresh explanatory condition about digestion", "rehearsal": None}).fault()
         self.assertIn("the task children are set does not contain", fault)
@@ -213,6 +257,20 @@ class AUseHasAWrongAnswerAChildWouldGive(unittest.TestCase):
         named = row({"new": self.NEW, "wrong": "It was not chewed enough, so it came out", "rehearsal": None}, SWEETCORN)
         self.assertIsNone(named.fault())
         self.assertIn("A child who has not understood would say:", named.declaration_line())
+
+    def test_the_task_is_read_as_the_child_who_half_listened(self) -> None:
+        """A Year 4 science check (11 October 2026) followed `Plants are
+        producers ...` with a lettuce, a slug and a frog. Read as a child who
+        heard nothing it needed the lesson, since that child has never met
+        `producer`; read beside the Teach's one sentence it is the only plant
+        among animals. So both views print that sentence beside the task."""
+        named = row({"new": self.NEW, "wrong": "It was not chewed enough, so it came out", "rehearsal": None}, SWEETCORN)
+        self.assertTrue(named.headline)
+        line = named.half_listener_line()
+        self.assertIn("The child who half listened has this one sentence and everyday sense:", line)
+        self.assertIn(named.headline, line)
+        rehearsed = row({"new": None, "wrong": None, "rehearsal": REASON["rehearsal"]})
+        self.assertEqual(rehearsed.half_listener_line(), "")
 
     def test_a_bare_yes_is_not_a_wrong_answer(self) -> None:
         for bare in ("yes", None):

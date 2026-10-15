@@ -125,6 +125,10 @@ function drawVisualGrid(pptx, slide, questions, box, ctx, startAt) {
   const rows  = Math.ceil(count / cols);
   const cellW = (box.w - CARD_GAP * (cols - 1)) / cols;
   const cellH = (box.h - CARD_GAP * (rows - 1)) / rows;
+  // Clock questions are one size across the grid, as they are in a row.
+  const clockRowReserve = require('../../../shared/visuals/clock-svg').rowReserve(
+    questions.filter(function (q) { return isContentObject(q) && q.type === 'clock'; })
+  );
 
   questions.forEach(function (q, i) {
     const col   = i % cols;
@@ -142,6 +146,7 @@ function drawVisualGrid(pptx, slide, questions, box, ctx, startAt) {
     });
 
     const zone = { x: cellX, y: cellY, w: cellW, h: cellH, noCard: true }; // inside the question card
+    if (clockRowReserve && isContentObject(q) && q.type === 'clock') zone.clockRowReserve = clockRowReserve;
     if (isContentObject(q)) {
       drawContent(pptx, slide, zone, q, ctx);
     } else {

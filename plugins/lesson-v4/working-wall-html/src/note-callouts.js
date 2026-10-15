@@ -19,6 +19,18 @@
 // and the box are blue whatever the card's own colour.
 
 const { boldWidthPx } = require("./layout");
+// A fraction in a note is written top and bottom, like every label in the
+// drawing it points at. The note is drawn here, on top of the picture, so it
+// was neither the wall's words nor one of the shared drawings and kept its
+// slash ("3/4 = 6/8" beside bars labelled with stacked fractions: stress test,
+// 12 October 2026).
+const { stackFractionsInSvg } = require("../../shared/visuals/stacked-fraction-labels");
+const { FRACTION } = require("../../shared/text/stacked-fractions");
+
+function holdsFraction(line) {
+  FRACTION.lastIndex = 0;
+  return FRACTION.test(line);
+}
 
 const BLUE = "#0070C0";
 const BLUE_FILL = "#E8F2FB";
@@ -76,7 +88,9 @@ function noteCalloutsSvg(callouts, anchors, width, height, baseHref, font) {
   const places = placesOf(anchors, width, height);
   const unit = Math.min(width, height);
   const fontPx = unit * 0.075;
-  const lineH = fontPx * 1.3;
+  // A line holding a stacked fraction is taller than a line of words, so a
+  // drawing with one gives every note line that room.
+  const lineH = fontPx * (callouts.some((c) => linesOf(c.note).some(holdsFraction)) ? 1.65 : 1.3);
   const pad = fontPx * 0.55;
   const run = unit * 0.11;
   const stroke = unit * 0.011;
@@ -164,7 +178,7 @@ function noteCalloutsSvg(callouts, anchors, width, height, baseHref, font) {
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${fullW}" height="${fullH}" viewBox="0 ${n(-top)} ${fullW} ${fullH}">` +
     `<image href="${baseHref}" xlink:href="${baseHref}" x="${n(side)}" y="0" width="${width}" height="${height}"/>` +
-    parts.join("") +
+    stackFractionsInSvg(parts.join("")) +
     `</svg>`;
   return { svg, width: fullW, height: fullH };
 }

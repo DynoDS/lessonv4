@@ -21,7 +21,7 @@ answer as printed (the worksheet designer's rules 1 and 11).
 | `mark-on-a-visual` | the thing being marked: `number-line`, `coordinate-grid`, `reflection-grid`, `fraction-bar`, `map`, `grid-map`, `clock-row`, `place-value-counter-chart`, `ruler`, or a `source-text` the child highlights on |
 | `match-or-join` | `match-up`, or `card-row` and `timeline` where the join runs to a line |
 | `sort-into-groups` | `sort-grid`, `venn`, `carroll` |
-| `put-in-order` | `order-numbers`, `order-table`, `data-table-with-ordering`, `process-chain`, `storyboard` |
+| `put-in-order` | `order-numbers`, `order-table`, `data-table-with-ordering`, `process-chain`, `cycle`, `storyboard` |
 | `choose-from-options` | `multiple-choice`, `circle-the-answer`, `chip-bank` |
 | `complete-the-table` | `recording-table`, with `rows` where some cells are supplied |
 | `complete-the-model` | the taught structure: `part-whole`, `number-sentence`, `bar-model`, `method-frame`, `number-pyramid`, `inequality-with-boxes`, `compare-row`, the column-method and place-value grids |
@@ -98,7 +98,9 @@ tick-or-cross box, ruled lines, both - is an ordinary response underneath. Most
 "is Ethan right, and how do you know" tasks are this, and it is the same helper
 on every level. It prints in reading order: `text` sets the scene above the
 words (`Aisha is working out 1,435 × 42.`), `ask` is the question about them
-and prints underneath, then the box, then the lines. A child has to read what
+and prints underneath, then the box, then the lines. A claim with no `ask` gets
+no lines unless `lines` asks for them: its question follows in the next helper,
+and the room to answer belongs there. A slip prints neither lines nor box. A child has to read what
 Emma said before being asked whether she is right, so the question belongs in
 `ask` (or in the question helper that follows the claim), never in `text`.
 When the plan asks for a tick-or-cross box, set `tickOrCross: true` and leave

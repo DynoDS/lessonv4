@@ -120,7 +120,7 @@ async function calibrate(layOut, options = {}) {
       browser = await require("./chrome").launchBrowser();
       own = true;
     } catch (error) {
-      return { available: false, measured: 0, reason: String(error && error.message) };
+      return { available: false, measured: 0, reason: require("./chrome").whyNoBrowser(error) };
     }
   }
 

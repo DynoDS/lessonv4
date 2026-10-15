@@ -202,7 +202,7 @@ class TheScoutMayTakeAPlainerPhotograph(unittest.TestCase):
         self.result(args, entry, schedule[0])
         validator.validate_result(args)
         self.result(args, entry, schedule[0], other="field")
-        with self.assertRaisesRegex(validator.ValidationError, "forbidden or missing fields"):
+        with self.assertRaisesRegex(validator.ValidationError, "not allowed other"):
             validator.validate_result(args)
 
 

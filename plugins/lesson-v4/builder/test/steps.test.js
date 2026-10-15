@@ -280,6 +280,51 @@ test('a smaller point under a step is lighter, no larger, and opens in orange, i
   assert.match(block.objectName, /^NOFIT_/);
 });
 
+// 13 October 2026: a list for asking an adult for help hung one sentence
+// starter under every step, and the one starter that was a question printed
+// orange and bold, as though it were a what-if. A question with nothing after
+// it on its line opens no smaller point, so it prints like the other starters.
+test('a sentence starter that is a question prints plain, like the starters beside it', () => {
+  const { texts } = drawn(ZONE, {
+    steps: ['Say what you noticed.\nI noticed that ___.', 'Ask for help.\nPlease can you ___ so that ___?', 'Add the ones.\n10 or more? Exchange.'],
+  });
+  const runOf = (pattern) => texts
+    .filter((t) => Array.isArray(t.content))
+    .flatMap((t) => t.content)
+    .find((r) => pattern.test(r.text)).options;
+
+  assert.equal(runOf(/Please can you/).bold, false);
+  assert.notEqual(runOf(/Please can you/).color, 'E46C0A');
+  assert.equal(runOf(/Please can you/).color, runOf(/I noticed that/).color);
+  // A real what-if is untouched.
+  assert.equal(runOf(/^10 or more\?$/).color, 'E46C0A');
+  assert.equal(runOf(/^10 or more\?$/).bold, true);
+});
+
+// 13 October 2026: a Year 5 list printed its steps at 21pt over points at 18pt
+// with room to spare. The teacher: "I'd want it 20, but like I said 18 is fine
+// if needed." So a point is 20pt wherever the list fits that way.
+test('a smaller point prints at 20pt when the list fits, and at 18pt only when it does not', () => {
+  const steps = [
+    'Find the biggest {{denominator}}.',
+    'Change the other fractions to that {{denominator}}.\nMultiply top and bottom by <<the same number>>.',
+    'Put the {{numerators}} in order.\nGreatest first? Start with the biggest {{numerator}}.',
+    'Write <<the fractions from the question>> in that order.'
+  ];
+  const pointSize = (zone) => {
+    const { texts } = drawn(zone, { steps });
+    const block = texts.find((t) => Array.isArray(t.content) && t.content.some((r) => /Multiply top/.test(r.text)));
+    return block ? block.content.find((r) => /Multiply top/.test(r.text)).options.fontSize : null;
+  };
+  const sizes = [];
+  for (let h = 6.4; h >= 3.6; h -= 0.2) sizes.push(pointSize({ ...ZONE, h }));
+  const drawnSizes = sizes.filter((size) => size !== null && size !== undefined);
+  assert.ok(drawnSizes.includes(20), 'with room, the point is 20pt');
+  assert.ok(!drawnSizes.includes(19), 'a point is 20pt or the 18pt floor, nothing between');
+  const first18 = drawnSizes.indexOf(18);
+  assert.ok(first18 === -1 || first18 > drawnSizes.lastIndexOf(20), '18pt only once the panel is too short for 20pt');
+});
+
 // Without a smaller point anywhere, a list is sized exactly as it always was.
 test('a list with no smaller points keeps the ordinary sizing', () => {
   const { texts } = drawn(ZONE, { steps: ['Read it', 'Say it', 'Write it'] });

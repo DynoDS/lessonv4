@@ -1,6 +1,7 @@
 'use strict';
 
 const { FONT, COLOURS, FIT } = require('../styles');
+const { warn } = require('../warnings');
 const { clearlyUnder } = require('../../../shared/visuals/hair-under');
 const { splitAnswerRuns } = require('../answer-text');
 const { fitGroupId, growFitObjectName } = require('../text-fit');
@@ -152,9 +153,18 @@ function columnWidths(headers, rows, innerW, rowH, fixed) {
 }
 
 function drawTable(pptx, slide, zone, data, ctx) {
-  const headers = Array.isArray(data.headers) ? data.headers : [];
+  const headers = Array.isArray(data.headers) ? data.headers
+    : Array.isArray(data.columns) ? data.columns : [];
   const rows    = Array.isArray(data.rows)    ? data.rows    : [];
-  if (headers.length === 0 || rows.length === 0) return;
+  if (headers.length === 0 || rows.length === 0) {
+    // Nothing a designer supplies is dropped without a word. A table with rows
+    // and no headings used to draw nothing and say nothing.
+    if (rows.length && ctx && Number.isFinite(ctx.slideIndex)) {
+      warn(ctx.slideIndex, 'TABLE_DREW_NOTHING: this table has rows and no "headers", so none of it ' +
+        'is on the slide. Give it "headers", one per column (a "columns" list is read as the same thing).');
+    }
+    return;
+  }
 
   const cols   = headers.length;
   const innerX = zone.x + PAD;

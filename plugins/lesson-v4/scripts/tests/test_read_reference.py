@@ -298,8 +298,8 @@ class PagingTests(unittest.TestCase):
             self.assertIn(f"Rule {n}.", seen)
 
     def test_a_page_past_the_end_is_an_error(self):
-        (self.root / "agents" / "slide-designer.md").write_text("# Role\nshort\n", encoding="utf-8")
-        rc, out, err = self.run_main("--role", "slide-designer", "--page", "2")
+        (self.root / "agents" / "worksheet-designer.md").write_text("# Role\nshort\n", encoding="utf-8")
+        rc, out, err = self.run_main("--role", "worksheet-designer", "--page", "2")
         self.assertEqual(rc, 2)
         self.assertEqual(out, "")
         self.assertIn("1 page", err)
@@ -350,6 +350,57 @@ class PagingTests(unittest.TestCase):
         rc, out, _ = self.run_main("--role", "lesson-designer")
         self.assertNotIn("voice", out)
 
+    def test_the_slide_designer_role_read_carries_its_start_up_guidance(self):
+        # It lays every slide out from these, so they arrive whole as pages of the role read.
+        refs = self.root / "references"
+        (refs / "preferences.md").write_text(
+            "# Teacher Preferences\n\nprefs intro\n\n## Contents — each agent reads its own sections\n\ncontents page\n\n"
+            "## Starters\n\nnot this\n\n## Slide Philosophy\n\nslide philosophy\n",
+            encoding="utf-8",
+        )
+        (refs / "teacher-slide-visual-profile.md").write_text("# Profile\n\nvisual profile\n", encoding="utf-8")
+        (refs / "slide-composition-playbook.md").write_text("# Playbook\n\ncomposition playbook\n", encoding="utf-8")
+        (refs / "templates.md").write_text(
+            "# Slide Template Layer\n\ncatalogue intro\n\n## 1. Concepts\n\nconcepts\n\n## 2. Fixed templates\n\nfixed layouts\n\n"
+            "## 3. Free templates\n\nfree layouts\n\n## 4. Content object catalogue\n\nlooked up later\n\n"
+            "## 6. Template-layer settings\n\nlayer settings\n",
+            encoding="utf-8",
+        )
+        (refs / "context-pictures.md").write_text(
+            "# Optional context pictures and relevant decoration\n\npictures intro\n\n## The boundary\n\nboundary\n\n"
+            "## Where an optional picture sits on a slide\n\nwhere it sits\n\n## Priority 2 source routes\n\ndecorator only\n",
+            encoding="utf-8",
+        )
+        (self.root / "agents" / "slide-designer.md").write_text("# Slide Designer\nrole\n", encoding="utf-8")
+        rc, out, _ = self.run_main("--role", "slide-designer")
+        self.assertEqual(rc, 0)
+        for piece in ("prefs intro", "contents page", "slide philosophy", "visual profile", "composition playbook",
+                      "catalogue intro", "concepts", "fixed layouts", "free layouts", "layer settings", "pictures intro", "boundary",
+                      "where it sits"):
+            self.assertIn(piece, out)
+        self.assertLess(out.index("role"), out.index("prefs intro"))
+        # What is looked up at the moment of use, or belongs to another worker, stays out.
+        for piece in ("not this", "looked up later", "decorator only"):
+            self.assertNotIn(piece, out)
+
+    def test_a_catalogue_entry_is_found_by_its_bare_name(self):
+        # The catalogue heads an entry `steps`; a backtick is the Windows shell's escape character.
+        (self.root / "references" / "templates.md").write_text(
+            "# Catalogue\n\n## 4. Content object catalogue\n\n### `steps`\n\nsteps contract\n\n### `text`\n\ntext contract\n",
+            encoding="utf-8",
+        )
+        rc, out, _ = self.run_main("--select", "templates.md::steps")
+        self.assertEqual(rc, 0)
+        self.assertIn("steps contract", out)
+        self.assertNotIn("text contract", out)
+
+    def test_every_companion_names_guidance_the_plugin_really_has(self):
+        # A renamed heading would otherwise fail a worker's very first read, mid-lesson.
+        plugin = SCRIPT.resolve().parents[1]
+        for role in reader.ROLE_COMPANIONS:
+            text = reader.role_reading(plugin, role)
+            self.assertGreater(len(text), len(reader.read_role(plugin, role)), role)
+
 
 class SameCallTests(unittest.TestCase):
     """On Codex a tool call's output is cut in the middle past about 10,000 tokens,
@@ -363,7 +414,7 @@ class SameCallTests(unittest.TestCase):
         (self.root / "agents").mkdir()
         (self.root / "references").mkdir()
         body = "# Role\n\n" + "".join(f"Rule {n}. " + ("word " * 300) + "\n\n" for n in range(60))
-        (self.root / "agents" / "slide-designer.md").write_text(body, encoding="utf-8")
+        (self.root / "agents" / "worksheet-designer.md").write_text(body, encoding="utf-8")
         self.clock = [1000.0]
         patches = [
             unittest.mock.patch.dict(os.environ, {"CODEX_THREAD_ID": "thread-1"}),
@@ -378,7 +429,7 @@ class SameCallTests(unittest.TestCase):
         self.clock[0] += advance
         out = io.StringIO()
         with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
-            rc = reader.main(["--plugin-root", str(self.root), "--role", "slide-designer", "--page", str(page)])
+            rc = reader.main(["--plugin-root", str(self.root), "--role", "worksheet-designer", "--page", str(page)])
         return rc, out.getvalue()
 
     def test_a_second_page_in_the_same_call_is_refused_and_named(self):
@@ -387,7 +438,7 @@ class SameCallTests(unittest.TestCase):
         rc, second = self.read(2)
         self.assertEqual(rc, 3)
         self.assertIn("REFERENCE_READ_REFUSED", second)
-        self.assertIn("--role slide-designer --page 2", second)
+        self.assertIn("--role worksheet-designer --page 2", second)
         self.assertNotIn("Rule", second)
 
     def test_a_chain_of_pages_in_one_call_prints_one_page(self):
@@ -420,7 +471,7 @@ class SameCallTests(unittest.TestCase):
         env = {**os.environ, "CODEX_THREAD_ID": f"parallel-{os.getpid()}", "TMP": str(self.root / "tmp"), "TEMP": str(self.root / "tmp")}
         (self.root / "tmp").mkdir(exist_ok=True)
         procs = [
-            subprocess.Popen([sys.executable, str(SCRIPT), "--plugin-root", str(self.root), "--role", "slide-designer", "--page", str(p)],
+            subprocess.Popen([sys.executable, str(SCRIPT), "--plugin-root", str(self.root), "--role", "worksheet-designer", "--page", str(p)],
                              env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             for p in (1, 2, 3)
         ]

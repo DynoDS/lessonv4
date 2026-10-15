@@ -31,6 +31,7 @@ const { plainCriteria } = require("../../shared/text/criteria-marks");
 const { checkFit, criteriaPanelsOn, NOT_ON_SHEETS } = require("./render");
 const { renderContent, requiredSets, helperNames, holdsBookAnswer } = require("./helpers");
 const { namesTheBank } = require("./helpers/shared");
+const { frameContentWidthMm } = require("./helpers/methods");
 const { canonicalQuestionLabel } = require("./labels");
 
 // Any width will do: the question is whether the words are ON the page, and a
@@ -153,6 +154,70 @@ function questionBehindItsMaterial(node) {
   // number to find the question (Daniel, 5 October 2026).
   hoisted.numberAt = at;
   return hoisted;
+}
+
+// A sum left loose directly above a question is part of that question.
+//
+// A Year 4 Greater Depth slip printed "2,438 + 1,366 =" and "2,431 + 1,366 ="
+// each on its own ruled row with no number, above Noah's claim, and "(2)" sat
+// three rows lower beside "Is Noah correct?" (stress test of 7 October 2026,
+// round two). The designer had set the sums as loose lines; nothing tied them
+// to question 2, and a child cannot act on a sum with no number. Daniel's
+// ruling (14 October 2026): the number at the top, then the sums, then Noah,
+// then the question; and question 1's missing-digit sum under "(1a)".
+//
+// Only a sum: digits, operators, boxes and blanks, no words. Words before a
+// question are a scene or a source, which questionBehindItsMaterial already
+// keeps with its one question, and several questions can share one. A sum
+// before a set of several questions is shared too, so it stays loose. The
+// number stays beside the first sum (numberAt 0) rather than moving down to the
+// asking line: a sum is something to work, not context to read past.
+const SUM_TEXT = /^[\d\s.,+\-−×x÷=<>()?□▢☐◻▫_]+$/;
+
+function isLooseSum(node) {
+  if (!node || typeof node !== "object" || node.question || node.questionGroupId !== undefined) return false;
+  if (node.helper !== "instruction" && node.helper !== "inequality-with-boxes") return false;
+  if (node.hint) return false;
+  if (node.helper === "inequality-with-boxes" && node.text) return false;
+  const text = String((node.helper === "instruction" ? node.text : node.expression) ?? "").trim();
+  return SUM_TEXT.test(text) && /\d/.test(text) && /[+\-−×x÷=<>]/.test(text);
+}
+
+function isOneQuestion(node) {
+  if (!node || typeof node !== "object" || !node.question) return false;
+  return !(Array.isArray(node.items) && node.items.length > 1);
+}
+
+function joinLooseSums(items) {
+  const out = [];
+  let i = 0;
+  while (i < items.length) {
+    let j = i;
+    while (j < items.length && isLooseSum(items[j])) j += 1;
+    if (j > i && isOneQuestion(items[j])) {
+      const sums = items.slice(i, j);
+      const next = items[j];
+      const { question, questionGroupId, groupPrompt, numberAt, ...inner } = next;
+      const joined = { question };
+      if (questionGroupId !== undefined) joined.questionGroupId = questionGroupId;
+      if (groupPrompt !== undefined) joined.groupPrompt = groupPrompt;
+      joined.stack = Array.isArray(inner.stack) && !inner.helper && Object.keys(inner).length === 1
+        ? [...sums, ...inner.stack]
+        : [...sums, inner];
+      joined.numberAt = 0;
+      // A claim inside marks its own asking line for the number; the sum wins.
+      joined.numberStaysAtSum = true;
+      out.push(joined);
+      i = j + 1;
+    } else if (j > i) {
+      out.push(...items.slice(i, j));
+      i = j;
+    } else {
+      out.push(items[i]);
+      i += 1;
+    }
+  }
+  return out;
 }
 
 // One answer, one place to write it. When a question prints its answer's line
@@ -323,6 +388,9 @@ function makeNumberer() {
         });
       }
       if (!node || typeof node !== "object") return node;
+      if (!insideNumberedQuestion && !node.question && Array.isArray(node.stack)) {
+        node = { ...node, stack: joinLooseSums(node.stack) };
+      }
       if (!insideNumberedQuestion) node = questionBehindItsMaterial(node);
 
       // A Part written as a bare set of ONE question, group id and all, has one
@@ -512,6 +580,71 @@ function questionLabelsForSheet(sheet) {
   const numberer = makeNumberer();
   for (const page of pagesOf(sheet)) numberer.numberZones(page.zones || {});
   return numberer.finish();
+}
+
+// A whole fraction a child has to write ("___/___" in a method frame, a blank
+// in a fraction sequence) is a box over a box with the bar between for a
+// younger child, and one tall box for an older one. The teacher's line (13
+// October 2026): Years 1 to 4 are younger, and so is every Below sheet, whose
+// children are working at the younger level. A sheet with no year group takes
+// the two boxes: the form that always reads as a fraction. A piece that states
+// its own `fractionBlank` is left alone.
+function fractionBlankFor(key, yearGroup) {
+  const year = parseYearGroup(yearGroup);
+  return key === "below" || year === null || year <= 4 ? "boxes" : "tall";
+}
+
+function withFractionBlank(node, form) {
+  if (Array.isArray(node)) return node.map((n) => withFractionBlank(n, form));
+  if (!node || typeof node !== "object") return node;
+  const out = {};
+  for (const [key, value] of Object.entries(node)) {
+    out[key] = withFractionBlank(value, form);
+  }
+  if (out.helper && out.fractionBlank === undefined) out.fractionBlank = form;
+  return out;
+}
+
+// A method frame is only as wide as its longest line (helpers/methods.js), so
+// the frames of one question's parts ((1a) beside (1b)) would print at two
+// widths when their lines differ by a digit. Frames that share a
+// `questionGroupId` are all given the widest one's width.
+function matchedFrameWidths(node, groupId, widths) {
+  if (Array.isArray(node)) {
+    node.forEach((n) => matchedFrameWidths(n, groupId, widths));
+    return widths;
+  }
+  if (!node || typeof node !== "object") return widths;
+  const group = node.questionGroupId || groupId;
+  if (node.helper === "method-frame" && group) {
+    const entry = widths.get(group) || { count: 0, widthMm: 0 };
+    entry.count += 1;
+    entry.widthMm = Math.max(entry.widthMm, frameContentWidthMm(node));
+    widths.set(group, entry);
+  }
+  for (const value of Object.values(node)) matchedFrameWidths(value, group, widths);
+  return widths;
+}
+
+function withMatchedFrames(node, groupId, widths) {
+  if (Array.isArray(node)) return node.map((n) => withMatchedFrames(n, groupId, widths));
+  if (!node || typeof node !== "object") return node;
+  const group = node.questionGroupId || groupId;
+  const out = {};
+  for (const [key, value] of Object.entries(node)) {
+    out[key] = withMatchedFrames(value, group, widths);
+  }
+  const entry = group && widths.get(group);
+  if (out.helper === "method-frame" && entry && entry.count > 1 && out.matchWidthMm === undefined) {
+    out.matchWidthMm = entry.widthMm;
+  }
+  return out;
+}
+
+function sheetWithFractionBlank(sheet, key, meta) {
+  if (!sheet || typeof sheet !== "object" || sheet.zones == null) return sheet;
+  const zones = withFractionBlank(sheet.zones, fractionBlankFor(key, meta && meta.yearGroup));
+  return { ...sheet, zones: withMatchedFrames(zones, null, matchedFrameWidths(zones, null, new Map())) };
 }
 
 // Every writing helper takes a `phase` that sets how tall a ruled line is, and
@@ -1002,7 +1135,8 @@ function resolveAutoLayouts(worksheet) {
   // behaves as it did; the rest ride along in `alsoRefused` for the preflight
   // to print in the same breath.
   let refusal = null;
-  for (const [key, sheet] of Object.entries(sheets)) {
+  for (const [key, rawSheet] of Object.entries(sheets)) {
+    const sheet = sheetWithFractionBlank(rawSheet, key, meta);
     let resolved;
     try {
       resolved = resolveWithClaimLook(sheet, meta);
@@ -1152,7 +1286,7 @@ function sheetsOf(worksheet) {
     // An auto sheet that reached here unresolved (a caller going straight to
     // the library) still resolves; the scripts have normally done it already,
     // in which case this is a straight pass-through.
-    const { sheet } = resolveAutoSheet(sheets[key], meta);
+    const { sheet } = resolveAutoSheet(sheetWithFractionBlank(sheets[key], key, meta), meta);
     const pages = pagesOf(sheet);
     // One numberer for the whole level: the approved two-page pair carries on
     // 1, 2, 3, 4 rather than starting again on page 2, and the next level gets
@@ -1651,6 +1785,10 @@ function unprintedTextProblems(sheet) {
         return;
       }
       if (!node || typeof node !== "object") return;
+      // Words marked as an answer (a cycle's filled-in stage, copied from an
+      // answers slide) are left off a pupil sheet on purpose: the child writes
+      // them. Only the teacher's answer sheet prints them.
+      if (node.answer === true) return;
       for (const [key, value] of Object.entries(node)) {
         if (
           typeof value === "string" &&
@@ -1991,6 +2129,7 @@ module.exports = {
   questionCount,
   numbered,
   resolveAutoSheet,
+  fractionBlankFor,
   resolveAutoLayouts,
   sheetCriteriaPanels,
   withoutSheetCriteriaPanels,

@@ -105,3 +105,20 @@ test('a title never becomes the starter prompt', () => {
   const titled = { headerStyle: 'starter', title: 'Rounding to 1,000' };
   assert.equal(bodyZone('starter', titled).y, 0.25 + HEADER_STARTER_H);
 });
+
+test('a topic name in heading is not a prompt; a question or instruction is', () => {
+  // Designers copied the starter unit's label into `heading`, and a Year 4
+  // science deck printed "Food in our bodies" between "Starter" and its
+  // questions (11 October 2026). The teacher's ruling: only a real question or
+  // instruction prints there. A sentence ends like one; a topic name does not.
+  assert.equal(starterPrompt({ heading: 'Food in our bodies' }), '');
+  assert.equal(starterPrompt({ heading: 'Disagreeing kindly' }), '');
+  assert.equal(starterPrompt({ heading: 'Which of these are whole sentences?' }),
+    'Which of these are whole sentences?');
+  assert.equal(starterPrompt({ heading: 'Use column subtraction.' }), 'Use column subtraction.');
+  assert.equal(starterPrompt({ heading: 'Round each number:' }), 'Round each number:');
+  // The dropped topic name gives its row of height back to the questions.
+  const topic = { headerStyle: 'starter', title: 'Food in our bodies', heading: 'Food in our bodies' };
+  assert.equal(bodyZone('starter', topic).y, 0.25 + HEADER_STARTER_H);
+  assert.ok(!capture(topic).some((entry) => entry.content === 'Food in our bodies'));
+});

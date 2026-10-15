@@ -212,9 +212,9 @@ def validate_manifest(args) -> None:
     if not isinstance(assignments, list) or len(assignments) != len(expected_batches):
         raise ValidationError("manifest batch count does not match deterministic partition")
     seen = []
-    prefix = args.expected_prefix
+    stem = compiler.batch_stem(args.expected_prefix, requirements_path)
     for number, (expected_batch, row) in enumerate(zip(expected_batches, assignments), 1):
-        batch_id = f"{prefix}{number}"
+        batch_id = f"{stem}{number}"
         if not isinstance(row, dict) or set(row) != {"batch_id", "assignment", "filenames"}:
             raise ValidationError(
                 f"manifest batch {number} must carry exactly batch_id, assignment and filenames"
@@ -632,10 +632,32 @@ def summary_candidate(summary: dict, candidate_id: str, work_root: Path, label: 
     return candidate
 
 
+def assignment_filenames(assignment) -> list[str]:
+    entries = assignment.get("entries") if isinstance(assignment, dict) else None
+    if not isinstance(entries, list):
+        return []
+    return [row.get("filename") for row in entries if isinstance(row, dict) and isinstance(row.get("filename"), str)]
+
+
+def field_difference(found: set, wanted: set) -> str:
+    """Say which fields are missing and which do not belong, so a wrong shape is fixed in one go."""
+    parts = []
+    if wanted - found:
+        parts.append("missing " + ", ".join(sorted(wanted - found)))
+    if found - wanted:
+        parts.append("not allowed " + ", ".join(sorted(map(str, found - wanted))))
+    return f" ({'; '.join(parts)})" if parts else ""
+
+
 def validate_result(args) -> None:
     assignment_path = Path(args.assignment).resolve()
     assignment = read_json(assignment_path, "assignment")
-    expected = list(args.expected_filename)
+    # The assignment already names its own filenames, and the manifest check
+    # tied them to the frozen requirements before any scout launched, so a
+    # caller who names none is asking about that set. A caller who does name
+    # them (a supplemental wave repeating its compile's list) is still held to
+    # exactly what it named.
+    expected = list(args.expected_filename) or assignment_filenames(assignment)
     if not expected or len(set(expected)) != len(expected):
         raise ValidationError("expected filename set must be non-empty and unique")
     assignment, assignment_entries = validate_assignment_shape(assignment, Path(assignment["requirements"]["path"]).resolve(), Path(args.working_dir).resolve(), args.expected_batch_id, expected)
@@ -643,18 +665,33 @@ def validate_result(args) -> None:
     if work_root != Path(assignment["work_root"]).resolve():
         raise ValidationError("--work-root disagrees with assignment work_root")
     result = read_json(Path(args.result), "result")
-    if not isinstance(result, dict) or set(result) != {"schema_version", "kind", "batch_id", "entries"} or result.get("schema_version") != 2 or result.get("kind") != "image" or result.get("batch_id") != args.expected_batch_id:
-        raise ValidationError("result must contain only the schema 2 image result fields")
+    top_level = {"schema_version", "kind", "batch_id", "entries"}
+    if not isinstance(result, dict):
+        raise ValidationError("result must be one JSON object with schema_version, kind, batch_id and entries")
+    if set(result) != top_level:
+        raise ValidationError(
+            "result must carry exactly schema_version, kind, batch_id and entries, with one row per picture "
+            f"under entries{field_difference(set(result), top_level)}"
+        )
+    if result.get("schema_version") != 2 or result.get("kind") != "image" or result.get("batch_id") != args.expected_batch_id:
+        raise ValidationError(f'result must say schema_version 2, kind "image" and batch_id "{args.expected_batch_id}"')
     rows = result.get("entries")
-    if not isinstance(rows, list) or [r.get("filename") if isinstance(r, dict) else None for r in rows] != expected:
-        raise ValidationError("result must contain exactly the expected filename set in order")
+    found = [r.get("filename") if isinstance(r, dict) else None for r in rows] if isinstance(rows, list) else None
+    if found != expected:
+        raise ValidationError(
+            "result entries must be one row per assignment filename, in the assignment's order: "
+            f"expected {expected!r}, found {found!r}"
+        )
     compiler = load_compiler(); attempts = load_attempts()
     generation_available = generation_is_available(assignment)
     outage_notes: list[str] = []
     for row, compiled in zip(rows, assignment_entries):
         label = row.get("filename") if isinstance(row, dict) else "<invalid>"
         if not isinstance(row, dict) or set(row) - OPTIONAL_RESULT_FIELDS != RESULT_FIELDS:
-            raise ValidationError(f"{label}: result row has forbidden or missing fields")
+            difference = field_difference(set(row) - OPTIONAL_RESULT_FIELDS, RESULT_FIELDS) if isinstance(row, dict) else ""
+            raise ValidationError(
+                f"{label}: a result row carries exactly filename, status, selection, staging_path and reason{difference}"
+            )
         if row["filename"] != compiled["filename"] or row["status"] not in STATUSES:
             raise ValidationError(f"{label}: invalid result row identity or status")
         status = row["status"]; selection = row["selection"]; staged = row["staging_path"]; reason = row["reason"]
@@ -950,7 +987,10 @@ def parser():
     result.add_argument("--working-dir", required=True)
     result.add_argument("--work-root", required=True)
     result.add_argument("--expected-batch-id", required=True)
-    result.add_argument("--expected-filename", action="append", default=[])
+    result.add_argument(
+        "--expected-filename", action="append", default=[],
+        help="repeat once per filename to hold the assignment to a named list; omit to use the assignment's own",
+    )
     result.set_defaults(func=validate_result)
     return root
 

@@ -55,6 +55,23 @@ test("a ten frame prints two to a page with boxes a counter fits in", async () =
   assert.ok(box >= 30, `each box printed ${box.toFixed(1)}mm, too small for a counter`);
 });
 
+// The ten frame under its own name (13 October 2026) keeps the ruling the
+// fraction grid's ten frame was given: two to a page, boxes a counter fits in.
+test("a ten frame asked for by name prints two to a page with boxes a counter fits in", async () => {
+  const laid = await laidFigure({ visual: "ten-frame", task: "Put counters on the ten frame to make each number.", per: "pair", spec: {} });
+  assert.strictEqual(laid.perPage, 2);
+  assert.strictEqual(laid.pages.length, 8);
+  const box = laid.widthMm / 5;
+  assert.ok(box >= 30, `each box printed ${box.toFixed(1)}mm, too small for a counter`);
+});
+
+test("a pair of ten frames goes side by side on its page, with boxes a counter fits in", async () => {
+  const laid = await laidFigure({ visual: "ten-frame", task: "Build each number with counters.", per: "pair", spec: { frames: 2 } });
+  assert.ok(laid.widthMm / laid.heightMm > 4, `the two frames are side by side (printed ${laid.widthMm.toFixed(0)} by ${laid.heightMm.toFixed(0)}mm)`);
+  const box = laid.widthMm / 10.5;
+  assert.ok(box >= 22, `each box printed ${box.toFixed(1)}mm, too small for a counter`);
+});
+
 test("a fraction wall grows down the page as well as across it", async () => {
   const laid = await laidFigure({ visual: "fraction-wall", task: "Find two fractions equal to one half.", per: "child", spec: { fractions: [1, 2, 3, 4, 6, 8, 12] } });
   assert.strictEqual(laid.perPage, 1);

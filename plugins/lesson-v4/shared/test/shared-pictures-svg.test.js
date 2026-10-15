@@ -126,6 +126,70 @@ test('a colour-coded clock prints its time in the hands\' colours; a row of face
   assert.equal(new Set(radii).size, 1, `faces of different sizes: ${radii.join(', ')}`);
 });
 
+// A Year 2 lesson on quarter past and quarter to could not show the long hand on
+// its own, and gave up its coloured hands because they printed 4:45 under a
+// quarter to 5 clock (7 October 2026).
+const handLines = (svg) => [...svg.matchAll(/<line x1="([\d.]+)" y1="([\d.]+)" x2="([\d.]+)" y2="([\d.]+)" stroke="(#[0-9A-F]+)"[^>]*stroke-linecap="round"/g)]
+  .map((m) => ({ length: Math.hypot(Number(m[3]) - Number(m[1]), Number(m[4]) - Number(m[2])), angle: Math.atan2(Number(m[4]) - Number(m[2]), Number(m[3]) - Number(m[1])) * (180 / Math.PI), colour: m[5] }));
+
+test('a clock draws one hand alone, exactly where and as it is drawn beside the other', () => {
+  for (const surface of Object.keys(PROFILES)) {
+    const profile = profileFor(surface, box(surface));
+    const [minute, hour] = handLines(clock.tightSvg({ time: '4:45', colourCoded: true, readout: false }, profile).svg);
+    const long = handLines(clock.tightSvg({ time: '4:45', colourCoded: true, hands: 'minute' }, profile).svg);
+    const short = handLines(clock.tightSvg({ time: '4:45', colourCoded: true, hands: 'hour' }, profile).svg);
+    assert.deepEqual(long, [minute], `${surface}: the long hand alone`);
+    assert.deepEqual(short, [hour], `${surface}: the short hand alone`);
+  }
+  // The short hand at quarter to 5 is three quarters of the way from 4 to 5.
+  const [short] = handLines(clock.tightSvg({ time: '4:45', hands: 'hour' }, 'worksheets').svg);
+  assert.ok(Math.abs(short.angle - (4.75 * 30 - 90)) < 0.5, `the short hand sits at ${short.angle}`);
+  // The words a designer might use for the two hands.
+  assert.equal(handLines(clock.tightSvg({ time: '4:45', hands: 'long' }, 'worksheets').svg).length, 1);
+  assert.equal(handLines(clock.tightSvg({ time: '4:45', hands: 'short hand' }, 'worksheets').svg).length, 1);
+  assert.throws(() => clock.tightSvg({ time: '4:45', hands: 'second' }, 'worksheets'), /CLOCK_HANDS_UNKNOWN/);
+});
+
+test('coloured hands and the digital time under them are separate, and today\'s look is the default', () => {
+  const before = clock.tightSvg({ time: '4:45', colourCoded: true }, 'slides');
+  const bare = clock.tightSvg({ time: '4:45', colourCoded: true, readout: false }, 'slides');
+  assert.match(before.svg, /<tspan fill="#CC0000">4<\/tspan>/);
+  assert.doesNotMatch(bare.svg, /tspan/);
+  assert.deepEqual(handLines(bare.svg).map((h) => h.colour), ['#0070C0', '#CC0000'], 'the hands keep their colours');
+  assert.ok(bare.h < before.h, 'no empty band is left where the readout was');
+  // One hand never prints the time unasked: it would give away the other hand.
+  assert.doesNotMatch(clock.tightSvg({ time: '4:45', colourCoded: true, hands: 'minute' }, 'slides').svg, /tspan/);
+  // Under black hands the digital time is black.
+  const plain = clock.tightSvg({ time: '16:45', readout: true }, 'slides').svg;
+  assert.match(plain, /<tspan fill="#000000">16<\/tspan><tspan fill="#000000">:<\/tspan><tspan fill="#000000">45<\/tspan>/);
+});
+
+test('a row mixing single hands, coloured hands, a readout, a ring and shading keeps every face one size', () => {
+  const faceRadii = (svg) => [...svg.matchAll(/<circle cx="[\d.]+" cy="([\d.]+)" r="([\d.]+)" fill="#FFFFFF"/g)].map((m) => `${m[2]} at ${m[1]}`);
+  const mixed = [
+    { time: '4:45', hands: 'minute', pastTo: true },
+    { time: '4:45', hands: 'hour', colourCoded: true },
+    { time: '4:45', colourCoded: true },
+    { time: '4:45', colourCoded: true, readout: false, minuteRing: true },
+    { hands: false },
+  ];
+  for (const surface of Object.keys(PROFILES)) {
+    const row = clock.tightSvg({ clocks: mixed }, profileFor(surface, { widthMm: 900, heightMm: 200 }));
+    assert.equal(new Set(faceRadii(row.svg)).size, 1, `${surface}: ${faceRadii(row.svg).join(', ')}`);
+    assert.equal((row.svg.match(/<tspan fill/g) || []).length, 3, `${surface}: one readout, under the one face that asked for it`);
+  }
+  // A slide row and a stick-in strip draw their faces one at a time, so each is
+  // told what its neighbours carry.
+  const reserve = clock.rowReserve(mixed);
+  assert.deepEqual(reserve, { readout: true, minuteRing: true });
+  const slide = profileFor('slides', { widthMm: 120, heightMm: 120 });
+  const alone = mixed.map((face) => clock.tightSvg({ ...face, reserve }, slide));
+  assert.equal(new Set(alone.map((o) => `${o.layout.r.toFixed(2)} ${o.w.toFixed(2)} ${o.h.toFixed(2)}`)).size, 1, 'faces drawn one by one are one size and one box');
+  // Faces that already agree are left exactly as they were.
+  assert.equal(clock.rowReserve([{ time: '2:15' }, { time: '7:40' }, { hands: false }]), null);
+  assert.equal(clock.rowReserve([{ time: '2:15', colourCoded: true }, { time: '7:40', colourCoded: true }]), null);
+});
+
 test('a clock face too small for readable numerals is refused by name, and a sheet asks for the room', () => {
   const sheet = profileFor('worksheets', { widthMm: 40 });
   const six = { clocks: Array.from({ length: 6 }, () => ({ time: '1:00' })) };

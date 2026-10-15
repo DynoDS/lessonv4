@@ -776,6 +776,29 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                 + "; a package with slides to check is PARTIAL, not COMPLETE."
             )
 
+    # ── A level that uses the Expected sheet is said, not left to guess ──
+    # The plan can give Greater Depth (or Below) the Expected task unchanged,
+    # and then the pack has no page for it and says nothing: a Year 4 PSHE
+    # pack read as Greater Depth forgotten (the stress test of 7 October 2026,
+    # round two). Daniel, 14 October 2026: the pack stays as it is and "the
+    # best place to say is in the run". The worksheet build names each such
+    # level; the outcome must carry it, starting with the level's name.
+    sheet_build = read_json(working / "build-results" / "worksheets.json", "worksheets build summary", [])
+    shared_sheets = []
+    if isinstance(sheet_build, dict) and isinstance(sheet_build.get("sharedSheets"), list):
+        shared_sheets = [s for s in sheet_build["sharedSheets"] if isinstance(s, dict) and s.get("sheet")]
+    outcome_lines = [line.strip() for line in sections.get("## Outcome", "").splitlines()]
+    for shared in shared_sheets:
+        level = str(shared["sheet"])
+        what = "slips" if "slips" in str(shared.get("line", "")) else "sheet"
+        if not any(line.startswith(f"{level}:") for line in outcome_lines):
+            failures.append(
+                f"outcome: the plan gives {level} the Expected task unchanged, so the pack has "
+                f"no {level} sheet; add one line saying so, the reason cut to a few plain words, "
+                f"for example `{level}: no separate sheet. They use the Expected {what} (the "
+                "plan's choice: the Expected task already stretches them).`"
+            )
+
     # Every retained picture failure and friction record must be reported.
     obligations = report_obligations(working, failures)
     require_obligations(

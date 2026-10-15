@@ -1648,7 +1648,14 @@ test('a short task marked task-blue passes, alone and after its question, at any
     'Explain your answer using the photograph.',
     'Describe each tooth using the pictures.',
     'Explain using the number line.',
-    'Sort the examples using the 1842 rule.'
+    'Sort the examples using the 1842 rule.',
+    // A job said in two or three sentences is still the job (his answers of 8
+    // and 13 October 2026: "blue is like a question for children"). A Year 4
+    // science deck had six of these refused and delivered them black.
+    'Choose the producer. Write its name.',
+    'Decide who has eaten more. Write Chidi, Ali or the same.',
+    'Is Isla correct? Explain your answer. Write one reason.',
+    'Label the producer and the consumers. Choose one arrow. Explain what it tells us.'
   ];
   const result = checkSlide(jobs.map((value) => ({ type: 'text', colorRole: 'task-blue', value })));
   assert.doesNotMatch(result.stdout, /BLUE_WITHOUT_A_QUESTION/);
@@ -1685,10 +1692,11 @@ test('advice, a statement or a label painted blue without the role is refused, a
   const message = messageFor(result, 'BLUE_WITHOUT_A_QUESTION');
   assert.ok(message.includes(
     "Blue is for a question children answer, and for the child's own short task, the job itself " +
-    '(`Explain your answer.`, `Write one reason.`), marked `colorRole: "task-blue"`; a statement, an ' +
-    'answer or an instruction about how to go about the task is black, so drop the blue here (remove ' +
-    'the `focus-blue` role, the house-blue `color` or the `[[ ]]` span) and leave it for the question ' +
-    'or short task this belongs to.'
+    '(`Explain your answer.`, `Write one reason.`). If this line is the job children do, it stays ' +
+    'blue: mark it `colorRole: "task-blue"` in place of the `focus-blue` role, the house-blue ' +
+    '`color` or the `[[ ]]` span. If it is a statement, an answer or an instruction about how to go ' +
+    'about the task, it is black: take the blue off and leave it for the question or short task ' +
+    'this belongs to.'
   ), message);
 });
 
@@ -1707,8 +1715,8 @@ test('task-blue refuses what the spec shows is not a short task', () => {
     ['346 rounds to 350.', /it is the lesson's answer, which is green on an answer slide/],
     ['A kettle and a lamp are both appliances. What is electricity doing in each one?', /it tells before it asks/],
     ['Explain your answer. Is Isla correct?', /it tells before it asks/],
-    ['Look at the picture. Read the question carefully. Use the word bank. Write one sentence.', /it holds 4 sentences that are not questions, and a short task is one/],
-    ['Round numbers are easier. They are quicker to add.', /it holds 2 sentences that are not questions/]
+    ['Amara smiles. Could Amara still need support? Use the story to explain.', /it tells before it asks/],
+    ['Look at the picture. Read the question carefully. Use the word bank. Write one sentence.', /it holds 4 sentences that are not questions, and a board that arrives all blue lifts nothing/]
   ];
   const result = checkSlide(
     refused.map(([value]) => ({ type: 'text', colorRole: 'task-blue', value })),
@@ -1723,11 +1731,17 @@ test('task-blue refuses what the spec shows is not a short task', () => {
     assert.match(found[index].message, reason);
   });
   assert.ok(found[0].message.includes(
-    "`task-blue` is for the child's own short task, the job in a few words (`Explain your answer.`), " +
-    'alone or after its question on the same line. A statement, an answer, a sticky fact or an ' +
-    'instruction about how to go about the task is not blue: take the role off, or give each short ' +
-    'task its own line and each question its own line before it.'
+    "`task-blue` is for the child's own short task, the job in a few words (`Explain your answer.`, " +
+    '`Choose the producer. Write its name.`), alone or after its question on the same line. A ' +
+    'statement, an answer, a sticky fact or an instruction about how to go about the task is not ' +
+    'blue: move that sentence into black text of its own and leave the job blue. Take the role off ' +
+    'the whole line only when none of it is the job.'
   ), found[0].message);
+  // What to do with a block that tells and then asks, so the repair keeps the blue on the job.
+  assert.ok(found[4].message.includes(
+    'split it at that question, so the question starts a blue line of its own with its job after it, ' +
+    'and a sentence that only tells goes in black text of its own'
+  ), found[4].message);
 });
 
 test('a task-blue line that carries its own colour is refused, and its hex never makes the turn', () => {
@@ -1917,6 +1931,47 @@ test('a word card after a slide that already shows its word is sent back before 
   assert.match(found[0].message, /move it back to sit before slide 2/);
 });
 
+// 13 October 2026: a Year 5 fractions deck asked "Who has painted more?", showed
+// the card for numerator and denominator, then answered. The answer slide was the
+// first board to print the words, so the check had forced the card in between.
+const fencesPair = (cardAt) => {
+  const question = { template: 'teach-layout', designUnitId: 'lesson-section/teaching-sequence/unit-001',
+    title: 'Who has painted more?', lead: 'Two fences the same length.', task: { value: 'Explain why.', signal: 'pencil' } };
+  const answer = { template: 'teach-layout', designUnitId: 'lesson-section/teaching-sequence/unit-001',
+    title: 'Who has painted more?', sticky: 'We can only compare the numerators when the denominators are the same.' };
+  const card = { template: 'key-vocabulary', words: [{ word: 'numerator and denominator', definition: 'Top and bottom.' }] };
+  const starter = { template: 'body-full', headerStyle: 'starter', title: 'Starter', body: 'Write < or >.' };
+  const later = { template: 'split-h-70-30', designUnitId: 'lesson-section/teaching-sequence/unit-002', title: 'My Turn' };
+  const slides = [starter, question, answer, later];
+  slides.splice(cardAt, 0, card);
+  return { slides };
+};
+
+test('a word card between a question and its answer is sent to one side of the pair', () => {
+  const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
+  const found = vocabCardBeforeItsWord(fencesPair(2));
+  assert.strictEqual(found.length, 1);
+  assert.strictEqual(found[0].signal, 'VOCAB_CARD_BETWEEN_A_QUESTION_AND_ITS_ANSWER');
+  assert.match(found[0].message, /straight after slide 4, or to straight before slide 2/);
+});
+
+test('a word card straight after the answer, or straight before the question, is in place', () => {
+  const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
+  assert.deepStrictEqual(vocabCardBeforeItsWord(fencesPair(3)), [], 'after the answer');
+  assert.deepStrictEqual(vocabCardBeforeItsWord(fencesPair(1)), [], 'before the question');
+});
+
+test('a card inside an ordinary run of teaching slides keeps the old rule', () => {
+  const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
+  const unit = 'lesson-section/teaching-sequence/unit-001';
+  const lesson = { slides: [
+    { template: 'teach-layout', designUnitId: unit, title: 'Victorian London', lead: 'Families lived squashed together.' },
+    { template: 'key-vocabulary', words: [{ word: 'cholera', definition: 'A disease.' }] },
+    { template: 'teach-layout', designUnitId: unit, lead: 'Cholera made people very sick.' }
+  ] };
+  assert.deepStrictEqual(vocabCardBeforeItsWord(lesson), [], 'no task on the slide before, so nothing is split');
+});
+
 // The teacher's rulings of 7 October 2026, after six of twenty lessons were
 // refused: the starter is outside the placement rule, a paired card is two
 // words, and cards may sit back to back.
@@ -2051,4 +2106,69 @@ test('a vocabulary card picture is left out of the background-only check', () =>
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+// ─── the story before its instruction ──────────────────────────────
+
+const STORY = 'At break Amara smiles when a friend comes over. Amara has stayed away from the playground game for three days.';
+const HOW_TO = 'Read Amara\'s break-time story with your partner. Underline the words that help you explain your answer.';
+
+function storySignals(items, design, unitId) {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const lesson = slideOf(items, 'Amara at break time');
+    if (unitId) lesson.slides[0].designUnitId = unitId;
+    const lessonPath = writeLesson(root, lesson);
+    if (design) fs.writeFileSync(path.join(root, 'lesson-design.json'), JSON.stringify(design));
+    const result = runSlideDesignCheck(lessonPath, { buildPath: fakeBuilder });
+    return messages(result).filter((entry) => entry.signal === 'INSTRUCTION_ABOVE_ITS_STORY');
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
+test('an instruction above the story it is about is sent back, naming both cards', () => {
+  const found = storySignals([
+    { type: 'text', value: HOW_TO, signal: 'pencil' },
+    { type: 'text', value: STORY, color: 'ED7D31' },
+    { type: 'text', value: 'Could Amara still need support?', colorRole: 'focus-blue' }
+  ]);
+  assert.equal(found.length, 1);
+  assert.ok(found[0].message.includes('"Read Amara\'s break-time story with your partner.'), found[0].message);
+  assert.ok(found[0].message.includes('the story or case first'), found[0].message);
+});
+
+test('the story first, then the question, then how to go about it, passes', () => {
+  assert.equal(storySignals([
+    { type: 'text', value: STORY, color: 'ED7D31' },
+    { type: 'text', value: 'Could Amara still need support?', colorRole: 'focus-blue' },
+    { type: 'text', value: HOW_TO, signal: 'pencil' }
+  ]).length, 0);
+});
+
+test('a signed question above the case is not an instruction, and a slide with no case is left alone', () => {
+  assert.equal(storySignals([
+    { type: 'text', value: 'What could Amara do next?', colorRole: 'focus-blue', signal: 'talk' },
+    { type: 'text', value: STORY, color: 'ED7D31' }
+  ]).length, 0);
+  assert.equal(storySignals([
+    { type: 'text', value: HOW_TO, signal: 'pencil' },
+    { type: 'text', value: 'Smiling does not always mean someone is fine.' }
+  ]).length, 0);
+});
+
+test('a story left black is still known from the lesson design beside the deck', () => {
+  const unitId = 'lesson-section/teaching-sequence/unit-002';
+  const design = { teachingSequence: [{
+    sourceUnitId: unitId,
+    pupilInstruction: HOW_TO,
+    content: { task: `${STORY}\n\nCould Amara still need support?` }
+  }] };
+  const items = [
+    { type: 'text', value: HOW_TO, signal: 'pencil' },
+    { type: 'text', value: STORY }
+  ];
+  assert.equal(storySignals(items, design, unitId).length, 1);
+  assert.equal(storySignals(items, null, unitId).length, 0);
 });

@@ -131,6 +131,9 @@ const TICK_OR_CROSS = /\btick\s*(?:or|\/|,|and)\s*(?:a\s+)?cross\b/i;
 // question to get it. The promise above still holds either way round: words
 // that say tick or cross draw the box whatever the switch says.
 function wantsTickOrCross(spec) {
+  // Never on a slip: the child answers in the book, and the question's own
+  // words ("Is Noah correct? Explain why.") are enough (Daniel, 14 October 2026).
+  if (spec.slip === true) return false;
   return (
     spec.tickOrCross === true ||
     TICK_OR_CROSS.test(`${spec.text || ""} ${spec.ask || ""}`)
@@ -161,11 +164,19 @@ function judgeBoxHtml() {
       </div>`;
 }
 
+// The turns a scene prints. On a slip a bubble left empty for the child's
+// reply is answer room, and goes as ruled lines do: the reply is written in
+// the book, under the words the slip still shows.
+function shownTurns(spec) {
+  const turns = spec.turns || [];
+  return spec.slip === true ? turns.filter((turn) => turn && turn.says) : turns;
+}
+
 function renderSpeechScene(spec, widthMm) {
   if (sceneIsOneClaim(spec)) return renderNamedClaim(sceneAsClaim(spec), widthMm);
   const lineMm = writingLineMm(spec);
 
-  const turns = (spec.turns || [])
+  const turns = shownTurns(spec)
     .map((turn) => {
       const side = turn.side === "right" ? "right" : "left";
       const inner = turn.says
@@ -197,7 +208,7 @@ function measureSpeechScene(spec, widthMm) {
   if (sceneIsOneClaim(spec)) return measureNamedClaim(sceneAsClaim(spec), widthMm);
   const lineMm = writingLineMm(spec);
   const stemMm = spec.text ? linesFor(spec.text, widthMm) * LINE_MM + 2 : 0;
-  const turns = spec.turns || [];
+  const turns = shownTurns(spec);
   const body = turns.reduce((h, t) => h + turnHeightMm(t, widthMm, lineMm), 0);
   const gaps = Math.max(0, turns.length - 1) * TURN_GAP_MM;
   // The answer box and the gap above it, counted here so the zone leaves room
@@ -254,12 +265,19 @@ function needsSpeechScene(spec) {
 const CLAIM_PAD_V_MM = INSET.card.v;
 const CLAIM_PAD_H_MM = INSET.card.h;
 
+// A slip has nothing to write on (src/slips.js), and a claim that asks nothing
+// has nothing to answer: three ruled lines under Maya's bubble, with her
+// question printed further down the sheet, read as room to copy out what she
+// said (a Year 4 Greater Depth slip, the stress test of 7 October 2026, round
+// two). Left out, `lines` is 3 only when the claim carries its question.
 function claimLines(spec) {
-  const asked = spec.lines === undefined ? 3 : Number(spec.lines);
+  if (spec.slip === true) return 0;
+  if (spec.lines === undefined) return claimWords(spec).under ? 3 : 0;
+  const asked = Number(spec.lines);
   if (!Number.isFinite(asked) || asked < 0 || asked > 8) {
     throw new Error(
       `named-claim lines is ${spec.lines}. It is how many ruled lines the child ` +
-        "gets to explain their answer on: 0 to 8, or leave it out for 3."
+        "gets to explain their answer on: 0 to 8, or leave it out for 3 under a question."
     );
   }
   return Math.floor(asked);
@@ -381,12 +399,12 @@ function measureNamedClaim(spec, widthMm) {
 // which is this helper's job under another name. It is drawn here, so the two
 // ways of writing it print as one drawing and take the same fallback.
 function sceneIsOneClaim(spec) {
-  const turns = spec.turns || [];
+  const turns = shownTurns(spec);
   return turns.length === 1 && Boolean(turns[0] && turns[0].says);
 }
 
 function sceneAsClaim(spec) {
-  const [turn] = spec.turns;
+  const [turn] = shownTurns(spec);
   return {
     helper: "named-claim",
     text: spec.text,
@@ -395,6 +413,7 @@ function sceneAsClaim(spec) {
     speaker: turn.speaker,
     says: turn.says,
     lines: 0,
+    slip: spec.slip,
     phase: spec.phase,
     look: spec.look,
   };

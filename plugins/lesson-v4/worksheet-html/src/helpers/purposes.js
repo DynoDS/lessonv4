@@ -64,7 +64,7 @@ module.exports = {
   "blank-surface":
     "A draw-your-own surface (bare number line, empty bars) the child constructs on. A full-width number line is 27mm tall; `work` puts its room where they write: `above` (jumps, the default), `below` or `both`.",
   "coordinate-grid":
-    "A numbered first-quadrant grid a child plots on.",
+    "A numbered coordinate grid a child plots on: first-quadrant, or all four quadrants with a negative `min`, carrying lettered `points` and whole `shapes` to translate.",
   "reflection-grid":
     "A dot lattice with a mirror line and a shape to reflect.",
   "translation-shape":
@@ -89,13 +89,13 @@ module.exports = {
 
   // ─── drawn ───
   "clock-row":
-    "A row of analogue clock faces, each with hands set or left blank for the child to draw; the same clock as the board's, with `colourCoded` hands and a `minuteRing`.",
+    "A row of analogue clock faces, the board's clock from the same fields. A face shows both hands, one alone (`hands: \"minute\"` or `\"hour\"`) or none; `colourCoded` hands print the digital time unless `readout: false`.",
   "number-line":
     "A labelled number line with a `caption` beneath (\"Each interval is worth 100.\"): `jumps` between marks and a `highlight`ed space, or instead `boxes` at ticks, `arrows`, a ruler's `unit` and `object`.",
   "fraction-bar":
     "A shape cut into equal parts with some shaded: one or more bars (a word under each), or a grid or circle with `shape`. The same picture the board draws from the same fields.",
   "fraction-wall":
-    "Rows of unit fractions under one whole, each piece named, for comparing and finding equivalent fractions.",
+    "Rows of unit fractions under one whole, each piece named. Plain, a child rules their own line down it; `line` and `shade` print the ruled line and the shaded fraction family for a worked example, as on the board.",
   ruler:
     "A ruler printed at TRUE SIZE for a child to measure against. It refuses a zone too narrow rather than shrinking, because a scaled ruler makes every answer wrong on a page that looks normal.",
   "dial-scale":
@@ -137,9 +137,9 @@ module.exports = {
 
   // ─── methods ───
   "short-multiplication-grid":
-    "Column multiplication by a single digit, with a thick-topped answer row and a carry row.",
+    "Short multiplication to complete, in the board's own drawing and column colours, with a column for every digit of the answer. `showHeadings: true` adds place-value letters.",
   "long-multiplication-grid":
-    "The long multiplication shape: one partial product row per digit of the multiplier, then the total.",
+    "Long multiplication to complete, in the board's own drawing: a row of working per digit of `bottom`, each labelled with the part it is (\"× 6\", \"× 30\", \"add\"). `upTo: \"ones row\"` prints a start.",
   "bus-stop-grid":
     "Short division: the answer row on top under the roof, the divisor outside the wall to the left.",
   "long-division-grid":
@@ -170,6 +170,8 @@ module.exports = {
     "Counters with their values on them in place-value columns: what number is shown, or left empty for the child to draw counters. The place value chart's counter form, the same drawing the slides use.",
   "base-ten-blocks":
     "Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.",
+  "ten-frame":
+    "A ten frame: two rows of five boxes with a counter in each full one, in up to two colours for a number bond (`count`, `second`), a pair for numbers to 20 (`frames: 2`), or empty for a child to draw counters in.",
   "counter-group":
     "The same counters without the chart: one compact group per denomination, under the claim they are evidence for. For two cases compared side by side, where two charts would be two pages.",
   "place-value-chart":
@@ -199,7 +201,7 @@ module.exports = {
 
   // ─── geometry ───
   shape:
-    "One or more 2D shapes, the same as the board's polygon: `sideLabels` for a perimeter or missing length, `angleLabels`, or lines of symmetry to test.",
+    "2D shapes as on the board: `sideLabels`, `angleLabels`, symmetry, or an L-shape from `vertices`. `parts` split it into numbered rectangles: leave them off when the child draws the split; the answer picture has them.",
   "triangle-square":
     "The SATs part-whole puzzle: two triangles joined by lines to a square, the arrow pointing into the square.",
   "turn-diagram":
@@ -219,7 +221,9 @@ module.exports = {
   "classification-key":
     "A branching yes/no identification key down to named living things.",
   "process-chain":
-    "Boxes joined by arrows: a food chain, a life cycle, the order of events. The arrows are the point.",
+    "Links joined by arrows in a line that ends: a food chain, the order of events. A link can be a named picture, and a chain the child makes prints ready to fill in. For a loop that comes back to its start, use `cycle`.",
+  cycle:
+    "A cycle or loop: stages joined by arrows, the last leading back to the first (a life cycle, the water cycle, the seasons). Arrows can carry words, and a stage or an arrow can be left blank to fill in.",
   "concept-map":
     "One central idea joined to two to six others round it, each line optionally naming the relationship.",
   fishbone:

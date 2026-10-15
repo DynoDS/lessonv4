@@ -1,6 +1,6 @@
 "use strict";
 
-const { canonicalColumn } = require("../../shared/visuals/place-value-chart-svg");
+const { canonicalColumn, longMultiplicationProgress } = require("../../shared/visuals/place-value-chart-svg");
 
 // The colours of a stepByStep sheet, and what each step's picture takes from
 // them. Kept apart from the sheet's renderer because the pictures are drawn
@@ -115,10 +115,24 @@ function partVisual(card, index) {
   return sequenceVisual(parts, index, PART_COLOURS);
 }
 
+// How far a step's long multiplication has been worked, or null.
+const progressOf = (step) => longMultiplicationProgress(sumOf(step));
+
 function sequenceVisual(steps, index, colours) {
   const colourOf = (at) => colours[at % colours.length];
   const step = steps[index];
   const sum = sumOf(step);
+  // A long multiplication's rows keep their place colours, the ones row and
+  // the ones digit in the ones column's red, the tens in its gold, as on the
+  // slides and the sheet, so the criterion's `((ones))` is the colour of the
+  // ones row on the wall too. They took each step card's colour until 14
+  // October 2026, and the ones row stood blue beside a red "ones" in the
+  // criteria. The step's colour stays on what points: its card, its number
+  // and the ring round the digit it multiplies by.
+  if (progressOf(step)) {
+    if (!sum.ring || sum.ringColour) return step.visual;
+    return { ...step.visual, calculation: { ...sum, ringColour: colourOf(index) } };
+  }
   if (sum && (exchangesOf(step).length || sum.ring)) {
     const exchanges = exchangesOf(step).map((exchange, k) => {
       if (!exchange || typeof exchange !== "object" || exchange.colour) return exchange;
@@ -185,6 +199,8 @@ function methodVisual(card) {
     });
   }
   const sum = visual.type === "place-value-chart" && visual.calculation && typeof visual.calculation === "object" ? visual.calculation : null;
+  // A long multiplication keeps its place colours here too (see sequenceVisual):
+  // the pinned steps' circles carry the step colours, the rows the places'.
   if (sum && Array.isArray(sum.exchanges)) {
     out.calculation = {
       ...sum,

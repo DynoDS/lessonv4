@@ -68,6 +68,23 @@ test('bar labels sit under their own bar, inside the picture, clear of the next 
   assert.ok(b.label.y + b.label.h <= out.h + 1e-6);
 });
 
+// The bar an answers slide has shaded carries the answer as its label, and it
+// printed black beside green answers everywhere else (Year 5 equivalent
+// fractions, 13 October 2026).
+test('a bar label marked as the answer prints green on the board, and the marker never prints', () => {
+  const board = profileFor('slides', { widthPt: 648, heightPt: 300 });
+  const labelFills = (spec, profile) => [...shaded.tightSvg(spec, profile).svg.matchAll(/<text[^>]*fill="(#[0-9A-Fa-f]{6})"[^>]*>([^<]*)</g)].map((m) => [m[2], m[1].toUpperCase()]);
+  const answers = { bars: [{ parts: 4, shaded: 3, label: '3/4' }, { parts: 8, shaded: 6, label: '||six eighths' }] };
+  const plain = { bars: [{ parts: 4, shaded: 3, label: '3/4' }, { parts: 8, shaded: 6, label: 'six eighths' }] };
+  const ink = board.colours.ink.toUpperCase();
+  assert.deepEqual(labelFills(answers, board), [['3/4', ink], ['six eighths', '#00B050']]);
+  assert.deepEqual(labelFills(plain, board), [['3/4', ink], ['six eighths', ink]]);
+  // The answer takes the room its words take, so the bars stand where they stood.
+  assert.deepEqual(shaded.describeLayout(answers, board).rows.map((r) => [r.y, r.h]), shaded.describeLayout(plain, board).rows.map((r) => [r.y, r.h]));
+  // Photocopied, there is no green to print.
+  for (const [, fill] of labelFills(answers, PIECE)) assert.notEqual(fill, '#00B050');
+});
+
 test('the board fits its zone, and a zone too shallow for the bars refuses by name', () => {
   const board = profileFor('slides', { widthPt: 648, heightPt: 300 });
   const out = shaded.tightSvg({ bars: [{ parts: 4, shaded: 3, label: '3/4' }, { parts: 5, shaded: 2, label: '2/5' }] }, board);

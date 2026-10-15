@@ -95,7 +95,12 @@ const NEWLINE = String.fromCharCode(10);
 // part to look at or decide", and bold; what to do then stays plain. Weight
 // alone did not set a point apart from its step (the teacher, 8 October 2026).
 // A question the designer has already marked keeps the designer's mark.
-const OPENING_QUESTION = /^([^?]{1,40}\?)(?=\s|$)/;
+// The question has to open something: what to do then follows it on the line.
+// A line that is a question and nothing more is a sentence starter the child
+// says or writes (`Please can you ___ so that ___?`), and it prints plain like
+// every other starter in its list (13 October 2026: one starter in four came
+// out orange and bold because it happened to be a question).
+const OPENING_QUESTION = /^([^?]{1,40}\?)(?=\s+\S)/;
 const ANY_MARK = /\*\*|\[\[|\{\{|<<|\(\(|\|\|/;
 
 function pointsWithQuestionsMarked(points) {
@@ -434,7 +439,8 @@ function floorNeed(text, rows, floorPt = TEXT_FONT_MIN) {
 // teacher's ruling (8 October 2026): the bold steps are the route a child finds
 // their place in, so they are sized by their own words, up to the 24pt he
 // passed on a four-step list; the points under them may be a little smaller,
-// never under the floor; and nothing grows to poster size. Each card is as
+// at 20pt where the list fits that way and never under the floor; and nothing
+// grows to poster size. Each card is as
 // tall as its own words need, with a little of any spare room, and the rest of
 // the panel stays empty below, as it does under any short list.
 //
@@ -458,8 +464,15 @@ function planPointedList(steps, rows, innerH, floorPt) {
     Math.max(0.3, fullW - (normaliseStep(step).helper ? SC_HELPER_SLOT_W + SC_HELPER_GAP : 0))
   );
 
-  for (let pt = POINTED_STEP_MAX; pt >= floorPt; pt -= 1) {
-    const pointPt = Math.max(floorPt, pt - POINT_STEP_DOWN);
+  // The points aim for the board's 20pt like everything else, and take 18 only
+  // when the list will not fit with them at 20 (the teacher, 13 October 2026,
+  // of a Year 5 list whose steps printed at 21 over points at 18 with room to
+  // spare: "I'd want it 20, but like I said 18 is fine if needed"). So the
+  // sizes are tried twice: first with no point under 20, then down to the floor.
+  const pointFloors = floorPt < TEXT_FONT_TARGET ? [TEXT_FONT_TARGET, floorPt] : [floorPt];
+  for (const pointFloor of pointFloors)
+  for (let pt = POINTED_STEP_MAX; pt >= Math.max(floorPt, pointFloor); pt -= 1) {
+    const pointPt = Math.max(pointFloor, pt - POINT_STEP_DOWN);
     const referencePt = Math.max(TEXT_FONT_MIN, Math.min(pt, TEXT_FONT_TARGET));
     const parts = steps.map((step) => {
       const text = normaliseStep(step).text;

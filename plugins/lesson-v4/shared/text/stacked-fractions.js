@@ -33,8 +33,25 @@
 // leaves a date written 9/10/2026 and a long number alone. Either part may be
 // a question mark or an empty box, for a fraction with a part to find
 // ("1/2 = ?/10").
+//
+// A part the child writes is a box on the bar. A blank typed as underscores or
+// as an empty-box character, or one a sheet has already drawn as a write-in
+// line or a digit box, used to fall outside all of this: "2/3 = ___/6" printed
+// a blank and then "/6" typed on the line, the one fraction on the page not
+// written top and bottom (stress test, 12 October 2026). The teacher's choice
+// from the real sheet (13 October 2026): a box big enough to write in sits
+// where the missing part goes, and "fractions ANYWHERE should always be top
+// bottom".
 
-const PART = '(?:\\d{1,3}|\\?|[\\u25A1\\u25A2\\u2610\\u25FB\\u25AB])';
+const PART = '(?:\\d{1,3}|\\?|_{2,}|[\\u25A1\\u25A2\\u2610\\u25FB\\u25AB])';
+const TO_WRITE = /^(?:_{2,}|[\u25A1\u25A2\u2610\u25FB\u25AB])$/;
+const WRITE_IN_BOX = '<span class="sfr-box"></span>';
+// A blank a sheet has already drawn, standing where a fraction's part goes.
+const DRAWN_BLANK = '<span class="(?:h-blank|h-digit-box)"[^>]*></span>';
+const DRAWN_BLANK_FRACTION = new RegExp(
+  `(${DRAWN_BLANK})/(${DRAWN_BLANK}|\\d{1,3})(?![\\d/]|[.,]\\d)|(?<![\\d/.,])(\\d{1,3})/(${DRAWN_BLANK})`,
+  'g'
+);
 const FRACTION = new RegExp(`(^|[^\\d/.,])(${PART})/(${PART})(?![\\d/]|[.,]\\d)`, 'g');
 
 // The small margin above and below is the gap between two fractions that fall
@@ -48,6 +65,13 @@ const STACKED_FRACTION_CSS = `
   }
   .sfr-n, .sfr-d { padding: 0 0.2em; }
   .sfr-bar { align-self: stretch; height: 0.07em; background: currentColor; }
+  /* The part a child writes: the one box a sheet gives a number, in step with
+     NUMBER_BOX_MM in worksheet-html/src/tokens.js (a test holds the two
+     together). */
+  .sfr-box {
+    display: block; box-sizing: border-box; width: 12mm; height: 12mm;
+    margin: 0.15em 0; border: 0.09em solid currentColor; background: #FFFFFF;
+  }
 `;
 
 // The same fraction for a surface whose boxes are sized before the page is
@@ -60,11 +84,18 @@ const STACKED_FRACTION_IN_LINE_CSS = `${STACKED_FRACTION_CSS}
   /* Lifted a hair: a digit's own box reaches a little under its line, and in a
      title strip sized to its words that was a pixel past the strip. */
   .sfr { font-size: 0.56em; line-height: 1; margin: 0 0.2em; position: relative; top: -0.1em; }
+  /* A part to write is small enough here that the pair still stands inside
+     the one planned line. */
+  .sfr-box { width: 1.7em; height: 1em; margin: 0.05em 0; }
 `;
 
+function stackedHtml(top, bottom) {
+  const part = (value) => (TO_WRITE.test(value) ? WRITE_IN_BOX : value);
+  return `<span class="sfr"><span class="sfr-n">${part(top)}</span><span class="sfr-bar"></span><span class="sfr-d">${part(bottom)}</span></span>`;
+}
+
 function stackFractionsInText(text) {
-  return text.replace(FRACTION, (all, before, top, bottom) =>
-    `${before}<span class="sfr"><span class="sfr-n">${top}</span><span class="sfr-bar"></span><span class="sfr-d">${bottom}</span></span>`);
+  return text.replace(FRACTION, (all, before, top, bottom) => `${before}${stackedHtml(top, bottom)}`);
 }
 
 function stackFractionsInHtml(html) {
@@ -72,6 +103,10 @@ function stackFractionsInHtml(html) {
   if (!source.includes('/')) return source;
   let skip = 0;
   return source
+    .replace(DRAWN_BLANK_FRACTION, (all, blankTop, lower, top, blankBottom) =>
+      (blankTop !== undefined
+        ? stackedHtml('__', /^\d/.test(lower) ? lower : '__')
+        : stackedHtml(top, '__')))
     .split(/(<[^>]+>)/)
     .map((piece, i) => {
       if (i % 2) {
@@ -87,9 +122,11 @@ function stackFractionsInHtml(html) {
 
 // The typed form back again, for a check that looks for a spec's words among
 // the printed ones: a stacked fraction prints its two numbers and no slash.
-const STACKED = /<span class="sfr"><span class="sfr-n">([^<]*)<\/span><span class="sfr-bar"><\/span><span class="sfr-d">([^<]*)<\/span><\/span>/g;
+// A part to write comes back as a typed blank.
+const STACKED = /<span class="sfr"><span class="sfr-n">(<span class="sfr-box"><\/span>|[^<]*)<\/span><span class="sfr-bar"><\/span><span class="sfr-d">(<span class="sfr-box"><\/span>|[^<]*)<\/span><\/span>/g;
 function unstackFractionsInHtml(html) {
-  return String(html == null ? '' : html).replace(STACKED, '$1/$2');
+  const typed = (part) => (part === WRITE_IN_BOX ? '___' : part);
+  return String(html == null ? '' : html).replace(STACKED, (all, top, bottom) => `${typed(top)}/${typed(bottom)}`);
 }
 
 module.exports = { stackFractionsInHtml, stackFractionsInText, unstackFractionsInHtml, STACKED_FRACTION_CSS, STACKED_FRACTION_IN_LINE_CSS, FRACTION };

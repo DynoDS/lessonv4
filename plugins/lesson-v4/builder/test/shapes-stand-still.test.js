@@ -50,3 +50,33 @@ test('a shape alone, a different outline, or a different slot is left exactly as
   for (const s of [alone, other]) assert.equal(shapeOf(s).shapes[0].roomFor, undefined);
   assert.equal(elsewhere.body.items[1].shapes[0].roomFor, undefined);
 });
+
+// The answers slide adds the dashed line that splits the shape, its numbered
+// rectangles and their sums to the shape the question showed.
+test('a shape keeps its size and place when its answers slide draws the split', () => {
+  const lengths = ['9 cm', '8 cm', '4 cm', '6 cm', '5 cm', '2 cm'];
+  const parts = [
+    { corners: [[0, 0], [9, 2]], label: '1', note: '9 × 2 = 18 cm²' },
+    { corners: [[5, 2], [9, 8]], label: '2', note: '4 × 6 = 24 cm²', sideLabels: ['', '6 cm', '', ''] },
+  ];
+  const question = slide(lengths);
+  const answer = slide(lengths);
+  shapeOf(answer).partsAnswer = true;
+  shapeOf(answer).shapes[0].parts = parts;
+  assert.notDeepEqual(drawn(shapeOf(question)), drawn(shapeOf(answer)), 'the test must start from a shape that moves');
+
+  keepShapesStill({ slides: [question, answer] });
+  assert.deepEqual(drawn(shapeOf(question)), drawn(shapeOf(answer)));
+  // The question draws none of the split it keeps room for.
+  const svg = polygon.tightSvg(shapeOf(question), 'slides', { widthPt: 400, heightPt: 300 }).svg;
+  assert.ok(!svg.includes('stroke-dasharray') && !svg.includes('<circle'));
+  assert.equal(shapeOf(question).shapes[0].parts, undefined);
+});
+
+test('one shape split across on one slide and down on the next stays where it is', () => {
+  const across = slide([]); const down = slide([]);
+  shapeOf(across).shapes[0].parts = [{ corners: [[0, 0], [9, 2]], label: '1' }, { corners: [[5, 2], [9, 8]], label: '2' }];
+  shapeOf(down).shapes[0].parts = [{ corners: [[0, 0], [5, 2]], label: '1' }, { corners: [[5, 0], [9, 8]], label: '2' }];
+  keepShapesStill({ slides: [across, down] });
+  assert.deepEqual(drawn(shapeOf(across)), drawn(shapeOf(down)));
+});

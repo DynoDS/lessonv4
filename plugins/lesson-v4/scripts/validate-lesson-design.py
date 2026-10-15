@@ -281,8 +281,19 @@ PRINTED_PER = {"child", "pair", "group"}
 # we've also got to do worksheet, it won't fit the 45 min." Each beat had earned
 # its place separately, which is exactly the failure a budget exists to push
 # back on.
+#
+# The beats are not the whole lesson. Until 12 October 2026 three numbers stood
+# for the same thing: the designer was told its beats may take 40 of 45, this
+# check refused a sum past 50, and the designer's timeline measured against 45.
+# A Year 5 history lesson that was honestly about 50 was written down as 39, its
+# worksheet at 9 minutes. The teacher's picture that day: a whole lesson runs
+# about 45 to 50, about 5 of it on books out, the date and objective and moving
+# about, which no beat plans. So the beats and those 5 together may not pass 50,
+# and that total is the only line with teeth; the rest of his picture is for
+# judging (`preferences.md` -> Classroom Norms, Time; `do-beats-in-a-row.py`).
 LESSON_MINUTES_AIM = 45
 LESSON_MINUTES_MAX = 50
+LESSON_MINUTES_UNPLANNED = 5
 LESSON_MINUTES_MIN = 30
 BEAT_MINUTES_MAX = 25
 
@@ -377,6 +388,11 @@ class FaultLog:
             f"{len(self.faults)} faults, every one of them below. Repair them all, "
             f"then run this check once more.\n{body}"
         )
+
+
+class PassEnds(Exception):
+    """The pass stops here with its faults already recorded: what follows
+    reads what a recorded fault says is broken."""
 
 
 class RaiseAtOnce:
@@ -1355,7 +1371,15 @@ def validate_levels(raw: Any, path: str, unit: dict[str, Any]) -> None:
     if real is not None:
         expect(bool(expect_string(real, f"{path}.realThings").strip()), f"{path}.realThings must say what to get, or be null")
     if kind not in LEVEL_KINDS:
-        expect(printed is None and real is None, f"{path}: a {kind} beat has children doing nothing to print")
+        closing = kind in {"apply", "reflect"}
+        expect(
+            printed is None and real is None,
+            f"{path}: a {kind} beat takes no printed sheet and no real things here. "
+            + ("The closing task is answered from the board or in books, so leave `levels` off it; "
+               "if it needs a printed page, it is a `practise` in the sequence with the worksheet "
+               "as its page" if closing else "Children do nothing on it that a sheet could carry, "
+               "so leave `levels` off it"),
+        )
 
 
 def validate_sort_handling(raw: Any, path: str) -> None:
@@ -1375,12 +1399,12 @@ def validate_sort_handling(raw: Any, path: str) -> None:
     # and the teacher never got the choice. The printed level is not the board
     # copied onto paper: it is chosen for how it changes the way children do or
     # record the task (a tick table with the rule printed as the clue, numbers
-    # written on a whole sheet, cards moved only when moving them is the task).
+    # written on a whole sheet, cards cut out only when the request asks for them).
     expect(
         raw is not None,
         f"{path} is missing: a sort is always printed as well as shown on the board, so the "
         "teacher can choose on the day. Give it `sheet` (one whole page, nothing to cut, the "
-        "default) or `cards` (only when moving the cards is the task), who shares a set, and "
+        "default) or `cards` (only when the request asks for cards to cut out), who shares a set, and "
         "the one-line preparation note.",
     )
     handling = expect_dict(raw, path)
@@ -1849,6 +1873,14 @@ _RECORDING_SURFACE = re.compile(
     r"|\b(?:in|into)\s+(?:your|their)\s+(?:\w+\s+)?books?\b",
     re.IGNORECASE,
 )
+# The board at the front is the teacher's, and a note that tells the teacher to
+# draw or write on it names nobody's recording surface. A Year 5 science lesson
+# of the 20-lesson test (7 October 2026) was refused for a teacher note saying
+# to draw a circle `on the whiteboard`; the teacher's ruling (12 October 2026)
+# is that such a note stands. So `the whiteboard`, one board, is the class
+# board in wording only the teacher reads or says, and still a child's
+# whiteboard in anything the class reads.
+_THE_CLASS_BOARD = re.compile(r"^(?:on|onto|using)\s+the\s+whiteboard$", re.IGNORECASE)
 _RECORDS = re.compile(
     r"\b(?:write|writes|writing|draw|draws|record|records|answer|answers|show|shows|finish|"
     r"complete|copy|jot|note|commit|commits|put|work)\b",
@@ -1888,12 +1920,15 @@ def validate_recording_is_the_teachers_choice(root: dict[str, Any]) -> None:
         for sentence in re.split(r"(?<=[.?!])\s+|\n+", text):
             sentence = sentence.strip()
             found = _RECORDING_SURFACE.search(sentence)
+            if found and not on_board and _THE_CLASS_BOARD.match(found.group(0)):
+                # Any other surface named in the same sentence is still read.
+                found = _RECORDING_SURFACE.search(sentence[:found.start()] + " " + sentence[found.end():])
             if found and ("whiteboard" in found.group(0).lower() or _RECORDS.search(sentence)):
                 expect(
                     False,
                     f"{path}: `{sentence[:90]}` names where children record their answer "
-                    f"(`{found.group(0)}`). That is the teacher's choice on the day, so say the action "
-                    "and how much (`Write one word before you talk.`) and leave the whiteboard or book "
+                    f"(`{found.group(0)}`). That is the teacher's choice on the day, so ask the question "
+                    "itself (`Which is heavier? Explain why.`) and leave the whiteboard or book "
                     "out, here and in every other string of this lesson that names one. A resource the "
                     "lesson hands out (the printed sheet, the cards) is still named",
                 )
@@ -1941,6 +1976,12 @@ def validate_teach_says_it_once(sequence: list[dict[str, Any]], sticky_by_id: di
         for first_index in range(len(lines)):
             for second_index in range(first_index + 1, len(lines)):
                 (name_a, text_a), (name_b, text_b) = lines[first_index], lines[second_index]
+                # Two questions are never the landed sentence twice. Asking the
+                # same question of the next thing is how a class is walked to
+                # the point (`Where does the rabbit get its food?`, then `Where
+                # does the grass get its food?`; the teacher, 14 October 2026).
+                if text_a.rstrip().endswith("?") and text_b.rstrip().endswith("?"):
+                    continue
                 expect(
                     not _says_the_same(text_a, text_b),
                     f"{path}: a Teach slide lands its sentence once, and these say the same "
@@ -3140,7 +3181,11 @@ def validate_source_unit(
         if takeaway is not None and takeaway["kind"] == "sticky":
             expect(
                 takeaway["ref"] in sticky_refs,
-                f"{path}.content.takeaway sticky ref must also appear in stickyKnowledgeRefs",
+                f"{path}.content.takeaway sticky ref must also appear in stickyKnowledgeRefs: the "
+                f"takeaway lands `{takeaway['ref']}` as this slide's star line, so add `{takeaway['ref']}` "
+                "to this beat's own list. "
+                "(The other shape is the opposite: a headline that is itself the sticky fact has "
+                "`takeaway: null` and leaves the fact out of its list.)",
             )
 
     return unit
@@ -4084,17 +4129,19 @@ def validate_lesson_fits_the_slot(root: dict[str, Any]) -> None:
     # and aims at 45, and a short lesson is a real lesson: an assembly eats ten
     # minutes and the class still learns something. What cannot be taught is the
     # lesson that will not fit, so that is the end with teeth.
-    if total <= LESSON_MINUTES_MAX:
+    if total + LESSON_MINUTES_UNPLANNED <= LESSON_MINUTES_MAX:
         return
     longest = sorted(beats, key=lambda pair: pair[1], reverse=True)[:3]
     named = "; ".join(f"{label} {minutes}min" for label, minutes in longest)
     expect(
         False,
-        f"the lesson's beats add up to {total} minutes, over the {LESSON_MINUTES_MAX} a lesson can "
-        f"run to, and it aims at {LESSON_MINUTES_AIM}. The longest beats are: {named}. Cut a beat "
-        "or take a cheaper form of one (a sort run as a class discussion rather than printed cards "
-        "at tables); do not shave a minute off each, because the beats were honest and the lesson "
-        "is too big",
+        f"the lesson's beats add up to {total} minutes, and with about {LESSON_MINUTES_UNPLANNED} that no "
+        f"beat plans (books out, the date and objective, moving to tables and back) that is "
+        f"{total + LESSON_MINUTES_UNPLANNED}, over the {LESSON_MINUTES_MAX} a lesson can "
+        f"run to. The longest beats are: {named}. Leave out an idea the objective can be met "
+        "without, or keep it for another lesson, or take a cheaper form of a beat (a sort run as a "
+        "class discussion rather than printed cards at tables); do not shave a minute off each or "
+        "time the worksheet short, because the beats were honest and the lesson is too big",
     )
 
 
@@ -4120,6 +4167,8 @@ def validate_design(
         )
     except ContractError as exc:
         faults.add(str(exc))
+    except PassEnds:
+        pass
     faults.raise_if_any()
 
 
@@ -4414,28 +4463,38 @@ def run_design_checks(
 
     sequence = expect_list(root["teachingSequence"], "teachingSequence")
     expect(bool(sequence), "teachingSequence must not be empty")
+    # One beat's fault does not hide the next beat's. A Year 5 science lesson of
+    # the 20-lesson test (7 October 2026) spent its three repair passes on four
+    # small faults in four beats, met one at a time, because a fault inside a
+    # beat ended the pass. Each beat is read alone, so each reports its first
+    # fault and the walk carries on; what follows the walk reads every beat as
+    # sound, so the pass still ends here if any beat was not.
+    faults_before_the_beats = len(faults.faults)
     for index, raw_unit in enumerate(sequence, 1):
         path = f"teachingSequence[{index - 1}]"
-        unit = validate_source_unit(
-            raw_unit,
-            path,
-            section="teaching-sequence",
-            ordinal=index,
-            allowed_kinds=ROUTE_KINDS[structure],
-            rep_by_id=rep_by_id,
-            sc_ids=set(sc_by_id),
-            sticky_ids=set(sticky_by_id),
-            misconception_ids=set(misconception_by_id),
-            concept_ids=set(concept_by_id),
-            photo_ids=initial_photo_ids,
-        )
-        validate_launch_uses_the_taught_words(unit, path, sc_by_id)
-        if structure == "Skill-based" and unit["kind"] in {"my-turn", "our-turn", "your-turn"}:
-            concept_ref = unit["conceptRef"]
-            expect(concept_ref is not None, f"{path}.conceptRef is required for {unit['kind']}")
-            expected_sc = concept_by_id[concept_ref]["successCriteriaRefs"]
-            expect(unit["successCriteriaRefs"] == expected_sc,
-                   f"{path}.successCriteriaRefs must exactly match {concept_ref}.successCriteriaRefs")
+        with faults.section():
+            unit = validate_source_unit(
+                raw_unit,
+                path,
+                section="teaching-sequence",
+                ordinal=index,
+                allowed_kinds=ROUTE_KINDS[structure],
+                rep_by_id=rep_by_id,
+                sc_ids=set(sc_by_id),
+                sticky_ids=set(sticky_by_id),
+                misconception_ids=set(misconception_by_id),
+                concept_ids=set(concept_by_id),
+                photo_ids=initial_photo_ids,
+            )
+            validate_launch_uses_the_taught_words(unit, path, sc_by_id)
+            if structure == "Skill-based" and unit["kind"] in {"my-turn", "our-turn", "your-turn"}:
+                concept_ref = unit["conceptRef"]
+                expect(concept_ref is not None, f"{path}.conceptRef is required for {unit['kind']}")
+                expected_sc = concept_by_id[concept_ref]["successCriteriaRefs"]
+                expect(unit["successCriteriaRefs"] == expected_sc,
+                       f"{path}.successCriteriaRefs must exactly match {concept_ref}.successCriteriaRefs")
+    if len(faults.faults) > faults_before_the_beats:
+        raise PassEnds()
 
     # A lesson whose every beat unlocks nothing has no spine. `null` is a real
     # answer for a beat that sits beside it (a vocabulary moment, a routine, a
@@ -4758,6 +4817,9 @@ def run_design_checks(
             validate_lesson_question(root["lessonQuestion"], photo_by_id)
 
     with faults.section():
+        validate_made_pictures_are_not_passed_off(root, photo_items)
+
+    with faults.section():
         slide_notes = expect_list(root["slideDesignNotes"], "slideDesignNotes")
         for index, note in enumerate(slide_notes):
             expect_string(note, f"slideDesignNotes[{index}]")
@@ -4792,6 +4854,104 @@ def run_design_checks(
                         photo_id in used_photo_ids,
                         f"initial photo requirement is not referenced by lesson-design.json: {photo_id}",
                     )
+
+
+# A picture made because the real one could not be found says so in its
+# `fallback_note`, and the words beside it are held to that.
+MADE_FOR_REAL_NOTE = "made in place of the real thing:"
+_CLAIMS_IT_IS_REAL = (
+    (re.compile(r"\bphoto(?:graph)?s?\b", re.I), "calls it a photograph"),
+    (re.compile(
+        r"\b(?:painted|drawn|made|printed|taken|written)\s+"
+        r"(?:at the time|back then|in 1\d{3}|in the 1\d{2}0s|by someone who was there)", re.I),
+     "says it was made at the time"),
+    (re.compile(r"\b(?:historical|primary|eyewitness)\s+source\b|\beyewitness\b", re.I),
+     "treats it as a source from the time"),
+)
+
+
+def validate_made_pictures_are_not_passed_off(root: dict[str, Any], photo_items: list[Any]) -> None:
+    """A made picture of a real thing is never presented as the real thing.
+
+    On 12 October 2026 the teacher had six real things made twice: the source
+    of the River Severn, the Severn Bridge, a 1675 painting, a leather fire
+    bucket, a print of fire hooks and a portrait. Asked for plainly they came
+    back convincing and wrong in the small facts (a royal cypher fifty years
+    late, an invented museum card, mottos nobody wrote). Told what is true and
+    to invent nothing, they came back sound. His ruling: when the real one
+    cannot be found, a made one may stand in, and the slide's words change to
+    match, so the board says "this is what it looks like where the River Severn
+    begins" and never "look at the photograph". The picture can be right and
+    the lesson still lie about it; this holds the words.
+    """
+    made = {
+        photo["id"]: photo
+        for photo in photo_items
+        if isinstance(photo, dict) and isinstance(photo.get("fallback_note"), str)
+        and photo["fallback_note"].strip().lower().startswith(MADE_FOR_REAL_NOTE)
+    }
+    if not made:
+        return
+    for photo_id, photo in made.items():
+        expect(
+            photo.get("acquisition_mode") == "controlled-ai",
+            f"{photo_id} is noted as made in place of the real thing, so it is `controlled-ai`: "
+            "the real search has already failed, and a second search for it cannot succeed",
+        )
+
+    def spoken_to_children(node: dict[str, Any]) -> list[str]:
+        parts: list[Any] = [node.get("content"), node.get("pupilInstruction")]
+        notes = node.get("speakerNotes")
+        if isinstance(notes, dict) and isinstance(notes.get("script"), str):
+            parts.append(notes["script"].split("Teacher information:", 1)[0])
+        if all(part is None for part in parts):
+            parts = [{key: value for key, value in node.items() if key != "photoRefs"}]
+        found: list[str] = []
+
+        def gather(value: Any) -> None:
+            if isinstance(value, str):
+                found.append(value)
+            elif isinstance(value, dict):
+                for inner in value.values():
+                    gather(inner)
+            elif isinstance(value, list):
+                for inner in value:
+                    gather(inner)
+
+        gather(parts)
+        return found
+
+    def visit(node: Any, where: str) -> None:
+        if isinstance(node, dict):
+            where = node["sourceUnitId"] if isinstance(node.get("sourceUnitId"), str) else where
+            refs = node.get("photoRefs")
+            shown = [ref for ref in refs if ref in made] if isinstance(refs, list) else []
+            if shown:
+                for text in spoken_to_children(node):
+                    for pattern, claim in _CLAIMS_IT_IS_REAL:
+                        hit = pattern.search(text)
+                        expect(
+                            hit is None,
+                            f"{where} shows {', '.join(shown)}, a picture made in place of the real "
+                            f"thing, and {claim} (\"{hit.group(0) if hit else ''}\"). Say what it is: "
+                            "`the picture`, `what it looks like where ...`, `an artist's picture of ...`",
+                        )
+            for value in node.values():
+                visit(value, where)
+        elif isinstance(node, list):
+            for value in node:
+                visit(value, where)
+
+    visit(root, "lesson-design.json")
+    flags = root.get("flagsForTeacher")
+    told = isinstance(flags, list) and any(
+        isinstance(flag, str) and "made" in flag.lower() and "picture" in flag.lower() for flag in flags
+    )
+    expect(
+        told,
+        f"{', '.join(sorted(made))} made in place of the real thing: `flagsForTeacher` must tell the "
+        "teacher which picture was made and that no real one could be found",
+    )
 
 
 def validate_lesson_question(raw: Any, photo_by_id: dict) -> None:

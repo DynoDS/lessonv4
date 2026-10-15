@@ -199,7 +199,13 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
     // barred), so set it deliberately here: un-barred for steps, barred for
     // everything else, restored when the content is done.
     const hadBarrier = !!ctx._cardBarrier;
+    const hadCriteriaSteps = ctx._criteriaSteps;
     ctx._cardBarrier = content.type !== 'steps';
+    // Two panels joined into one (content/sc-panel.js): the steps keep the
+    // cards they wore in their own panel, everything else stays on the green
+    // (content/index.js). A stack the designer wrote as one panel's content
+    // is drawn as before.
+    ctx._criteriaSteps = content.type === 'stack' && content.criteriaSets === true;
     try {
       // A list the lesson designer marked too long for every criteria panel
       // (`tooLongForPanels`) is drawn smaller rather than not at all: at the
@@ -226,6 +232,7 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
       drawContent(pptx, slide, contentZone, content, ctx);
     } finally {
       ctx._cardBarrier = hadBarrier;
+      ctx._criteriaSteps = hadCriteriaSteps;
     }
   } else {
     warn(

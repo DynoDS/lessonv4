@@ -905,6 +905,10 @@ def test_discovery_route_accepts_a_second_finding_from_the_same_exploration():
 
 def test_discovery_route_accepts_a_second_exploration_that_builds_on_the_first():
     design, photos = _discovery_with([SECOND_EXPLORE, SECOND_MAKE_SENSE, SECOND_TEACH_WHY, SECOND_USE])
+    # Two explorations at the fixture's default minutes run past a whole lesson;
+    # this test is about their order, so the second round is timed to fit.
+    for unit in design["teachingSequence"][-4:]:
+        unit["minutes"] = 2
     module.validate_design(design, photos)
 
 
@@ -2806,6 +2810,32 @@ def test_a_lesson_whose_beats_do_not_fit_the_slot_is_refused():
         for unit in design["teachingSequence"]:
             unit["minutes"] = 16
     assert_invalid(mutate, "over the 50 a lesson can run to")
+
+
+def test_the_five_minutes_no_beat_plans_count_towards_the_fifty():
+    """The teacher, 12 October 2026: a whole lesson runs about 45 to 50 minutes
+    and about 5 of them are books out and moving about. Until then the designer
+    was told 40 of 45 and this check allowed 50 of beats alone."""
+    def total(design):
+        units = [design["starter"], *design["teachingSequence"]]
+        ending = design.get("ending") or {}
+        if ending.get("included") and isinstance(ending.get("beat"), dict):
+            units.append(ending["beat"])
+        return units
+
+    def set_total(design, wanted):
+        units = total(design)
+        for unit in units:
+            unit["minutes"] = 1
+        spare = wanted - len(units)
+        for unit in units:
+            unit["minutes"] += min(spare, 15)
+            spare -= min(spare, 15)
+
+    design, photos = valid_contract()
+    set_total(design, 45)
+    module.validate_design(design, photos)
+    assert_invalid(lambda design, photos: set_total(design, 46), "that is 51, over the 50 a lesson can run to")
 
 
 def test_the_refusal_names_the_longest_beats_to_cut():

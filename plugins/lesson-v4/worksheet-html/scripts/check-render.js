@@ -75,6 +75,7 @@ async function main() {
   const browser = await puppeteer.launch({
     executablePath: findChrome(),
     headless: "new",
+    pipe: true,
   });
   const page = await browser.newPage();
 

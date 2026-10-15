@@ -5,24 +5,36 @@ Read this reference only when the assignment contains real search or focused rep
 ## The ladder
 
 The compiled schedule is a ladder, cheapest rung first, and you stop at the
-first faithful winner. Never run a rung the schedule has not compiled, and never
-skip one to reach the rung below it.
+first faithful winner. One command runs whichever rung comes next for a picture:
 
-| Rung | What it searches | Command |
-| --- | --- | --- |
-| `unsplash` | modern stock photography | `unsplash_fetch.py "<query>" --count N --round R --output <dir>` |
-| `wikimedia` | Wikimedia Commons | `wikimedia_fetch.py "<query>" --count N --round R --output <dir>` |
-| `openverse` | about a hundred collections at once - Flickr Commons, where archives and museums publish their photographs, the Science Museum Group, the Smithsonian, Europeana, university libraries | `openverse_fetch.py "<query>" --count N --round R --output <dir>` |
-| `web` | the holding institution's own page, found by you | `web_fetch.py "<subject>" --candidates <file.json> --count N --round R --output <dir>` |
+```bash
+"[PYTHON]" "<PLUGIN_ROOT>/scripts/picture-search.py" --assignment "<ASSIGNMENT_FILE>" --filename "<the entry's filename>" --query "<your words>"
+```
 
-The first three take a query and return candidates. **The order is compiled per
-picture, not fixed**, because each rung costs a fetch and, far more expensively,
-one of your inspection passes - so the rung that answers first is the only one
-that gets paid for, and the compiler puts it first. A picture of a real thing at
-a real date leads with `openverse`, where archives and museums are; an ordinary
-object leads with stock photography, which is what stock is good at; a picture
-with an authorised AI fallback gets one real search and then generates. Run the
-schedule you were given, in the order you were given it.
+You bring the query. The library, round, candidate count and the folder the
+record must land in are read from the assignment, so run this command once per
+search rather than calling a fetch script or writing a loop of your own: a
+hand-built command sent one lesson's downloads to the wrong folder, and a
+hand-built loop dropped one of four searches. It ends with a `PICTURE_SEARCH`
+line naming the record it wrote and a `NEXT` line saying what is left for that
+picture. `--status` in place of `--query` shows where each rung stands and runs
+nothing. An Unsplash rung also takes `--orientation`.
+
+| Rung | What it searches |
+| --- | --- |
+| `unsplash` | modern stock photography |
+| `wikimedia` | Wikimedia Commons |
+| `openverse` | about a hundred collections at once - Flickr Commons, where archives and museums publish their photographs, the Science Museum Group, the Smithsonian, Europeana, university libraries |
+| `web` | the holding institution's own page, found by you: add `--candidates <file.json>` |
+
+**The order is compiled per picture, not fixed**, because each rung costs a
+fetch and, far more expensively, one of your inspection passes - so the rung
+that answers first is the only one that gets paid for, and the compiler puts it
+first. A picture of a real thing at a real date leads with `openverse`, where
+archives and museums are; an ordinary object leads with stock photography; a
+picture that may be made gets two libraries and is then generated. A later
+rung's photograph is judged as hard as the first's: when both libraries hold
+only second choices, make the picture, as the choosing reference says.
 
 ## The open-web rung
 
@@ -58,11 +70,6 @@ fair dealing for illustration for instruction with the source acknowledged. That
 is why `publisher` is required - it is the credit that basis depends on, and the
 deck prints it under the picture.
 
-`--count` is the step's compiled `candidate_count`, not the number of
-candidates you chose: the summary is checked against the schedule that compiled
-it, so a good fetch of two candidates against a three-candidate step is thrown
-out if it records two.
-
 Go to the institution that holds the picture. The fetcher refuses a picture
 library (Getty, Alamy, Shutterstock and their kind), because selling the licence
 is their whole business and taking the preview is not fair dealing under any
@@ -95,19 +102,17 @@ For a named species, try its full common name first. If one word contaminates th
 
 For a place outside the English-speaking world, include local-language terms before concluding that no real image is available. Do not add local-language terms to a generic object with no place identity.
 
-Write each query under the entry's owned work folder. Use the exact source, round, candidate count, and output directory in the compiled schedule.
-
 ## Search order
 
 For one filename:
 
-1. Run only the next compiled schedule step, skipping any marked `standby_only: true`.
+1. Run the search command for that filename.
 2. Read its summary.
 3. Discard candidates whose metadata clearly names another subject.
 4. Compare the remaining candidates together.
 5. Open a possible winner as an original.
 6. Stop immediately when one faithful winner exists.
-7. Run the next step only when no faithful winner exists.
+7. Run the command again only when no faithful winner exists.
 
 Do not run two source steps for the same filename in parallel. Parallel calls are for different filenames.
 
@@ -117,9 +122,9 @@ A summary with `complete: true` proves one compiled search step completed. An em
 
 A non-zero call, `complete: false`, auth failure, rate limit, transport failure or unreadable summary proves nothing about source availability.
 
-Retry one clearly transient transport failure once, in a `retry-1` child directory inside that step's output directory, named `retry-1/<the same compiled summary filename>`. Never overwrite the first failed summary. Never retry authentication or rate limit as if it were a semantic search.
+A transport failure has one retry: run the search command again and it makes it, keeping the first record beside it. A spent quota (`rate_limit`) is never retried, and a refused key (`auth`) stops the ladder; the command applies both.
 
-If a compiled step stays unavailable after its one retry, or hit `rate_limit`, walk on to the next step, here alone including a `standby_only` rung: a source never reached has answered nothing. The schedule orders preference, not validity, so a later rung's faithful photograph is a full answer. Record the outage; never restart or re-retry it.
+If a compiled step stays unavailable after its one retry, or hit `rate_limit`, the command walks on to the next step: a source never reached has answered nothing. The schedule orders preference, not validity, so a later rung's faithful photograph is a full answer. Never restart or re-retry an outage.
 
 Only with no rung left does the contract decide. When `fallback_action` is `ai` and a prompt file exists, continue to generation and report its outcome. Otherwise report `real_source_unavailable`: no substitute is authorised, and an invented picture would be provenance the contract refused.
 
@@ -154,4 +159,4 @@ Never copy a synthetic cached asset into a real route. Never use a cache record 
 
 When the assignment names prior search summaries, inspect every unused candidate that could fix the exact review fault before making a new source call.
 
-Use the one additional repair search only when prior candidates cannot fix the fault. Preserve the original history. Do not search siblings.
+Use the one additional repair search, one run of the search command, only when prior candidates cannot fix the fault. Preserve the original history. Do not search siblings.

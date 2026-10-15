@@ -86,11 +86,11 @@ class TheScheduleOnEachHost(unittest.TestCase):
         self.assertIn("openverse", [s["source"] for s in steps])
 
     def test_a_generation_host_keeps_its_short_ladder(self):
-        """Codex compiles exactly what it compiled before: one search, a standby."""
+        """Codex keeps its short ladder: one search, a second library, then generation."""
         for p in (photo(), photo(essential=False), photo(profile="unsplash-then-wikimedia")):
             with self.subTest(p=p["source_profile"], essential=p["essential"]):
                 self.assertEqual(compiler.source_schedule(p, generation_available=True), compiler.source_schedule(p))
-        self.assertEqual(ladder(compiler.source_schedule(photo())), [("unsplash", 1, False), ("openverse", 1, True)])
+        self.assertEqual(ladder(compiler.source_schedule(photo())), [("unsplash", 1, False), ("openverse", 1, False)])
 
     def test_pictures_with_no_ai_fallback_are_the_same_on_both_hosts(self):
         for p in (photo(fallback="omit", essential=False),
@@ -259,7 +259,8 @@ class TheResultOnANoGeneratorHost(unittest.TestCase):
 
     def test_a_generation_host_still_must_generate_after_an_empty_search(self):
         entry, args = self.fixture(generation_available=True)
-        self.summary(entry["search_schedule"][0])
+        for step in entry["search_schedule"]:
+            self.summary(step)
         self.result(args, entry, "unsatisfied", reason="no_faithful_real_match")
         with self.assertRaisesRegex(validator.ValidationError, "authorised AI fallback"):
             validator.validate_result(args)

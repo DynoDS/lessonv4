@@ -564,7 +564,14 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # asked for after a Below sheet printed a question he could not follow.
         # The entry is five lines: its launch message is printed by
         # check-voice-edit.py rather than kept here, because there was no room.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 81 * 1024 + 256)
+        # Raised by 300 bytes on 13 October 2026, with the teacher's agreement,
+        # for one `SCRATCH_DIR:` line in each of the six launch templates, so a
+        # worker's own scratch folder is printed where the launch is copied from
+        # (workers sharing the host's one scratch folder, 7 October stress test).
+        # Raised by 100 bytes on 14 October 2026, with the teacher's agreement,
+        # for the report's one line naming a level that uses the Expected sheet
+        # (see the delivery slice's own raise below).
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 81 * 1024 + 656)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.
@@ -578,8 +585,18 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # One raise, agreed by the teacher on 29 September 2026: the delivery
         # slice gains the line that has the report drafted while the last
         # workers run (a Codex run spent 10 minutes writing it after they
-        # finished). Every other slice keeps the 7 KiB cap.
-        raised = {"delivery": 7 * 1024 + 512}
+        # finished). On 13 October 2026, with his agreement to the playbook's
+        # 300 bytes above, the two slices already within a line of the cap gain
+        # 64 bytes for their template's one `SCRATCH_DIR:` line and nothing
+        # else. On 14 October 2026, again with his agreement, the delivery slice
+        # gains 100 bytes for one report line: a level the plan gives the
+        # Expected task unchanged is said in the run ("the best place to say is
+        # in the run"). Every other slice keeps the 7 KiB cap.
+        raised = {
+            "delivery": 7 * 1024 + 612,
+            "design-review": 7 * 1024 + 64,
+            "worksheet-render": 7 * 1024 + 64,
+        }
         for name in BOUNDS:
             with self.subTest(slice=name):
                 size = self.measured_bytes(self.run_slice(name).stdout)

@@ -115,17 +115,20 @@ class PictureRequirementsAreGettableTests(unittest.TestCase):
         self.assertIn("Openverse", template)
 
     def test_the_scout_reference_carries_every_compiled_rung(self) -> None:
-        """A rung the scout cannot find the command for is a rung it will skip."""
+        """A rung the scout cannot find the command for is a rung it will skip.
+
+        Since 13 October 2026 one command runs whichever rung is next, so the
+        reference names that command and every rung it can run, and the command
+        itself must know a fetcher for each."""
         search = flat(SCOUT_SEARCH)
         self.assertIn("## The ladder", SCOUT_SEARCH)
-        for command in (
-            "unsplash_fetch.py",
-            "wikimedia_fetch.py",
-            "openverse_fetch.py",
-            "web_fetch.py",
-        ):
-            with self.subTest(command=command):
-                self.assertIn(command, search)
+        self.assertIn("scripts/picture-search.py", search)
+        runner = (ROOT / "scripts" / "picture-search.py").read_text(encoding="utf-8")
+        for rung in ("unsplash", "wikimedia", "openverse", "web"):
+            with self.subTest(rung=rung):
+                self.assertIn(f"| `{rung}` |", SCOUT_SEARCH)
+                self.assertIn(f'"{rung}": "{rung}_fetch.py"', runner)
+                self.assertTrue((ROOT / "scripts" / f"{rung}_fetch.py").is_file())
 
 
 if __name__ == "__main__":

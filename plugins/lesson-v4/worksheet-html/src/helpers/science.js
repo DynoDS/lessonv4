@@ -95,6 +95,7 @@ function needsCircuitDiagram(spec) {
 const { atPrintedWidth } = require("./at-printed-width");
 const classificationKeyShared = require("../../../shared/visuals/classification-key-svg");
 const processChainShared = require("../../../shared/visuals/process-chain-svg");
+const cycleShared = require("../../../shared/visuals/cycle-svg");
 
 // The instruction goes above the drawing as sheet text rather than inside it,
 // like every other science helper here, so it wraps and prints at the sheet's
@@ -137,6 +138,14 @@ function chainMinWidthMm(spec) {
   return Math.min(267, Math.max(60, n * 34));
 }
 
+// A cycle is two rows of stages, so it needs half as many across as a chain
+// of the same length, plus the width of whatever is written beside its arrows.
+function cycleMinWidthMm(spec) {
+  const n = Array.isArray(spec.boxes) ? spec.boxes.length : 4;
+  const beside = (Array.isArray(spec.arrows) && spec.arrows.some(Boolean)) || spec.arrowLine === true;
+  return Math.min(267, Math.max(80, Math.ceil(n / 2) * (beside ? 52 : 40)));
+}
+
 const css = `
   /* The instruction takes its own height and the drawing takes what is left.
      Without this the drawing's own "height: 100%" meant the FULL zone, and the
@@ -171,6 +180,9 @@ const helpers = {
   // A chain is a strip. Extra height only stretches the boxes away from the
   // arrows that join them.
   "process-chain": withSheetStem(atPrintedWidth(processChainShared, { toSpec: withoutStem, minWidthMm: chainMinWidthMm })),
+  // A loop is laid out at the width it prints too: spare height would only
+  // pull the two rows apart.
+  cycle: withSheetStem(atPrintedWidth(cycleShared, { toSpec: withoutStem, minWidthMm: cycleMinWidthMm })),
 };
 
 module.exports = { helpers, css };

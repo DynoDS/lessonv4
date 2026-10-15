@@ -270,7 +270,13 @@ test("a figure the children draw for themselves is left off the slip", () => {
 
 test("a figure the children read from stays on the slip", () => {
   const line = { helper: "number-line", start: 0, end: 100, interval: 10, labels: "all" };
-  assert.deepEqual(forSlip(line), line);
+  // Every piece is told it is on a slip (so each leaves out its own answer
+  // room); a figure with none is otherwise untouched and draws the same.
+  const { slip, ...kept } = forSlip(line);
+  assert.equal(slip, true);
+  assert.deepEqual(kept, line);
+  const { REGISTRY } = require("../src/helpers");
+  assert.equal(REGISTRY["number-line"].render(forSlip(line), 84), REGISTRY["number-line"].render(line, 84));
 });
 
 test("slips follow the sheet's reading order and keep its question numbers", () => {

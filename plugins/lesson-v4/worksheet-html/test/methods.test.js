@@ -27,31 +27,40 @@ function countRows(html) {
   return (html.match(/class="h-mgrid-row/g) || []).length;
 }
 
-// ─── short-multiplication-grid ───────────────────────────────────────────
+// ─── short-multiplication-grid and long-multiplication-grid ──────────────
+// Both print the shared place value chart's written calculation, the drawing
+// the board and the wall show (13 October 2026). What is checked here is what
+// the sheet asks of it; the drawing's own layout is checked in
+// shared/test/long-multiplication-svg.test.js.
 
-test("a short multiplication grid has a cell for every digit of every row", () => {
-  // The grid IS the method: an operator column plus one column per digit,
-  // across the number, the multiplier, the answer and the carry row. A column
-  // short and the child's place value has nowhere to line up.
-  const html = render("short-multiplication-grid", { top: "345", multiplier: "6" });
-  assert.equal(countRows(html), 4, "number, multiplier, answer, carry");
-  assert.equal(countCells(html), 16, "four rows of four columns");
+const digitsOf = (html) => [...html.matchAll(/<text[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]);
+const count = (html, what) => (html.match(what) || []).length;
+// A thick line is the only line in the drawing: every other rule is a cell's edge.
+const HEAVY = /<line /g;
+
+test("a multiplication grid is the board's drawing, in the board's column colours", () => {
+  for (const name of ["short-multiplication-grid", "long-multiplication-grid"]) {
+    assert.equal(helpers[name].geometry, require("../../shared/visuals/place-value-chart-svg"), name);
+  }
+  const html = render("long-multiplication-grid", { top: "345", bottom: "26" });
+  assert.ok(html.includes("<svg"), "drawn by the shared drawing");
+  assert.ok(html.includes("#FFD6D6"), "the ones column is the board's ones colour");
 });
 
-test("a short multiplication grid puts the multiplier under the ones digit", () => {
-  // Under the ones is where the child starts, and where the method lines up.
-  // Placed under the hundreds it teaches the wrong first step.
+test("a short multiplication grid shows the number, the sign and the multiplier and leaves the answer to the child", () => {
   const html = render("short-multiplication-grid", { top: "345", multiplier: "6" });
-  const cells = html.match(/<div class="h-mgrid-cell[^"]*">([^<]*)<\/div>/g);
-  const texts = cells.map((c) => c.replace(/<[^>]+>/g, ""));
-  // Row 2 runs from index 4 to 7: the operator, then three digit columns.
-  assert.deepEqual(texts.slice(4, 8), ["×", "", "", "6"]);
+  assert.deepEqual(digitsOf(html), ["3", "4", "5", "×", "6"]);
+});
+
+test("a multiplication grid has a column for every digit of its answer", () => {
+  // 345 x 6 = 2,070 and 4,326 x 52 = 224,952: the first digit used to go under
+  // the sign, where the board gives it a column (stress test, 7 October 2026).
+  const widthOf = (name, spec) => needs(name, spec).minWidthMm;
+  assert.ok(widthOf("short-multiplication-grid", { top: "345", multiplier: "6" }) > widthOf("short-multiplication-grid", { top: "312", multiplier: "3" }));
+  assert.ok(widthOf("long-multiplication-grid", { top: "4326", bottom: "52" }) > widthOf("long-multiplication-grid", { top: "1243", bottom: "23" }));
 });
 
 test("a wider number needs a wider zone", () => {
-  // A constant per helper cannot know that a four-digit multiplication has a
-  // column more to fit, which is how a grid comes to be sliced down its right
-  // edge with the fit check reporting no problem.
   const three = { top: "345", multiplier: "6" };
   const five = { top: "34521", multiplier: "6" };
   assert.ok(
@@ -60,49 +69,56 @@ test("a wider number needs a wider zone", () => {
   );
 });
 
-test("a short multiplication grid's digit cells never grow past writing size", () => {
-  // Given a whole page's width the square cells would scale with it, and a
-  // digit box the size of a matchbox is worse for the child, not better.
-  const spec = { top: "345", multiplier: "6" };
-  assert.equal(measure("short-multiplication-grid", spec, FULL_MM), 12 * 3.5);
+test("a multiplication grid's squares never grow past writing size", () => {
+  // Given a whole page's width the squares would scale with it, and a digit
+  // box the size of a matchbox is worse for the child, not better. Three and a
+  // half rows of 12mm, and the hair of margin the drawing keeps round itself.
+  const height = measure("short-multiplication-grid", { top: "345", multiplier: "6" }, FULL_MM);
+  assert.ok(height >= 12 * 3.5 && height < 12 * 3.5 + 1.5, `${height}mm`);
 });
 
-// ─── long-multiplication-grid ────────────────────────────────────────────
-
 test("long multiplication is taller than short multiplication for the same number", () => {
-  // The partial products are the difference between the two methods. If the
-  // grid does not allow for them the child has no rows to write them in.
   const short = measure("short-multiplication-grid", { top: "345", multiplier: "6" }, COLUMN_MM);
   const long = measure("long-multiplication-grid", { top: "345", bottom: "26" }, COLUMN_MM);
   assert.ok(long > short, `long ${long}mm should exceed short ${short}mm`);
 });
 
-test("a long multiplication grid draws one partial product row per multiplier digit", () => {
-  // A three-digit multiplier makes three partial products. A grid that always
-  // draws two leaves the last one nowhere to go.
-  const two = render("long-multiplication-grid", { top: "345", bottom: "26" });
-  const three = render("long-multiplication-grid", { top: "345", bottom: "126" });
-  assert.equal(countRows(two), 6, "numbers, two partials, total, carry");
-  assert.equal(countRows(three), 7, "numbers, three partials, total, carry");
+test("a long multiplication grid gives every digit of the multiplier a row of working", () => {
+  // A three-digit multiplier makes three rows. A grid that always draws two
+  // leaves the last one nowhere to go.
   assert.ok(
     needs("long-multiplication-grid", { top: "345", bottom: "126" }).minHeightMm >
-      needs("long-multiplication-grid", { top: "345", bottom: "26" }).minHeightMm,
-    "the extra partial product has to be allowed for in the height too"
+      needs("long-multiplication-grid", { top: "345", bottom: "26" }).minHeightMm
   );
 });
 
-test("a long multiplication grid rules under the numbers and under the partials", () => {
-  // Two thick rules: one closing the question, one closing the working. They
-  // are what tell the child where the answer goes.
+test("a long multiplication grid has its three thick lines", () => {
+  // Under the two numbers, under the working, and under the total: the last
+  // two are the big equals sign the answer is written between.
   const html = render("long-multiplication-grid", { top: "345", bottom: "26" });
-  assert.equal((html.match(/h-mgrid-answer/g) || []).length, 2);
+  assert.equal(count(html, HEAVY), 3);
+});
+
+test("a long multiplication grid can print the first row for a child who needs a start", () => {
+  const html = render("long-multiplication-grid", { top: "2132", bottom: "23", upTo: "tens zero" });
+  // Each row carries its label at the left, "× 3", "× 20" and "add" (14 October 2026).
+  assert.deepEqual(digitsOf(html), ["2", "1", "3", "2", "×", "2", "3", "× 3", "6", "3", "9", "6", "× 20", "0", "add"]);
+});
+
+test("a number that is not whole, or a one-digit multiplier, still gets a grid", () => {
+  // Files written before the grid could work a sum out must still build.
+  assert.doesNotThrow(() => render("long-multiplication-grid", { top: "345", bottom: "6" }));
+  assert.doesNotThrow(() => render("long-multiplication-grid", { top: "3.45", bottom: "26" }));
+  assert.doesNotThrow(() => render("long-multiplication-grid", { top: 2132, bottom: 23 }));
 });
 
 test("both numbers set the width of a long multiplication grid", () => {
-  // Sized from the top number alone, a four-digit multiplier would overflow.
   const wideBottom = needs("long-multiplication-grid", { top: "34", bottom: "2617" });
   const wideTop = needs("long-multiplication-grid", { top: "3452", bottom: "26" });
-  assert.equal(wideBottom.minWidthMm, wideTop.minWidthMm);
+  // The same columns; the wider multiplier's labels ("× 2,000") ask a little
+  // more room for the label column at the left.
+  assert.ok(wideBottom.minWidthMm >= wideTop.minWidthMm, `${wideBottom.minWidthMm} < ${wideTop.minWidthMm}`);
+  assert.ok(wideBottom.minWidthMm - wideTop.minWidthMm <= 12, "the columns themselves are the same");
 });
 
 // ─── bus-stop-grid ───────────────────────────────────────────────────────
@@ -296,8 +312,11 @@ test("text from a spec is escaped, so a stray angle bracket cannot break the pag
 test("no helper here hard-codes a colour", () => {
   // A raw hex is a second colour system starting, which is how a child meets
   // two meanings for one colour in a single lesson.
+  // The two multiplication grids are the shared drawing, which carries the
+  // deck's own column colours (helpers.test.js makes the same exception).
   for (const spec of Object.values(EXAMPLES)) {
     const html = helpers[spec.helper].render(spec);
+    if (html.includes("<svg")) continue;
     const hex = html.match(/#[0-9a-fA-F]{3,6}\b/);
     assert.equal(hex, null, `"${spec.helper}" hard-codes ${hex && hex[0]}`);
   }

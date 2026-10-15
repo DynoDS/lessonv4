@@ -134,6 +134,10 @@ class ProvisionalSnapshotTests(unittest.TestCase):
             lesson_design=None, receipt=str(root / "receipt.json"),
             requirements_snapshot=str(snapshot) if snapshot else None,
         )
+        # The voice editor's second pass has settled this adaptation.
+        (adaptation.parent / 'orchestration-receipts').mkdir(exist_ok=True)
+        (adaptation.parent / 'orchestration-receipts' / 'adaptation-voice.json').write_text(
+            json.dumps({'adaptationSha256': contract_module.sha256_file(adaptation)}), encoding='utf-8')
         self.assertEqual(contract_module.cmd_build_provisional(args), 0)
         return json.loads((root / "receipt.json").read_text(encoding="utf-8"))
 

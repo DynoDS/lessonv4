@@ -84,19 +84,25 @@ const CARD_FONT_MIN = 14;     // question font floor, points (>= MIN_FONT_PT)
 // stretched past what its question needs." Three helpers drew sets of question
 // cards and only that one had understood it.
 //
-// KEPT, and the reason it is kept: answers still outgrow questions. The original
-// split said a set that is nothing but answers is read from the back of the room
-// for a few seconds and then gone, while a question is worked from, and the
-// teacher's own hand agrees twice over - he chose 54 for the questions and 72 for
-// the answers in the same sitting, on the same board, having been given 40 and 48.
-// The gap is his, not an artefact of the old ceilings.
-//
 // SUPERSEDED: 40 was justified as "the largest ceiling anywhere in the deck, so a
 // question never comes out bigger than a title". He set both a question set and an
 // answer set far above the 28pt title, so a set is no longer held to the title's
 // size. A title labels a slide; a question set IS the slide.
-const CARD_FONT_MAX = 54;
-const ANSWER_FONT_MAX = 72;
+//
+// SUPERSEDED again, 14 October 2026: his 54 and 72 were the sizes that fitted the
+// three-item slides he was editing, and as ceilings they repeated the mistake they
+// had corrected. A Year 4 column addition starter with two short sums
+// ("246 + 138 =", "3,353 + 152 =") stopped at 54 against the left edge with the
+// right half of the slide empty, and he called it wasted dead space. Shown the
+// same two sums grown to fill the slide (about 100pt, the answer slide smaller
+// because its lines are longer) he said "yes much better", and asked for it on
+// every numbered question set, not only the starter. So the room decides the size
+// now, and the old gap between questions and answers goes with the caps that made
+// it: a reveal still comes out as large as its own lines allow. 120 is a guard
+// only, for a lone short sum on a whole body zone that would otherwise print at
+// 200pt; two sums on a full starter stop just under it on the height.
+const CARD_FONT_MAX = 120;
+const ANSWER_FONT_MAX = 120;
 const LINE_H_RATIO  = 1.30;   // line height as a multiple of font size
 const LABEL_FONT_PT = 24;     // the question number's own size, points. The number
                               // is a marker a child matches against their book, not

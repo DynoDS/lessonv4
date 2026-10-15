@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const { validateLesson, friendlyParseError } = require('../src/validate');
 const { expandTeachLayouts, TeachLayoutError } = require('../src/teach-layouts');
+const { joinStackedCriteriaPanels } = require('../src/content/sc-panel');
 
 const arg = process.argv[2];
 if (!arg) {
@@ -44,6 +45,7 @@ try {
   console.error(`TEACH_LAYOUT_INVALID: ${err.message}`);
   process.exit(1);
 }
+lesson = joinStackedCriteriaPanels(lesson);
 
 const { errors, warnings } = validateLesson(lesson, path.dirname(jsonPath));
 warnings.forEach((w) => console.log('  ! ' + w));

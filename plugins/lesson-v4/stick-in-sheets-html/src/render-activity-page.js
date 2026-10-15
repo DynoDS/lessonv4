@@ -76,19 +76,42 @@ function taskLines(task) {
   return [...(split.lead ? [split.lead] : []), ...split.parts.map((part) => `(${part.n}) ${part.text}`)];
 }
 
-function taskHeightMm(task, widthMm) {
-  if (!task) return 0;
-  const charsPerLine = Math.max(20, Math.floor(widthMm / 3.4));
-  return taskLines(task).reduce((n, line) => n + Math.ceil(line.length / charsPerLine), 0) * TASK_LINE_MM + TASK_GAP_MM;
+// The key a task tells children to use ("using the key"): what each mark
+// means, in one plain line under the task. The board carries the key while its
+// slide is up; the sheet has to say it once the slide has moved on (the
+// teacher, from three pictures of a Year 6 text, 11 October 2026).
+const KEY_LINE_MM = 7;
+const KEY_GAP_MM = 3;
+
+function keyOf(item) {
+  const key = item.key;
+  const said = (Array.isArray(key) ? key.join("  ·  ") : String(key == null ? "" : key)).trim();
+  return said ? withoutTaughtMarks(/^key/i.test(said) ? said : `Key: ${said}`) : "";
 }
 
-function taskHtml(task) {
-  if (!task) return "";
+function keyHeightMm(key, widthMm) {
+  if (!key) return 0;
+  return Math.ceil(key.length / Math.max(20, Math.floor(widthMm / 2.6))) * KEY_LINE_MM + KEY_GAP_MM;
+}
+
+function keyHtml(key) {
+  if (!key) return "";
+  return `<div style="font-size:14pt;line-height:${KEY_LINE_MM}mm;margin-bottom:${KEY_GAP_MM}mm;color:${INK}">${esc(key)}</div>`;
+}
+
+function taskHeightMm(task, widthMm, key) {
+  if (!task) return keyHeightMm(key, widthMm);
+  const charsPerLine = Math.max(20, Math.floor(widthMm / 3.4));
+  return taskLines(task).reduce((n, line) => n + Math.ceil(line.length / charsPerLine), 0) * TASK_LINE_MM + TASK_GAP_MM + keyHeightMm(key, widthMm);
+}
+
+function taskHtml(task, key) {
+  if (!task) return keyHtml(key);
   const lines = taskLines(task);
   const inner = lines.length === 1
     ? esc(task)
     : lines.map((line) => `<div${/^\(\d/.test(line) ? ' style="padding-left:10mm;text-indent:-10mm"' : ""}>${esc(line)}</div>`).join("");
-  return `<div style="font-weight:bold;font-size:18pt;line-height:${TASK_LINE_MM}mm;margin-bottom:${TASK_GAP_MM}mm;color:${INK}">${inner}</div>`;
+  return `<div style="font-weight:bold;font-size:18pt;line-height:${TASK_LINE_MM}mm;margin-bottom:${key ? KEY_GAP_MM : TASK_GAP_MM}mm;color:${INK}">${inner}</div>${keyHtml(key)}`;
 }
 
 function copiesFor(per, classSize) {
@@ -173,7 +196,8 @@ const TWO_UP_BIG_ENOUGH = 1.5;
 async function figurePages(item, natural, render, { printableWMm, printableHMm, classSize, pageHtml }) {
   const task = taskOf(item);
   const aspect = natural.widthMm / natural.heightMm;
-  const taskH = taskHeightMm(task, printableWMm);
+  const key = keyOf(item);
+  const taskH = taskHeightMm(task, printableWMm, key);
   const sizes = await sizesOf(natural, render, printableWMm);
   const oneRoomH = printableHMm - taskH;
   const halfRoomH = (printableHMm - TWO_UP_GAP_MM) / 2 - taskH;
@@ -186,7 +210,7 @@ async function figurePages(item, natural, render, { printableWMm, printableHMm, 
     (two.zoom != null && two.zoom >= TWO_UP_BIG_ENOUGH)
   );
   const piece = await drawFit(natural, render, twoUp ? two : one, twoUp ? halfRoomH : oneRoomH);
-  const block = `<div style="width:${printableWMm}mm">${taskHtml(task)}` +
+  const block = `<div style="width:${printableWMm}mm">${taskHtml(task, key)}` +
     `<div style="display:flex;justify-content:center">${piece.html}</div></div>`;
   const body = twoUp
     ? `${block}<div style="border-top:0.3mm dashed ${GREY};margin:${TWO_UP_GAP_MM / 2}mm 0"></div>${block}`
@@ -242,7 +266,9 @@ function withWritingPlaces(text, boxMm, ruleMm) {
   const marked = text.replace(/\[\s*\]|\?(?=$|[\s/),.=])/g, "☐").replace(/_{2,}/g, "␣");
   const box = `<span style="display:inline-block;width:${boxMm}mm;height:${boxMm}mm;border:0.5mm solid ${INK};border-radius:1mm;vertical-align:middle;background:#fff"></span>`;
   const rule = `<span style="display:inline-block;width:${ruleMm}mm;border-bottom:0.4mm solid ${INK}"></span>`;
-  return stackFractionsInText(esc(marked)).replace(/☐/g, box).replace(/␣/g, rule);
+  // A part to find inside a fraction comes back from the stacking as its
+  // write-in box; this page draws its own, the same as every other box on it.
+  return stackFractionsInText(esc(marked)).replace(/☐|<span class="sfr-box"><\/span>/g, box).replace(/␣/g, rule);
 }
 
 function sumHtml(text) {

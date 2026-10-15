@@ -45,6 +45,7 @@ const measuringJugShared = require('../../shared/visuals/measuring-jug-svg');
 const rulerShared = require('../../shared/visuals/ruler-svg');
 const timelineShared = require('../../shared/visuals/timeline-svg');
 const processChainShared = require('../../shared/visuals/process-chain-svg');
+const cycleShared = require('../../shared/visuals/cycle-svg');
 const classificationKeyShared = require('../../shared/visuals/classification-key-svg');
 const conceptMapShared = require('../../shared/visuals/concept-map-svg');
 const annotatedTextShared = require('../../shared/visuals/annotated-text-svg');
@@ -73,6 +74,7 @@ const placeValueChartShared = require('../../shared/visuals/place-value-chart-sv
 const placeValueMiniShared = require('../../shared/visuals/place-value-mini-svg');
 const baseTenBlocksShared = require('../../shared/visuals/base-ten-blocks-svg');
 const counterGroupShared = require('../../shared/visuals/counter-group-svg');
+const tenFrameShared = require('../../shared/visuals/ten-frame-svg');
 const partWholeModelShared = require('../../shared/visuals/part-whole-model-svg');
 const pyramidShared = require('../../shared/visuals/pyramid-svg');
 const multGridShared = require('../../shared/visuals/mult-grid-svg');
@@ -197,6 +199,20 @@ const turnDiagramWall = sharedAtWidth(turnDiagramShared);
 const triangleSquareWall = sharedAtWidth(triangleSquareShared);
 const polygonWall = sharedAtWidth(polygonShared);
 const translationGridWall = sharedAtWidth(translationGridShared);
+// The coordinate grid is told the width it prints at, so its axis numbers and
+// letters are sized for the wall: the wall's own size where a square is big
+// enough to hold it, and as large as a square holds where it is not. Its
+// `wordsOf` is what has the build lay it out again for the room its card
+// really gave it. The floor it reports is nought, because a grid of many
+// squares cannot reach the wall's floor on any sheet, and a sheet is never
+// refused for that: before 13 October 2026 the grid's numbers were a fixed
+// third of a square and no size was checked at all.
+const coordinateGridWall = sharedAtWidth(coordinateGridShared);
+const coordinateGridWords = (spec) => {
+  const words = coordinateGridWall.wordsOf(spec);
+  const numberPt = coordinateGridShared.describeLayout(spec, profileFor('wall', { widthMm: words.layoutWidthMm })).numberPt;
+  return { layoutWidthMm: words.layoutWidthMm, fontPt: numberPt || words.fontPt, minFontPt: 0 };
+};
 const areaGridWall = sharedAtWidth(areaGridShared);
 const comparisonWall = sharedAtWidth(comparisonShared);
 // The angle a wall card fills and labels with its size: the shared angle.
@@ -215,6 +231,7 @@ const measuringJugWall = sharedAtWidth(measuringJugShared, 120);
 const rulerWall = sharedAtWidth(rulerShared, 180);
 const timelineWall = sharedAtWidth(timelineShared, 260);
 const processChainWall = sharedAtWidth(processChainShared, 360);
+const cycleWall = sharedAtWidth(cycleShared, 360);
 const classificationKeyWall = sharedAtWidth(classificationKeyShared, 260);
 const conceptMapWall = sharedAtWidth(conceptMapShared, 260);
 // A model text is read from across the room, so it is laid out in the box its
@@ -254,10 +271,15 @@ const COUNTER_PAIR_BOX = {
   overrides: { pairArrow: 'narrow', pairExchangeMarks: true, pairMaxHeightPt: (165 * 72) / 25.4 },
 };
 const isCounterPair = (spec) => Boolean(spec && spec.type === 'place-value-chart' && spec.pair && spec.pair.counters);
-const placeValueChartWall = sharedAtWidth(placeValueChartShared, (spec) => (isCounterPair(spec) ? COUNTER_PAIR_BOX : { widthMm: WALL_VISUAL_WIDTH_MM }));
+// A long multiplication explained carries a sentence beside every row, so it
+// is laid out as wide as a chart: at the usual width the sentences squeezed
+// the columns until the digits were too small to read across the room.
+const isExplainedSum = (spec) => Boolean(spec && spec.calculation && /^explain|^sentence|^model/i.test(String(spec.calculation.look || '')));
+const placeValueChartWall = sharedAtWidth(placeValueChartShared, (spec) => (isCounterPair(spec) ? COUNTER_PAIR_BOX : { widthMm: isExplainedSum(spec) ? WALL_CHART_WIDTH_MM : WALL_VISUAL_WIDTH_MM }));
 const placeValueMiniWall = sharedAtWidth(placeValueMiniShared);
 const baseTenBlocksWall = sharedAtWidth(baseTenBlocksShared);
 const counterGroupWall = sharedAtWidth(counterGroupShared);
+const tenFrameWall = sharedAtWidth(tenFrameShared);
 const partWholeModelWall = sharedAtWidth(partWholeModelShared);
 const pyramidWall = sharedAtWidth(pyramidShared);
 const multGridWall = sharedAtWidth(multGridShared);
@@ -767,6 +789,7 @@ async function preRenderSvgs(spec, specDir, widths = {}, earlier = {}) {
     'ruler': { ...rulerWall, collected: {} },
     'timeline': { ...timelineWall, collected: {} },
     'process-chain': { ...processChainWall, collected: {} },
+    cycle: { ...cycleWall, collected: {} },
     'classification-key': { ...classificationKeyWall, collected: {} },
     'concept-map': { ...conceptMapWall, collected: {} },
     'annotated-text': { ...annotatedTextWall, collected: {} },
@@ -791,7 +814,7 @@ async function preRenderSvgs(spec, specDir, widths = {}, earlier = {}) {
     carroll:          { keyFn: carrollShared.cacheKey,  tightFn: carrollShared.tightSvg,  collected: {} },
     geoboard:         { keyFn: geoboardShared.cacheKey, tightFn: geoboardShared.tightSvg, collected: {} },
     'reflection-grid': { keyFn: reflectionGridShared.cacheKey, tightFn: reflectionGridShared.tightSvg, collected: {} },
-    'coordinate-grid': { keyFn: coordinateGridShared.cacheKey, tightFn: coordinateGridShared.tightSvg, collected: {} },
+    'coordinate-grid': { ...coordinateGridWall, wordsOf: coordinateGridWords, collected: {} },
     'translation-shape': { keyFn: translationShapeShared.cacheKey, tightFn: translationShapeShared.tightSvg, collected: {} },
     'tally-chart':    { keyFn: tallyChartShared.cacheKey, tightFn: tallyChartShared.tightSvg, collected: {} },
     pictogram:        { keyFn: pictogramShared.cacheKey, tightFn: pictogramShared.tightSvg, collected: {} },
@@ -805,6 +828,7 @@ async function preRenderSvgs(spec, specDir, widths = {}, earlier = {}) {
     'place-value-mini': { ...placeValueMiniWall, collected: {} },
     'base-ten-blocks': { ...baseTenBlocksWall, collected: {} },
     'counter-group': { ...counterGroupWall, collected: {} },
+    'ten-frame': { ...tenFrameWall, collected: {} },
     'part-whole-model': { ...partWholeModelWall, collected: {} },
     'pyramid': { ...pyramidWall, collected: {} },
     'mult-grid': { ...multGridWall, collected: {} },
@@ -1151,6 +1175,7 @@ module.exports = {
   rulerKey: rulerWall.keyFn,
   timelineKey: timelineWall.keyFn,
   processChainKey: processChainWall.keyFn,
+  cycleKey: cycleWall.keyFn,
   classificationKeyKey: classificationKeyWall.keyFn,
   conceptMapKey: conceptMapWall.keyFn,
   annotatedTextKey: annotatedTextWall.keyFn,
@@ -1172,7 +1197,7 @@ module.exports = {
   carrollKey: carrollShared.cacheKey,
   geoboardKey: geoboardShared.cacheKey,
   reflectionGridKey: reflectionGridShared.cacheKey,
-  coordinateGridKey: coordinateGridShared.cacheKey,
+  coordinateGridKey: coordinateGridWall.keyFn,
   translationShapeKey: translationShapeShared.cacheKey,
   tallyChartKey: tallyChartShared.cacheKey,
   pictogramKey: pictogramShared.cacheKey,
@@ -1187,6 +1212,7 @@ module.exports = {
   placeValueMiniKey: placeValueMiniWall.keyFn,
   baseTenBlocksKey: baseTenBlocksWall.keyFn,
   counterGroupKey: counterGroupWall.keyFn,
+  tenFrameKey: tenFrameWall.keyFn,
   partWholeModelKey: partWholeModelWall.keyFn,
   pyramidKey: pyramidWall.keyFn,
   multGridKey: multGridWall.keyFn,

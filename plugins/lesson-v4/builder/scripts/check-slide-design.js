@@ -674,6 +674,43 @@ function vocabCardBeforeItsWord(lesson) {
   for (let at = 0; at < slides.length && (isStarterSlide(slides[at]) || isCard(slides[at])); at += 1) {
     if (isStarterSlide(slides[at])) starterEnd = at;
   }
+  // A question and its answer are one beat, and a card between them holds the
+  // answer back for a definition. A Year 5 fractions deck asked "Who has painted
+  // more?", showed the card for numerator and denominator, then gave the answer,
+  // because the answer slide was the first board to print the words (the
+  // teacher, 13 October 2026: "I would have preferred the answers, then the
+  // vocab ... it can go straight after the answer slide if needed. Or it could
+  // have went before the task"). So the pair counts as one place: the card sits
+  // after the answer or before the question, never inside. This is only for a
+  // slide that sets the child a task and the next slide of the same unit; a
+  // card inside an ordinary run of teaching slides keeps the rule below.
+  const unitOf = (slideData) =>
+    String((slideData && (slideData.designUnitId || slideData.sourceUnitId)) || '');
+  const asksTheChild = (slideData) => {
+    if (!slideData || typeof slideData !== 'object') return false;
+    if (slideData.task) return true;
+    let asks = false;
+    const visit = (node) => {
+      if (asks || !node || typeof node !== 'object') return;
+      if (node.revealPair && node.revealPair.state === 'question') {
+        asks = true;
+        return;
+      }
+      Object.keys(node).forEach((key) => {
+        if (key !== 'speakerNotes' && key !== 'notes') visit(node[key]);
+      });
+    };
+    visit(slideData);
+    return asks;
+  };
+  const neighbour = (from, step) => {
+    let at = from + step;
+    while (at >= 0 && at < slides.length && isCard(slides[at])) at += step;
+    return at >= 0 && at < slides.length ? at : -1;
+  };
+  const answers = (question, answer) =>
+    question !== -1 && answer !== -1 && Boolean(unitOf(slides[question])) &&
+    unitOf(slides[question]) === unitOf(slides[answer]) && asksTheChild(slides[question]);
   slides.forEach((slideData, index) => {
     if (!isCard(slideData)) return;
     const words = (Array.isArray(slideData.words) ? slideData.words : [])
@@ -699,12 +736,29 @@ function vocabCardBeforeItsWord(lesson) {
       });
       return;
     }
+    const before = neighbour(index, -1);
+    const after = neighbour(index, 1);
+    if (answers(before, after)) {
+      warnings.push({
+        signal: 'VOCAB_CARD_BETWEEN_A_QUESTION_AND_ITS_ANSWER',
+        slide: index + 1,
+        field: 'words',
+        message:
+          `The card for ${named} sits between slide ${before + 1}, which sets children a task, and ` +
+          `slide ${after + 1}, which answers it. A question and its answer stay together. Move the ` +
+          `card to straight after slide ${after + 1}, or to straight before slide ${before + 1}, ` +
+          'and keep its speaker notes exactly as written.'
+      });
+      return;
+    }
     // Too late: a board before the card already shows the word (a paced Teach
     // that says "a disease called cholera" on its fourth slide, with the card
     // after the whole Teach and a script saying "the word we've just met").
+    // The answer half of a pair straight before the card is not too late: the
+    // card could not have come any sooner without splitting the pair.
     const earlier = slides.findIndex((other, at) =>
       at < index && at > starterEnd && !isCard(other) && shows(at));
-    if (earlier !== -1) {
+    if (earlier !== -1 && !(earlier === before && answers(neighbour(before, -1), before))) {
       warnings.push({
         signal: 'VOCAB_CARD_AFTER_A_SLIDE_WITH_ITS_WORD',
         slide: index + 1,
@@ -721,6 +775,11 @@ function vocabCardBeforeItsWord(lesson) {
     while (next < slides.length && isCard(slides[next])) next += 1;
     if (next >= slides.length) return;
     if (shows(next)) return;
+    // A card before a question whose answer slide shows the word is in place.
+    const answerOfNext = neighbour(next, 1);
+    if (answers(next, answerOfNext) && shows(answerOfNext)) return;
+    // A card straight after the answer that first showed its word is in place too.
+    if (earlier === before && before !== -1) return;
     let first = next + 1;
     while (first < slides.length && (isCard(slides[first]) || !shows(first))) first += 1;
     warnings.push({
@@ -1003,11 +1062,12 @@ function blueStatementWarnings(lesson) {
             `"${text.slice(0, 60)}" is in house blue but asks the class ` +
             'nothing. Blue is for a question children answer, and for the ' +
             'child\'s own short task, the job itself (`Explain your answer.`, ' +
-            '`Write one reason.`), marked `colorRole: "task-blue"`; a statement, ' +
-            'an answer or an instruction about how to go about the task is ' +
-            'black, so drop the blue here (remove the `focus-blue` role, the ' +
-            'house-blue `color` or the `[[ ]]` span) and leave it for the ' +
-            'question or short task this belongs to.'
+            '`Write one reason.`). If this line is the job children do, it ' +
+            'stays blue: mark it `colorRole: "task-blue"` in place of the ' +
+            '`focus-blue` role, the house-blue `color` or the `[[ ]]` span. ' +
+            'If it is a statement, an answer or an instruction about how to ' +
+            'go about the task, it is black: take the blue off and leave it ' +
+            'for the question or short task this belongs to.'
         });
       });
     });
@@ -1022,12 +1082,19 @@ function blueStatementWarnings(lesson) {
 // spec shows about the line, the check refuses: the reveal mark `||` (an
 // answer is green on an answer slide); a line the lesson design holds as a
 // sticky fact or as this lesson's answer; a sticky line's sparkle; and any
-// shape but one short task, alone or after its question - a statement or a
-// task before a question is a tell-then-ask block, and two instructions are
-// the all-blue board of 3 September arriving one short line at a time. A lone
-// statement marked `task-blue` that the design does not name passes this
-// rule, which cannot read meaning; it never counts as the slide's turn,
-// because carriesItsTurn reads a marked line's words, not its role.
+// shape but the child's job, alone or after its question - a statement or a
+// task before a question is a tell-then-ask block. A job said in two or three
+// sentences is still the job and all of it is blue (`Choose the producer.
+// Write its name.`; the teacher, 8 and 13 October 2026: "blue is like a
+// question for children"). The one-sentence limit this rule used to hold
+// refused exactly that on every slide but a Teach slide's task card, and the
+// designers' way out was to take the blue off the job altogether: six lines in
+// one Year 4 science deck, and repair passes in two more, 10 and 11 October.
+// More than three is refused, because that is the all-blue board of 3
+// September arriving one short line at a time. A lone statement marked
+// `task-blue` that the design does not name passes this rule, which cannot
+// read meaning; it never counts as the slide's turn, because carriesItsTurn
+// reads a marked line's words, not its role.
 const TASK_BLUE_REVEAL = /\|\|/;
 const TASK_BLUE_MARKS = /\|\||\*\*|\[\[|\]\]|\{\{|\}\}|<<|>>|✨/g;
 
@@ -1073,6 +1140,8 @@ function taskSentences(whole) {
   return splitSentences(String(whole).replace(/\b(e\.g|i\.e)\.(?=\s)/gi, (m) => m.replace(/\./g, '․')));
 }
 
+const MOST_TASK_BLUE_SENTENCES = 3;
+
 function taskBlueFault(whole, facts, teachTask) {
   if (TASK_BLUE_REVEAL.test(whole)) {
     return 'it carries the reveal mark `||`, and an answer is green on an answer slide, never blue';
@@ -1098,11 +1167,16 @@ function taskBlueFault(whole, facts, teachTask) {
     return 'it holds the method line and the sum together; take the role off and leave the block black ' +
       'with the sum on a line of its own, and the builder prints the sum in blue';
   }
-  if (tasks.length > 1) {
-    return `it holds ${tasks.length} sentences that are not questions, and a short task is one`;
+  const lastQuestion = sentences.map((sentence) => sentence.endsWith('?')).lastIndexOf(true);
+  if (sentences.slice(0, Math.max(lastQuestion, 0)).some((sentence) => !sentence.endsWith('?'))) {
+    return 'it tells before it asks, and a line that tells or instructs and then asks is two things: split ' +
+      'it at that question, so the question starts a blue line of its own with its job after it, and a ' +
+      'sentence that only tells goes in black text of its own';
   }
-  if (tasks.length === 1 && sentences[sentences.length - 1].endsWith('?')) {
-    return 'it tells before it asks, and a line that tells or instructs and then asks is two things, not one short task';
+  if (tasks.length > MOST_TASK_BLUE_SENTENCES) {
+    return `it holds ${tasks.length} sentences that are not questions, and a board that arrives all blue ` +
+      'lifts nothing: keep the job itself blue (one, two or three sentences) and move each sentence that ' +
+      'only says how to go about it into black text of its own';
   }
   return null;
 }
@@ -1143,11 +1217,111 @@ function taskBlueWarnings(lesson, jsonPath) {
         message:
           `"${whole.trim().slice(0, 60)}" is marked task-blue, but ${fault}. ` +
           '`task-blue` is for the child\'s own short task, the job in a few ' +
-          'words (`Explain your answer.`), alone or after its question on the ' +
-          'same line. A statement, an answer, a sticky fact or an instruction ' +
-          'about how to go about the task is not blue: take the role off, or ' +
-          'give each short task its own line and each question its own line ' +
-          'before it.'
+          'words (`Explain your answer.`, `Choose the producer. Write its ' +
+          'name.`), alone or after its question on the same line. A statement, ' +
+          'an answer, a sticky fact or an instruction about how to go about ' +
+          'the task is not blue: move that sentence into black text of its ' +
+          'own and leave the job blue. Take the role off the whole line only ' +
+          'when none of it is the job.'
+      });
+    });
+  });
+  return warnings;
+}
+
+// A child reads down the slide, so a written story, case or source comes before
+// the line that says what to do with it. A Year 4 PSHE deck opened `Read
+// Amara's break-time story with your partner.` above the story itself, and the
+// teacher asked for "the story first and visually easy to see, then the
+// instruction" (11 October 2026). Of 24 slides in the saved decks that set a
+// task from a case, 21 already had the case first and nothing said why.
+//
+// The case is known two ways: by its colour (supplied orange, the information a
+// task hands a child to work from) and by the lesson design beside the deck,
+// whose task text for the slide's unit holds the story's own paragraphs. The
+// instruction is a signed or task-blue card that tells, not only asks. Both are
+// read as cards of one stack, top to bottom, which is the only order this
+// check can be sure of.
+const SUPPLIED_ORANGE = new Set(['ED7D31', 'E46C0A']);
+
+function unitCaseLines(jsonPath) {
+  const cases = new Map();
+  if (!jsonPath) return cases;
+  const designPath = path.join(path.dirname(jsonPath), 'lesson-design.json');
+  if (!fs.existsSync(designPath)) return cases;
+  let design;
+  try {
+    design = JSON.parse(fs.readFileSync(designPath, 'utf8'));
+  } catch {
+    return cases;
+  }
+  const visit = (node) => {
+    if (Array.isArray(node)) return node.forEach(visit);
+    if (!node || typeof node !== 'object') return;
+    const task = node.content && node.content.task;
+    if (typeof node.sourceUnitId === 'string' && typeof task === 'string' &&
+        typeof node.pupilInstruction === 'string' && node.pupilInstruction.trim()) {
+      const lines = new Set();
+      task.split(/\n\s*\n/).forEach((paragraph) => {
+        const sentences = splitSentences(paragraph);
+        // A case is told: a paragraph that asks, or leaves a gap to finish
+        // (a sentence frame, a `Stuck?` prompt), is part of the task instead.
+        if (!sentences.length || sentences.some((sentence) => sentence.endsWith('?'))) return;
+        if (/\.\.\.|…|_{2,}/.test(paragraph)) return;
+        if (wordsOf(paragraph).split(' ').length < 6) return;
+        lines.add(plainLine(paragraph));
+      });
+      if (lines.size) cases.set(node.sourceUnitId, lines);
+    }
+    Object.keys(node).forEach((key) => visit(node[key]));
+  };
+  visit(design);
+  return cases;
+}
+
+function cardWords(node) {
+  return node && node.type === 'text' && typeof node.value === 'string' ? node.value : '';
+}
+
+function isCaseCard(node, caseLines) {
+  const words = cardWords(node);
+  if (!words.trim() || node.signal || node.colorRole) return false;
+  const colour = [node.color, node.colour].find((c) => typeof c === 'string');
+  if (colour && SUPPLIED_ORANGE.has(colour.replace('#', '').trim().toUpperCase())) return true;
+  return words.split(/\n\s*\n/).some((paragraph) => caseLines.has(plainLine(paragraph)));
+}
+
+function isInstructionCard(node) {
+  const words = cardWords(node);
+  if (!words.trim()) return false;
+  if (!node.signal && node.colorRole !== 'task-blue') return false;
+  return splitSentences(words).some((sentence) => !sentence.endsWith('?'));
+}
+
+function caseAfterItsInstructionWarnings(lesson, jsonPath) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const cases = unitCaseLines(jsonPath);
+  const warnings = [];
+  slides.forEach((slideData, index) => {
+    const caseLines = new Set();
+    slideUnitIds(slideData).forEach((id) => (cases.get(id) || []).forEach((line) => caseLines.add(line)));
+    let found = false;
+    walkContent(slideData, (node) => {
+      if (found || node.type !== 'stack' || !Array.isArray(node.items)) return;
+      const instruction = node.items.findIndex(isInstructionCard);
+      const story = node.items.findIndex((item) => isCaseCard(item, caseLines));
+      if (instruction < 0 || story < 0 || instruction > story) return;
+      found = true;
+      warnings.push({
+        signal: 'INSTRUCTION_ABOVE_ITS_STORY',
+        slide: index + 1,
+        field: 'text',
+        message:
+          `"${cardWords(node.items[instruction]).trim().slice(0, 60)}" sits above the story or case it is about ` +
+          `("${cardWords(node.items[story]).trim().slice(0, 60)}"). A child reads down the slide and is told what ` +
+          'to do with something they have not met yet. Put the cards in the order the child needs them: the ' +
+          'story or case first, whole and in one card, as the largest words; then the question; then the card ' +
+          'that says how to go about it, smallest. Change no wording, only where each card sits.'
       });
     });
   });
@@ -1581,7 +1755,7 @@ function teachLayoutWarnings(lesson, jsonPath) {
           `"${instruction.trim().slice(0, 60)}" is this Teach unit's instruction to the children, and it sits in ` +
           `\`${slot}\`, where it prints black with no sign, like the explanation beside it. Move it to the ` +
           'slide\'s `task`, which prints the child\'s job blue with its sign: ' +
-          '`"task": { "value": "Write one word: yes or no.", "signal": "pencil" }`. A sentence of it that only ' +
+          '`"task": { "value": "Is she right? Explain why.", "signal": "pencil" }`. A sentence of it that only ' +
           'says how to go about the job (`Don\'t work them out.`) goes in the task\'s `advice` and stays black. ' +
           'The layouts with a column or row of cards take a `task` (templates.md, teach-layout).'
       });
@@ -1734,6 +1908,103 @@ function teachLayoutPlaceholder(slide) {
     }
   }
   return placeholder;
+}
+
+// Slides worth a second look for their pictures. Notes, never refusals.
+//
+// The lesson design gives its pictures to a whole beat; a beat becomes several
+// slides, and each picture was being used once, where it matched best. In the
+// 20-lesson test of 7 October 2026, 14 slides in 7 decks were words only in a
+// beat whose pictures had all arrived (a Year 5 history deck opened `Who ran
+// Athens?` in words with both photographs of Athens on the slides after), and
+// 6 more sat in a beat that had lost a picture. The teacher's rulings (12
+// October 2026): a slide naming Rama and Sita in words "needs pictures";
+// a slide that only says what to do is fine in words; small drawings are
+// decoration and do not count; and one picture over and over "would also get
+// boring", so it repeats only while the class is still on the same thing.
+const WORDS_ONLY_TYPES = new Set([
+  'text', 'stack', 'row', 'steps', 'sc-panel', 'numbered-questions', 'chip-bank', 'vocab',
+  'callout', 'bullets',
+]);
+const SAME_PICTURE_RUN = 3;
+
+function slidePictureFacts(slide) {
+  const pictures = [];
+  let drawn = false;
+  const visit = (node, key) => {
+    if (Array.isArray(node)) {
+      node.forEach((item) => visit(item, key));
+      return;
+    }
+    if (!node || typeof node !== 'object' || key === 'decorations') return;
+    if (typeof node.type === 'string') {
+      if (typeof node.imagePath === 'string') {
+        // A speaker's face beside a speech bubble is not a picture of the thing.
+        if (!/[\\/]assets[\\/]children[\\/]/.test(node.imagePath)) pictures.push(path.basename(node.imagePath));
+      } else if (!WORDS_ONLY_TYPES.has(node.type)) {
+        drawn = true;
+      }
+    }
+    Object.entries(node).forEach(([childKey, value]) => visit(value, childKey));
+  };
+  visit(slide, null);
+  return { pictures, drawn };
+}
+
+function pictureLookAgainLines(jsonPath) {
+  const designPath = path.join(path.dirname(jsonPath), 'lesson-design.json');
+  if (!fs.existsSync(designPath)) return [];
+  let design;
+  let spec;
+  try {
+    design = JSON.parse(fs.readFileSync(designPath, 'utf8'));
+    spec = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  } catch {
+    return [];
+  }
+  const slides = Array.isArray(spec.slides) ? spec.slides : [];
+  const facts = slides.map(slidePictureFacts);
+  const units = [design.starter, ...(Array.isArray(design.teachingSequence) ? design.teachingSequence : []),
+    design.ending && design.ending.beat];
+  const lines = [];
+  for (const unit of units) {
+    if (!unit || typeof unit !== 'object' || !Array.isArray(unit.photoRefs) || !unit.photoRefs.length) continue;
+    const bare = [];
+    slides.forEach((slide, index) => {
+      if (slide.designUnitId !== unit.sourceUnitId) return;
+      if (/ - check$/.test(String(slide.title || ''))) return;
+      if (!facts[index].pictures.length && !facts[index].drawn) bare.push(index + 1);
+    });
+    if (!bare.length) continue;
+    lines.push(
+      `SLIDE_DESIGN_LOOK_AGAIN: "${unit.label || unit.sourceUnitId}" has ${unit.photoRefs.length} ` +
+      `picture${unit.photoRefs.length === 1 ? '' : 's'} and slide${bare.length === 1 ? '' : 's'} ` +
+      `${bare.join(', ')} of it show${bare.length === 1 ? 's' : ''} words only. If a slide there ` +
+      'names a person, place, animal or object the class has to picture, put that picture on it, ' +
+      'the word beside it or as its caption; a picture may be used on more than one slide. A slide ' +
+      'that only says what to do, with the thing itself on the slide beside it, is right as it is.'
+    );
+  }
+  let run = 1;
+  for (let index = 1; index <= slides.length; index += 1) {
+    const previous = facts[index - 1].pictures;
+    const same = index < slides.length && previous.length === 1 &&
+      facts[index].pictures.length === 1 && facts[index].pictures[0] === previous[0];
+    if (same) {
+      run += 1;
+      continue;
+    }
+    if (run > SAME_PICTURE_RUN) {
+      lines.push(
+        `SLIDE_DESIGN_LOOK_AGAIN: slides ${index - run + 1} to ${index} all show the one picture ` +
+        `${previous[0]}. That is right while the class is still working on that same picture, and ` +
+        'dull where the slides have moved on to another person, place or moment: there, use the ' +
+        'other pictures of this beat, or say in your report which picture the lesson design should ask for.'
+      );
+    }
+    run = 1;
+  }
+  return lines;
 }
 
 function optionalPictureLine(counts) {
@@ -2137,6 +2408,7 @@ function runSlideDesignCheck(inputPath, options = {}) {
     .concat(mixedBlockWarnings(lesson))
     .concat(blueStatementWarnings(lesson))
     .concat(taskBlueWarnings(lesson, jsonPath))
+    .concat(caseAfterItsInstructionWarnings(lesson, jsonPath))
     .concat(starterColourWarnings(lesson))
     .concat(starterAskWarnings(lesson))
     .concat(stickyEmphasisWarnings(lesson))
@@ -2646,12 +2918,25 @@ function main(argv = process.argv.slice(2)) {
     if (result.optionalPictures) {
       console.log(optionalPictureLine(result.optionalPictures));
     }
+    pictureLookAgainLines(args[0]).forEach((line) => console.log(line));
     console.log(`SLIDE_DESIGN_CHECK_OK: ${result.slideCount} slides`);
     return 0;
   }
 
   if (result.partialPreviewOutputPath) {
     console.log(`SLIDE_DESIGN_REFUSED_PREVIEW: ${result.partialPreviewOutputPath}`);
+  }
+  // Said here, at the moment a repair begins, so it reaches the designer and
+  // the focused repair alike. A repair is a new arrangement, and whether that
+  // holds its content was only learned by running this check again, which is
+  // a repair pass: three Codex designers spent all theirs that way (10 and 11
+  // October 2026).
+  if (result.reason !== 'LESSON_JSON_NOT_FOUND' && result.reason !== 'LESSON_JSON_INVALID') {
+    console.error(
+      'Before this check runs again, try each slide you change with: node "' +
+      `${path.join(__dirname, 'measure-slides.js')}" <this file>. It draws the slides in seconds, ` +
+      'says for each whether its content fits, and is not a repair pass.'
+    );
   }
   console.error(`SLIDE_DESIGN_CHECK_FAILED: ${result.reason}`);
   return 1;
@@ -2696,7 +2981,9 @@ module.exports = {
   presentationWarnings,
   countOptionalPictures,
   optionalPictureLine,
+  pictureLookAgainLines,
   ordinaryRevealWarnings,
+  caseAfterItsInstructionWarnings,
   buildDiagnostic,
   main,
   orderReport,

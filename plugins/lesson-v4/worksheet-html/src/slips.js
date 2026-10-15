@@ -33,7 +33,8 @@ const { cssVariables, SPACE } = require("./tokens");
 const { PX_PER_MM, EDGE_MM } = require("./page");
 const { isRow, isStack } = require("./helpers/compose");
 const { renderContent, measureContent, needsContent, helperCss } = require("./helpers");
-const { esc, tieHtmlText } = require("./helpers/shared");
+const { esc, tieHtmlText, BODY_PT, PT_MM } = require("./helpers/shared");
+const { textWidthEm } = require("../../shared/text/comic-glyph-width");
 
 const RECORDING_CHOICES = ["books", "sheet"];
 
@@ -426,19 +427,35 @@ function forSlip(node) {
   // support, and drops the ruled lines under them for the same reason a
   // written answer does (Daniel, 4 October 2026, on a PSHE slip: "they don't
   // need the writing lines for children to write on, because they're in books").
-  if (
-    node.helper === "questions" ||
-    node.helper === "written-answers" ||
-    node.helper === "method-frame" ||
-    node.helper === "writing-frame"
-  ) {
+  //
+  // Every helper is told, not a list of them. A list missed the child's claim,
+  // whose ruled lines stayed on a Year 4 Greater Depth slip under a bubble that
+  // asked nothing (the stress test of 7 October 2026, round two; Daniel: a slip
+  // "should not" have writing lines). Each helper that draws room to answer in
+  // leaves it out on a slip: ruled lines, the tick-or-cross box (Daniel, 14
+  // October 2026: "No tick box. Just 'Is X correct? Explain why.' is fine"),
+  // and a speech bubble left empty for the child's reply.
+  if (typeof node.helper === "string") {
     out.slip = true;
+    // A blank in words the child copies (a sentence starter, "3 + ___ = 7")
+    // shows where their own word goes, so it stays, but a word wide: the
+    // sheet's 25mm blank is room to write in, and nothing is written on a slip
+    // (Daniel, 14 October 2026). A width the designer set is kept.
+    if (out.blankWidthMm === undefined && holdsBlank(out)) out.blankWidthMm = SLIP_BLANK_MM;
   }
   if (isStack(node) || isRow(node)) {
     const listed = isStack(node) ? out.stack : out.row;
     if (listed == null || (Array.isArray(listed) && listed.length === 0)) return null;
   }
   return out;
+}
+
+const SLIP_BLANK_MM = 12;
+
+function holdsBlank(node) {
+  return Object.entries(node).some(([key, value]) =>
+    key !== "stack" && key !== "row" && JSON.stringify(value ?? "").match(/_{2,}/)
+  );
 }
 
 // The sheet's numbered zones in reading order (a, b, c), ready for a slip.
@@ -466,20 +483,20 @@ function slipContentOf(sheetSpec) {
 // (2), and a group's own task line ("Write each number as Roman numerals.")
 // always keeps a line of its own above its parts.
 //
-// A cell is sized from the words' real width at body size, measured in the
-// browser (28 September 2026): a capital or a digit is about 2.65mm, other
-// letters and punctuation about 2mm. The estimate used to be 2.1mm for
-// everything, and the row then took its gaps out of the cells a second time, so
-// on a Year 4 slip "LXXVIII" and even "85" broke onto two lines.
-const CAPITAL_OR_DIGIT_MM = 2.75;
-const OTHER_CHAR_MM = 2.1;
+// A cell is sized from the words' real width at body size, letter by letter,
+// from the same Comic Sans table the sheet's own line count uses. Two flat
+// guesses (2.75mm a capital or digit, 2.1mm anything else) priced a comma and
+// a space like a letter, so "3,658 + 1,347 =" came out 37mm for the 31mm it
+// prints, just over the half-slip limit: a Year 4 slip of five sums ran one to
+// a line with the right half empty, four slips a page where six fit (the
+// stress test of 7 October 2026, round two; Daniel chose the two-across page).
+// The row still keeps its gaps out of the cells, so "LXXVIII" and "85" stay
+// on one line as they did after 28 September 2026.
 const NUMBER_ROOM_MM = 10; // the "(1a)" label (6.8mm at 10pt bold) in its 8mm column, and the gap after it
 const MAX_ACROSS = 4;
 
 function textWidthMm(text) {
-  let mm = 0;
-  for (const ch of String(text)) mm += /[A-Z0-9]/.test(ch) ? CAPITAL_OR_DIGIT_MM : OTHER_CHAR_MM;
-  return mm;
+  return textWidthEm(String(text), false) * BODY_PT * PT_MM;
 }
 
 // How long a question's words may be and still share a row: what fits a cell at

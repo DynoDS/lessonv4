@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 92 helpers, what each is for, and a working example of each.
+The 94 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -69,7 +69,8 @@ emailed. Never write `imageHref` yourself.
 - `balanced-pattern-plate` - A neutral proportional food-group plate.
 - `map` - A real shipped map with the lesson's marks on top, the same map the board draws: copy the slide's map object, including the `continents-and-oceans` write-on world and South America's `regional-layers`.
 - `grid-map` - A four-figure grid-reference map, usually the whole point of its sheet.
-- `process-chain` - Boxes joined by arrows: a food chain, a life cycle, the order of events.
+- `process-chain` - Links joined by arrows in a line that ends: a food chain, the order of events.
+- `cycle` - A cycle or loop: stages joined by arrows, the last leading back to the first (a life cycle, the water cycle, the seasons).
 - `circuit-diagram` - One series circuit or a row of them in the standard symbols, each carrying its own state.
 - `classification-key` - A branching yes/no identification key down to named living things.
 - `circuit-symbol-bank` - The key of standard circuit symbols (cell, lamp, wire, open and closed switch), each with its name beneath: the same bank the board teaches from.
@@ -81,7 +82,7 @@ emailed. Never write `imageHref` yourself.
 
 **Shape, space and measure**
 
-- `shape` - One or more 2D shapes, the same as the board's polygon: `sideLabels` for a perimeter or missing length, `angleLabels`, or lines of symmetry to test.
+- `shape` - 2D shapes as on the board: `sideLabels`, `angleLabels`, symmetry, or an L-shape from `vertices`.
 - `triangle` - A classified triangle: filled body, tick marks, and an optional right-angle square or angle arcs.
 - `angle` - A classified angle: two arms and a marking arc or right-angle square.
 - `line-pair` - The parallel, perpendicular or neither pair.
@@ -89,8 +90,8 @@ emailed. Never write `imageHref` yourself.
 - `ruler` - A ruler printed at TRUE SIZE for a child to measure against.
 - `dial-scale` - A round weighing scale: 0 at the top, numbered marks round the dial and a red needle at `value`, for reading a mass off a scale.
 - `measuring-jug` - A measuring jug with a scale up its side.
-- `clock-row` - A row of analogue clock faces, each with hands set or left blank for the child to draw; the same clock as the board's, with `colourCoded` hands and a `minuteRing`.
-- `coordinate-grid` - A numbered first-quadrant grid a child plots on.
+- `clock-row` - A row of analogue clock faces, the board's clock from the same fields.
+- `coordinate-grid` - A numbered coordinate grid a child plots on: first-quadrant, or all four quadrants with a negative `min`, carrying lettered `points` and whole `shapes` to translate.
 - `reflection-grid` - A dot lattice with a mirror line and a shape to reflect.
 - `translation-shape` - A numbered grid carrying a shape and its slid image, joined by an arrow.
 - `geoboard` - A dotty-paper peg grid for drawing polygons on.
@@ -107,8 +108,8 @@ emailed. Never write `imageHref` yourself.
 - `part-whole-money` - A whole circle with parts beneath it, joined by lines.
 - `number-sentence` - A number sentence with its terms kept apart: supplied values on their own tiles, operators between them, a box or digit frame where the answer goes.
 - `column-method-grid` - A written column calculation to complete, in the board's own drawing and column colours: the numbers, a thick line, the answer row, a thick line, a shallow carry row.
-- `short-multiplication-grid` - Column multiplication by a single digit, with a thick-topped answer row and a carry row.
-- `long-multiplication-grid` - The long multiplication shape: one partial product row per digit of the multiplier, then the total.
+- `short-multiplication-grid` - Short multiplication to complete, in the board's own drawing and column colours, with a column for every digit of the answer.
+- `long-multiplication-grid` - Long multiplication to complete, in the board's own drawing: a row of working per digit of `bottom`, each labelled with the part it is ("× 6", "× 30", "add").
 - `bus-stop-grid` - Short division: the answer row on top under the roof, the divisor outside the wall to the left.
 - `long-division-grid` - The same bus stop with a blank working box beneath, for the child to show the subtract-and-bring-down steps.
 - `method-frame` - A taught mental strategy printed as a fill-in method: labelled lines inside a panel, with boxes where the child writes.
@@ -118,6 +119,7 @@ emailed. Never write `imageHref` yourself.
 - `place-value-counter-chart` - Counters with their values on them in place-value columns: what number is shown, or left empty for the child to draw counters.
 - `place-value-mini` - The small place-value picture from a vocabulary card: a digit mapping to its value, one column picked out, ten tens becoming a hundred, or the zeros in a numeral.
 - `counter-group` - The same counters without the chart: one compact group per denomination, under the claim they are evidence for.
+- `ten-frame` - A ten frame: two rows of five boxes with a counter in each full one, in up to two colours for a number bond (`count`, `second`), a pair for numbers to 20 (`frames: 2`), or empty for a child to draw counters in.
 - `base-ten-blocks` - Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.
 - `digit-cards` - A number as large digit cards with a digit check's working marked on its digits, or loose `digits` cards to make numbers from; copy the slide's object.
 - `number-network` - Circles joined by lines where each joined pair adds to `target`; a circle with no value is a blank the child fills.
@@ -127,7 +129,7 @@ emailed. Never write `imageHref` yourself.
 - `stacked-fraction` - A fraction written properly, numerator sitting on a rule above the denominator, with a question stem.
 - `fraction-sequence` - The same stacked fractions as a bare row, for use inside a compound question.
 - `fraction-bar` - A shape cut into equal parts with some shaded: one or more bars (a word under each), or a grid or circle with `shape`.
-- `fraction-wall` - Rows of unit fractions under one whole, each piece named, for comparing and finding equivalent fractions.
+- `fraction-wall` - Rows of unit fractions under one whole, each piece named.
 - `coin-strip` - A row of the real coin and note pictures, coins to scale with each other and at life size, over a line for the total.
 
 **Comparing and ordering**
@@ -830,7 +832,7 @@ Smallest usable: **110mm wide x 90mm tall**. Spare height: never takes spare hei
 
 #### `process-chain`
 
-Boxes joined by arrows: a food chain, a life cycle, the order of events. The arrows are the point.
+Links joined by arrows in a line that ends: a food chain, the order of events. A link can be a named picture, and a chain the child makes prints ready to fill in. For a loop that comes back to its start, use `cycle`.
 
 Smallest usable: **102mm wide x 21mm tall**. Spare height: never takes spare height.
 
@@ -843,6 +845,26 @@ Smallest usable: **102mm wide x 21mm tall**. Spare height: never takes spare hei
     null,
     null
   ]
+}
+```
+
+#### `cycle`
+
+A cycle or loop: stages joined by arrows, the last leading back to the first (a life cycle, the water cycle, the seasons). Arrows can carry words, and a stage or an arrow can be left blank to fill in.
+
+Smallest usable: **104mm wide x 68mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "cycle",
+  "text": "Complete the life cycle of a butterfly. Write what happens beside each arrow.",
+  "boxes": [
+    "egg",
+    null,
+    "chrysalis",
+    null
+  ],
+  "arrowLine": true
 }
 ```
 
@@ -1057,9 +1079,9 @@ Smallest usable: **110mm wide x 57mm tall**. Spare height: never takes spare hei
 
 #### `shape`
 
-One or more 2D shapes, the same as the board's polygon: `sideLabels` for a perimeter or missing length, `angleLabels`, or lines of symmetry to test.
+2D shapes as on the board: `sideLabels`, `angleLabels`, symmetry, or an L-shape from `vertices`. `parts` split it into numbered rectangles: leave them off when the child draws the split; the answer picture has them.
 
-Smallest usable: **86mm wide x 50mm tall**. Spare height: never takes spare height.
+Smallest usable: **104mm wide x 41mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1075,14 +1097,67 @@ Smallest usable: **86mm wide x 50mm tall**. Spare height: never takes spare heig
       "label": "A"
     },
     {
-      "name": "isosceles-triangle",
+      "vertices": [
+        [
+          0,
+          0
+        ],
+        [
+          10,
+          0
+        ],
+        [
+          10,
+          3
+        ],
+        [
+          4,
+          3
+        ],
+        [
+          4,
+          8
+        ],
+        [
+          0,
+          8
+        ]
+      ],
       "sideLabels": [
+        "10 cm",
+        "3 cm",
+        "6 cm",
         "5 cm",
         "4 cm",
-        "5 cm"
+        "8 cm"
       ],
-      "angleLabels": [
-        "40°"
+      "parts": [
+        {
+          "corners": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              3
+            ]
+          ],
+          "label": "1"
+        },
+        {
+          "corners": [
+            [
+              0,
+              3
+            ],
+            [
+              4,
+              8
+            ]
+          ],
+          "label": "2"
+        }
       ],
       "label": "B"
     }
@@ -1227,7 +1302,7 @@ Smallest usable: **35mm wide x 61mm tall**. Spare height: never takes spare heig
 
 #### `clock-row`
 
-A row of analogue clock faces, each with hands set or left blank for the child to draw; the same clock as the board's, with `colourCoded` hands and a `minuteRing`.
+A row of analogue clock faces, the board's clock from the same fields. A face shows both hands, one alone (`hands: "minute"` or `"hour"`) or none; `colourCoded` hands print the digital time unless `readout: false`.
 
 Smallest usable: **74mm wide x 28mm tall**. Spare height: never takes spare height.
 
@@ -1237,11 +1312,12 @@ Smallest usable: **74mm wide x 28mm tall**. Spare height: never takes spare heig
   "clocks": [
     {
       "time": "3:45",
-      "hands": true
+      "hands": "minute"
     },
     {
-      "time": "11:00",
-      "hands": true
+      "time": "3:45",
+      "colourCoded": true,
+      "readout": false
     },
     {
       "hands": false
@@ -1253,20 +1329,41 @@ Smallest usable: **74mm wide x 28mm tall**. Spare height: never takes spare heig
 
 #### `coordinate-grid`
 
-A numbered first-quadrant grid a child plots on.
+A numbered coordinate grid a child plots on: first-quadrant, or all four quadrants with a negative `min`, carrying lettered `points` and whole `shapes` to translate.
 
-Smallest usable: **110mm wide x 110mm tall**. Spare height: never takes spare height.
+Smallest usable: **101mm wide x 100mm tall**. Spare height: never takes spare height.
 
 ```json
 {
   "helper": "coordinate-grid",
-  "cols": 10,
-  "rows": 10,
-  "points": [
+  "min": -5,
+  "max": 5,
+  "shapes": [
     {
-      "x": 3,
-      "y": 4,
-      "label": "A"
+      "points": [
+        [
+          2,
+          3
+        ],
+        [
+          5,
+          3
+        ],
+        [
+          5,
+          5
+        ]
+      ],
+      "labels": [
+        "A",
+        "B",
+        "C"
+      ],
+      "translate": {
+        "dx": -7,
+        "dy": -6
+      },
+      "showImage": false
     }
   ]
 }
@@ -1609,9 +1706,9 @@ Smallest usable: **47mm wide x 45mm tall**. Spare height: never takes spare heig
 
 #### `short-multiplication-grid`
 
-Column multiplication by a single digit, with a thick-topped answer row and a carry row.
+Short multiplication to complete, in the board's own drawing and column colours, with a column for every digit of the answer. `showHeadings: true` adds place-value letters.
 
-Smallest usable: **40mm wide x 43mm tall**. Spare height: never takes spare height.
+Smallest usable: **47mm wide x 45mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1624,9 +1721,9 @@ Smallest usable: **40mm wide x 43mm tall**. Spare height: never takes spare heig
 
 #### `long-multiplication-grid`
 
-The long multiplication shape: one partial product row per digit of the multiplier, then the total.
+Long multiplication to complete, in the board's own drawing: a row of working per digit of `bottom`, each labelled with the part it is ("× 6", "× 30", "add"). `upTo: "ones row"` prints a start.
 
-Smallest usable: **50mm wide x 63mm tall**. Spare height: never takes spare height.
+Smallest usable: **64mm wide x 76mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1671,7 +1768,7 @@ Smallest usable: **50mm wide x 62mm tall**. Spare height: takes spare height rea
 
 A taught mental strategy printed as a fill-in method: labelled lines inside a panel, with boxes where the child writes.
 
-Smallest usable: **95mm wide x 46mm tall**. Spare height: never takes spare height.
+Smallest usable: **96mm wide x 52mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -1867,6 +1964,20 @@ Smallest usable: **66mm wide x 32mm tall**. Spare height: never takes spare heig
 }
 ```
 
+#### `ten-frame`
+
+A ten frame: two rows of five boxes with a counter in each full one, in up to two colours for a number bond (`count`, `second`), a pair for numbers to 20 (`frames: 2`), or empty for a child to draw counters in.
+
+Smallest usable: **46mm wide x 19mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "ten-frame",
+  "count": 6,
+  "second": 4
+}
+```
+
 #### `base-ten-blocks`
 
 Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.
@@ -1979,7 +2090,7 @@ Smallest usable: **50mm wide x 66mm tall**. Spare height: never takes spare heig
 
 A fraction written properly, numerator sitting on a rule above the denominator, with a question stem.
 
-Smallest usable: **63mm wide x 20mm tall**. Spare height: never takes spare height.
+Smallest usable: **66mm wide x 20mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -2050,9 +2161,9 @@ Smallest usable: **60mm wide x 40mm tall**. Spare height: never takes spare heig
 
 #### `fraction-wall`
 
-Rows of unit fractions under one whole, each piece named, for comparing and finding equivalent fractions.
+Rows of unit fractions under one whole, each piece named. Plain, a child rules their own line down it; `line` and `shade` print the ruled line and the shaded fraction family for a worked example, as on the board.
 
-Smallest usable: **60mm wide x 43mm tall**. Spare height: never takes spare height.
+Smallest usable: **60mm wide x 68mm tall**. Spare height: never takes spare height.
 
 ```json
 {
@@ -2060,9 +2171,13 @@ Smallest usable: **60mm wide x 43mm tall**. Spare height: never takes spare heig
   "fractions": [
     1,
     2,
+    3,
     4,
+    6,
     8
-  ]
+  ],
+  "line": "1/2",
+  "shade": "family"
 }
 ```
 
@@ -2119,7 +2234,7 @@ Smallest usable: **12mm wide x 12mm tall**. Spare height: never takes spare heig
 
 A displayed statement with some digits left as boxes to fill, so the child chooses numbers that make it true.
 
-Smallest usable: **79mm wide x 23mm tall**. Spare height: never takes spare height.
+Smallest usable: **81mm wide x 24mm tall**. Spare height: never takes spare height.
 
 ```json
 {

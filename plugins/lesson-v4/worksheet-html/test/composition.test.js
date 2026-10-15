@@ -242,3 +242,32 @@ test("a note about something else does not count as the explanation", () => {
     "any note at all was treated as the explanation"
   );
 });
+
+// A level marked books prints as upright question slips in place of its sheet,
+// and the slips are cut up before a child sees the page. So a landscape write-on
+// sheet beside slip levels is not a mixed set (the teacher, 13 October 2026, on
+// the Year 5 fractions pack of the 12 October stress test).
+
+test("a books level is left out of the orientation comparison", () => {
+  const spec = mixed();
+  spec.sheets.below.recording = "sheet";
+  spec.sheets.expected.recording = "books";
+  const advisories = compositionAdvisories(spec);
+  assert.ok(
+    !advisories.some((a) => a.includes("do not share an orientation")),
+    `a sheet beside a page of slips was called a mixed set: ${JSON.stringify(advisories)}`
+  );
+});
+
+test("two whole sheets that disagree are still reported beside a books level", () => {
+  const spec = mixed();
+  spec.sheets.below.recording = "sheet";
+  spec.sheets.expected.recording = "sheet";
+  spec.sheets.greaterDepth = {
+    recording: "books", orientation: "portrait", layout: "full", zones: { a: { stack: [] } },
+  };
+  const advisories = compositionAdvisories(spec);
+  const found = advisories.find((a) => a.includes("do not share an orientation"));
+  assert.ok(found, "a mixed pair of whole sheets went unreported");
+  assert.ok(!/greaterDepth/.test(found), "the slips level was named in the split");
+});

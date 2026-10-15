@@ -7,6 +7,7 @@ require("../shared/visuals/stacked-fraction-labels").installOnSharedDrawings();
 
 const fs = require('fs');
 const { applyDoSigns, applyAnswerTicks } = require('./src/do-signs');
+const { markChoiceLetters } = require('./src/choice-letters');
 const { settlePairedHeaders } = require('./src/content/reveal-pair');
 const path = require('path');
 const os = require('os');
@@ -32,6 +33,7 @@ const { verifyMarkers } = require('./src/verify-markers');
 const { verifyGeometry } = require('./src/verify-geometry');
 const { sanitizeHouseStyle } = require('../shared/text/house-style');
 const { expandTeachLayouts, TeachLayoutError } = require('./src/teach-layouts');
+const { joinStackedCriteriaPanels } = require('./src/content/sc-panel');
 const { withoutDecorations } = require("../shared/decorations");
 const { withoutFigureMarks } = require('./src/figure-marks');
 const { setTaughtWords } = require('./src/answer-text');
@@ -56,6 +58,7 @@ const {
 } = require("./src/decorations");
 const { markDecorativeImages } = require("./src/mark-decorative-images");
 const { safeFilenameComponent } = require('../shared/text/filename');
+const { moveIntoPlace } = require('../shared/final-name');
 const { formatUKDate } = require('./src/date');
 const { preResizeAll } = require('./src/images/resize');
 const { preMeasureAll } = require('./src/images/measure');
@@ -63,7 +66,6 @@ const { createSharedFigureStore } = require('./src/content/shared-figure');
 const { preRenderAngles } = require('./src/content/angle');
 const { preRenderTriangles } = require('./src/content/triangle');
 const { preRenderLinePairs } = require('./src/content/line-pair');
-const { preRenderCoordinateGrids } = require('./src/content/coordinate-grid');
 const { preRenderReflectionGrids } = require('./src/content/reflection-grid');
 const { preRenderGeoboards } = require('./src/content/geoboard');
 const { preRenderVenns } = require('./src/content/venn');
@@ -74,6 +76,10 @@ const { preRenderBarModels } = require('./src/content/bar-model');
 const { preRenderBlankSurfaces } = require('./src/content/blank-surface');
 const { preRenderGeographicalDescriptionFrames } = require('./src/content/geographical-description-frame');
 const { keepShapesStill } = require('./src/content/shapes-stand-still');
+const { keepWallsStill } = require('./src/content/walls-stand-still');
+const { keepGridsStill } = require('./src/content/grids-stand-still');
+const { keepCyclesStill } = require('./src/content/cycles-stand-still');
+const { tellFramesWhatWasAsked } = require('./src/content/method-frame-answers');
 const { preRenderLabelDiagrams, rasteriseLabelDiagrams, labelDiagramFindings, clearLabelDiagramFindings } = require('./src/content/label-diagram');
 const { allowHairUnder, setHairUnderSlide, clearHairUnder, hairUnderFindings } = require('../shared/visuals/hair-under');
 const { preRenderGridMaps } = require('./src/content/grid-map');
@@ -254,12 +260,16 @@ async function main() {
     diagnostic('TEACH_LAYOUT_INVALID', 'composition', {}, err.message);
     process.exit(1);
   }
+  // Criteria panels one above the other become one box (src/content/sc-panel.js).
+  raw = joinStackedCriteriaPanels(raw);
   // Each Do beat's badge (a sheet, or a lightning bolt for a quick check) comes
   // from the lesson design beside this file (src/do-signs.js).
   applyDoSigns(raw, path.dirname(jsonPath));
   // The tick on answer and check slides, then one header height for each
   // question slide and its answers (src/content/reveal-pair.js).
   applyAnswerTicks(raw);
+  // The letter of each lettered choice, to print blue (src/choice-letters.js).
+  markChoiceLetters(raw);
   settlePairedHeaders(raw);
   // The objective onto each starter, so its header is measured with the words
   // it will print (src/layout.js).
@@ -310,13 +320,29 @@ async function main() {
   pptx.subject = lesson.lo || '';
 
   const today = formatUKDate();
+  // The year group decides how a whole fraction to write is drawn in a method
+  // frame (src/content/method-frame.js).
+  require('./src/content/method-frame').setYearGroup(lesson.yearGroup);
   keepShapesStill(coreLesson);
+  keepWallsStill(coreLesson);
+  keepGridsStill(coreLesson);
+  keepCyclesStill(coreLesson);
+  tellFramesWhatWasAsked(coreLesson);
   await preResizeAll(coreLesson, lessonDir);
+  // A process chain's pictures are read here, before anything measures or
+  // draws it, so the check and the build lay out the same chain.
+  {
+    const { resolveForEmbed } = require('./src/images/resolve');
+    const unread = await require('../shared/visuals/process-chain-svg').prepareChainsIn(coreLesson, lessonDir, {
+      sharp: require('./src/require-global')('sharp'),
+      resolve: (imagePath) => resolveForEmbed(imagePath, { lessonDir }),
+    });
+    unread.forEach((m) => console.log(`[check] process chain: the picture ${m.imagePath}${m.text ? ` for "${m.text}"` : ''} is not on disk yet, so its place is held.`));
+  }
   const imageDims   = await preMeasureAll(coreLesson, lessonDir);
   const angleImages = await preRenderAngles(coreLesson);
   const triangleImages = await preRenderTriangles(coreLesson);
   const linePairImages = await preRenderLinePairs(coreLesson);
-  const coordinateGridImages = await preRenderCoordinateGrids(coreLesson);
   const reflectionGridImages = await preRenderReflectionGrids(coreLesson);
   const geoboardImages = await preRenderGeoboards(coreLesson);
   const vennImages = await preRenderVenns(coreLesson);
@@ -353,7 +379,7 @@ async function main() {
   // criteria panel, which a criteria panel draws smaller, down to 16pt, rather
   // than not at all (marked-criteria.js).
   const markedCriteria = markedCriteriaLists(jsonPath);
-  const contextForSlide = (i) => ({ sharedFigures, markedCriteria, slideIndex: i, lessonDir, lesson: coreLesson, date: today, cardLook, imageDims, angleImages, triangleImages, linePairImages, coordinateGridImages, reflectionGridImages, geoboardImages, vennImages, carrollImages, tallyChartImages, pictogramImages, barModelImages, blankSurfaceImages, geographicalDescriptionFrameImages, labelDiagramImages, gridMapImages, translationShapeImages, rainforestLayersImages, balancedPatternPlateImages, circuitDiagramImages, parachuteForcesImages, circuitSymbolBankImages, successCriteriaHelperImages });
+  const contextForSlide = (i) => ({ sharedFigures, markedCriteria, slideIndex: i, lessonDir, lesson: coreLesson, date: today, cardLook, imageDims, angleImages, triangleImages, linePairImages, reflectionGridImages, geoboardImages, vennImages, carrollImages, tallyChartImages, pictogramImages, barModelImages, blankSurfaceImages, geographicalDescriptionFrameImages, labelDiagramImages, gridMapImages, translationShapeImages, rainforestLayersImages, balancedPatternPlateImages, circuitDiagramImages, parachuteForcesImages, circuitSymbolBankImages, successCriteriaHelperImages });
 
   // Draw everything once into a presentation nobody will open. A slide that
   // cannot be drawn is found here, before a file exists, rather than after the
@@ -738,7 +764,7 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
     let keptPreview = false;
     if (partialPreview) {
       try {
-        fs.renameSync(tempOutputPath, outputPath);
+        moveIntoPlace(tempOutputPath, outputPath);
         keptPreview = true;
         console.log(`PARTIAL_PREVIEW: ${outputPath}`);
       } catch {
@@ -766,8 +792,33 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
     }
     process.exitCode = 1;
   } else {
-    fs.renameSync(tempOutputPath, outputPath);
-    console.log(`Wrote: ${outputPath}`);
+    // The last step, and the one Codex's sandbox refuses as a rename
+    // (shared/final-name.js). A save refused both ways is said in one line a
+    // worker can act on: it used to be a stack trace, and each worker that met
+    // it had to work out for itself that the slides were fine and the session
+    // was not.
+    let saved = true;
+    try {
+      moveIntoPlace(tempOutputPath, outputPath);
+    } catch (error) {
+      if (error.code !== 'SAVE_REFUSED') throw error;
+      saved = false;
+      try {
+        fs.unlinkSync(tempOutputPath);
+      } catch (_) {
+        // Named so it is obviously not the deck.
+      }
+      console.error(
+        `SAVE_REFUSED: this session was not allowed to save the PowerPoint in ${outputDir}. ` +
+          'The slides passed every check; only the save was refused, which a sandboxed ' +
+          "host (Codex on the teacher's computer) can do to an ordinary command. Run " +
+          'the same command once more with a request for more access. If that is ' +
+          'refused too, give this line as it stands in your completion report, so ' +
+          "the teacher knows it is the session's access to give and not a fault in the lesson."
+      );
+      process.exitCode = 1;
+    }
+    if (saved) console.log(`Wrote: ${outputPath}`);
   }
 
   // Text that fitted, but under the 20pt the board aims for. Not a failure:

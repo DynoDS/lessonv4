@@ -113,6 +113,11 @@ class AdaptationPicturesJoinTheRevisedLessonTests(unittest.TestCase):
         self.adaptation.write_text(ADAPTATION_MD.replace("{json}", json.dumps(contract([self.below]))), encoding="utf-8")
 
     def build(self, canonical: Path | None) -> list[str]:
+        # The voice editor's second pass has settled this adaptation, which
+        # build-provisional asks for before it goes on.
+        receipts = self.root / "orchestration-receipts"
+        receipts.mkdir(exist_ok=True)
+        write_json(receipts / "adaptation-voice.json", {"adaptationSha256": contract_module.sha256_file(self.adaptation)})
         args = SimpleNamespace(
             initial=str(self.initial), adaptation=str(self.adaptation), output=str(self.root / "provisional.json"),
             lesson_design=None, receipt=str(self.root / "receipt.json"), requirements_snapshot=None,
@@ -146,6 +151,23 @@ class AdaptationPicturesJoinTheRevisedLessonTests(unittest.TestCase):
         merged = json.loads((self.root / "provisional.json").read_text(encoding="utf-8"))
         names = [entry["filename"] for entry in merged["photos"]]
         self.assertEqual(names, ["generated/kept.png", "generated/replacement.png", "generated/below.png"])
+
+    def test_an_adaptation_the_voice_editor_has_not_read_is_refused(self):
+        """7 October 2026: eleven of twenty runs passed over the second pass and
+        nothing said so. The receipt is for these bytes, so a rewritten file
+        needs reading again."""
+        canonical = write_json(self.root / "photo-requirements.json", contract([self.lost, self.kept]))
+        self.build(canonical)
+        self.adaptation.write_text(self.adaptation.read_text(encoding="utf-8") + "\nA later repair.\n", encoding="utf-8")
+        args = SimpleNamespace(
+            initial=str(self.initial), adaptation=str(self.adaptation), output=str(self.root / "provisional.json"),
+            lesson_design=None, receipt=str(self.root / "receipt.json"), requirements_snapshot=None,
+            canonical=str(canonical),
+        )
+        with self.assertRaises(contract_module.PhotoContractError) as refused:
+            contract_module.cmd_build_provisional(args)
+        self.assertIn("adaptation-snapshot", str(refused.exception))
+        self.assertIn("adaptation-settle", str(refused.exception))
 
     def test_the_command_cannot_be_run_without_the_live_list(self):
         result = subprocess.run(

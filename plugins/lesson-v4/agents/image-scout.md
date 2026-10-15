@@ -28,20 +28,19 @@ The spawn gives you:
 ```text
 PLUGIN_ROOT
 WORKING_DIR
-ATTEMPT_REQUEST_FILE
 ASSIGNMENT_FILE
 RESULT_FILE
 WORK_ROOT
 CONTEXT_INHERITANCE: none
 ```
 
-Read `ATTEMPT_REQUEST_FILE`, then read `ASSIGNMENT_FILE` once. Require `schema_version: 2`, `kind: image`, the exact work root, and a non-empty entries array.
+Read `ASSIGNMENT_FILE` once. Require `schema_version: 2`, `kind: image`, the exact work root, and a non-empty entries array.
 
 Own only those entries.
 
 Read `[PLUGIN_ROOT]/references/image-scout-search.md` only when an entry has `initial_route: real` or the repair object authorises real search. The compiled schedule is a ladder, and its last rung, `web`, is the one where you search the open web yourself and take the picture from the institution that holds it. That reference carries the commands, the candidates file it needs, and which publishers are never the right ones to take from.
 
-Its fetch commands use the internet. On Codex, when your sandbox says network access is restricted, an ordinary command is refused at the socket and records a transport failure for a source never asked, spending the rung and its retry on nothing. There, run every fetch command with a request for escalated permissions and network access ("May I download pictures for this lesson?"), from the first call. Codex reviews it itself. If denied, run it as an ordinary command and apply the failure rules. On any other host, run them as written.
+Its search command uses the internet. On Codex, when your sandbox says network access is restricted, an ordinary command is refused at the socket and records a transport failure for a source never asked, spending the rung and its retry on nothing. There, run every search with a request for escalated permissions and network access ("May I download pictures for this lesson?"), from the first call. Codex reviews it itself. If denied, run it as an ordinary command and apply the failure rules. On any other host, run them as written.
 
 Read `[PLUGIN_ROOT]/references/image-scout-generation.md` only immediately before the first legal generation action.
 
@@ -92,15 +91,15 @@ A grouped view can reject an obvious wrong subject, unsafe image, unusable crop,
 
 ## Result
 
-Write `RESULT_FILE` with `schema_version: 2`, `kind: image`, the exact batch ID, and one row per assignment filename.
+Write `RESULT_FILE` in this shape, one row per assignment filename in assignment order:
 
-Use only `sourced`, `generated`, `omitted`, or `unsatisfied`.
+```json
+{"schema_version": 2, "kind": "image", "batch_id": "p1", "entries": [
+  {"filename": "unsplash/fox.jpg", "status": "sourced", "selection": {"summary_path": "<summary file>", "candidate_id": "<its id>"}, "staging_path": null, "reason": null}
+]}
+```
 
-For `sourced`, identify the exact immutable summary path and candidate ID. Do not write attribution or licence text.
-
-For `generated`, identify the exact staged output under `WORK_ROOT`. Attempt history comes from the immutable AI ledger.
-
-For a no-file result, use only an allowed exact reason.
+`generated`: `staging_path` is its staged file under `WORK_ROOT`, selection null. `unsatisfied` or `omitted`: both null, `reason` an allowed exact one. Write no attribution, licence or attempt history. Use your file tool: a heredoc strips Windows backslashes.
 
 Validate with:
 
@@ -110,8 +109,7 @@ Validate with:
   --result "<RESULT_FILE>" \
   --working-dir "<WORKING_DIR>" \
   --work-root "<WORK_ROOT>" \
-  --expected-batch-id "<batch id>" \
-  --expected-filename "<each owned filename>"
+  --expected-batch-id "<batch id>"
 ```
 
 Fix a result-shape fault and validate again. Do not repeat semantic or expensive image work because result JSON was malformed.

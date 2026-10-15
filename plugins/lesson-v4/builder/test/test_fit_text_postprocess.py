@@ -692,6 +692,24 @@ def test_a_box_with_room_takes_a_full_size_fraction_and_a_tight_one_keeps_its_wo
         assert run_sizes(tight_box)[0] == run_sizes(plain)[0]
 
 
+def test_words_give_way_to_a_full_size_fraction_but_never_below_twenty_points():
+    # A Year 5 slide printed 34pt words round a 19pt fraction, which the teacher
+    # read as half size; he chose digits the size of the words "as long as the
+    # text is still 20pt+" (13 October 2026).
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "give-way.pptx"
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        line = "George has painted 3/4 of his fence. Leila has painted 5/8 of hers."
+        add_box(slide, "Text 1", line, 0.5, 0.5, 6.4, 1.9, size=34)
+        add_box(slide, "Text 2", line.replace("3/4", "most").replace("5/8", "some"), 0.5, 3, 6.4, 1.9, size=34)
+        prs.save(str(path))
+        with_fractions, plain = fitted(path).slides[0].shapes
+        words = run_sizes(with_fractions)[0]
+        assert set(fraction_sizes(with_fractions)) == {words * 100}, "the fraction is the size of its words"
+        assert MODULE.TARGET_PT <= words < run_sizes(plain)[0], "the words gave way, and stopped at 20pt"
+
+
 def test_a_deck_fitted_twice_measures_its_stacked_fractions_and_stacks_nothing_twice():
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "twice.pptx"
@@ -721,3 +739,15 @@ def test_a_fraction_in_a_table_cell_is_stacked_at_the_size_that_keeps_its_row():
         table = fitted(path).slides[0].shapes[0]
         assert len(list(table._element.iter(M_F))) == 2
         assert set(fraction_sizes(table)) == {int(2000 * MODULE.FRACTION_SCALES[-1])}
+
+
+def test_a_blank_typed_as_underscores_is_a_part_of_a_fraction():
+    """"3/4 = ___/8" in a sentence is a fraction with a part to find (the
+    teacher, 13 October 2026: fractions anywhere are top and bottom); a blank
+    beside a date or a lone slash is not."""
+    fit = MODULE
+    assert fit.has_fraction("3/4 = ___/8")
+    assert fit.has_fraction("___/___")
+    assert fit.FRACTION_RE.search("= ___/8").group(2) == "___"
+    assert not fit.has_fraction("___ on 9/10/2026")
+    assert not fit.has_fraction("and/or ___ / no")

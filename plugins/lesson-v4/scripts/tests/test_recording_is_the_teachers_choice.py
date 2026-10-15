@@ -82,6 +82,17 @@ class RecordingIsTheTeachersChoice(unittest.TestCase):
         self.allowed(task="What does the orange stand for? Write one word before you talk.")
         self.allowed(task="Write one reason.")
 
+    def test_the_board_at_the_front_is_the_teachers(self) -> None:
+        # The 20-lesson test, Year 5 day and night: refused for this note.
+        self.allowed(task="Which side is in daylight?", script="Teacher information: Draw a circle on the whiteboard and shade half of it.")
+        self.allowed(task="Which side is in daylight?", orientation="Teacher orientation: Sketch the Earth on the whiteboard first.")
+        # Children's own whiteboards are still named nowhere, a class's set of them included.
+        self.assertIn("on the whiteboards", self.refused(task="Which side?", script="Say to children: Write one word on the whiteboards."))
+        self.assertIn("on your whiteboard", self.refused(
+            task="Which side?", script="Teacher information: Draw a circle on the whiteboard while they answer on your whiteboard."))
+        # On a board the class reads, `the whiteboard` is still where a child writes.
+        self.assertIn("on the whiteboard", self.refused(task="Which side is in daylight? Write it on the whiteboard."))
+
     def test_a_whiteboard_or_a_book_that_is_the_subject_is_not_a_recording_surface(self) -> None:
         self.allowed(task="A Victorian classroom had no interactive whiteboard. What else has changed?")
         self.allowed(task="Find the word 'gloomy' in your reading book.")

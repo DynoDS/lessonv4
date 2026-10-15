@@ -170,6 +170,7 @@ You are the lesson designer. Read your agent instructions at:
 PLUGIN_ROOT: [PLUGIN_ROOT]
 PYTHON: [PYTHON]
 WORKING_DIR: [WORKING_DIR]
+SCRATCH_DIR: [WORKING_DIR]/_scratch/[task_name]
 OUTPUT_DIR: [OUTPUT_DIR]
 
 AUTHORITATIVE_INPUTS:
@@ -285,6 +286,7 @@ You are the design reviewer. Read your agent instructions at:
 PLUGIN_ROOT: [PLUGIN_ROOT]
 PYTHON: [PYTHON]
 WORKING_DIR: [WORKING_DIR]
+SCRATCH_DIR: [WORKING_DIR]/_scratch/[task_name]
 OUTPUT_DIR: [OUTPUT_DIR]
 
 AUTHORITATIVE_INPUTS:
@@ -408,9 +410,9 @@ Live keys come from the renderers themselves, so the list is what the engine
 draws today, not what a catalogue claims.
 
 **Ask whether the engine can draw this lesson's figure the way this lesson uses
-it**, not whether a helper of roughly the right name exists. A translation
-lesson's picture is two whole shapes on one numbered grid; `translation-grid`
-draws one start-and-end marker and `coordinate-grid` joins one set of points, so
+it**, not whether a helper of roughly the right name exists. A four-quadrant
+translation needs two whole shapes on a grid that runs below zero;
+`translation-grid` and `translation-shape` both start their axes at zero, so
 both exist and neither draws it. A helper that cannot draw the designed figure
 leaves renderers the same nothing a missing one does, so treat them alike; open
 the candidate's own file when its name does not settle it. **The bar is the
@@ -547,6 +549,7 @@ You are the lesson voice editor. Read your agent instructions at:
 PLUGIN_ROOT: [PLUGIN_ROOT]
 PYTHON: [PYTHON]
 WORKING_DIR: [WORKING_DIR]
+SCRATCH_DIR: [WORKING_DIR]/_scratch/[task_name]
 
 AUTHORITATIVE_INPUTS:
 VOICE_EDIT_VIEW: [WORKING_DIR]/voice-edit-view.md
@@ -708,6 +711,7 @@ You are the slide designer. Read your agent instructions at:
 PLUGIN_ROOT: [PLUGIN_ROOT]
 PYTHON: [PYTHON]
 WORKING_DIR: [WORKING_DIR]
+SCRATCH_DIR: [WORKING_DIR]/_scratch/[task_name]
 OUTPUT_DIR: [OUTPUT_DIR]
 
 AUTHORITATIVE_INPUTS:
@@ -751,8 +755,8 @@ TERMINAL_STATE: COMPLETE
 Wait for both files and require both markers. `slide-room.json` is absent
 only when this machine had no render route; treat that as a quieter run, not a
 fault. It is not a licence to skip the measurement: the Slide Decorator renders
-the deck again for its own pass, so where this file is missing it measures those
-pages itself before answering whether any slide has room. Preserve every `BUILD_DIAGNOSTIC:` line for a focused Slide Designer
+the deck again for its own pass and always measures those pages itself before
+answering whether any slide has room. Preserve every `BUILD_DIAGNOSTIC:` line for a focused Slide Designer
 repair. On `SLIDE_DESIGN_CHECK_FAILED`, first copy its `Retained candidate:` to
 `[WORKING_DIR]/lesson.json`, the file the repair edits.
 
@@ -771,6 +775,7 @@ You are the slide decorator. Read your agent instructions at:
 PLUGIN_ROOT: [PLUGIN_ROOT]
 PYTHON: [PYTHON]
 WORKING_DIR: [WORKING_DIR]
+SCRATCH_DIR: [WORKING_DIR]/_scratch/[task_name]
 OUTPUT_DIR: [OUTPUT_DIR]
 
 AUTHORITATIVE_INPUTS:
@@ -781,6 +786,7 @@ PICTURE_STAGE: [the resolved Phase 2 state line, verbatim]
 
 OWNED_OUTPUTS:
 - [WORKING_DIR]/lesson.json  (picture and decoration fields only)
+- [WORKING_DIR]/slide-room.json
 - [WORKING_DIR]/optional-picture-pass.json
 
 This worker creates JSON only. Do not load or use the global `Presentations`
@@ -1056,6 +1062,7 @@ You are the worksheet designer. Read your agent instructions at:
 PLUGIN_ROOT: [PLUGIN_ROOT]
 PYTHON: [PYTHON]
 WORKING_DIR: [WORKING_DIR]
+SCRATCH_DIR: [WORKING_DIR]/_scratch/[task_name]
 OUTPUT_DIR: [OUTPUT_DIR]
 
 AUTHORITATIVE_INPUTS:
@@ -1350,8 +1357,8 @@ re-judged, not trimmed around: a timeline that held three sources across two
 periods is orientation once it holds two dates from one period, and an
 ordering task whose only remaining items are printed in date order has no job
 left. Only where even the open-web rung could not reach the one source the
-lesson is genuinely about does the dependent task go, and then
-`flagsForTeacher` says so; authenticity does not bend to fill the hole.
+lesson is about does the dependent task go, and then `flagsForTeacher`
+says so; anything else may be made honestly (Photograph acquisition).
 
 Re-run the design validator and photo-cap check, then run Phase 1.25 again over
 the revised files: a revision that removes a source, rewrites the model beat
@@ -1603,6 +1610,8 @@ Keep the teacher report concise. Always include a `Teacher flags` section, using
 declared cross-resource impact from a repair, every picture a designer was
 uneasy about, and every `SETUP_NOTE:` the start-up check printed. Worksheet pupil sheets and answer key remain separate. When the
 walk-through says the lesson left something for another lesson, say what in one line.
+
+Say each worksheet `sharedSheets` line, its reason cut short.
 
 ---
 

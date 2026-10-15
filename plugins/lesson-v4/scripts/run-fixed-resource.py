@@ -82,6 +82,8 @@ def safe_filename_component(
         ],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     if completed.returncode != 0:
         raise FixedResourceError(
@@ -346,6 +348,22 @@ def sheets_stood_in(stdout: str) -> list[dict]:
     return stood_in
 
 
+def sheets_shared(stdout: str) -> list[dict]:
+    """The levels with no sheet of their own because the plan gives them the
+    Expected task unchanged, from the build's `SHEET_SHARED:` lines. Not a
+    flag and not a fault: the run's message to the teacher says each one, so
+    a pack with no Greater Depth page does not read as one forgotten (Daniel,
+    14 October 2026: "the best place to say is in the run")."""
+    shared = []
+    for line in stdout.splitlines():
+        if not line.startswith("SHEET_SHARED: "):
+            continue
+        body = line[len("SHEET_SHARED: "):].strip()
+        label, _, said = body.partition(" - ")
+        shared.append({"sheet": label.strip(), "line": said.strip() or body})
+    return shared
+
+
 def marker_paths(stdout: str, marker: str) -> list[Path]:
     prefix = marker + ": "
     return [
@@ -539,8 +557,16 @@ def run(args) -> int:
     # The Python running this wrapper is one this machine and sandbox can start,
     # so the builders' own Python step (slide text fitting) uses it too rather
     # than guessing a name that may be refused.
-    child_env = dict(os.environ, LESSON_RESOURCES_PYTHON=sys.executable)
-    completed = subprocess.run(command, capture_output=True, text=True, env=child_env)
+    #
+    # Output is read as UTF-8, which is what the builders write. Left to the
+    # computer's own setting, Windows read it as cp1252, where the byte that
+    # ends a curly closing quote has no meaning: a deck whose build output
+    # quoted one was written and then reported as unreadable (11 October 2026).
+    # A Python step is told to write UTF-8 too, so both ends agree.
+    child_env = dict(os.environ, LESSON_RESOURCES_PYTHON=sys.executable, PYTHONIOENCODING="utf-8")
+    completed = subprocess.run(
+        command, capture_output=True, text=True, encoding="utf-8", errors="replace", env=child_env
+    )
     summary = {
         "schemaVersion": SCHEMA_VERSION,
         "ok": False,
@@ -603,6 +629,7 @@ def run(args) -> int:
     if args.kind == "worksheets":
         summary["omittedSheets"] = sheets_omitted(completed.stdout)
         summary["standInSheets"] = sheets_stood_in(completed.stdout)
+        summary["sharedSheets"] = sheets_shared(completed.stdout)
 
     summary["degraded"] = degraded
     summary["outputs"] = [

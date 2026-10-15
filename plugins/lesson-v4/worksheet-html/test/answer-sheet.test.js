@@ -147,3 +147,18 @@ test("a long pack shrinks its text before it is allowed a third side, and never 
     await browser.close();
   }
 });
+
+// A drawing that marks its own answers (a coordinate grid, a cycle) is told it
+// is on the teacher's page, so the answers it would leave off a pupil sheet
+// print, in green (14 October 2026).
+test("the answer sheet tells its pictures to show their answers", () => {
+  const w = {
+    meta: { name: "grid", lesson: "Translate shapes", yearGroup: 6, subject: "maths" },
+    sheets: { expected: { recording: "sheet", recordingReason: "The child draws on the printed grid.", layout: "auto", orientation: "portrait",
+      zones: [{ stack: [{ question: true, stack: [{ helper: "instruction", text: "Translate triangle ABC 5 squares left." }, { helper: "coordinate-grid", min: -5, max: 5, shapes: [{ points: [[2, 1], [4, 1], [4, 3]], labels: ["A", "B", "C"] }] }] }] }] } },
+    answerKey: { expected: [{ question: 1, answer: "A' (−3, 1), B' (−1, 1), C' (−1, 3)",
+      picture: { helper: "coordinate-grid", min: -5, max: 5, shapes: [{ points: [[2, 1], [4, 1], [4, 3]], labels: ["A", "B", "C"], translate: { dx: -5, dy: 0 }, showImage: true, imageAnswer: true }] } }] },
+  };
+  const { html } = answerSheetHtml(w, answerKeyOf(w));
+  assert.match(html, /stroke="#00B050"[^>]*stroke-dasharray/, "the translated image prints, dashed, in green");
+});

@@ -201,18 +201,30 @@ if __name__ == "__main__":
     unittest.main()
 
 
-def test_the_decorator_measures_the_pages_when_the_designer_left_none():
+def test_the_decorator_measures_the_pages_it_rendered_on_every_run():
     """A geography deck came back with 12 slides declined as `full`, 1 as
     `competes` and no library search run at all, and the pass record's own
     room line said UNMEASURED: the designer had produced no slide-room.json,
     so every "no room here" answer stood on the record's word. The decorator
-    renders the deck for its own pass, so it can always measure."""
+    renders the deck for its own pass, so it can always measure.
+
+    And it measures even when a file arrived. On 7 October 2026 a Year 3
+    science deck had two slides repaired after the designer measured, and the
+    decorator placed every drawing against pages the deck no longer had."""
     role = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
-    assert "If `slide-room.json` is not there, measure the pages you have just rendered" in role
+    assert "Measure the pages you have just rendered, on every run." in role
+    assert "let the result replace the file that arrived" in role
+    assert "If `slide-room.json` is not there" not in role
     assert "measure-slide-room.py" in role
     assert "--render-manifest" in role
     # And the exception stays only for a machine that cannot render at all.
     assert "Only a run with no render route at all" in role
+    # The orchestrator lets it write the file it is told to replace.
+    playbook = (ROOT / "skills" / "make-lesson" / "playbook-lite.md").read_text(
+        encoding="utf-8"
+    )
+    launch = playbook.split("You are the slide decorator.", 1)[1].split("```", 1)[0]
+    assert "- [WORKING_DIR]/slide-room.json" in launch.split("OWNED_OUTPUTS:", 1)[1]
 
 
 def test_the_playbook_no_longer_reads_as_permission_to_skip_measuring():

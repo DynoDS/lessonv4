@@ -94,7 +94,10 @@
 //            number, and the number moves to the word's other end when the
 //            word is too short to hold both.
 //   space    "annotate" leaves wide empty margins and roomy lines for the child
-//            to mark the text by hand: the write-on form.
+//            to mark the text by hand: the write-on form. On a printed
+//            activity page the margins are a hand's width each side inside a
+//            frame, the lines keep a marked text's ordinary gap, and any marks
+//            the spec carries are printed as the start the board already made.
 //   title    an optional heading printed above the passage.
 //   text     the question above the drawing, as on every other drawing (the
 //            worksheet prints it as its own line of sheet text; the other
@@ -121,6 +124,13 @@ const NOTE_MAX_SHARE = 0.3; // one margin is at most this share of the width
 const NOTE_MIN_W = 5.5; // a margin narrower than this many ems cannot hold a note
 const NOTE_OFFSET = 0.9; // gap between the text and a margin note
 const ANNOTATE_SHARE = 0.22; // each margin in the write-on form
+// The write-on form on a printed activity page. The teacher chose it from
+// pictures of a Year 6 text with a child's marks drawn on (11 October 2026):
+// about 30mm clear each side inside a frame, and the line gap of an ordinary
+// printed text, which he judged enough for a box or an underline. The roomy
+// form above set the same text at 12pt on a page that holds it at 17pt.
+const ANNOTATE_SHARE_PAGE = 0.12; // each margin: about 30mm of a landscape page
+const FRAME_RADIUS = 0.5;
 const LANE_STEP = 0.55; // between two arrows running down the left margin
 const LANE_PAD = 0.5; // between the text and the nearest arrow lane
 const UNDERLINE_DROP = 0.12; // below the baseline
@@ -450,7 +460,10 @@ function layoutAt(n, profile, pt) {
   const routed = n.links.length > 0 || anyNotes.left || anyNotes.right;
   // Notes on a whole stanza sit in the right margin beside their brackets.
   if (n.brackets.length) anyNotes.right = true;
-  const pitch = (n.space === 'annotate' ? PITCH_ANNOTATE : routed ? PITCH_ROUTED : n.marks.length ? PITCH_MARKED : PITCH_PLAIN) * pt;
+  // A page a child marks keeps a marked text's gap even when it arrives blank:
+  // the underlines are still to come.
+  const onPage = n.space === 'annotate' && profile.surface === 'stickin';
+  const pitch = (onPage ? (routed ? PITCH_ROUTED : PITCH_MARKED) : n.space === 'annotate' ? PITCH_ANNOTATE : routed ? PITCH_ROUTED : n.marks.length ? PITCH_MARKED : PITCH_PLAIN) * pt;
 
   // The margins. A margin with notes is as wide as its widest note wants, up
   // to a share of the width; the arrows take lanes on the left. When the
@@ -498,8 +511,9 @@ function layoutAt(n, profile, pt) {
     gutterR = even;
   }
   if (n.space === 'annotate') {
-    gutterL = Math.max(gutterL, ANNOTATE_SHARE * W);
-    gutterR = Math.max(gutterR, ANNOTATE_SHARE * W);
+    const share = onPage ? ANNOTATE_SHARE_PAGE : ANNOTATE_SHARE;
+    gutterL = Math.max(gutterL, share * W);
+    gutterR = Math.max(gutterR, share * W);
   }
   const textRoom = W - gutterL - gutterR - 2 * PAD * pt;
   if (textRoom < 8 * pt) {
@@ -748,7 +762,7 @@ function layoutAt(n, profile, pt) {
       `the passage needs ${(h / 72).toFixed(2)}in of height at the ${profile.minFontPt}pt readable size and the space is ${(profile.heightPt / 72).toFixed(2)}in. Give it more height, use less of the passage, or split it across two slides.`
     );
   }
-  return { pt, notePt, pitch, lines, textX, textW, usedW, stemLines, stemH, titleLines, placed, arrows, notes, brackets, pins, countsX, h, routed };
+  return { pt, notePt, pitch, lines, textX, textW, usedW, stemLines, stemH, titleLines, placed, arrows, notes, brackets, pins, countsX, h, routed, framed: onPage };
 }
 
 // The printed pieces of a run of words: a run can wrap, and each printed line
@@ -942,6 +956,12 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   }
 
   const h = L.h;
+  // The frame says the margins belong to the text: without it the clear paper
+  // each side reads as the edge of the page, not as somewhere to write.
+  if (L.framed) {
+    const half = sw / 2;
+    under.unshift(`<rect class="annotated-text-frame" x="${T.f2(half)}" y="${T.f2(half)}" width="${T.f2(L.usedW - sw)}" height="${T.f2(h - sw)}" rx="${T.f2(FRAME_RADIUS * pt)}" fill="none" stroke="${c.ink}" stroke-width="${T.f2(sw * 0.6)}"/>`);
+  }
   const out = { svg: T.svgDoc(L.usedW, h, [...under, ...words, ...over]), w: L.usedW, h, aspect: L.usedW / h, layout: L };
   // Where each place a wall callout names is, as [x%, y%, r%] of the drawing:
   // a step number's circle in the room left above its word.

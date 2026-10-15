@@ -434,7 +434,7 @@ class TheRouteIsWiredTests(unittest.TestCase):
         self.assertIn("## The handling moments - items the child moves, not marks", pedagogy)
         self.assertIn("**`card-set`**", pedagogy)
         template = flat(ROOT / "references" / "output-template.md")
-        self.assertIn('"handling": { "kind": "cards"', template)
+        self.assertIn('"handling": { "kind": "sheet"', template)
 
 
 if __name__ == "__main__":

@@ -77,6 +77,30 @@ test("an unknown helper is refused by name, with the known ones listed", () => {
   );
 });
 
+test("a row or a stack written as a helper is refused with the way to write it", () => {
+  // The guess a designer makes when told to "write the pieces as helper
+  // entries": the wrapper as one more helper, or an entry with no helper at all.
+  const piece = { helper: "questions", items: ["What is 3 + 4?"] };
+  const guesses = [
+    { helper: "row", items: [piece, piece] },
+    { helper: "stack", items: [piece, piece] },
+    { type: "row", children: [piece, piece] },
+  ];
+  for (const guess of guesses) {
+    assert.throws(
+      () => renderHelper(guess),
+      (err) => {
+        assert.match(err.message, /UNKNOWN_HELPER/);
+        assert.match(err.message, /\{ "row": \[/);
+        assert.match(err.message, /\{ "stack": \[/);
+        // The 92 names are no help to someone who was not looking for a name.
+        assert.doesNotMatch(err.message, /Known:/);
+        return true;
+      }
+    );
+  }
+});
+
 test("helper names use lower-case-hyphen form, matching the Word builder", () => {
   // A worksheet written for one engine should read the same on the other.
   for (const name of helperNames()) {
@@ -718,7 +742,14 @@ test("a helper's example shows every field the helper reads", () => {
     "fact-file": ["phase"],
     // Turns the panel border off. The framed form is the one to reach for, and
     // the example shows that; the bare form is an inner detail of composing.
-    "method-frame": ["frame"],
+    //
+    // `fractionBlank` is set by src/worksheet.js from the year group and the
+    // level: how a whole fraction a child writes is drawn (a box over a box
+    // for Years 1 to 4 and any Below sheet, one tall box otherwise). A
+    // designer never chooses it.
+    "method-frame": ["frame", "fractionBlank"],
+    "stacked-fraction": ["fractionBlank"],
+    "fraction-sequence": ["fractionBlank"],
     // Read only to REFUSE it by name: headings derive from the numbers'
     // width, and an explicit letters list re-opens the mislabelling that
     // derivation prevents. Showing it would invite exactly that.

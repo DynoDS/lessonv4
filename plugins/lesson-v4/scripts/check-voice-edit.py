@@ -36,8 +36,10 @@ be crowded out of a long run and a diff cannot:
 - a string the class never meets may change in one way only: where it holds a
   word-for-word copy of something the class does meet (the answer key's copy
   of a shown model, a teacher note quoting a slide's title), `carry` writes
-  the new wording over the copy, so the two still match. Nothing else in it
-  may move, and the editor never writes there by hand.
+  the new wording over the copy, so the two still match. A copy is followed
+  whole, and also line by line and sentence by sentence, because an answer key
+  often repeats a shown model without its last line to the class. Nothing else
+  in it may move, and the editor never writes there by hand.
 
 It is a floor, not the whole lane: a swapped pair of dates or a reversed
 meaning in plain words passes it, and the editor's own instructions own those.
@@ -58,9 +60,15 @@ because only that cannot be undone string by string.
 
 The Below and Greater Depth sheets are worded later, by the adaptation designer,
 so the editor makes a second, short pass over `adaptation.md` before anything
-reads it. There its lane is one kind of line: a `- Pupil prompt:` line may be
-reworded, every other line is byte-identical, no line comes or goes, and a
-prompt keeps its numbers and its empty boxes.
+reads it. There its lane is the words a child reads: an instruction (a
+`- Pupil prompt` line and the lines set under it, lettered parts included) and
+the help printed on the sheet (the child's own words inside a `- Support`
+entry). Where the child's words sit beside a note to the worksheet designer
+they are marked, in backticks (in a `Support` entry, quotation marks too), and
+only the marked words may change. Every other line is byte-identical, no line
+comes or goes, and an instruction keeps its numbers, its empty boxes and its
+blanks. `adaptation-settle` leaves a receipt that `photo-contract.py
+build-provisional` asks for, so a run cannot pass over this pass unnoticed.
 
     check-voice-edit.py adaptation-snapshot --working-dir W
     check-voice-edit.py adaptation-check --working-dir W
@@ -71,6 +79,7 @@ Standard library only.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import re
@@ -89,7 +98,14 @@ DECISIONS_BEFORE = "design-decisions.before-voice.md"
 ADAPTATION = "adaptation.md"
 ADAPTATION_BEFORE = "adaptation.before-voice.md"
 ADAPTATION_VIEW = "adaptation-voice-view.md"
-PUPIL_PROMPT = "- Pupil prompt:"
+ADAPTATION_RECEIPT = Path("orchestration-receipts") / "adaptation-voice.json"
+# A field of the adaptation designer's file whose words a child reads. The
+# designer sometimes qualifies the name (`- Pupil prompt (the group's
+# instruction):`), so the name is matched, not the whole label.
+CHILD_FIELD = re.compile(r"^- (Pupil prompt|Support)\b[^:`]*:")
+TICKED = re.compile(r"`[^`\n]+`")
+TICKED_OR_QUOTED = re.compile(r"`[^`\n]+`|\"[^\"\n]+\"|“[^”\n]+”")
+BLANK = re.compile(r"_{2,}")
 ADAPTATION_LAUNCH = """
 Launch the lesson voice editor with this message:
 
@@ -108,7 +124,7 @@ ADAPTATION_DESIGN: {work}/adaptation.md
 LESSON_DESIGN: {work}/lesson-design.json (read only)
 
 OWNED_OUTPUTS:
-- {work}/adaptation.md (the `- Pupil prompt:` lines only)
+- {work}/adaptation.md (only the words the view prints as yours)
 - {work}/adaptation-voice-edit.md
 
 SUCCESS_CHECK:
@@ -342,9 +358,11 @@ def name_runs(text: str, packet) -> set[str]:
     skip = set(packet.NOT_A_NAME) | set(packet.SENTENCE_OPENERS)
     for match in NAME_RUN.finditer(text):
         words = match.group(0).split()
-        while words and (words[0] in skip or not words[0][:1].isupper()):
+        # `That's` opens a sentence as `That` does, and a lone capital is an
+        # option's letter (`That's A.`), never half of somebody's name.
+        while words and (words[0] in skip or re.split("[’']", words[0])[0] in skip or not words[0][:1].isupper()):
             words = words[1:]
-        if len([w for w in words if w[:1].isupper()]) >= 2:
+        if len([w for w in words if w[:1].isupper() and len(w.strip("’'-")) > 1]) >= 2:
             runs.add(" ".join(words).strip("’'-"))
     return runs
 
@@ -424,12 +442,42 @@ def carry_pairs(base: dict, curr: dict, child_facing: set[tuple]) -> list[tuple[
     Only whole strings of a few words or more are carried: a one-word label
     (`Starter`) would match ordinary prose it was never a copy of.
     """
-    pairs = {
-        (base[p].strip(), curr[p].strip()) for p in child_facing
-        if isinstance(curr.get(p), str) and base[p] != curr[p] and not is_drawing_feature(p)
-        and len(base[p].split()) >= CARRY_MIN_WORDS and curr[p].strip()
-    }
+    pairs: set[tuple[str, str]] = set()
+    for p in child_facing:
+        if not isinstance(curr.get(p), str) or base[p] == curr[p] or is_drawing_feature(p) or not curr[p].strip():
+            continue
+        for old, new in [(base[p].strip(), curr[p].strip()), *reworded_parts(base[p], curr[p])]:
+            if len(old.split()) >= CARRY_MIN_WORDS and new:
+                pairs.add((old, new))
     return sorted(pairs, key=lambda pair: (-len(pair[0]), pair))
+
+
+SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+
+
+def reworded_parts(old: str, new: str) -> list[tuple[str, str]]:
+    """The lines, and inside them the sentences, that a rewording changed.
+
+    A copy the class never meets is often not the whole string: an answer key
+    repeats a shown model without the model's last line to the class (`(Your
+    points will be different...)`), so the whole never matched and the key kept
+    the old wording while the board moved on. Lines pair up only when the
+    rewording kept their number, and sentences likewise, so a part is never
+    guessed at.
+    """
+    parts: list[tuple[str, str]] = []
+    old_lines, new_lines = old.split("\n"), new.split("\n")
+    if len(old_lines) != len(new_lines):
+        return parts
+    for old_line, new_line in zip(old_lines, new_lines):
+        old_line, new_line = old_line.strip(), new_line.strip()
+        if old_line == new_line:
+            continue
+        parts.append((old_line, new_line))
+        old_said, new_said = SENTENCE_END.split(old_line), SENTENCE_END.split(new_line)
+        if len(old_said) == len(new_said) > 1:
+            parts += [(a, b) for a, b in zip(old_said, new_said) if a != b]
+    return parts
 
 
 def carried(text: str, pairs: list[tuple[str, str]]) -> str:
@@ -756,9 +804,15 @@ def with_twins(put_back: list[tuple], base: dict, curr: dict) -> list[tuple]:
     on the board takes its reworded copy in the check back with it, and so
     does a teacher-only string that carried a copy of it."""
     changed = [p for p in base if p in curr and base[p] != curr[p] and isinstance(base[p], str)]
+    def copied(p: tuple, q: tuple) -> bool:
+        olds = [base[p].strip()]
+        if isinstance(base[p], str) and isinstance(curr.get(p), str):
+            olds += [old for old, _new in reworded_parts(base[p], curr[p])]
+        return any(len(old.split()) >= CARRY_MIN_WORDS and old in base[q] for old in olds)
+
     twins = [
         q for p in put_back for q in changed
-        if q != p and (base[q] == base[p] or (len(base[p].split()) >= CARRY_MIN_WORDS and base[p].strip() in base[q]))
+        if q != p and isinstance(base[p], str) and (base[q] == base[p] or copied(p, q))
     ]
     return sorted(set(put_back) | set(twins), key=show)
 
@@ -827,6 +881,106 @@ def _adaptation_lines(path: Path) -> list[str]:
         return handle.read().splitlines(keepends=True)
 
 
+def _heading(text: str) -> tuple[int, str] | None:
+    """A level, question or part heading: `## Below`, `### Question 1`,
+    `#### Part (a)`, or the bold line the designer sometimes writes instead
+    (`**Question 1** (one instruction, two lettered parts)`)."""
+    if text.startswith("#"):
+        marks = len(text) - len(text.lstrip("#"))
+        return marks, text[marks:].strip()
+    if text.startswith("**") and text.count("**") >= 2:
+        return 3, text.replace("**", "").strip()
+    return None
+
+
+def adaptation_blocks(lines: list[str]) -> list[dict]:
+    """Each instruction and each entry of printed help, with every line set
+    under it. An entry runs on over its indented lines, which is where the
+    designer puts a second printed line and the lettered parts."""
+    blocks: list[dict] = []
+    level = question = part = ""
+    index = 0
+    while index < len(lines):
+        text = lines[index].strip()
+        heading = _heading(text)
+        if heading:
+            marks, title = heading
+            if marks <= 2:
+                level, question, part = title, "", ""
+            elif marks == 3:
+                question, part = title, ""
+            else:
+                part = title
+        field = CHILD_FIELD.match(lines[index])
+        if not field:
+            index += 1
+            continue
+        end = index + 1
+        while end < len(lines) and lines[end][:1] in (" ", "\t") and lines[end].strip():
+            end += 1
+        blocks.append({
+            "kind": "prompt" if field.group(1) == "Pupil prompt" else "support",
+            "start": index, "end": end, "label": field.group(0),
+            "where": " - ".join(piece for piece in (level, question, part) if piece),
+        })
+        index = end
+    return blocks
+
+
+def adaptation_lane(lines: list[str]) -> dict[int, tuple[dict, re.Pattern | None]]:
+    """The lines the editor may change, each with its block and how much of it
+    is the child's: a pattern when only the marked words are, `None` when the
+    whole line is.
+
+    An instruction written plainly is the child's words throughout. Once any
+    line of it carries backticks, the designer is marking the child's words
+    apart from a note to the worksheet designer (`Options:`, `then, on the line
+    below it,`), so only what is marked may change. Printed help is always a
+    mixture, so there only marked words are the child's.
+    """
+    lane: dict[int, tuple[dict, re.Pattern | None]] = {}
+    for block in adaptation_blocks(lines):
+        span = range(block["start"], block["end"])
+        if block["kind"] == "support":
+            lane.update({i: (block, TICKED_OR_QUOTED) for i in span if TICKED_OR_QUOTED.search(lines[i])})
+            continue
+        marked = any("`" in lines[i] for i in span)
+        for i in span:
+            if "`" in lines[i]:
+                lane[i] = (block, TICKED)
+            elif not marked:
+                lane[i] = (block, None)
+    return lane
+
+
+def _frame(line: str, block: dict, first: bool, marks: re.Pattern | None) -> str:
+    """What must not move on a line the editor may change."""
+    if marks is not None:
+        return marks.sub("\0", line)
+    stripped = line.rstrip("\r\n")
+    ending = line[len(stripped):]
+    if first and not line.startswith(block["label"]):
+        return line
+    lead = block["label"] if first else stripped[: len(stripped) - len(stripped.lstrip())]
+    return lead + "\0" + ending
+
+
+def _block_text(lines: list[str], block: dict) -> str:
+    return "".join(lines[block["start"]:block["end"]])
+
+
+def _write_adaptation_receipt(working_dir: Path, state: str, snapshot_sha: str | None = None) -> None:
+    """What `photo-contract.py build-provisional` asks for before it goes on."""
+    path = working_dir / ADAPTATION_RECEIPT
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({
+        "schemaVersion": 1,
+        "state": state,
+        "adaptationSha256": hashlib.sha256((working_dir / ADAPTATION).read_bytes()).hexdigest(),
+        "snapshotSha256": snapshot_sha,
+    }, indent=2) + "\n", encoding="utf-8")
+
+
 def adaptation_snapshot(working_dir: Path) -> int:
     try:
         lines = _adaptation_lines(working_dir / ADAPTATION)
@@ -837,24 +991,47 @@ def adaptation_snapshot(working_dir: Path) -> int:
     view = [
         "# The adapted sheets, as a child reads them",
         "",
-        "Each quoted line is one `- Pupil prompt:` line of `adaptation.md`, under its level and question. "
-        "These are the only words in that file you own. A `\\n` inside a prompt is a line break on the "
-        "printed sheet: keep it written that way.",
+        "Every instruction in `adaptation.md` and every piece of help printed on a sheet, under its level "
+        "and question, each line as the file has it. An instruction is printed whole: its own line, any "
+        "second line, and its lettered parts.",
+        "",
+        "What is yours to reword:",
+        "- under `Instruction`, every line, when no line of it carries backticks;",
+        "- under `Instruction (the child's words are inside backticks)`, only the words inside the backticks. "
+        "The words around them are the adaptation designer's notes to the worksheet designer;",
+        "- under `Help on the sheet`, only the words inside backticks or quotation marks;",
+        "- under `Help on the sheet (to read, not to change)`, nothing. It is there so you know what the "
+        "child has in front of them. If its words would not reach this child, say so in your report.",
+        "",
+        "Keep every mark, every `___` blank and every empty box where it is. A `\\n` inside an instruction is "
+        "a line break on the printed sheet: keep it written that way.",
         "",
     ]
-    level, question, count = "", "", 0
-    for line in lines:
-        text = line.strip()
-        if text.startswith("## "):
-            level, question = text[3:], ""
-        elif text.startswith("### "):
-            question = text[4:]
-        elif text.startswith(PUPIL_PROMPT):
-            count += 1
-            view += [f"### {level} - {question}" if question else f"### {level}", f"> {text[len(PUPIL_PROMPT):].strip()}", ""]
+    lane = adaptation_lane(lines)
+    prompts = helps = 0
+    for block in adaptation_blocks(lines):
+        span = range(block["start"], block["end"])
+        body = [lines[block["start"]].strip()[len(block["label"]):].strip()]
+        body += [lines[i].strip() for i in span[1:]]
+        body = [text for text in body if text]
+        owned = [i for i in span if i in lane]
+        if block["kind"] == "prompt":
+            prompts += 1
+            marked = any(lane[i][1] is not None for i in owned)
+            title = "Instruction (the child's words are inside backticks)" if marked else "Instruction"
+        elif owned:
+            helps += 1
+            title = "Help on the sheet"
+        elif not body or re.match(r"none\b", body[0], re.IGNORECASE):
+            continue
+        else:
+            title = "Help on the sheet (to read, not to change)"
+        view += [f"### {block['where']}" if block["where"] else "###", f"{title}:"]
+        view += [f"> {text}" for text in body] + [""]
     (working_dir / ADAPTATION_VIEW).write_text("\n".join(view), encoding="utf-8")
-    print(f"ADAPTATION_VOICE_SNAPSHOT_OK: {count} pupil prompts")
-    if not count:
+    print(f"ADAPTATION_VOICE_SNAPSHOT_OK: {prompts} pupil prompts, {helps} pieces of printed help")
+    if not prompts and not helps:
+        _write_adaptation_receipt(working_dir, "nothing-to-read")
         print("ADAPTATION_VOICE_SKIP: no pupil prompts to read, so launch nothing")
         return 0
     # The launch is printed rather than kept in the playbook: the paths are
@@ -870,32 +1047,81 @@ def adaptation_faults(before: list[str], after: list[str]) -> tuple[bool, dict[i
     """Whether the file changed shape, and the fault on each line outside the lane."""
     if len(before) != len(after):
         return True, {}
+    lane = adaptation_lane(before)
     faults: dict[int, str] = {}
     for index, (old, new) in enumerate(zip(before, after)):
         if old == new:
             continue
         where = f"line {index + 1}"
-        if not (old.strip().startswith(PUPIL_PROMPT) and new.strip().startswith(PUPIL_PROMPT)):
-            faults[index] = f"{where} is not a pupil prompt, and only a pupil prompt may be reworded"
-        elif not new.strip()[len(PUPIL_PROMPT):].strip():
+        if index not in lane:
+            faults[index] = (
+                f"{where} is not words a child reads: only a pupil prompt, the lines set under it and the "
+                "marked words of the printed help may be reworded"
+            )
+            continue
+        block, marks = lane[index]
+        first = index == block["start"]
+        # A number may be said again or move to another line of the same
+        # instruction (`Jonah's 2-digit number`); it may not arrive, leave the
+        # instruction or change places with another.
+        was, now = numbers_in(old), numbers_in(new)
+        brought = set(digits_in(new)) - set(numbers_in(old, lone_one=True)) - set(numbers_in(_block_text(before, block), lone_one=True))
+        gone = set(digits_in(old)) - set(numbers_in(new, lone_one=True)) - set(numbers_in(_block_text(after, block), lone_one=True))
+        swapped = any(now[n] < was[n] for n in was) and any(now[n] > was[n] for n in now)
+        if _frame(old, block, first, marks) != _frame(new, block, first, marks):
+            faults[index] = (
+                f"{where}: only the child's own words may change, and here they are the words inside the "
+                "marks - keep each mark and the note around it" if marks is not None
+                else f"{where}: the label or the indent in front of the child's words changed"
+            )
+        elif first and marks is None and old.strip()[len(block["label"]):].strip() and not new.strip()[len(block["label"]):].strip():
             faults[index] = f"{where}: the pupil prompt is empty"
-        elif numbers_in(old) != numbers_in(new):
+        elif brought or gone or swapped:
             faults[index] = f"{where}: the prompt's numbers changed"
-        elif old.count("□") != new.count("□"):
-            faults[index] = f"{where}: an empty box came or went"
+        elif old.count("□") != new.count("□") or len(BLANK.findall(old)) != len(BLANK.findall(new)):
+            faults[index] = f"{where}: an empty box or a blank came or went"
     return False, faults
 
 
 def adaptation_check(working_dir: Path, settle_it: bool) -> int:
+    snapshot_sha = None
     try:
-        before = _adaptation_lines(working_dir / ADAPTATION_BEFORE)
         after = _adaptation_lines(working_dir / ADAPTATION)
+        before_path = working_dir / ADAPTATION_BEFORE
+        if settle_it:
+            # A snapshot is settled once. After that the adaptation designer may
+            # run again, and settling its new file against the old snapshot
+            # would put its repairs back as if they were the editor's.
+            snapshot_sha = hashlib.sha256(before_path.read_bytes()).hexdigest() if before_path.exists() else None
+            current_sha = hashlib.sha256((working_dir / ADAPTATION).read_bytes()).hexdigest()
+            receipt: object = None
+            try:
+                receipt = json.loads((working_dir / ADAPTATION_RECEIPT).read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                pass
+            spent = (
+                isinstance(receipt, dict) and snapshot_sha is not None
+                and receipt.get("snapshotSha256") == snapshot_sha
+            )
+            if spent and receipt.get("adaptationSha256") == current_sha:
+                print("ADAPTATION_VOICE_SETTLED: already settled, nothing to do")
+                return 0
+            if snapshot_sha is None or spent:
+                _write_adaptation_receipt(working_dir, "not-read", snapshot_sha)
+                print(
+                    "ADAPTATION_VOICE_NOT_READ: no fresh snapshot of this adaptation.md, so nothing was compared "
+                    "and nothing changed. Say in the teacher report that the voice editor did not read the "
+                    "easier and harder sheets."
+                )
+                return 0
+        before = _adaptation_lines(before_path)
     except OSError as exc:
         print(f"ADAPTATION_VOICE_CHECK_ERROR: {exc}")
         return 2
     reshaped, faults = adaptation_faults(before, after)
     if settle_it and reshaped:
         shutil.copyfile(working_dir / ADAPTATION_BEFORE, working_dir / ADAPTATION)
+        _write_adaptation_receipt(working_dir, "restored", snapshot_sha)
         print("ADAPTATION_VOICE_RESTORED: the adaptation designer's file is back (a line came or went)")
         return 0
     if settle_it:
@@ -905,13 +1131,14 @@ def adaptation_check(working_dir: Path, settle_it: bool) -> int:
             handle.write("".join(after))
     kept = sum(1 for old, new in zip(before, after) if old != new)
     if settle_it:
-        print(f"ADAPTATION_VOICE_SETTLED: {kept} pupil prompts reworded kept, {len(faults)} lines put back")
+        _write_adaptation_receipt(working_dir, "settled", snapshot_sha)
+        print(f"ADAPTATION_VOICE_SETTLED: {kept} lines reworded kept, {len(faults)} lines put back")
         return 0
     if reshaped or faults:
         shown = ["a line came or went"] if reshaped else list(faults.values())[:REPORT_LIMIT]
         print("ADAPTATION_VOICE_VIOLATION: " + "; ".join(shown))
         return 1
-    print(f"ADAPTATION_VOICE_OK: {kept} pupil prompts reworded")
+    print(f"ADAPTATION_VOICE_OK: {kept} lines reworded")
     return 0
 
 

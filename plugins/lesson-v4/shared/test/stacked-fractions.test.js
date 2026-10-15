@@ -42,3 +42,24 @@ test('a check can read the typed form back', () => {
 test('the pattern is shared, so a surface that draws fractions its own way finds the same ones', () => {
   assert.equal([...'1/2 = 2/4 = 3/6'.matchAll(FRACTION)].length, 3);
 });
+
+// A part the child writes is a box on the bar (the teacher, 13 October 2026,
+// from the real Year 5 sheet of the 12 October stress test, where "___/6"
+// printed a blank and then "/6" typed on the line).
+test('a blank part, typed or already drawn by a sheet, is a write-in box on the bar', () => {
+  const box = '<span class="sfr-box"></span>';
+
+  assert.equal(stackFractionsInHtml('= ___/6'), `= ${stacked(box, '6')}`);
+  assert.equal(stackFractionsInHtml('= □/6'), `= ${stacked(box, '6')}`);
+  assert.equal(stackFractionsInHtml('= <span class="h-blank"></span>/6'), `= ${stacked(box, '6')}`);
+  assert.equal(stackFractionsInHtml('= <span class="h-digit-box"></span>/6'), `= ${stacked(box, '6')}`);
+  assert.equal(stackFractionsInHtml('3/<span class="h-blank" style="width:20mm"></span>'), stacked('3', box));
+  assert.equal(stackFractionsInHtml('___/___'), stacked(box, box));
+  assert.equal(stackFractionsInHtml('1/2 = ?/10').includes('<span class="sfr-n">?</span>'), true);
+});
+
+test('a blank that is not part of a fraction is left alone, and the typed form reads back', () => {
+  assert.equal(stackFractionsInHtml('and/or ___ / no'), 'and/or ___ / no');
+  assert.equal(stackFractionsInHtml('<span class="h-blank"></span> on 9/10/2026'), '<span class="h-blank"></span> on 9/10/2026');
+  assert.equal(unstackFractionsInHtml(stackFractionsInHtml('2/3 = ___/6')), '2/3 = ___/6');
+});

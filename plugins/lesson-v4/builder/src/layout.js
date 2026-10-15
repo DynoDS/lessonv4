@@ -77,10 +77,21 @@ const HEADER_STARTER = {
 //
 // So a title never becomes a prompt. A real prompt still prints, and a starter
 // with neither gets its header row of height back for the content.
+//
+// The same little title then came back through `heading` itself: designers
+// copied the starter unit's label into it, and a Year 4 science deck printed
+// "Food in our bodies" between "Starter" and its two questions (11 October
+// 2026; PSHE decks had done it with "Disagreeing kindly" and "Things worth doing
+// again"). The teacher's ruling (14 October 2026): only a real question or
+// instruction prints there. A prompt is a sentence and ends like one ("Which of
+// these are whole sentences?", "Use column subtraction.", "Round each number:");
+// a topic name does not, so it is dropped here and the body takes the row back,
+// whatever the designer wrote.
 function starterPrompt(data) {
   if (!data || typeof data !== 'object') return '';
   const value = String(data.heading || '').trim();
   if (!value || /^starter$/i.test(value)) return '';
+  if (!/[?.!:]["'’”)]*$/.test(value)) return '';
   return value;
 }
 

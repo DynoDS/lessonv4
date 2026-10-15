@@ -399,6 +399,22 @@ class EssentialPictureLossIsAnnouncedTests(FinalizerFixture):
         self.assertIn("PICTURE_ESSENTIAL_LOST:", printed)
         self.assertIn("unsplash/a.jpg", printed)
         self.assertIn("content-gap picture wave", printed)
+        self.assertIn("stop none of them", printed)
+
+    def test_a_lost_essential_picture_keeps_the_lesson_the_designers_read(self):
+        """They are never held for pictures, so they are working when this is
+        announced, and the revision that follows needs something to be
+        compared with."""
+        req, assignment, path, photos = self.make_assignment(
+            names=("unsplash/a.jpg",), essential=("unsplash/a.jpg",)
+        )
+        (self.working / "lesson-design.json").write_text('{"lesson": "as read"}', encoding="utf-8")
+        with mock.patch("sys.stdout", new=io.StringIO()) as out:
+            self.run_assignment(assignment, path, [self.unsatisfied_row(photos[0]["filename"])])
+        self.assertIn("REVISION_BASELINE_OK", out.getvalue())
+        kept = self.working / "revision-baseline"
+        self.assertEqual((kept / "lesson-design.json").read_text(encoding="utf-8"), '{"lesson": "as read"}')
+        self.assertTrue((kept / "photo-requirements.json").is_file())
 
     def test_a_lost_picture_the_lesson_can_spare_says_nothing(self):
         """The discrimination case. Only `essential` earns the wave; every other

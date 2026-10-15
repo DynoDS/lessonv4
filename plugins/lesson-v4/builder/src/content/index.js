@@ -27,6 +27,7 @@ const drawMeasuringJug = drawerFor('measuring-jug');
 const drawRuler = drawerFor('ruler');
 const drawTimeline = drawerFor('timeline');
 const drawProcessChain = drawerFor('process-chain');
+const drawCycle = drawerFor('cycle');
 const drawClassificationKey = drawerFor('classification-key');
 const drawConceptMap = drawerFor('concept-map');
 const drawAnnotatedText = drawerFor('annotated-text');
@@ -41,6 +42,7 @@ const drawPlaceValueChart = drawerFor('place-value-chart');
 const drawPlaceValueMini = drawerFor('place-value-mini');
 const drawBaseTenBlocks = drawerFor('base-ten-blocks');
 const drawCounterGroup = drawerFor('counter-group');
+const drawTenFrame = drawerFor('ten-frame');
 const drawPartWholeModel = drawerFor('part-whole-model');
 const drawPyramid = drawerFor('pyramid');
 const drawMultGrid = drawerFor('mult-grid');
@@ -52,7 +54,7 @@ const { drawQuestionCards } = require('./question-cards');
 const { drawCallout } = require('./callout');
 const { drawDiamondNine }   = require('./diamond-nine');
 const { drawMatching }      = require('./matching');
-const { drawCoordinateGrid } = require('./coordinate-grid');
+const drawCoordinateGrid = drawerFor('coordinate-grid');
 const { drawTranslationShape } = require('./translation-shape');
 const drawShadedFraction = drawerFor('shaded-fraction');
 const drawLineGraph = drawerFor('line-graph');
@@ -125,6 +127,7 @@ const ZONE_COMPAT = {
   // (13 September 2026); the board can now place them too.
   ruler:               ['A', 'B', 'C', 'E-wide'],
   'process-chain':     ['A', 'B', 'C', 'E-wide'],
+  'cycle':             ['A', 'B', 'C', 'E-wide'],
   'classification-key': ['A', 'C', 'E-wide'],
   'concept-map':       ['A', 'C', 'E-wide'],
   // A marked passage wants width for its margin notes and arrows.
@@ -159,6 +162,7 @@ const ZONE_COMPAT = {
   'place-value-mini':  ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'base-ten-blocks':   ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow'],
   'counter-group':     ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
+  'ten-frame':         ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'circuit-diagram':   ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'parachute-forces':  ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow'],
   // The component-symbol key for a circuit lesson: individually identifiable
@@ -215,6 +219,7 @@ const HELPERS = {
   fishbone:            drawFishbone,
   ruler:               drawRuler,
   'process-chain':     drawProcessChain,
+  'cycle':             drawCycle,
   'classification-key': drawClassificationKey,
   'concept-map':       drawConceptMap,
   'annotated-text':    drawAnnotatedText,
@@ -239,6 +244,7 @@ const HELPERS = {
   'place-value-mini':  drawPlaceValueMini,
   'base-ten-blocks':   drawBaseTenBlocks,
   'counter-group':     drawCounterGroup,
+  'ten-frame':         drawTenFrame,
   'circuit-diagram':   drawCircuitDiagram,
   'parachute-forces':  drawParachuteForces,
   'circuit-symbol-bank': drawCircuitSymbolBank,
@@ -353,6 +359,9 @@ const SELF_PADDED = new Set([
 // that zone.
 function wantsCard(zone, type, data, ctx) {
   if (!ctx.cardLook) return false;
+  // A criteria panel holding more than one set (content/sc-panel.js) keeps
+  // the white cards its steps wear when they are the panel's only content.
+  if (ctx._cardBarrier && ctx._criteriaSteps && ITEM_CARDS.has(type)) return true;
   if (ctx._cardBarrier) return false;               // inside a helper that owns its surface
   if (zone.noCard) return false;
   if (OWN_SURFACE.has(type)) return false;
@@ -405,6 +414,15 @@ function drawContent(pptx, slide, zone, data, ctx) {
     return drawFallback(slide, zone, '', ctx);
   }
   const type = data.type;
+  // The lesson design writes a reference table's headings under `columns`
+  // (output-template.md) and the slide table reads `headers`. Copied across
+  // word for word, as a designer is told to copy, the table had no headings,
+  // drew nothing and raised nothing: a Year 4 science deck printed an empty
+  // criteria box on three slides (11 October 2026). Every reader below, the
+  // table and the containers that measure it, sees the one name.
+  if (type === 'table' && !Array.isArray(data.headers) && Array.isArray(data.columns)) {
+    data = Object.assign({}, data, { headers: data.columns });
+  }
   const classes = ZONE_COMPAT[type];
   if (!classes) {
     warn(ctx.slideIndex, `unknown content type "${type}" — falling back to label text`);
@@ -520,7 +538,11 @@ function drawContent(pptx, slide, zone, data, ctx) {
   // children out, so the card decision passes through them untouched unless
   // categoryColor deliberately turns the whole container into one category.
   const hadBarrier = !!ctx._cardBarrier;
-  if (!TRANSPARENT.has(type) || (hasCard && categoryLine)) ctx._cardBarrier = true;
+  const hadCriteriaSteps = ctx._criteriaSteps;
+  if (!TRANSPARENT.has(type) || (hasCard && categoryLine)) {
+    ctx._cardBarrier = true;
+    ctx._criteriaSteps = false;
+  }
   // The type a refused child is sitting inside. A zone refusal names a content
   // type and a zone class, and on a slide whose sidebar holds a panel holding a
   // table, neither of those is the thing the designer has to go and look at.
@@ -539,6 +561,7 @@ function drawContent(pptx, slide, zone, data, ctx) {
     return drawn;
   } finally {
     ctx._cardBarrier = hadBarrier;
+    ctx._criteriaSteps = hadCriteriaSteps;
     ctx._containerType = hadContainer;
   }
 }

@@ -43,7 +43,7 @@ const FAMILIES = [
     [
       "bar-chart", "line-graph", "pictogram", "tally-chart", "venn", "carroll",
       "label-diagram", "rainforest-layers", "balanced-pattern-plate", "map", "grid-map",
-      "process-chain", "circuit-diagram", "classification-key",
+      "process-chain", "cycle", "circuit-diagram", "classification-key",
       "circuit-symbol-bank", "parachute-forces",
       "concept-map", "fishbone", "continuum-line", "source-pathway",
     ],
@@ -66,7 +66,7 @@ const FAMILIES = [
       "long-multiplication-grid", "bus-stop-grid", "long-division-grid",
       "method-frame", "number-pyramid", "times-table-grid",
       "place-value-chart", "place-value-counter-chart", "place-value-mini", "counter-group",
-      "base-ten-blocks", "digit-cards", "number-network",
+      "ten-frame", "base-ten-blocks", "digit-cards", "number-network",
     ],
   ],
   [

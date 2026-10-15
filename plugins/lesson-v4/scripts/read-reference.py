@@ -86,6 +86,35 @@ ROLE_COMPANIONS: dict[str, tuple[tuple[str, tuple[str, ...]], ...]] = {
             "Teacher Preferences > Pride Lessons (Quality Anchor) > A whole lesson at the right amount: the Shaftesbury calibration",
         )),
     ),
+    # The slide designer's start-up reading: the guidance it lays every slide
+    # out from. Its role file told it to read these at start-up and named only
+    # their paths, so on Codex it opened them with ordinary file reads, several
+    # to a command. In the three lessons of 10 and 11 October 2026 the designers
+    # lost the middle of 9, 10 and 11 of those reads before writing a slide
+    # (about 49,000, 134,000 and 55,000 tokens), wrote first drafts with 5, 18
+    # and 23 faults against rules they had not seen, and all three ran out of
+    # repair passes. As pages of the role read, each arrives whole.
+    "slide-designer": (
+        ("preferences.md", (
+            "@intro",
+            "Teacher Preferences > Contents — each agent reads its own sections",
+            "Teacher Preferences > Slide Philosophy",
+        )),
+        ("teacher-slide-visual-profile.md", ()),
+        ("slide-composition-playbook.md", ()),
+        ("templates.md", (
+            "@intro",
+            "Slide Template Layer > 1. Concepts",
+            "Slide Template Layer > 2. Fixed templates",
+            "Slide Template Layer > 3. Free templates",
+            "Slide Template Layer > 6. Template-layer settings",
+        )),
+        ("context-pictures.md", (
+            "@intro",
+            "Optional context pictures and relevant decoration > The boundary",
+            "Optional context pictures and relevant decoration > Where an optional picture sits on a slide",
+        )),
+    ),
 }
 
 
@@ -123,6 +152,14 @@ def locate(text: str, selector: str) -> Heading:
     if not all(path):
         raise ReferenceError("empty heading in selector")
     matches = [h for h in headings(text) if h.path[-len(path):] == path]
+    if not matches:
+        # The catalogue heads each template and helper with its name in code
+        # marks (`steps`), and a backtick is the escape character of the shell
+        # Codex runs on Windows, so a worker could not name those entries and
+        # read the file by line number instead. The bare name finds them.
+        bare = tuple(part.replace("`", "") for part in path)
+        matches = [h for h in headings(text)
+                   if tuple(t.replace("`", "") for t in h.path[-len(path):]) == bare]
     if len(matches) != 1:
         reason = "missing" if not matches else "ambiguous"
         raise ReferenceError(f"{reason} heading: {selector}; use --index for exact paths")
@@ -284,6 +321,34 @@ def structure_menu(text: str) -> tuple[str, int]:
 
 def _now() -> float:
     return time.time()
+
+
+def output_note(text: str) -> str | None:
+    """On Codex, how much output this read needs, for the worker running it.
+
+    A page is sized to fit the host's own ceiling, but a Codex worker sets a
+    limit of its own on each command (`max_output_tokens`) and the host cuts the
+    middle out of whatever is longer than that. In the lessons of 10 and 11
+    October 2026 workers asked for 2,000 to 8,000 tokens and lost the middle of
+    36 pages out of 500. This script cannot see the figure a command was run
+    with, so it says what it needs at the head and the foot of the read, the two
+    parts a cut leaves standing: a worker that was cut learns why and what to
+    ask for, and one that was not carries the figure to its next read.
+    """
+    if not os.environ.get("CODEX_THREAD_ID", "").strip():
+        return None
+    # A full page asks for the host's whole allowance: how many tokens a page
+    # of rules or JSON comes to is not known here, and asking for too much
+    # costs nothing while asking for too little loses the middle.
+    needed = -(-len(text) // 2400) * 1000
+    if needed < 3000:
+        return None
+    return (
+        f"<!-- This read is {len(text):,} characters. Codex cuts the middle out of any output "
+        f"longer than the command asked for: run it, and every read like it, with "
+        f"max_output_tokens of at least {needed}. If a line in this output says tokens were "
+        f"truncated, the middle is missing; run this same command again asking for that much. -->"
+    )
 
 
 def same_call_log() -> Path | None:
@@ -463,9 +528,14 @@ def main(argv: list[str] | None = None) -> int:
                 finish_read(log)
             return 3
         try:
+            note = output_note(text)
+            if note:
+                print(note)
             if len(split) > 1:
                 print(f"<!-- page {args.page} of {len(split)} -->")
             print(text, end="" if text.endswith("\n") else "\n")
+            if note:
+                print(note)
             if args.page < len(split):
                 # No success line until the last page: a reader who stops here has
                 # read part of the guidance, and the success line is what the

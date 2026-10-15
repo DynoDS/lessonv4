@@ -216,6 +216,7 @@ def child_seat(design: dict) -> list[str]:
     stretches: list[list[tuple[str, int]]] = []
     before_main = {"do": 0, "cards": 0, "together": 0, "quick": 0}
     after_main = 0
+    quick_after_main = 0
     for i, (what, item) in enumerate(order):
         if what == "card":
             name = "word card: " + ", ".join(t for t in item["terms"] if t)
@@ -274,6 +275,11 @@ def child_seat(design: dict) -> list[str]:
             before_main["do"] += 1
             before_main["cards"] += cards
             before_main["together"] += together
+        elif main_at is not None and i > main_at and quick:
+            # A quick check is not a task wherever it falls. A Year 6 PSHE
+            # lesson of the 20-lesson test (7 October 2026) put a two-minute
+            # check after its main sort and was told it held three tasks.
+            quick_after_main += 1
         elif main_at is not None and i > main_at:
             after_main += 1
     if stretch:
@@ -296,9 +302,13 @@ def child_seat(design: dict) -> list[str]:
             f"or less): {before_main['cards']} with cards in their hands, {before_main['together']} with "
             f"a partner or group, the rest on their own from the board or in books."
         )
-        if after_main:
-            lines.append(f"  After the main work they do something {after_main} more time"
-                         f"{'' if after_main == 1 else 's'}.")
+        if after_main or quick_after_main:
+            parts = []
+            if after_main:
+                parts.append(f"{after_main} more task{'' if after_main == 1 else 's'}")
+            if quick_after_main:
+                parts.append(f"{quick_after_main} quick check{'' if quick_after_main == 1 else 's'}")
+            lines.append(f"  After the main work they do {' and '.join(parts)}.")
         counted = before_main["do"] + 1 + after_main
         lines.append(f"  Tasks counted against the two or three a lesson holds (the main work and anything "
                      f"after it included, quick checks not): {counted}.")
@@ -309,6 +319,86 @@ def child_seat(design: dict) -> list[str]:
 
 
 DO_KINDS_IN_A_CYCLE = {"our-turn", "your-turn"}
+
+
+# The teacher's rough picture of where a lesson's minutes go (12 October 2026,
+# `preferences.md` -> Classroom Norms, Time). None is a rule; only the total is
+# enforced, by the design check.
+UNPLANNED_MINUTES = 5
+LESSON_MOST_MINUTES = 50
+WORKSHEET_ABOUT_MINUTES = 15
+WORKSHEET_SHORT_MINUTES = 10
+TASKS_SPENT_MINUTES = 15
+TEACH_KINDS = {"teach", "teach-why", "teach-needed"}
+
+
+def room(design: dict, order: list[tuple[str, dict]], planned: float) -> list[str]:
+    """Where the planned minutes go, beside the teacher's rough picture.
+
+    The total alone hides a full lesson. A Year 5 history lesson of the
+    20-lesson test (7 October 2026) added up to 39 minutes of 45 and passed
+    every count: two partner source readings of 7 and 8 minutes, then a third
+    new idea, then a worksheet timed at 9. The teacher read the deck and said
+    the class would be lost by the third idea; the readings were right for the
+    objective and had used the room that idea needed, and the 9 was the
+    worksheet made to fit. Neither showed anywhere the designer or the
+    reviewer read. A look, never a verdict."""
+    units = [unit for what, unit in order if what == "unit"]
+    main_at = next((i for i, unit in enumerate(units) if unit.get("kind") in MAIN_KINDS), None)
+    if main_at is None:
+        # A skill lesson with no such beat ends on its last Your Turn.
+        main_at = max((i for i, unit in enumerate(units) if unit.get("kind") not in LISTEN_KINDS), default=None)
+
+    def minutes(unit: dict) -> float:
+        value = unit.get("minutes")
+        return value if isinstance(value, (int, float)) else 0
+
+    starter = sum(minutes(u) for u in units if u.get("kind") == "starter")
+    teaching = sum(minutes(u) for u in units if u.get("kind") in LISTEN_KINDS)
+    tasks: list[float] = []
+    late_teach = None
+    for i, unit in enumerate(units):
+        if main_at is not None and i >= main_at:
+            break
+        kind = unit.get("kind")
+        if kind in TEACH_KINDS and sum(tasks) >= TASKS_SPENT_MINUTES and late_teach is None:
+            late_teach = (unit.get("label") or unit.get("sourceUnitId") or "a Teach", sum(tasks))
+        if kind != "starter" and kind not in LISTEN_KINDS:
+            tasks.append(minutes(unit))
+    main = minutes(units[main_at]) if main_at is not None else 0
+    after = sum(minutes(u) for i, u in enumerate(units)
+                if main_at is not None and i > main_at and u.get("kind") not in LISTEN_KINDS)
+    whole = planned + UNPLANNED_MINUTES
+    each = " + ".join(f"{m:g}" for m in tasks) if len(tasks) > 1 else ""
+    lines = [
+        f"  Where the {planned:g} planned minutes go: starter {starter:g}; teaching {teaching:g}; tasks before "
+        f"the main work {sum(tasks):g}{f' ({each})' if each else ''}; the main work {main:g}"
+        f"{f'; after it {after:g}' if after else ''}. With about {UNPLANNED_MINUTES} that no beat plans (books "
+        f"out, the date and objective, moving to tables and back) the lesson runs about {whole:g} minutes.",
+        f"  The teacher's rough picture, none of it a rule: 45 to {LESSON_MOST_MINUTES} in all; about 15 to 20 of "
+        f"teaching; a quick task 2 to 3 and a longer one 5 to 10, as the task needs; about "
+        f"{WORKSHEET_ABOUT_MINUTES} for a worksheet when the lesson ends on one.",
+    ]
+    if whole > LESSON_MOST_MINUTES:
+        lines.append(f"  THE DESIGN CHECK WILL REFUSE THIS: {whole:g} is past {LESSON_MOST_MINUTES}. An idea the "
+                     "objective can be met without gives way, or it is two lessons; the tasks keep their size.")
+    if late_teach:
+        label, spent = late_teach
+        lines.append(
+            f"  LOOK AGAIN: \"{label}\" starts new teaching after {spent:g} minutes of tasks since the starter, "
+            "with the main work still to come. Long tasks can be exactly right; they also use the room a "
+            "further idea needs, and a class that has worked that long has little left for one. Can the "
+            "objective be met without this idea today? If it can, it waits for another lesson and the tasks "
+            "stay as they are. If it cannot, keep it and say in the closing decisions that the lesson is "
+            "full. Making the tasks quick so the idea fits is the other way to get this wrong.")
+    sheet = (design.get("worksheet") or {}).get("status") == "generated"
+    if sheet and main_at is not None and 0 < main <= WORKSHEET_SHORT_MINUTES:
+        lines.append(
+            f"  LOOK AGAIN: the lesson prints a worksheet and its main work is planned at {main:g} minutes, "
+            f"where a worksheet usually takes about {WORKSHEET_ABOUT_MINUTES}. A short sheet is a real thing; "
+            f"a sheet given {main:g} because that was what the sum had left is a lesson fuller than it "
+            "looks. Which is this?")
+    return lines
 
 
 def clock(design: dict, order: list[tuple[str, dict]]) -> list[str]:
@@ -324,9 +414,7 @@ def clock(design: dict, order: list[tuple[str, dict]]) -> list[str]:
     planned = sum(unit.get("minutes") for what, unit in order
                   if what == "unit" and isinstance(unit.get("minutes"), (int, float)))
     if isinstance(duration, (int, float)) and planned:
-        left = duration - planned
-        lines.append(f"  Planned minutes add up to {planned:g} of the lesson's {duration:g}, leaving {left:g} "
-                     "for the worksheet and for what no beat plans: handing out, moving, going through answers.")
+        lines.extend(room(design, order, planned))
     names = {c.get("id"): c.get("name") or c.get("id") for c in design.get("concepts") or [] if isinstance(c, dict)}
     dos: dict[str, int] = {}
     for what, unit in order:
@@ -415,9 +503,14 @@ def main(argv: list[str]) -> int:
                     "  Answer it now from that page alone, as the child who heard none of the lesson. "
                     "If you reach the expected answer (a matching word, the only option that is an "
                     "answer at all, a line that says where to look, an instruction that states the "
-                    "repair), the page is doing the thinking: change the page and run this again. "
-                    "If you reach the wrong answer you named, the task is working."
+                    "repair), the page is doing the thinking: change the page and run this again."
                 )
+                half = row.half_listener_line()
+                if half:
+                    print(f"  Then answer it once more. {half} Run this again. If they reach the "
+                          "wrong answer you named, the task is working.")
+                else:
+                    print("  If you reach the wrong answer you named, the task is working.")
 
     if owing:
         print(

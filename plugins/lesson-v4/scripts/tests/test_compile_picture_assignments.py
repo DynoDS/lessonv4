@@ -110,20 +110,16 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
         # This one may be omitted, so the lesson survives an empty search and
         # the expensive open-web hunt is not authorised.
         self.assertNotIn("web", [step["source"] for step in compiler.source_schedule(authentic)])
-        # An AI fallback means a faithful generated picture teaches the same
-        # thing, so a second real search before generation is a rung nobody
-        # needed: one search, then generation. The rung after it is the standby,
-        # which is not a second search. It is walked ONLY when the one above it
-        # was unreachable, so on a healthy run it is never touched and the cost
-        # argument above is untouched with it.
+        # An AI fallback gets one second library before the picture is made
+        # (the teacher's ruling of 13 October 2026: a look there takes about
+        # 30 seconds, making a picture nearly two minutes). It is an ordinary
+        # step, so the scout walks it whenever the first finds nothing, and
+        # nothing marks it as a reserve.
         self.assertEqual(
             [step["source"] for step in compiler.source_schedule(ordinary)],
             ["wikimedia", "openverse"],
         )
-        self.assertEqual(
-            [step.get("standby_only", False) for step in compiler.source_schedule(ordinary)],
-            [False, True],
-        )
+        self.assertFalse(any("standby_only" in step for step in compiler.source_schedule(ordinary)))
         self.assertEqual(compiler.source_schedule(direct), [])
 
         # The open web is the rung for the one case that costs a lesson: a
@@ -229,27 +225,25 @@ class CompilePictureAssignmentsTests(unittest.TestCase):
             {"source": "web", "round": 1, "candidate_count": 3},
         ])
 
-    def test_essential_single_source_with_ai_fallback_searches_once_then_keeps_a_standby(self):
-        # One SEARCH, and a rung held in reserve behind it.
-        #
-        # This used to compile to a single rung, and on 19 September 2026 that
+    def test_essential_single_source_with_ai_fallback_searches_a_second_library_before_generating(self):
+        # This once compiled to a single rung, and on 19 September 2026 that
         # cost a lesson both its photographs: Unsplash was unreachable on the
-        # call and on its authorised retry, so with nothing to fall to the run
-        # generated both. Nothing had been searched, so the contract's premise -
-        # that a real search failed - was never tested. The standby is not a
-        # second search: `standby_only` means the scout may walk it only after a
-        # transport outage that survived its retry.
+        # call and on its retry, so with nothing to fall to the run generated
+        # both without one search having run. The second rung then arrived as a
+        # reserve for that outage alone. Since 13 October 2026 it is an
+        # ordinary step: the scouts were walking it anyway, and the teacher
+        # ruled that a second library comes before a made picture.
         item = photo("essential-ai.jpg", profile="unsplash-only", fallback="ai", essential=True)
         self.assertEqual(
             compiler.source_schedule(item),
             [
                 {"source": "unsplash", "round": 1, "candidate_count": 3},
-                {"source": "openverse", "round": 1, "candidate_count": 3, "standby_only": True},
+                {"source": "openverse", "round": 1, "candidate_count": 3},
             ],
         )
 
-    def test_a_standby_is_never_the_source_that_just_failed(self):
-        # Falling back to the shelf that was just found shut buys nothing.
+    def test_the_second_library_is_never_the_one_just_searched(self):
+        # Searching the same shelf twice buys nothing.
         item = photo("openverse-profile.jpg", profile="wikimedia-only", fallback="ai", essential=True)
         schedule = compiler.source_schedule(item)
         self.assertNotEqual(schedule[-1]["source"], schedule[-2]["source"])

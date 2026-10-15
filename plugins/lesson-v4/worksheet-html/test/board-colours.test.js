@@ -46,3 +46,14 @@ test("nothing is copied when the slides disagree, state no colour, or do not exi
     assert.equal(spec, before);
   }
 });
+
+test("a ten frame on the sheet takes both of the board's counter colours", () => {
+  const onBoard = (extra) => ({ type: "ten-frame", count: 6, helperUse: { representationId: "rep-001" }, ...extra });
+  const lesson = { slides: [{ content: [onBoard({ colour: "3D85C6" }), onBoard({ colour: "3D85C6", second: 4, secondColour: "E46C0A" })] }] };
+  const onSheet = { helper: "ten-frame", count: 7, second: 3, helperUse: use("bond-shown") };
+  const { spec, adopted } = withBoardColours(sheet(onSheet, { ...onSheet, secondColour: "FFC000" }), lesson);
+  assert.equal(adopted, 3);
+  const [first, second] = spec.sheets.below.zones.top;
+  assert.deepEqual([first.colour, first.secondColour], ["3D85C6", "E46C0A"]);
+  assert.equal(second.secondColour, "FFC000", "a second colour the sheet states for itself is kept");
+});

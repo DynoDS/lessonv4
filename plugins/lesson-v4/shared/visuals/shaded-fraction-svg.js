@@ -32,6 +32,8 @@
 //   rows      grid only: how many rows; otherwise the split keeps cells square
 //   bars      a stack of bars to compare, each { parts, shaded, label }; the
 //             label names that bar and is drawn under it
+//             ("||6/8" marks a label that is the answer: answer green on
+//             the board and the wall, plain on a pupil's sheet)
 //   colour    the shading colour (a 6-character hex); the stick-in pack ignores
 //             it, because it is photocopied
 //   label     a caption under the whole shape. Not drawn here: the board sets it
@@ -44,7 +46,7 @@
 // written still draws.
 
 const { textWidthEm } = require('../text/comic-glyph-width');
-const { profileFor } = require('./surface-profiles');
+const { profileFor, answerColour } = require('./surface-profiles');
 
 // ─── CONSTANTS (in ems of the profile's font size unless named) ──────────────
 const OUTLINE = 0.1; // the shape's outline, heavier than the cuts so it reads as one shape
@@ -67,6 +69,7 @@ const MIN_PART = 0.9; // in ems of the readable floor
 const MIN_PART_PT = 11; // and never under this, so a paper part still takes a pencil
 const MAX_PARTS = 60;
 const DEFAULT_SHADE = '#A9DFBF'; // the board's soft green, the deck's answer-green family
+const ANSWER_GREEN = '#00B050'; // a label that is the answer, the same green the "||" reveal uses
 const INK_SHADE = '#BFBFBF'; // photocopied: a mid grey that still shows as shaded
 const LINE = { colour: '#333333', ink: '#1A1A1A' };
 // ────────────────────────────────────────────────────────────────────────────
@@ -117,6 +120,16 @@ function readParts(raw, where) {
   return { parts, shaded };
 }
 
+// A bar's label that is the answer ("||6/8" under the bar an answers slide has
+// shaded) prints in answer green like every other answer on the board; the
+// marker never prints. A label with no marker is drawn exactly as before.
+function answerLabel(value) {
+  const s = value != null ? String(value) : '';
+  const at = s.indexOf('||');
+  if (at === -1) return { label: s };
+  return { label: (s.slice(0, at) + s.slice(at + 2)).trim(), answer: true };
+}
+
 function normalise(spec = {}) {
   let shape = String(spec.shape || '').toLowerCase();
   if (!shape) shape = spec.type === 'fractionCircle' ? 'circle' : 'bar';
@@ -132,7 +145,7 @@ function normalise(spec = {}) {
     return {
       shape,
       colour,
-      bars: spec.bars.map((b, i) => ({ ...readParts(b || {}, `bar ${i + 1}`), label: b && b.label != null ? String(b.label) : '' })),
+      bars: spec.bars.map((b, i) => ({ ...readParts(b || {}, `bar ${i + 1}`), ...answerLabel(b && b.label) })),
     };
   }
   const { parts, shaded } = readParts(spec, 'this shaded fraction');
@@ -230,7 +243,7 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
       if (b.label) {
         const top = y + half + LABEL_GAP * labelPt;
         const lw = widthPt(b.label, labelPt, profile.bold);
-        row.label = { text: b.label, x: W / 2 - lw / 2, y: top, w: lw, h: BAND * labelPt };
+        row.label = { text: b.label, answer: b.answer === true, x: W / 2 - lw / 2, y: top, w: lw, h: BAND * labelPt };
         y = top + BAND * labelPt;
       }
       rows.push(row);
@@ -289,7 +302,7 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
       if (row.label) {
         const weight = profile.bold ? ' font-weight="bold"' : '';
         parts.push(
-          `<text x="${f2(row.label.x + row.label.w / 2)}" y="${f2(row.label.y + L.labelPt * 0.95)}" text-anchor="middle" font-family="${profile.font}" font-size="${f2(L.labelPt)}"${weight} fill="${profile.colours.ink}">${esc(row.label.text)}</text>`
+          `<text x="${f2(row.label.x + row.label.w / 2)}" y="${f2(row.label.y + L.labelPt * 0.95)}" text-anchor="middle" font-family="${profile.font}" font-size="${f2(L.labelPt)}"${weight} fill="${row.label.answer && !ink ? answerColour(profile, ANSWER_GREEN, profile.colours.ink) : profile.colours.ink}">${esc(row.label.text)}</text>`
         );
       }
     });

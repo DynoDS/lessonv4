@@ -33,7 +33,7 @@ Read at startup:
 Read from the working directory:
 
 - `lesson.json`, the settled slide specification. Everything in it except the optional layer is content or composition, and both are read-only to you.
-- `slide-room.json`, the Slide Designer's measurement of each rendered page: its largest clear rectangle and how many drawing-sized clear areas it holds. Read each slide's line before answering whether it has room. When the file is absent, the designer had no render route; run the pass on your own reading of the pages and say so.
+- `slide-room.json`, the measurement of each rendered page: its largest clear rectangle and how many drawing-sized clear areas it holds. One usually arrives from the Slide Designer, and you replace it with your own measurement of the pages you render (see `The pass`), so the file you work from describes the deck as it stands now. Read each slide's line before answering whether it has room.
 - the exact file named by `PHOTO_REQUIREMENTS_PATH`, read only so the scratch check can draw the promised photographs at the room their cells guarantee. Reference no photograph yourself.
 
 Do not read the lesson design, the teacher's brief or the design review. The pedagogy and the composition are both closed.
@@ -75,13 +75,13 @@ Then render the preview pages exactly as the designer did:
 
 Inspect the overview sheets, opening an individual page only where the overview cannot settle a slide. The pages are drawn when the render prints `RENDER_PAGES_OK`. Nothing could be drawn only when the finished render itself prints `VISUAL_ROUTE_UNVERIFIED`: then record `Visual self-read: unavailable` in the completion report and run the pass on the specification and `slide-room.json` alone, because a missing render never stops the deck. A PowerPoint line from the probe is not that (LibreOffice draws the deck where PowerPoint cannot be reached), and nor is output that stops at `RENDER_PAGES_RUNNING`: drawing takes ten to twenty seconds and is still going, so wait for it to finish. A deck has reached the teacher unseen with every page already drawn beside it.
 
-**If `slide-room.json` is not there, measure the pages you have just rendered.** The file normally arrives from the Slide Designer, but a deck you can see is a deck that can be measured, and an unmeasured pass is where a whole geography deck came back with `full` on twelve slides and not one library search run:
+**Measure the pages you have just rendered, on every run.** A `slide-room.json` normally arrives from the Slide Designer, and it describes the deck as it stood when the designer finished. A slide repaired after that leaves it describing pages that are no longer in the deck: on 7 October 2026 a Year 3 science deck had two slides repaired for a photograph that never arrived, the decorator placed its drawings against the older measurement, and the check at the end refused all of them as placed against space that had moved. The pages you have just drawn are the deck as it stands, so measure those and let the result replace the file that arrived. Where none arrived, this is the measurement: an unmeasured pass is where a whole geography deck came back with `full` on twelve slides and not one library search run.
 
 ```bash
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \n  --render-manifest "[PREVIEW_DIR]/render-manifest.json" \n  --lesson "[WORKING_DIR]/lesson.json" \n  --output "[WORKING_DIR]/slide-room.json"
 ```
 
-Only a run with no render route at all answers `full` or `competes` from the specification, and it says so in its report.
+Only a run with no render route at all works from the file it was handed, or, where there is none, answers `full` or `competes` from the specification, and it says so in its report.
 
 **Gather the deck's drawings before you place any.** Resolve the Educational SVG library as the first act, then read `lesson.json` through and collect a pool to place from:
 

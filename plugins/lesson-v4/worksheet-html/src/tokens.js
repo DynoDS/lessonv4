@@ -163,6 +163,20 @@ const WRITING_LINE_MM = {
 // a named 1 so the helpers that cap a line at its own height say why.
 const WRITING_LINE_GROWN_RATIO = 1;
 
+// The box a child writes ONE number or sign in, in millimetres, square, on
+// every kind of question that draws one: between two values to compare, in a
+// statement with boxes, on a line of a method frame, and for a missing part of
+// a fraction (or each of the two boxes of a whole missing fraction).
+//
+// Each of those kept a size of its own until 13 October 2026 (12 square, 11
+// square, 11 by 9, 9 by 13 and 9 by 8), so one Year 5 sheet printed three
+// sizes of box for one job (stress tests, 7 and 12 October 2026). The teacher
+// chose the 12mm square from that page, for all of them. Not this box: the
+// squares of a column method, which are a grid that lines digits up, and the
+// boxes of a number sentence, which match the orange tiles beside them (his
+// ruling of 4 October 2026).
+const NUMBER_BOX_MM = 12;
+
 function cssVariables() {
   const lines = [":root {"];
   lines.push(`  --font: "${FONT}", cursive;`);
@@ -190,4 +204,4 @@ function cssVariables() {
   return lines.join("\n");
 }
 
-module.exports = { FONT, COLOUR, TYPE, SPACE, RULE, INSET, WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, cssVariables };
+module.exports = { FONT, COLOUR, TYPE, SPACE, RULE, INSET, WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, NUMBER_BOX_MM, cssVariables };

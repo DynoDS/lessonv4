@@ -42,6 +42,7 @@ test("every place value helper signs the whole contract", () => {
     "digit-cards",
     "times-table-grid",
     "number-pyramid",
+    "ten-frame",
   ];
   assert.deepEqual(Object.keys(helpers).sort(), expected.slice().sort());
   for (const [name, helper] of Object.entries(helpers)) {
@@ -53,7 +54,7 @@ test("every place value helper signs the whole contract", () => {
 });
 
 test("every picture here is placed from its one shared drawing", () => {
-  for (const name of ["base-ten-blocks", "place-value-counter-chart", "counter-group", "place-value-chart", "place-value-mini", "digit-cards", "times-table-grid", "number-pyramid"]) {
+  for (const name of ["base-ten-blocks", "place-value-counter-chart", "counter-group", "place-value-chart", "place-value-mini", "digit-cards", "times-table-grid", "number-pyramid", "ten-frame"]) {
     assert.equal(helpers[name].physical, true, `${name} is not laid out at printed size`);
     assert.ok(helpers[name].geometry && typeof helpers[name].geometry.tightSvg === "function", `${name} draws its own picture`);
   }

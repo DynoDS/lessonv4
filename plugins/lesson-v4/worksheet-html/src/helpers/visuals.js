@@ -293,24 +293,54 @@ const helpers = {
     { answerMarks: true, capMm: 130, minWidthMm: 100, minHeightMm: 80, greed: 0 }
   ),
 
-  // A numbered first-quadrant grid a child plots on. More columns need more
-  // width, or the numbers along the bottom crowd into each other.
-  "coordinate-grid": fromShared(
-    coordinateGridSvg,
-    (spec) => ({
-      cols: spec.cols,
-      rows: spec.rows,
-      points: spec.points,
-      join: spec.join,
-    }),
-    {
-      capMm: 150,
-      minWidthMm: (spec) => Math.max(90, (Number(spec.cols) || 10) * 11),
+  // A numbered coordinate grid a child plots on: first-quadrant, or all four
+  // quadrants when it is given a `min`. The shared drawing says which fields
+  // it reads (`pickSpec`), so a field it grows reaches the sheet without this
+  // list having to be kept in step: a sheet that dropped `min` would draw a
+  // first-quadrant grid under a four-quadrant question. More squares across
+  // need more width, or the numbers along the axis crowd into each other, and
+  // the squares are counted on both sides of zero (`gridSpan`).
+  //
+  // The grid is also told the width it prints at, so its axis numbers and
+  // letters are set at the sheet's type size. They used to be a fixed third of
+  // a square, which on a grid of small squares printed them under it.
+  //
+  // A grid copied from an answers slide carries its answers marked (`answer`
+  // on a point, a shape or a path). A pupil sheet is the child's to fill in,
+  // so the grid leaves them off and prints the question; the teacher's answer
+  // sheet sets `showAnswers` on its picture and they print in answer green.
+  "coordinate-grid": (() => {
+    const capMm = 150;
+    const sized = {
+      tightSvg: (spec, widthMm) => {
+        const answers = spec.showAnswers === true ? { answers: "show" } : undefined;
+        return coordinateGridSvg.tightSvg(
+          coordinateGridSvg.pickSpec(spec),
+          typeof widthMm === "number" && widthMm > 0
+            ? profileFor("worksheets", { widthMm, heightMm: capMm, overrides: answers })
+            : { ...SHEET_COLOURING, ...answers }
+        );
+      },
+    };
+    const placed = fromShared(coordinateGridSvg, (spec) => coordinateGridSvg.pickSpec(spec), {
+      capMm,
+      // 10mm of width a square, which prints squares of about 9mm once the
+      // margins are taken off: still a square a child can plot on, and a
+      // ten-square grid then stands beside a column of questions on a
+      // portrait page. At 11mm it asked for 110mm and the Year 6 translation
+      // sheet (stress test, 7 October 2026) was 2mm short of holding it there.
+      minWidthMm: (spec) => Math.max(90, coordinateGridSvg.gridSpan(spec).cols * 10),
       // A grid squares up: its height follows its ROW count exactly as its
       // width follows its columns, at the same millimetres per cell.
-      minHeightMm: (spec) => Math.max(90, (Number(spec.rows) || 10) * 11),
-    }
-  ),
+      minHeightMm: (spec) => Math.max(90, coordinateGridSvg.gridSpan(spec).rows * 10),
+    });
+    const widthOf = (width) => (typeof width === "number" ? width : width && width.widthMm);
+    return {
+      ...placed,
+      render: (spec, width) => `<div class="h-figure">${sized.tightSvg(spec, widthOf(width)).svg}</div>`,
+      measure: (spec, widthMm) => heightFromAspect(sized.tightSvg(spec, widthMm).aspect, widthMm, capMm),
+    };
+  })(),
 
   // A dotty-paper peg grid for drawing polygons. Pegs merging into one blob
   // is the failure mode, so width follows the column count.

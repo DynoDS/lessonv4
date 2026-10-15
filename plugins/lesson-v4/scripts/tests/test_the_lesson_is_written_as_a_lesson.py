@@ -280,6 +280,32 @@ def test_a_headline_that_names_the_thing_beside_a_sticky_fact_is_allowed():
     module.validate_design(design, photos)
 
 
+def test_the_same_question_asked_of_the_next_thing_is_not_a_repeat():
+    # How something works, reached by questions (14 October 2026): the class
+    # sees where the rabbit's food comes from, then is asked the same of the
+    # grass, and the point lands last.
+    design, photos = valid_content_contract()
+    teach = first_teach(design)
+    teach["content"]["headline"] = "Where does the rabbit get its food?"
+    teach["content"]["explanation"] = (
+        "Look at the rabbit. It is eating the grass, so the grass is its food.\n\n"
+        "So where does the grass get its food? Grass doesn't eat anything."
+    )
+    teach["content"]["takeaway"] = {"kind": "text", "text": "Plants make their own food using sunlight, so we call them producers."}
+    module.validate_design(design, photos)
+
+
+def test_a_statement_that_repeats_a_question_headline_is_still_refused():
+    # The question exemption is for two questions only: the landed sentence
+    # said again as a statement is still a repeat.
+    design, photos = valid_content_contract()
+    teach = first_teach(design)
+    teach["content"]["headline"] = "Why do incisors cut food and canines tear food?"
+    teach["content"]["explanation"] = "Look at the front teeth in the picture.\nIncisors cut food and canines tear food."
+    teach["content"]["takeaway"] = None
+    assert_invalid_contract(design, photos, "lands its sentence once")
+
+
 def test_an_explanation_that_adds_what_the_board_cannot_show_is_allowed():
     design, photos = valid_content_contract()
     teach = first_teach(design)

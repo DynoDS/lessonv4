@@ -32,8 +32,17 @@ function atPrintedWidth(module, options = {}) {
   const minWidth = options.minWidthMm || 70;
   const minWidthOf = (spec) => (typeof minWidth === "function" ? minWidth(spec) : minWidth);
   const overrides = options.grow ? { grow: options.grow } : undefined;
+  // The teacher's answer sheet sets `showAnswers` on its picture, and a drawing
+  // that marks its own answers (a cycle's filled-in stages) prints them green
+  // there. On a pupil sheet the same drawing leaves them off.
   const draw = (spec, width) =>
-    module.tightSvg(toSpec(spec), profileFor("worksheets", { widthMm: widthOf(width, 170), overrides }));
+    module.tightSvg(
+      toSpec(spec),
+      profileFor("worksheets", {
+        widthMm: widthOf(width, 170),
+        overrides: spec && spec.showAnswers === true ? { ...overrides, answers: "show" } : overrides,
+      })
+    );
   const helper = {
     physical: true,
     geometry: module,

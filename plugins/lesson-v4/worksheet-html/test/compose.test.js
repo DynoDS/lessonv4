@@ -245,7 +245,11 @@ test("the rule between two questions sits inside the gap and adds no height", ()
   const html = renderContent({ stack: [question(1), question(2), question("3a"), question("3b")] }, 170);
   assert.equal((html.match(/h-stack-item--new-question/g) || []).length, 2, "above (2) and (3a), not above (1) or (3b)");
   const plainSection = renderContent({ stack: [question(1), { helper: "section-label", text: "Reasoning" }] }, 170);
-  assert.ok(!plainSection.includes("h-stack-item--new-question"), "a heading marks itself");
+  // A new section is ruled off from what came before it (the teacher, 14
+  // October 2026), but a heading at the top of a stack has nothing above it.
+  assert.equal((plainSection.match(/h-stack-item--new-question/g) || []).length, 1, "a line above a heading under a question");
+  const topHeading = renderContent({ stack: [{ helper: "section-label", text: "Fluency" }, question(1)] }, 170);
+  assert.ok(!topHeading.includes("h-stack-item--new-question"), "no line under a heading, or above the first one");
 });
 
 test("only a table that is the rest of the page may stretch to fill it", () => {

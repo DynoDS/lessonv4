@@ -36,12 +36,19 @@ function largestFont(slide) {
   return slide.texts.reduce((most, t) => Math.max(most, t.fontSize || 0), 0);
 }
 
-test('a set that is all answers is set larger than the same set of questions', () => {
+// This used to pin answers larger than the same set of questions, a gap that came
+// from two ceilings (54 for questions, 72 for answers). On 14 October 2026 the
+// teacher chose numbered sets that grow until they fill their room, questions and
+// answers alike, so the room decides both and the gap went with the ceilings. What
+// he asked for here still holds: an answer set is as big as its room allows.
+test('a set that is all answers grows to fill its room', () => {
   const answers = ['||499 → 0.', '||2,650 → 3,000.', '||500 → 1,000.'];
-  const questions = ['499', '2,650', '500'];
-  const answerFont = largestFont(draw({ type: 'numbered-questions', questions: answers }));
-  const questionFont = largestFont(draw({ type: 'numbered-questions', questions: questions }));
-  assert.ok(answerFont > questionFont, `answers ${answerFont} vs questions ${questionFont}`);
+  const slide = draw({ type: 'numbered-questions', questions: answers });
+  const cards = slide.shapes.filter((s) => s.h < ZONE.h && s.w < ZONE.w);
+  const top = Math.min(...cards.map((c) => c.y));
+  const bottom = Math.max(...cards.map((c) => c.y + c.h));
+  assert.ok(largestFont(slide) > 54, `answers ${largestFont(slide)}`);
+  assert.ok((bottom - top) / ZONE.h > 0.85, `the set spans ${(bottom - top).toFixed(2)}in of ${ZONE.h}in`);
 });
 
 test('an answer marker changes colour without changing the default text height mode', () => {

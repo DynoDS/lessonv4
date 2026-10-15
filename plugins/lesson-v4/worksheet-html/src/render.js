@@ -429,16 +429,29 @@ function placeTree(node, x, y, w, out = []) {
 // (Daniel, 29 September 2026). Drawn in the middle of the gutter above any zone
 // that is not at the top of the page, across the zone's width and on across
 // the gutter when the zone beside it starts at the same height, so a row of
-// zones gets one line. Not above a heading, which marks itself, as in a stack.
-function zoneOpensWithHeading(content) {
-  let first = content;
-  while (first && Array.isArray(first.stack)) first = first.stack[0];
-  return Boolean(first && first.helper === "section-label");
+// zones gets one line. Above a new section heading too: Problem Solving under
+// Fluency with no line between them read as more Fluency. But never under a
+// zone that ends with a heading or a task line, which lead into what is below
+// them: a band holding only "Fluency" put a line between the heading and its
+// own questions (the teacher, 14 October 2026).
+function zoneEndsLeadingIn(content) {
+  let last = content;
+  while (last && Array.isArray(last.stack) && last.number === undefined) last = last.stack[last.stack.length - 1];
+  return Boolean(
+    last && last.number === undefined && (last.helper === "section-label" || last.helper === "instruction")
+  );
 }
 
 function zoneRules(placed) {
-  const ruled = placed.filter((p) => p.content && p.y > 0 && !zoneOpensWithHeading(p.content));
   const near = (a, b) => Math.abs(a - b) < 0.01;
+  const overlaps = (a, b) => a.x < b.x + b.w - 0.01 && b.x < a.x + a.w - 0.01;
+  const underLeadIn = (p) => {
+    // Zones are placed a gutter apart, so "directly above" ends within one.
+    const touches = (q) => p.y - (q.y + q.h) > -0.01 && p.y - (q.y + q.h) < GUTTER_MM + 0.01;
+    const above = placed.filter((q) => q.content && touches(q) && overlaps(q, p));
+    return above.length > 0 && above.every((q) => zoneEndsLeadingIn(q.content));
+  };
+  const ruled = placed.filter((p) => p.content && p.y > 0 && !underLeadIn(p));
   return ruled
     .map((p) => {
       const joinsNext = ruled.some((q) => q !== p && near(q.y, p.y) && near(q.x, p.x + p.w));
@@ -458,9 +471,19 @@ function columnRules(placed) {
   const zones = placed.filter((p) => p.content);
   const near = (a, b) => Math.abs(a - b) < 0.01;
   const out = [];
+  // Parts of one question are one question: no line down between (1a)-(1b)
+  // and (1c)-(1d) when both columns hold nothing else (the teacher, 14
+  // October 2026). Different questions or sections side by side keep it.
+  const onlyPartsOf = (content) => {
+    const items = isStack(content) && content.number === undefined ? content.stack : [content];
+    const groups = new Set(items.filter((item) => !isGroupLine(item)).map(partGroup));
+    return groups.size === 1 && !groups.has(null) ? [...groups][0] : null;
+  };
   for (const p of zones) {
     for (const q of zones) {
       if (q === p || !near(q.x, p.x + p.w)) continue;
+      const shared = onlyPartsOf(p.content);
+      if (shared !== null && shared === onlyPartsOf(q.content)) continue;
       const top = Math.max(p.y, q.y);
       // To the end of the LONGER column. Drawn only as far as both went, it
       // stopped beside the middle of a question, a stub that reads as a
@@ -488,6 +511,140 @@ function zoneContentMm(zone, area) {
   return {
     wMm: zone.w * area.widthMm - GUTTER_MM,
     hMm: zone.h * area.heightMm,
+  };
+}
+
+// ─── the parts of one question read across, like a grid ──────────────────
+//
+// A Year 4 Below sheet put (1a) and (1b) down the left column and (1c) and
+// (1d) down the right, with "Use column addition." over (1a) only, so the
+// right column started a line higher, and Problem Solving tucked in under
+// (1d) beside nothing. The teacher reads a page as a grid: top left, top
+// right, then the next row (14 October 2026: "1 top left, 2 top right, 3
+// bottom left, 4 bottom right"). So when one question's parts run on from one
+// column into the next, the columns are set out again as one full-width
+// stack: the parts in rows across, in number order, and everything else (the
+// group's task line, a section after it) full width in the order it was
+// written. Problem Solving's (2a) and (2b) would sit side by side the same way.
+//
+// Only when the page still holds everything (`sheetGeometry`): rows can cost
+// a little height where a column ended short, and a sheet that fitted is never
+// pushed over by them. Otherwise the columns stay, and the group's task line
+// is lifted above them (`hoistGroupLines`).
+const PART_LABEL = /^(\d+)([a-z])$/;
+
+function partGroup(item) {
+  if (!item || typeof item !== "object" || item.number === undefined) return null;
+  const found = PART_LABEL.exec(String(item.number));
+  return found ? found[1] : null;
+}
+
+const isGroupLine = (item) =>
+  Boolean(item && item.helper === "instruction" && item.groupPrompt === true);
+
+// The group whose parts run on from one of these columns into the next, or
+// null. Read from the stacks as written, in column order.
+function groupAcrossColumns(stacks) {
+  const seen = new Map();
+  stacks.forEach((items, column) => {
+    for (const item of items) {
+      const group = partGroup(item);
+      if (group === null) continue;
+      if (!seen.has(group)) seen.set(group, new Set());
+      seen.get(group).add(column);
+    }
+  });
+  for (const [group, columns] of seen) if (columns.size > 1) return group;
+  return null;
+}
+
+// One stack, in reading order, with each run of one question's parts laid in
+// rows of `across`. A short last row keeps the grid: its part sits in the
+// left-hand place at the same width as the parts above it.
+function partsInRows(items, across) {
+  const out = [];
+  let run = [];
+  const flush = () => {
+    for (let i = 0; i < run.length; i += across) {
+      const cells = run.slice(i, i + across);
+      while (cells.length < across) cells.push({ stack: [] });
+      out.push({ row: cells, parts: cells.map(() => 1), partsAcross: true });
+    }
+    run = [];
+  };
+  for (const item of items) {
+    const group = partGroup(item);
+    if (group !== null && run.length && partGroup(run[0]) !== group) flush();
+    if (group !== null) run.push(item);
+    else {
+      flush();
+      out.push(item);
+    }
+  }
+  flush();
+  return out;
+}
+
+function readPartsAcross(node, zones, box) {
+  if (typeof node === "string") return node;
+  const total = node.parts.reduce((a, b) => a + b, 0);
+  const children = node.children.map((child, i) => {
+    const share = node.parts[i] / total;
+    const childBox =
+      node.dir === "rows"
+        ? { wMm: box.wMm, hMm: box.hMm * share }
+        : { wMm: box.wMm * share, hMm: box.hMm };
+    return readPartsAcross(child, zones, childBox);
+  });
+  const rebuilt = { dir: node.dir, parts: [...node.parts], children };
+  if (node.dir !== "cols") return rebuilt;
+  if (!children.every((c) => typeof c === "string" && isStack(zones[c]) && zones[c].number === undefined)) {
+    return rebuilt;
+  }
+  const stacks = children.map((id) => zones[id].stack);
+  if (groupAcrossColumns(stacks) === null) return rebuilt;
+
+  zones[children[0]] = { ...zones[children[0]], stack: partsInRows(stacks.flat(), children.length) };
+  for (const id of children.slice(1)) delete zones[id];
+  return children[0];
+}
+
+// When the columns have to stay, the task line a question's parts share is
+// still the whole group's: printed over (1a) alone it pushed the left column
+// down and the right one started a line higher. It is lifted out to a
+// full-width row above the columns, under any section title already there.
+function hoistGroupLines(node, zones, box) {
+  if (typeof node === "string") return node;
+  const total = node.parts.reduce((a, b) => a + b, 0);
+  const children = node.children.map((child, i) => {
+    const share = node.parts[i] / total;
+    const childBox =
+      node.dir === "rows"
+        ? { wMm: box.wMm, hMm: box.hMm * share }
+        : { wMm: box.wMm * share, hMm: box.hMm };
+    return hoistGroupLines(child, zones, childBox);
+  });
+  const rebuilt = { dir: node.dir, parts: [...node.parts], children };
+  if (node.dir !== "cols") return rebuilt;
+  const ids = children.filter((c) => typeof c === "string" && isStack(zones[c]));
+  if (ids.length !== children.length) return rebuilt;
+  const group = groupAcrossColumns(ids.map((id) => zones[id].stack));
+  if (group === null) return rebuilt;
+  const first = ids.find((id) => {
+    const items = zones[id].stack;
+    return isGroupLine(items[0]) && partGroup(items[1]) === group;
+  });
+  if (!first) return rebuilt;
+
+  const line = zones[first].stack[0];
+  const lineId = `${first}-group-line`;
+  zones[lineId] = line;
+  zones[first] = { ...zones[first], stack: zones[first].stack.slice(1) };
+  const lineMm = measureContent(line, Math.max(1, box.wMm - GUTTER_MM));
+  return {
+    dir: "rows",
+    parts: [lineMm, Math.max(1, box.hMm - lineMm)],
+    children: [lineId, rebuilt],
   };
 }
 
@@ -584,11 +741,19 @@ function sheetGeometry(spec) {
   const layout = getLayout(spec.layout);
   const zones = { ...spec.zones };
   const area = contentArea(spec);
-  const tree = hoistSectionTitles(layout.tree, zones, {
-    wMm: area.widthMm,
-    hMm: area.heightMm,
-  });
-  return { tree, sheet: { ...spec, zones } };
+  const box = { wMm: area.widthMm, hMm: area.heightMm };
+  const shape = (start, from) => {
+    const own = { ...from };
+    const titled = hoistSectionTitles(start, own, box);
+    return { tree: hoistGroupLines(titled, own, box), sheet: { ...spec, zones: own } };
+  };
+  const across = { ...zones };
+  const rowsTree = readPartsAcross(layout.tree, across, box);
+  const columns = shape(layout.tree, zones);
+  if (rowsTree === layout.tree || JSON.stringify(rowsTree) === JSON.stringify(layout.tree)) return columns;
+  const rows = shape(rowsTree, across);
+  const fitsPage = (g) => measureTree(g.tree, g.sheet, area.widthMm).height <= area.heightMm + 0.01;
+  return fitsPage(rows) || !fitsPage(columns) ? rows : columns;
 }
 
 function getLayout(id) {
@@ -634,7 +799,9 @@ function checkFit(spec) {
   }
 
   const named = Object.keys(spec.zones);
-  const real = new Set(flatten(tree).map((z) => z.id));
+  // Named against the layout as chosen: a column folded into rows across
+  // (`readPartsAcross`) was still a real zone of it.
+  const real = new Set(flatten(getLayout(spec.layout).tree).map((z) => z.id));
   for (const id of named) {
     if (!real.has(id)) {
       problems.push(

@@ -193,7 +193,7 @@ async function measureMode(items, yearGroup) {
     "\nEach height is this content, as worded, at the width named" +
       (calibration.available
         ? ", measured in the browser that prints the sheet."
-        : ", estimated (no browser on this machine, so allow a few millimetres).") +
+        : `, estimated, so allow a few millimetres (${calibration.reason}).`) +
       // The gaps are read from the engine: this sentence said 8mm between
       // questions for as long as the page printed 6mm (7 October 2026).
       " " +

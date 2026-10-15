@@ -308,6 +308,31 @@ class TestRunReport(RunReportCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("18", result.stdout)
 
+    def share_greater_depth(self):
+        self.write_json(
+            self.working / "build-results" / "worksheets.json",
+            {"ok": True, "kind": "worksheets", "sharedSheets": [{
+                "sheet": "Greater Depth",
+                "line": "no separate sheet. Greater Depth children use the Expected slips (the plan's choice: ...)",
+            }]},
+        )
+
+    def test_a_level_using_the_expected_sheet_is_said_in_the_outcome(self):
+        """Daniel, 14 October 2026: a pack with no Greater Depth page is told
+        in the run, not on the pack, so it does not read as forgotten."""
+        self.share_greater_depth()
+        result = self.validate(self.write_report({
+            "outcome": "Package status: COMPLETE\n\nGreater Depth: no separate sheet. They use "
+            "the Expected slips (the plan's choice: the open task already stretches them).",
+        }))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_a_level_using_the_expected_sheet_left_unsaid_is_rejected(self):
+        self.share_greater_depth()
+        result = self.validate(self.write_report({"outcome": "Package status: COMPLETE"}))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Greater Depth: no separate sheet. They use the Expected slips", result.stdout)
+
     def test_a_flagged_deck_cannot_be_complete(self):
         self.flag_slides([14])
         result = self.validate(self.write_report({

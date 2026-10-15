@@ -37,10 +37,7 @@ const {
   preRenderSuccessCriteriaHelpers,
   requestedSuccessCriteriaHelpers
 } = require('../src/success-criteria-helpers');
-const {
-  coordinateGridKey,
-  preRenderCoordinateGrids
-} = require('../src/content/coordinate-grid');
+const sharedFigure = require('../src/content/shared-figure');
 const {
   reflectionGridKey,
   preRenderReflectionGrids
@@ -205,13 +202,13 @@ test('discovery pre-renders only explicitly requested Success Criteria Helpers',
   });
 });
 
-test('full-size coordinate grids pre-render from the same shared route geometry', async () => {
+test('full-size coordinate grids are placed from the same shared route geometry', () => {
   const spec = { type: 'coordinate-grid', max: 4, route: [2, 3] };
-  assert.equal(coordinateGridKey(spec), coordinateGrid.cacheKey(spec));
-  const images = await preRenderCoordinateGrids({ slides: [{ questionVisual: spec }] });
-  const entry = images[coordinateGridKey(spec)];
-  assert.ok(entry && Buffer.isBuffer(entry.png) && entry.png.length > 0);
-  assert.equal(entry.aspect, coordinateGrid.tightSvg(spec).aspect);
+  assert.equal(sharedFigure.FIGURES['coordinate-grid'].module, coordinateGrid);
+  const laid = sharedFigure.build('coordinate-grid', { x: 1, y: 1, w: 6, h: 4.6 }, spec);
+  assert.match(laid.built.svg, /marker-end="url\(#plot-arrow\)"/);
+  // The same squares as the drawing with no box: only its words are resized.
+  assert.ok(Math.abs(laid.built.aspect - coordinateGrid.tightSvg(spec).aspect) < 0.12);
 });
 
 test('full-size reflection grids pre-render from the same shared geometry as their inline helper', async () => {

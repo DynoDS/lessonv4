@@ -46,7 +46,8 @@ const {
 const { resolveImages } = require("../src/images");
 const { prepareWorksheetDecorations } = require("../src/decorations");
 const { recordingProblems, recordingAdvisories, buildSlips } = require("../src/slips");
-const { sameQuestionProblems } = require("../src/across-levels");
+const { printsAsSlips } = require("../src/composition");
+const { sameQuestionProblems, sharedWithExpected } = require("../src/across-levels");
 const { withAnswersInBooks } = require("../src/answer-place");
 const { splitQuestionProblems } = require("../src/parts-together");
 const { answerSheetHtml, buildAnswerSheet, longAnswerAdvisories } = require("../src/answer-sheet");
@@ -382,6 +383,9 @@ async function main() {
         console.log(
           `AUTO_LAYOUT: ${choice.label} drawn in "${choice.layout}" ` +
             `(${choice.orientation}), ${choice.fillPct}% full.` +
+            (printsAsSlips((worksheet.sheets || {})[choice.sheet])
+              ? " This level is marked books, so it prints as upright question slips and this shape is only the sheet held in reserve in case slips cannot be made."
+              : "") +
             (choice.splitFrom
             ? ` The engine set it out in ${choice.zoneCount} zones, in the order written, because it did not fit in ${choice.splitFrom}.`
             : "") +
@@ -902,6 +906,16 @@ async function main() {
   console.log(
     `Sheets: ${[...new Set(sheets.map((s) => s.label))].join(", ")}`
   );
+
+  // A level the plan gives the Expected task unchanged has no page of its own,
+  // and nothing in the pack says so: a Year 4 PSHE pack had Below and Expected
+  // only, and read as Greater Depth forgotten (the stress test of 7 October
+  // 2026, round two). The pack itself stays as it is - a slip says what it is,
+  // "E" (Daniel, 14 October 2026) - and the run's message to the teacher says
+  // it instead, from this line.
+  for (const shared of sharedWithExpected(worksheet)) {
+    console.log(`SHEET_SHARED: ${shared.label} - ${shared.line}`);
+  }
 
   // Anything the designer set aside, could not render, or wants the teacher to
   // know. Printed because the builder agent reads stdout and nothing else: a

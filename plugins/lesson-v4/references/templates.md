@@ -40,14 +40,15 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `digit-cards` | A number drawn large as digit cards, one digit each, with the working of a digit check marked on the number itself: the digits a step looks at boxed or outlined, the ones it ignores greyed, a bracket, an arc or + signs joining them, and lines of working beneath with down arrows. For divisibility checks, rounding ("look at the digit to the right"), the digit that changed, digit sums |
 | `matching` | A "draw a line to match" layout: two columns of boxes joined by connector lines. One example line on the question, every line green on the answer slide. Use for any match-these-to-those starter or task |
 | `numberline` | Number line with ticks, question arrow, answer dot, jumps along the spaces and a highlighted interval |
-| `place-value-chart` | Coloured column grid for digits, with optional row labels, column-aligned place-value counters (set `counterLabels: true` on a row for the value on each counter; enlarge the chart if labels cannot fit), and a ring round the digit that changed. A `pair` field instead draws ONE before-and-after comparison and can add counter populations plus explicit ten-for-one exchange cues; omitting counters gives the original compact digit-only chart |
+| `place-value-chart` | Coloured column grid for digits, with optional row labels, column-aligned place-value counters (set `counterLabels: true` on a row for the value on each counter; enlarge the chart if labels cannot fit), and a ring round the digit that changed. A `pair` field instead draws ONE before-and-after comparison and can add counter populations plus explicit ten-for-one exchange cues; omitting counters gives the original compact digit-only chart. A `calculation` field instead sets out ONE written column calculation the way it is taught, blank, part-worked or finished: column addition and subtraction, short multiplication, and long multiplication with its rows of working |
 | `fraction-wall` | Stacked rows of equal-width fraction pieces |
 | `part-whole-model` | One whole circle (left) branching to 2 or 3 part circles (right), with text labels in each. Nodes may also be blank circles to write in, carry a quiet caption underneath, real coins, and a `+` between parts |
 | `base-ten-blocks` | Dienes blocks in Th / H / T / O columns: thousand cubes, hundred flats, ten rods and unit cubes. Use when the blocks themselves are the representation |
 | `counter-group` | Place-value counters on their own, grouped by value with an operator between groups, under the claim they are evidence for ("5,009 = 5,000 + 9"). Use when two claims sit side by side and a whole chart each would not fit |
+| `ten-frame` | A ten frame: two rows of five boxes with a round counter in each full box, filled along the top row first. One colour shows a number; two colours show a number bond (6 red and 4 yellow); the empty boxes show how many more make ten; a pair of frames shows a teen number or adding by making ten; an empty frame is for children to fill. Use for number bonds to 10 and 20, teen numbers as ten and some more, and adding or taking away within 20 in Year 1 and Year 2 |
 | `triangle-square` | The "two triangles add up to the square" part-whole puzzle in SATs-paper notation: two stacked triangles (left) with arrows pointing into a square (right). Leave one shape blank for the unknown. Use when the lesson recreates this exact paper question type — not the circle-and-line `part-whole-model` |
-| `coordinate-grid` | A numbered first-quadrant grid with plotted, lettered points; optionally joins the points into a closed shape. Use for reading/plotting coordinates and "what shape do these coordinates make?" |
-| `polygon` | One or more named 2D shapes side by side (square, rectangle, triangle, isosceles/scalene triangle, kite, hexagon…), drawn from true geometry. Use for naming shapes and counting right angles / parallel sides; also draws lines of symmetry — the full set for an answer slide, or a single candidate line to TEST (pass/fail + fold preview) for a teaching slide |
+| `coordinate-grid` | A numbered coordinate grid on squared paper: first-quadrant by default, or all four quadrants when given a negative `min` (both axes through (0, 0), the negatives numbered with a minus sign). Carries lettered points as dots or crosses, whole shapes joined from their vertices, a shape's translated image in a lighter dashed outline with an arrow, a counted across-then-up path in orange, answer marks in green on an answers slide, tinted or named quadrants, and axes left unnumbered or numbered from zero upwards only. Use for reading and plotting coordinates in one or four quadrants, "what shape do these coordinates make?", and translating a shape across the axes |
+| `polygon` | One or more 2D shapes side by side: a named shape (square, rectangle, triangle, isosceles/scalene triangle, kite, hexagon…) drawn from true geometry, or any straight-sided shape from its corners, such as an L-shape or other rectilinear (compound) shape. Use for naming shapes and counting right angles / parallel sides; side lengths for perimeter, area and a missing length; a rectilinear shape split by a dashed line into rectangles numbered 1 and 2 to find its area; the edge or the inside picked out (perimeter against area); and lines of symmetry: the full set for an answer slide, or a single candidate line to TEST (pass/fail + fold preview) for a teaching slide |
 | `translation-grid` | A numbered grid showing one marker translated from a start (orange) to an end (blue) position, with a dashed arrow between. Use for "how far has the shape moved?" translation work |
 | `translation-shape` | A numbered coordinate grid showing a WHOLE shape and, with `showImage: true`, its translated image (the same shape slid by the translation) in lighter dashed blue, with a dashed arrow between matching vertices. Use for "translate this shape" — the signature translation picture. Leave `showImage` off for the task (original only, child plots the image); set it on for the worked answer. Distinct from `translation-grid` (single markers, not a whole shape) |
 | `shaded-fraction` | A shape (bar / grid / circle, or a stack of bars) split into equal parts with some shaded green. Use for "shade one quarter" and "what fraction is shaded?"; set `shaded: 0` for a blank shape children shade in |
@@ -64,7 +65,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `numbered-questions` | Stacked question cards with auto purple `(1) (2) (3)` labels, for a starter, or for Apply / independent work in maths |
 | `question-cards` | The same question set laid out as separate white cards instead of a list: one card per question, a purple number badge on each card's corner, each card at a degree or two of tilt. The cards pack across the zone and the type grows until the set fills the space. A second way to present a question set, not a replacement; see the entry in §4 for which of the two a set belongs in |
 | `pyramid` | Ranking pyramid: rows of cells stacked from a single cell at the top to wider rows beneath. Used in dialogic lessons for ranking activities (e.g. influences from most to least important) |
-| `clock` | Analogue clock face, with or without hands. Use for time-telling lessons — My Turn slides show a preset time; Your Turn slides leave the face blank for children to draw on |
+| `clock` | Analogue clock face with both hands, one hand alone (only the long hand, or only the short hand), or none. Use for time-telling lessons: My Turn slides show a preset time; Your Turn slides leave the face blank for children to draw on |
 | `number-network` | Circles joined by lines where every connected pair must add to a fixed target; blank circles show a faint `?` for the child to fill. Use for "each line adds to 100, find the missing numbers" addition-network reasoning |
 | `area-grid` | A squared grid with one or more labelled rectangular patches drawn on it, every square countable. Use for "each square = 1m², find the area of each patch" area-by-counting work — the multi-patch case a single `shaded-fraction` bar can't show |
 | `reflection-grid` | A dot grid with a mirror line and a shape on one side; set `showReflection` to add the reflected shape in green on the answer slide. The mirror runs vertical, horizontal, or on either 45° **diagonal** (`diagonal-up`/`diagonal-down`). Use for "reflect this shape in the mirror line" symmetry work, where the unnumbered dots and equal-distance reflection are the point |
@@ -93,7 +94,8 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `timeline` | A history timeline: named era bands sitting on a bold line, with dated ticks hanging beneath. Every position is a fraction the designer chooses, worked out from the real dates; every surface draws the same figure from the same fields |
 | `fishbone` | A cause-and-effect fishbone: a spine to the effect, angled ribs carrying causes |
 | `ruler` | A ruler with centimetre (or millimetre) marks, an optional arrow at a point and an optional bar to measure. On the slide it is a picture of a scale; on paper it prints at true size |
-| `process-chain` | Boxes joined by arrows: a food chain, a life cycle, the order of events. An empty box is one the child fills |
+| `process-chain` | Boxes joined by arrows in a line that ends: a food chain, the order of events. An empty box is one the child fills. For a loop that comes back to its start, use `cycle` |
+| `cycle` | A cycle or loop: stages joined by arrows, the last leading back to the first. A life cycle, the water cycle, the seasons, day and night, the rock cycle, blood round the body. Each arrow can carry a few words (`evaporation`), a stage can be a named picture, and a stage or an arrow's words can be left blank for the child |
 | `classification-key` | A branching yes/no identification key down to named answers |
 | `concept-map` | A radial concept map: a centre idea with spokes to connected ideas |
 | `annotated-text` | A passage (poem, model paragraph, sentence, source extract) in the middle, marked up as a teacher marks a model text: words underlined, circled, boxed, highlighted or coloured, arrows from one word to another, short notes in the margins joined to their words |
@@ -141,6 +143,8 @@ Every non-cover template has a header area above the body. Two modes:
 | `starter` | Date placeholder + LO + the "Starter" heading, and the slide's own prompt beneath it when it has one | ~2.3", ~2.9" with a prompt | Use when this slide is the starter |
 
 **The starter heading is always the word "Starter", and the builder writes it.** It is how a class and a cold teacher find the beginning of the lesson, so it is not a slot to fill. Only a `heading` the starter deliberately carries, a question or instruction of its own, prints under it: the builder puts it on a full-width line underneath the label, at slide-title size, where a question is actually readable - so `heading: "What do you remember about PSHE?"` renders as **Starter** with the question below it and the starter's questions below that. A `title` never prints there, because the teacher wants the underlined heading alone: "Just the starter heading that's underlined is enough." A `heading` of exactly "Starter" adds no second line.
+
+A topic name adds none either. The builder prints the line only when it ends like a sentence (`?`, `.`, `!` or `:`), so the starter unit's label copied into `heading` ("Food in our bodies") is dropped and the questions take its room (the teacher, 14 October 2026: only a real question or instruction sits between "Starter" and the questions). Leave `heading` empty unless children need that question or instruction to do the starter.
 
 **The date on the starter is a blank, and the builder writes it.** The header prints the word `Date` for a class to copy the day beside, exactly as they do in their books. A deck is built days before it is taught and is taught again next year, so a real date in the spec is wrong on the board on the day. Never put a calendar date in `lesson.json`: not in the starter's `instruction`, not in a title or body, and not as a top-level `date` field, which the builder has no use for and ignores. A Year 4 rounding deck built on a Saturday opened with `Saturday 12 September 2026` printed in the instruction box under its title, directly below the header's own empty `Date` label (flagged by the user, 12 September 2026, and found in five earlier decks). The build now refuses a spec that carries the build date anywhere in it. A date that is the lesson's own content is untouched by this: a year on a timeline, a date in a source, a date inside a word problem.
 
@@ -279,6 +283,7 @@ For a content Teach unit the design's fields map straight across: `headline` is 
 - `question`: printed in question blue. The layouts with a column or row of cards (`lead-picture-lines`, `picture-top-cards`, `picture-three-cards`, `labelled-picture-lines`, `banner-picture-sidebar`, `four-cards`) also take a list of two, when the unit carries two key questions.
 - `task`: the quick thing children do on this slide, which is the unit's `pupilInstruction`. It prints in task blue on its own card after the explanation and any question, so children see at a glance which line is theirs to do; in `lines` the same words print black with no sign and read as more of the teacher's telling (three lessons of the 7 October 2026 test, before this slot existed), and the check refuses them there (`TEACH_TASK_OUTSIDE_ITS_SLOT`). Write it as a string, or as `{ "value": "Write the two multiplications we need to do for <<4,125 × 43>>.", "advice": "Don't work them out.", "signal": "pencil" }`. `value` is the job itself, every sentence of it when two sentences are both the job (`Decide who has eaten more.` / `Write Chidi, Ali or the same.`). `advice` is a sentence of the instruction that only says how to go about the job; it prints black under the job on the same card, and most tasks have none. `signal` is the sign for what children do (`pencil`, `talk` or `magnifier`, as in Signs above), left out when the job is none of those. `emphasis` works as on a line. An instruction that is a question goes in `question` as before. Where the lead has done the telling and the task is the column's only card, leave `lines` out. A Teach slide with a task takes no lightning bolt: the bolt marks a Do beat.
 - `sticky`: the line to remember. The builder adds the star and the purple, so write the sentence alone.
+- `criteria`: the unit's success criteria, when the design's Teach unit names them in `successCriteriaRefs` because this slide is where the method is first shown. Write the `sc-panel` object you would write anywhere else, with its `criteriaRef` and `flipchart` (`{ "type": "sc-panel", "criteriaRef": "sc-001", "content": { "type": "steps", "steps": [...] } }`); the layout stands it beside the explanation, as the panel stands beside the task on a task slide. Three layouts take it: `lead-picture-lines` and `question-lines-picture` for a picture or diagram, `speaker-lines` for a speaker. It is its own slot, not a picture: a panel in `pictures`, or stacked with the picture there, is refused, and before this slot existed a Year 4 science deck left the Teach layouts for three slides to keep a food chain and its criteria together (11 October 2026). A Teach unit with criteria and a shape none of the three holds (two pictures, a source text) keeps its Teach layout and the criteria go on the task slide that follows, where the class uses them.
 - `captions`: one line per picture, printed under it in the same order.
 - `pictures`: ordinary content objects with a `type` (an `image`, a `label-diagram`, or another drawn visual), with their usual fields such as `essential` and `fit`.
 - `sides`: for the compare layouts, two entries of `heading`, `text`, and on `compare-pictures` a `picture`. Add `headingRole: "vocabulary"` when the two headings are taught words.
@@ -288,10 +293,10 @@ A text slot is a string, or an object with `value` plus `emphasis` for inline ta
 
 | Layout | Slots | What it is for |
 |---|---|---|
-| `lead-picture-lines` | `lead`, `pictures`, `lines` 1 to 3, `question` optional, `task` optional, `sticky` optional | The big idea across the top, one picture below it, the explanation beside the picture. Cards in total: 1 to 4. |
+| `lead-picture-lines` | `lead`, `pictures`, `lines` 1 to 3, `question` optional, `task` optional, `sticky` optional, `criteria` optional | The big idea across the top, one picture below it, the explanation beside the picture. With `criteria`, the picture runs the full width and the cards and the criteria panel stand side by side under it. Cards in total: 1 to 4. |
 | `picture-top-cards` | `lead` optional, `pictures`, `lines` up to 3, `question` optional, `task` optional, `sticky` optional | A wide picture across the top, two or three equal cards in a row underneath; a `lead` goes in a band above the picture. The layout for a wide picture (a report drawing, a panorama, about 2:1 or wider), which beside a column of cards comes out a strip: it holds a whole Teach beat, lead, picture, explanation, question and line to remember, on one slide. Cards in total: 2 to 3. |
 | `two-pictures-captions` | `pictures` 2, `captions` 2, `sticky` optional, `lead` optional | Two pictures compared, each line directly under its own picture, one idea joining them along the bottom. |
-| `question-lines-picture` | `question`, `pictures`, `lines` 1 to 3, `task` optional, `sticky` optional | The question in a band across the top, then the explanation beside the picture that answers it. For a unit whose sentence is kept for the end, or the later half of a split; a unit's first slide with a `headline` uses a `lead` layout. Cards in total: 1 to 4. |
+| `question-lines-picture` | `question`, `pictures`, `lines` 1 to 3, `task` optional, `sticky` optional, `criteria` optional | The question in a band across the top, then the explanation beside the picture that answers it. With `criteria`, the picture runs the full width and the cards and the criteria panel stand side by side under it. For a unit whose sentence is kept for the end, or the later half of a split; a unit's first slide with a `headline` uses a `lead` layout. Cards in total: 1 to 4. |
 | `compare-pictures` | `sides` 2, `headingRole` optional | Two things, or a wrong idea and the truth, in two matching cards, each with its own picture and line. |
 | `picture-statement-question` | `pictures`, `lead`, `question` | Half the slide is the picture; the other half is one big statement with a smaller question under it. |
 | `picture-three-cards` | `pictures`, `lines` 1 to 3, `question` optional, `task` optional, `sticky` optional | A two by two grid of equal squares: the picture in one, one idea in each of the other three. Cards in total: 3. |
@@ -304,6 +309,7 @@ A text slot is a string, or an object with `value` plus `emphasis` for inline ta
 | `picture-steps` | `pictures`, `steps` 2 to 5 | The explanation as numbered steps beside the picture, for something that happens in order. |
 | `picture-with-statement` | `pictures`, `lead` | The picture takes most of the slide, with one statement along the bottom. |
 | `one-speaker` | `pictures`, `speakers` | The object on one side and one person's claim on the other, for the class to test. |
+| `speaker-lines` | `speakers` 1, `lines` up to 3, `question` optional, `task` optional, `sticky` optional, `criteria` optional | One person speaking in a bubble on the left, and the teaching about what they said in cards beside them: what their words tell us, the question, the line to remember. For a Teach beat that opens with someone's words (a child's worry, a claim, a model of what to say); `one-speaker` is for a speaker beside a picture with no explanation. With `criteria`, the panel stands above the cards. Cards in total: 1 to 4. |
 | `two-speakers` | `statement`, `speakers` 2 | The idea across the top, two people underneath each saying what it means to them. |
 | `statement-support-sticky` | `lead`, `lines`, `sticky` | One big statement, a supporting line under it, and the line to remember along the bottom. |
 | `two-cards-bar` | `lines` 2, `sticky` optional, `lead` optional | Two equal cards side by side, with the idea that joins them along the bottom. |
@@ -645,7 +651,7 @@ own text column and add a line when the full set still fits at that same font.
 
 - `default` - existing base colour;
 - `focus-blue` - a question children answer, in house blue; an instruction stays black unless it is the child's short task, which takes `task-blue` (the asking-versus-telling grammar in `teacher-slide-visual-profile.md` → Semantic colour);
-- `task-blue` - a short task, the child's job itself (`Explain your answer.`, `Write one reason.`, `Round 346 to the nearest 10.`), in house blue, alone or after its question on the same line, and a job that also names what to use (`Explain your answer using the photograph.`), taking its blue from the role alone (a `color` beside it is refused); advice that only says how to go about the task (`Use the shaded map.`, `Use the two photographs.`) never takes it, nor does a statement, an answer or a sticky fact, and one line holds one task;
+- `task-blue` - a short task, the child's job itself (`Explain your answer.`, `Write one reason.`, `Round 346 to the nearest 10.`), in house blue, alone or after its question on the same line, and a job that also names what to use (`Explain your answer using the photograph.`), taking its blue from the role alone (a `color` beside it is refused); advice that only says how to go about the task (`Use the shaded map.`, `Use the two photographs.`) never takes it, nor does a statement, an answer or a sticky fact, and a job said in two or three sentences is one job, all of it blue (`Choose the producer. Write its name.`);
 - `peer-blue` - house blue for one item in a compact equal-status peer set;
 - `peer-purple` - house purple for one item in a compact equal-status peer set;
 - `worked-purple` - a worked example the class sees finished (a prepared example, a `visible-in-unit` model), in the sticky fact's purple, never answer green; a place-value chart row takes `worked: true` instead, and any other drawn figure keeps its own colours.
@@ -852,6 +858,8 @@ size. A header must not grow independently of the cells it describes.
   ] }
 ```
 
+The column headings are `headers`. A reference table in the lesson design carries the same headings under `columns`; write them here as `headers` (a table that arrives with `columns` is read as the same thing, so one copied across word for word still draws). A table with rows and no headings draws nothing, and the build says so by name (`TABLE_DREW_NOTHING`).
+
 **Minimum useful size:** 5.5″ wide for a table with sentence-length cells (empirically tested) — below this, multi-word cells either wrap awkwardly or drop below readable font size. For digit-only or short-keyword cells the floor is closer to 3.0″ wide. Row height needs ~0.4″ per row. A 3-column × 3-row sentence-cell table only fits cleanly in E-wide or wider zones.
 
 **Shared maximum fit:** headers share one maximum safe size. Each body column has its own shared maximum safe size because cells in one column have one visual role. The builder tests every whole-point size up to the column ceiling, selects the largest size that fits every cell in that column, and applies it to all of them. It does not enlarge cells, split one word across lines or use a different size for each row.
@@ -1055,7 +1063,7 @@ Leaving `rows` out altogether is a different thing and is unchanged: it draws th
 - `counters` — optional `{ "from": { ... }, "to": { ... } }` populations, using the same column-keyed shape as row counters. The before and after charts each show their own counters, so 100-more is always calculated from its stated starting number rather than from another comparison. When the two populations differ by exactly one exchange (ten fewer in one column and one more in the column to its left, or the reverse for subtraction, every other column unchanged), the board rings the counters that are exchanged and the counter they become in green and turns the arrow green, working it out from the counts, so give the true before and after: counts that differ any other way draw with no rings, and nothing in the picture says which counters moved.
 - `exchanges` — optional array of movement cues. Each cue has `from` and `to` column names, optional `count` (default `10`), and optional `label` (derived when left out). The cue visibly draws ten equal source counters exchanging into one counter in the next column; reverse the column names to show partitioning one larger counter into ten smaller counters. Use an array because a cascade such as 1,990 → 2,000 needs two cues: `[{ "from": "T", "to": "H" }, { "from": "H", "to": "Th" }]`. A single object may be supplied as `exchange` for the one-cue case.
 
-**A written column calculation — the `calculation` field.** Column addition, subtraction or short multiplication set out as the class writes it. Give the numbers and the drawing sets out the rest, the way the teacher teaches it: the numbers lined up from the ones, the sign in a narrow column beside the last number, a thick line, the answer row, a second thick line (he teaches the two thick lines as a big equals sign), and a shallow row **under** the answer where the small carried digit goes.
+**A written column calculation — the `calculation` field.** Column addition, subtraction, short multiplication or long multiplication (its extra fields are at the end of this section) set out as the class writes it. Give the numbers and the drawing sets out the rest, the way the teacher teaches it: the numbers lined up from the ones, the sign in a narrow column beside the last number, a thick line, the answer row, a second thick line (he teaches the two thick lines as a big equals sign), and a shallow row **under** the answer where the small carried digit goes.
 
 ```json
 { "type": "place-value-chart",
@@ -1077,7 +1085,24 @@ Leaving `rows` out altogether is a different thing and is unchanged: it draws th
 - `worked: true` — the whole calculation in the worked-example purple, for a model the class watches or a mistake they inspect. Leave it off a reveal.
 - `columns` — optional; left out, the headings are read off the longest number. Include a column for every digit of the answer (950 + 70 needs Thousands).
 
-A column calculation written as `rows` with `"label": "+"` is refused by name (`PLACE_VALUE_CHART_IS_A_CALCULATION`). Rows cannot set one out: they put the carried digit wherever the row happened to be typed and draw every line the same weight, which is the picture the teacher sent back on 5 October 2026. The worksheet's `column-method-grid` and a wall card's `calculation` are this same drawing, so the board, the sheet and the wall show one column sum.
+**Long multiplication is the same `calculation`, with its rows of working.** Give the two numbers and say how far the working has got; the drawing does the arithmetic, so a row, its place-holder zero and every small carried digit agree with the numbers on every slide, where rows typed by hand across five slides rarely do.
+
+```json
+{ "type": "place-value-chart",
+  "calculation": { "operator": "x", "numbers": ["24", "36"], "upTo": "tens zero", "ring": "T", "look": "explained" } }
+```
+
+- **`look`: every long multiplication says what its rows are.** Rows of digits alone do not: shown a finished 24 × 36 with no words, the teacher could not tell what the rows were (14 October 2026). UK schemes teach it as parts, 24 × 36 is 24 × 6 plus 24 × 30, so the drawing colours each digit of the multiplier with the row it makes, in its place's own colour (the ones digit and its row in the ones red, the tens in the tens gold, a hundreds row in the hundreds green, the total in answer green), and names each row in one of two looks. Those are the colours a success criterion gives `((ones))` and `((tens))`, so write the steps beside it as `Multiply by the ((ones)) digit.`: the words then match their row, where `<<ones digit>>` prints orange beside a red row.
+  - `"look": "explained"` writes each row's sentence beside it, with an arrow to the row: "24 × 6 = 144" over a small "the 6 ones", "24 × 30 = 720" over "the 3 tens, so a 0 goes in first", "144 + 720 = 864" over "add the two rows". A row not yet written has its sentence without its answer ("24 × 6 ="), so the build still reveals one move a slide and the blank frame the teacher fills in live shows the questions it answers. **Use it wherever the teacher models the method**: the first My Turn, every slide of the build, a worked example, and a mistake the class inspects (with `partials` a sentence never states a row's answer, so "3,152 × 40 =" beside a row missing its zero is the question). A class that never meets this look is where the teacher was: watching rows appear without knowing what they are.
+  - `"look": "labelled"`, the default, puts "× 6", "× 30" and "add" at the left of the rows instead. Use it once the rows have been explained: Our Turn, Your Turn, answer slides. Worksheets and printed activities always draw this look whatever is asked, because the child writes in the rows and sentences beside them would be read instead of worked.
+
+- `upTo`: the stage the working has reached, in the order it is written: `"set out"` (the two numbers over empty rows, for the teacher or the class to complete), `"ones row"`, `"tens zero"` (the new row holding only its place-holder zero), `"tens row"`, `"total"`. A three-digit multiplier adds `"hundreds zero"` and `"hundreds row"`. Each row has its own shallow row beneath for what is carried while multiplying, and the total has one for what is carried while adding (left out when the addition carries nothing, so no empty row sits under the answer), so nothing carried is ever written above. Leave `answer`, `carry` and `columns` out: they are worked out, and the columns always include one for every digit of the answer.
+- **Show the method growing, one stage a slide.** A model the class watches is the same `calculation` on a run of slides with `upTo` one stage further on each time, in the same slot, as a column addition's answers arrive a column at a time. The teacher asked for written methods to be revealed this way inside the drawing (7 October 2026); a long multiplication shown only finished hides the two moves children get wrong, starting the new row and writing the zero first. A finished one is right on an answers slide for practice the class has already done.
+- `ring`: here it rings the one digit being multiplied by (`"O"` while the ones row is made, `"T"` for the tens row), because every digit of the top number meets it in turn.
+- `partials`: the rows written by hand, top to bottom, in place of `upTo`: `["18912", "12608"]` with `answer` and `"worked": true` for a mistake the class inspects (here the missing place-holder), or `2` with `"numbers": ["", ""]` and `columns` for an empty frame the class sets a multiplication out in. A row may be `{ "answer": "18912", "carry": { "T": "1", "H": "3" } }` to show its carried digits. Use it only where the working must differ from the true working; everywhere else `upTo` is safer.
+- **Room.** A 4-digit by 2-digit multiplication is seven rows deep with its headings. It fits beside a success-criteria panel (`maths-turn-sc`) and two fit across a full slide; three across are refused when their columns fall under the heading floor, so answers to three go two and one or onto two slides. Each extra digit of the multiplier adds a row and a carry row, and the digits shrink to make room: give a 3-digit or 4-digit multiplier a full slide to itself. The explained look's sentences take width beside the sum: beside a success-criteria panel it fits a sum whose answer has up to four digits (24 × 36, 342 × 27), and a 4-digit by 2-digit sum explained needs a full slide (`body-full`), which the build says with the width it needs. Keep every slide of one build on the same template, so the drawing stays in one place and one size.
+
+A column calculation written as `rows` with `"label": "+"` is refused by name (`PLACE_VALUE_CHART_IS_A_CALCULATION`). Rows cannot set one out: they put the carried digit wherever the row happened to be typed and draw every line the same weight, which is the picture the teacher sent back on 5 October 2026. The worksheet's `column-method-grid`, `short-multiplication-grid` and `long-multiplication-grid` and a wall card's `calculation` are this same drawing, so the board, the sheet and the wall show one column sum.
 
 `pair` replaces `rows` — a chart with both draws the pair. Everything else about the chart is unchanged, decimal columns included: the `.` column carries the point and never says "same", because it is not a digit.
 
@@ -1095,6 +1120,17 @@ For a compact digit-only boundary question, omit `counters`, give `to` one empty
 ```
 
 One row per denominator, top to bottom, each cut into that many equal pieces and each piece named, the numerator on a bar over the denominator. The names print at one size for the whole wall, never under the board's 18pt readable size: a wall whose smallest pieces cannot be named at that size in its zone stops the build with `FRACTION_WALL_TOO_NARROW` or `FRACTION_WALL_ZONE_TOO_SHALLOW`, so leave out the rows the lesson does not compare or give it a bigger zone. Up to 12 rows, denominators 1 to 24. The same drawing reaches the worksheet, the wall card and the stick-in piece under the same name, `fraction-wall`, from this object.
+
+**The ruled line and the shaded family: how the wall shows WHY two fractions are equal.** A teacher finds a fraction family by laying a ruler down the wall where the fraction ends: every row with a join on that line holds an equivalent fraction, and a row where the line cuts through the middle of a part (thirds, at one half) holds none. The wall draws both halves of that, so a finished model or an answers slide shows the proof instead of leaving it to the notes.
+
+```json
+{ "type": "fraction-wall", "fractions": [1, 2, 3, 4, 6, 8, 12], "line": "1/2", "shade": "family" }
+```
+
+- `line` rules a line straight down the whole wall at that fraction of the whole: `"1/2"`, `"3/4"`, or up to three at once, `["1/4", "5/6"]`, when one slide answers more than one question. A name the line would cross steps aside inside its own part, so the cut-through part of a row outside the family stays plain to see: that row is the non-example, and it is worth pointing at.
+- `shade` picks parts out in soft green with a firm outline. `"family"` shades, in every row with a join on the line, the parts before the line, so the family of one half reads down the wall as 1 half, 2 quarters, 3 sixths. A list names the fractions instead, `["1/2", "2/4", "4/8"]`, each shading that many parts from the left of its own row, and needs no line: use it to show two chosen fractions are the same amount, or one fraction on its own. A row shows one shaded amount, so two families that both reach the same row (1/4 and 5/6 both have twelfths) are ruled together and shaded on separate walls.
+
+Reach for these wherever the lesson's method is "draw a line down the wall and see which parts end on it", or wherever the family should stand out: the worked model, the answers slide, the wall sheet. Leave both off the wall a child is about to rule for themselves, because a printed line is the answer to that task. On a question slide and its answers slide, give the question the plain wall and the answers the same wall with `line` and `shade` added: the builder keeps the wall the same size and in the same place on both, so only the line and the shading arrive. The family written out as fractions (1/2 = 2/4 = 3/6) is still typed text beside the wall, where it can carry the green answer mark.
 
 **Minimum useful size:** ~5″ wide × ~2″ tall for a 6-row wall. Each extra fraction row adds ~0.3″ of height. Below ~4″ wide, the smaller fractions become unreadable.
 
@@ -1171,6 +1207,27 @@ Dienes blocks in four columns headed Thousands, Hundreds, Tens and Ones (in the 
 
 It is the same drawing on the worksheet, the wall and the stick-in pack. **Minimum useful size:** about 4″ × 1.6″ for up to six blocks a column; the build refuses a zone where a hundred flat can no longer show its squares.
 
+### `ten-frame`
+
+A ten frame: two rows of five boxes, with a round counter in each full box, filled along the top row first from the left as a child fills a real one. It is the picture for a number to 10 or 20 in Year 1 and Year 2: the full boxes are the number, and the empty boxes are how many more make ten, which is why it carries number bonds better than a row of loose counters.
+
+```json
+{ "type": "ten-frame", "count": 6, "second": 4 }
+```
+
+- `count`: how many counters. Leave it off for an empty frame the class fills.
+- `second`: how many more counters in a second colour, carrying on from where the first stopped. `count: 6, second: 4` is the bond 6 + 4 in red and yellow, the two sides of a classroom counter.
+- `frames`: `2` draws the pair for numbers to 20: the first frame fills before the second starts, so `count: 13` is a full ten and three more, and `count: 8, second: 5` shows two of the five finishing the ten. A number past ten gets its pair without being asked. State `frames: 2` on a question whose answer will reach the second frame, so the pair is on the board from the start.
+- `crossedOut`: how many of the last counters carry a cross, for taking away (`count: 9, crossedOut: 3`).
+- `highlight`: the part you are pointing at, named in words. `"empty"` tints the boxes still to fill and fades the counters, for "how many more to make ten?"; `"counters"` or `"second"` rings that colour. Leave it off a question slide when the part it points at is the answer.
+- `look`: `"boxes"` colours each full box in instead of drawing a counter. Counters are the default because the class builds the same thing with real counters on a printed frame; use boxes when the lesson has children colour boxes in.
+- `colour`, `secondColour`: 6-character hex colours for the two sets of counters. Leave them off unless the lesson design names a colour, so the board, the sheet and the wall all show the same red and yellow.
+- `label`: optional caption directly under the frame, set as text you can edit ("(a)", or `"||6 and 4 make 10"` on an answers slide). When only the answers slide has words to put there, give the question `"label": ""`: the empty label keeps the caption's room, so the frame is the same size on both slides.
+
+**A question and its answers.** The frame is the same size in the same place whatever it holds, so an answers slide copies the question's object and changes only the counts: `{ "count": 6 }` on the question, `{ "count": 6, "second": 4 }` on the answers, and the four new counters appear in boxes that have not moved.
+
+**It is the same frame on every surface.** The worksheet, the working wall and the printed activity draw it from these same fields (`ten-frame` everywhere), so copy the object when the lesson wants it there too. A zone too small to show a counter in each box stops the build with `TEN_FRAME_TOO_SMALL`. For several sums each beside its own frame, give the frames a column of their own rather than a third of each row: a frame keeps its shape, five boxes wide and two tall, and prints small in a short wide strip.
+
 ### `counter-group`
 
 Place-value counters on their own, each a pill with its value on it, in the place value chart's column colour. Several groups sit side by side joined by an operator, under the claim they are evidence for. Use it when two claims have to be compared and a full chart each would not fit; use `place-value-chart` when the columns are the teaching. It draws exactly the counters given and never a total.
@@ -1217,6 +1274,8 @@ Zone class compatibility: fits A, B, C, D, E-wide, E-narrow.
 ### `numbered-questions`
 
 A vertical stack of question cards, each with a purple `(1) (2) (3)` label down the left. Use only on starter and main independent work slides (the main independent work is numbered in maths only: `preferences.md` → Question Labelling), typically dropped into a `body-full` zone. Takes an optional `startAt` (the number the first card is labelled with); omit it and the cards run from `(1)`.
+
+The builder grows the type until the set fills its zone, both ways, so two short sums on a starter come out large across the whole body: the room is not empty space to fill with extra questions or drawings.
 
 ```json
 { "type": "numbered-questions",
@@ -1362,19 +1421,31 @@ Multiple clocks in a row — the standard pattern for a Your Turn slide with sev
 ] }
 ```
 
-**`hands` field (default `true`):** `true` draws hour and minute hands at the given time. `false` draws a blank face with numbers and tick marks only — no hands. Use `false` whenever children are expected to draw or write the time rather than read it.
+**`hands` field (default `true`):** `true` draws hour and minute hands at the given time. `false` draws a blank face with numbers and tick marks only, for whenever children draw the hands themselves.
+
+`"minute"` draws only the long hand and `"hour"` only the short hand, each exactly where it sits at `time` and exactly as it looks beside the other:
+```json
+{ "type": "row", "items": [
+  { "type": "clock", "time": "4:45", "hands": "minute", "label": "Where is the long hand?" },
+  { "type": "clock", "time": "4:45", "hands": "hour", "label": "Which two numbers?" },
+  { "type": "clock", "time": "4:45", "label": "quarter to 5" }
+] }
+```
+Reach for one hand alone when the lesson teaches the hands one at a time, which is how telling the time is usually built: the long hand first (straight up at o'clock, on the 3 at quarter past, on the 6 at half past, on the 9 at quarter to), then the short hand (at quarter to 5 it is between the 4 and the 5, nearly at the 5), then both together. With both hands on the face a child is asked about one while looking at two, and the commonest mistake in the whole topic, reading the wrong hand, is built into the picture. Give the full `time` even for one hand: the short hand's place between two numbers depends on the minutes. One hand combines with everything else here, so the long hand alone on a `pastTo` face shows which side it is on, and on a `minuteRing` face it points at its minutes.
 
 **`time` field:** Required when `hands: true`. Format `"H:MM"` (no leading zero on the hour). The builder calculates hand angles correctly, including the hour hand's fractional position as it moves between hours — e.g., at 3:30 the hour hand sits halfway between 3 and 4.
 
 **`label` field (optional):** A short string rendered below the clock in body typography. Good for answer-slide reveals where you want the clock face and the written time on the same slide.
 
-**`colourCoded` field (optional):** `true` draws the hour hand red and the minute hand blue, with a matching digital readout under the face (the hour digit red, the minutes blue), so a child sees at a glance that the long blue hand is the blue minutes. The readout replaces a caption, so leave `label` off.
+**`colourCoded` field (optional):** `true` draws the hour hand red and the minute hand blue, with a matching digital readout under the face (the hour digit red, the minutes blue), so a child sees at a glance that the long blue hand is the blue minutes. The readout replaces a caption, so leave `label` off. The colours also work on one hand alone, so the long blue hand is the same hand on every face of the lesson.
+
+**`readout` field (optional):** whether the digital time prints under the face. It follows `colourCoded` unless you say otherwise, so `{ "type": "clock", "time": "4:45", "colourCoded": true, "readout": false }` keeps the red and blue hands and prints no digits. Turn it off whenever the time is to be said or written in words (o'clock, half past, quarter past, quarter to, minutes to), because the readout is the answer in the other form: 4:45 under a quarter to 5 clock is exactly what Year 2 are learning not to say, and a lesson once gave up its coloured hands to avoid it. Turn it off too on any face a child reads the time from, where it gives the answer away. Leave it on when the lesson is the link between the hands and the digital time. `"readout": true` on a plain clock prints the time in black under black hands, for an answer slide matching analogue to digital, including 24-hour times (`"time": "16:45"`). A face with one hand prints no readout unless you ask, since the digits would tell the child where the missing hand is. With the readout off a `label` is free again for a caption.
 
 **`pastTo` field (optional):** `true` shades the face in two halves, the right half (where the minute hand is "past" the hour) pale blue and the left half (where it is coming up "to" the next) pale orange, under the numerals and hands. For a lesson on past and to, where a child needs to see which side of the clock the long hand is on.
 
 **`minuteRing` field (optional):** `true` prints `:00 :05 :10 ... :55` outside the numerals at every five-minute mark, so children read the minutes off the ring rather than multiplying by five. Use both on Year 2 and 3 clock-reading lessons; `colourCoded` alone once children multiply by five in their heads.
 
-**`clocks` and `letters` (optional):** `{ "type": "clock", "clocks": [ { "time": "3:45" }, { "hands": false } ], "letters": true }` draws a row of faces as one picture, every face the same size, with (a) (b) above them. On a slide, a `row` of single clocks with their own labels is usually better, because each caption is then editable text.
+**`clocks` and `letters` (optional):** `{ "type": "clock", "clocks": [ { "time": "3:45" }, { "hands": false } ], "letters": true }` draws a row of faces as one picture, every face the same size, with (a) (b) above them. On a slide, a `row` of single clocks with their own labels is usually better, because each caption is then editable text. Either way the faces in a row come out one size however they differ (one hand or two, a readout under some, a ring round some), so mix them freely.
 
 **It is the same clock on every surface.** The worksheet (`clock-row`), the working wall and the stick-in piece draw it from these same fields.
 
@@ -1917,6 +1988,8 @@ Use it when the criteria has to go somewhere those templates' panel can't reach:
 
 **`content` field:** any content object — `steps`, a labelled `row` or `stack` of diagrams, a `table`. It renders inside the box beneath the label, taking the zone's class, and that class is checked against the content's own row in the compatibility table. The panel draws its content inside its own box but cannot widen the zone it sits in, so in a narrow sidebar (E-narrow) the panel takes `steps`, `text` or a list and a `table` is refused: a two-column "The change / The reason" criteria table in a sidebar blanked both task slides of a Year 4 PSHE deck on 21 September 2026. Check the nested type's own row before nesting it, and put a criteria table in a wide zone; a table children look things up in, read across or fill in stays a table and is never turned into lines. Only a table whose every row is a name with its meaning may be stacked as cards, as `slide-designer.md` sets out (Keep a structured visual structured). The same object may instead be placed under the key `criteria`: that is the key the `*-sc` templates and the `success-criteria` template use for the identical thing, and both keys fill the panel here, so either reads correctly. Put the criteria under one of them — a panel that carries neither renders an empty green box, and the build now warns when that happens. When the content is procedural `steps`, the steps use the same compact white cards and green number badges as the fixed `*-sc` templates; the route to the panel does not change the criteria's visual identity.
 
+**More than one set of criteria in one place:** a slide whose unit names two sets (three steps and a table of label meanings, say) gives them one panel, one heading, each set in turn. Two `sc-panel` objects written one above the other in a `stack` are drawn that way: the build joins them into one box, each set keeping the weight its panel had, so the second set no longer pays for a heading and edges of its own. Panels side by side in a `row`, a panel with its own `label`, and a `flipchart` panel are drawn as written. Never squash the task to fit two panels across the slide.
+
 Do **not** wrap criteria in `sc-panel` when it already sits in a `maths-*-sc` template's `criteria` slot — that slot draws the green box itself, so wrapping would double it. `sc-panel` is for criteria placed *outside* those panels.
 
 A panel takes at most half the slide's area; the build refuses a bigger one (`SC_PANEL_TOO_LARGE`) everywhere except a `success-criteria` slide, whose only job is the criteria.
@@ -2172,13 +2245,81 @@ Zone class compatibility: fits A, B, C, E-wide.
 
 ### `process-chain`
 
-Boxes joined by arrows: a food chain, a life cycle, the order of events. The arrows are the point.
+Links joined by arrows in a line that ends: a food chain, the order of events, a chain of causes. The arrows are the point. When the last stage leads back to the first (a life cycle, the water cycle), the loop is the point and `cycle` draws it; a chain of the same stages tells the class it stops.
 
 ```json
 { "type": "process-chain", "boxes": ["egg", "caterpillar", null, "butterfly"] }
 ```
 
 **`boxes`:** the stages in order, up to eight. `null` (or `""`) leaves a box empty for the class to fill. A stage wraps to three lines inside its box; a longer one is refused by name, because a stage is a few words.
+
+**A link the class can picture is a picture.** When the stages are things (the living things of a food chain, the stages of a life cycle, the places on a journey) and the unit's `photoRefs` hold their photographs, write each link as an object and the chain draws the photograph with its name under it:
+
+```json
+{ "type": "process-chain", "boxes": [
+  { "text": "Grass", "imagePath": "unsplash/grass.jpg", "label": "producer" },
+  { "text": "Rabbit", "imagePath": "unsplash/rabbit.jpg", "label": "consumer" },
+  { "text": "Fox", "imagePath": "unsplash/fox.jpg", "label": "consumer" } ] }
+```
+
+`text` is the name and `label` is a short role word printed under it in the taught-word green, so the thing and what it is called in this lesson read as two things; a box holding `Grass` over `producer` reads as one label, and a Year 4 class met a food chain as three boxes of words with its three photographs left off the slide (11 October 2026). A pictured chain is as tall as its pictures, so give it the depth a picture gets, not a strip's. Stages that are events or sentences (`A flea bites the rat`) stay boxes of words: a photograph of one moment in a sentence is decoration.
+
+**When the class completes the chain**, three fields set what is left for them, and each follows what the task asks:
+
+```json
+{ "type": "process-chain", "boxes": [null, null, null], "arrowHeads": false,
+  "bank": [ { "text": "Frog", "imagePath": "unsplash/frog.jpg" },
+            { "text": "Lettuce", "imagePath": "unsplash/lettuce.jpg" },
+            { "text": "Slug", "imagePath": "unsplash/slug.jpg" } ] }
+```
+
+- **`bank`:** the named pictures to be put into the empty boxes, in a row above the chain, in the order you give. Give the design's own mixed-up order; the chain's order is the answer.
+- **`arrowHeads: false`:** each join is a plain line the child turns into an arrow. Use it when which way the arrow points is what the task is checking, and leave the arrows drawn when only the order is.
+- **`labelLine: true`:** a line under each link to write its role on. Use it when naming the roles is part of the task.
+
+This is the board and printed form of a design task that has children build or complete a chain; the lesson design names the features and you choose the fields that show them.
+
+**It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
+
+Zone class compatibility: fits A, B, C, E-wide.
+
+### `cycle`
+
+A cycle or loop: stages joined by arrows, with the last stage leading back to the first. The water cycle, the life cycle of a plant, a butterfly or a frog, the seasons, day and night, the phases of the Moon, the rock cycle, blood round the body. Reach for it whenever the thing that goes round is the idea being taught, because the arrow back to the start is what a `process-chain` cannot show: a Year 6 lesson on the circulatory system drew the blood's journey as a straight chain and had to close the loop in a sentence beside it (7 October 2026).
+
+```json
+{ "type": "cycle", "title": "The water cycle",
+  "boxes": ["sea, rivers and lakes", "water vapour in the air", "clouds", "rain, hail or snow"],
+  "arrows": ["evaporation", "condensation", "precipitation", "collection"] }
+```
+
+It is drawn as two rows. The first stage is top left, the top row reads left to right, the route turns down at the right-hand end, comes back along the bottom row and turns up to the first stage again: clockwise from where a child starts reading, the same in every lesson. Two rows give a long stage name a wide box, which a ring of the same stages would not.
+
+**`boxes`:** the stages in order, three to eight. Each is written exactly as a `process-chain` link is: words (they wrap to four lines in the box), `{ "text", "imagePath", "label" }` for a photograph with its name under it and a short phrase under that, or `null` for a box left empty for the class to fill. Stages a class can picture (egg, caterpillar, chrysalis, butterfly) are better as their photographs when the unit's `photoRefs` hold them; a stage that is an event or a sentence stays words.
+
+**`arrows`:** a few words beside each arrow, in the same order as `boxes`: the first belongs to the arrow leaving the first stage and the last to the arrow from the last stage back to the first. Give them when what happens between two stages is what the lesson teaches, which is often where the taught word lives (`evaporation` is on the arrow from the sea to the air, not in a box). Leave them off when the stages carry the teaching, and write `null` for a single arrow with nothing to say.
+
+**`title`:** the name of the cycle, set in the middle of the loop, which the two rows leave free. Leave it off when the slide's heading already says it.
+
+**When the class completes the cycle**, each field follows what the task asks:
+
+- a `null` stage is an empty box to write the stage in;
+- **`arrowLine: true`** leaves a writing line beside every arrow that has no words, for naming what happens there;
+- **`labelLine: true`** leaves a writing line under every stage without a `label`;
+- **`arrowHeads: false`** draws each join as a plain line the child turns into an arrow, for when which way the cycle runs is what the task checks.
+
+**The answers slide** fills those blanks in, and the words it writes are the answer, so mark each one and it is drawn in answer green, matching the green answers everywhere else on the board: a stage as `{ "text": "caterpillar", "answer": true }`, an arrow's words as `{ "text": "evaporation", "answer": true }` in place of the string. Keep every other stage and arrow exactly as the question slide wrote them, so the class sees the same loop with its gaps filled; the board lays both slides out round the fuller of them, so the loop neither moves nor changes size when the answers arrive. A worksheet, printed activity or wall sheet copied from the answers slide can keep the marks: a pupil sheet and the printed activity print an empty box or a writing line where each answer was, the teacher's answer sheet prints them green, and the wall shows them green.
+
+**Two loops through one stage.** Blood goes from the heart to the lungs, back to the heart, out to the body and back again. Write the route in order and name the shared stage both times it is passed. It is drawn once, tall, in the middle, with one loop on each side:
+
+```json
+{ "type": "cycle", "boxes": ["heart", "lungs", "heart", "body"],
+  "arrows": ["blood low in oxygen", "blood rich in oxygen", "blood rich in oxygen", "blood low in oxygen"] }
+```
+
+Each loop holds up to four stages besides the shared one. This form is for a route that really passes one place twice; a cycle in which nothing repeats names every stage once.
+
+A cycle of words fits a full-width body comfortably and a half-width column up to about four short stages. A cycle of photographs is two pictures deep, so give it the whole body.
 
 **It is the same picture on every surface.** The worksheet, the working wall and the stick-in pack draw it from these same fields, so a copy on paper, on the wall or in a book looks like the slide. On the slide it is one placed picture: move and resize it as a whole.
 
@@ -2581,7 +2722,7 @@ A generated label is only ever ADDED to what an item already says. `"Shape A"` k
 
 ### `coordinate-grid`
 
-A first-quadrant coordinate grid drawn on squared paper from the origin (0,0), numbered across the bottom and up the left, with plotted points marked by a red dot and a letter. Cells are always square so the grid reads true. Use for reading coordinates, plotting points, and (with `join`) identifying the shape a set of coordinates makes.
+A coordinate grid drawn on squared paper, with plotted points marked by a red dot (or a small cross) and a letter. Cells are always square so the grid reads true. Left alone it is the first-quadrant grid: from the origin (0,0), numbered across the bottom and up the left. Given a negative `min` it is the four-quadrant grid: both axes run through (0, 0) as number lines, numbered just below the x-axis and just left of the y-axis with a true minus sign on the negatives, and named x and y. Use for reading coordinates, plotting points, identifying the shape a set of coordinates makes (`join`), and translating a shape across the axes (`shapes`).
 
 Plot one or more points to read off:
 ```json
@@ -2594,7 +2735,46 @@ Join the points into a closed shape ("what shape do these coordinates make?"):
   "points": [ { "x": 2, "y": 1 }, { "x": 6, "y": 1 }, { "x": 6, "y": 4 }, { "x": 2, "y": 4 } ] }
 ```
 
-**`max` (default 10):** the range on both axes (0…max). Use `xMax` / `yMax` to set the across and up ranges separately. **`points`:** each is `{ x, y, label }`; `label` is the letter shown beside the dot (omit for an unlabelled point). **`join` (default false):** joins the points in the order given into a filled, outlined shape — leave `false` to show loose points. Keep `max` small (≤ 10) so the numbers stay readable.
+The four-quadrant grid, blank for modelling, then with a rectangle plotted on it as crosses:
+```json
+{ "type": "coordinate-grid", "min": -5, "max": 5 }
+```
+```json
+{ "type": "coordinate-grid", "min": -5, "max": 5, "pointStyle": "cross", "join": true,
+  "points": [ { "x": 4, "y": 3, "label": "A" }, { "x": -4, "y": 3, "label": "B" },
+              { "x": -4, "y": -3, "label": "C" }, { "x": 4, "y": -3, "label": "D" } ] }
+```
+
+A shape to translate. The question slide leaves `showImage` off; the answer slide is the same object with it on, which adds the image and the arrow, and `imageAnswer` draws them in answer green:
+```json
+{ "type": "coordinate-grid", "min": -5, "max": 5,
+  "shapes": [ { "points": [[1, 2], [4, 2], [1, 5]], "labels": ["A", "B", "C"],
+                "translate": { "dx": -6, "dy": -4 }, "showImage": true, "imageAnswer": true } ] }
+```
+
+Two shapes and the counted path between them, on the answers slide of "which translation moved shape 1 onto shape 2?" (leave `arrows` off the question; the path is the answer, so it is green):
+```json
+{ "type": "coordinate-grid", "min": -5, "max": 5,
+  "shapes": [ { "points": [[-5, 1], [-2, 1], [-5, 4]], "inside": "1" },
+              { "points": [[1, -4], [4, -4], [1, -1]], "inside": "2" } ],
+  "arrows": [ { "from": [-5, 1], "to": [1, -4], "steps": true, "count": true, "answer": true } ] }
+```
+
+The axes on their own, for a vocabulary card (no numbers, each axis named):
+```json
+{ "type": "coordinate-grid", "min": -3, "max": 3, "numbers": false,
+  "axisLabels": { "x": "x-axis", "y": "y-axis" } }
+```
+
+**The grid.** **`max` (default 10):** how far both axes run above zero. Use `xMax` / `yMax` to set the across and up ranges separately. **`min` (default 0):** how far both axes run below zero, written as the negative number they start at (`-5`); `xMin` / `yMin` set them separately. Both axes always pass through (0, 0), so a positive `min` is refused. The axis numbers and letters are sized for the board, as large as one square will hold, so the size of a square decides how far back they can be read: ten squares across in all (`-5` to `5`, or `0` to `10`) in a full-height zone puts the numbers at about 17pt, and twenty squares halves that. Choose the smallest range the lesson's own coordinates need, and give a grid of ten squares the full height of the slide rather than a strip beside a paragraph. **`numbers`:** `true` (default) writes every whole number; `"positive"` writes 0 upwards only and leaves the negative parts of the axes marked but unnumbered, for the slide that asks what goes on the other side of zero; `false` writes none. **`axisLabels`:** a four-quadrant grid names its axes `x` and `y` at their positive ends unless you set `false`; an object writes other words (`{ "x": "x-axis", "y": "y-axis" }`); a first-quadrant grid has none unless you set `true`. **`grid: false`** leaves the squared paper off and draws two bare axes with a mark at every whole number. **`tintQuadrants: true`** tints each quadrant its own pale colour. **`quadrantNotes`** writes a few words inside a quadrant, for what is true of every point in it: `{ "top left": "x negative, y positive" }`. Quadrants answer to `top right`, `top left`, `bottom left`, `bottom right`, or `first quadrant` to `fourth quadrant`. A note belongs on a grid with nothing plotted in that quadrant; the build refuses one that would lie across a shape or cannot be read at its size. **`highlight`** points at one part of the grid while you talk about it: a quadrant by name, `"x-axis"`, `"y-axis"`, `"origin"`, or a plotted point's own letter.
+
+**What is plotted.** **`points`:** each is `{ x, y, label }`; `label` is the letter shown beside the mark (omit for an unlabelled point). Add `"coords": true` to write the point's coordinates after its letter, as in `F (−5, −1)`: the grid writes them from the point's own position, so the pair on the slide cannot disagree with where the point is. **`pointStyle`:** `"dot"` (default) or `"cross"`, the small × children plot with. **`join` (default false):** joins `points` in the order given into a filled, outlined shape; leave `false` to show loose points. **`shapes`:** whole shapes, for a grid that carries more than one, or loose points beside a shape. Each takes `points` (its vertices in order, `[[x, y], …]`), `labels` (a letter per vertex) and `inside` (a numeral or short name written inside it). **`translate`** `{ dx, dy }` with **`showImage: true`** draws the shape's image, every vertex moved by exactly that many squares (right and up are positive), in a lighter dashed outline, with a dashed arrow from the first vertex to its match. Build the answer slide by turning `showImage` on in the question slide's own object, so the shape cannot shift between the two. `arrowFrom` picks which vertex the arrow springs from, `"arrow": "steps"` draws it across then up, `"arrow": false` leaves it off (two images on one grid read better without), and `imageLabels` letters the image's vertices. `"image": true` draws a shape whose vertices you give yourself in the image's dashed style: use it for a second shape that is *not* a true translation, such as the wrong answer in "which of these is a translation?". **`arrows`:** an arrow between two places on the grid, `{ "from": [x, y], "to": [x, y] }`, drawn firm and in the orange the success criteria use for "left or right" and "up or down", so the path and the criterion beside it match. `"steps": true` draws it as two legs, across then up or down, and `"count": true` writes the squares beside each leg (`6 right`, `5 down`), counted from the two ends. **`route`:** `[x, y]`, the solid blue across-then-up route from the origin to one point, for modelling how to plot it.
+
+**The answers, marked on the grid.** On an answers slide, mark whatever the class worked out so the grid itself shows it in answer green, matching the green answer text beside it; a red point beside green coordinates in the text leaves the class unsure which mark is the answer. Set `"answer": true` on a point the class plotted (its mark, letter and coordinates go green), `"answer": "coordinates"` on a point the question gave, when only the coordinates written after it are the answer (its letter keeps the point's red), `"answer": true` on a shape the class plotted and joined, `"imageAnswer": true` on a shape whose translated image the class drew (the image, its letters and its arrow go green; the shape it came from stays blue), and `"answer": true` on an arrow when the path is what the class found ("which translation?"). Leave them off a model the teacher is drawing: that is the method being shown, not yet an answer, and it keeps the blue and orange. Copy the question slide's object and add the answers to it, so the grid stays in the same place at the same size; the board keeps the room the answers need on both slides. A worksheet, printed activity or wall sheet copied from the answers slide can keep the marks: a pupil sheet and the printed activity leave every answer off and print the question, the teacher's answer sheet prints them green, and the wall shows them green.
+
+Letters are placed for you. Each goes where it is clear of the axis numbers, the axes and the other letters, and a vertex letter goes outside its own shape; when a letter has to hang past the edge of the squared paper the picture grows just enough to hold it. A point, a vertex or an arrow end that is not on the grid stops the build with `COORDINATE_GRID_POINT_OFF_GRID` and the range the grid runs over. Widen `min` / `max` to reach it rather than moving the point, since the coordinates are the lesson's.
+
+For a translation that stays in the first quadrant, `translation-shape` draws the same picture from fewer fields. Use `coordinate-grid` when the grid runs below zero or carries more than one shape.
 
 ### `polygon`
 
@@ -2632,6 +2812,40 @@ Drive a lesson with a sequence of these: the square shown four times, each with 
 ] }
 ```
 
+**A rectilinear shape, drawn from its corners (an L-shape, a T, a staircase; a compound or composite shape).** Give the shape `vertices` in place of a `name`: its corners in order round the shape as `[x, y]` in the shape's own measurements, `x` across and `y` down from the top-left. An L that is 10 cm along the top and 8 cm down the left is `[[0,0],[10,0],[10,3],[4,3],[4,8],[0,8]]`. Using the real measurements as the coordinates keeps the picture in proportion, and they are the numbers the split below is given in. `sideLabels` follow the same order (the first is the side from the first corner to the second). Every length is written outside the shape beside its own side, and two lengths that would meet in a tight inside corner slide apart along their sides. The lengths are board-sized words whatever the shape's size, so a shape with six of them wants most of a slide's main zone to itself: two such shapes in one drawing fit a full-width zone, and in half a slide their lengths crowd.
+
+```json
+{ "type": "polygon", "shapes": [
+  { "vertices": [[0,0],[10,0],[10,3],[4,3],[4,8],[0,8]],
+    "sideLabels": ["10 cm", "3 cm", "6 cm", "5 cm", "4 cm", "8 cm"] }
+] }
+```
+
+**Splitting it into rectangles to find the area (`parts`).** The move an area lesson teaches is the dashed line that turns one awkward shape into rectangles numbered 1 and 2. Give each rectangle as a part with two opposite `corners`, in the same numbers as `vertices`, and the drawing draws the dashed line itself wherever a part's edge is not the shape's own outline. You never place the line, so it cannot miss a corner, and a part that reaches outside the shape or overlaps another is refused by name, because that is a sum that would come out wrong on the board.
+
+```json
+{ "type": "polygon", "partsAnswer": true, "shapes": [
+  { "vertices": [[0,0],[10,0],[10,3],[4,3],[4,8],[0,8]],
+    "sideLabels": ["10 cm", "3 cm", "6 cm", "5 cm", "4 cm", "8 cm"],
+    "parts": [
+      { "corners": [[0,0],[10,3]], "label": "1" },
+      { "corners": [[0,3],[4,8]],  "label": "2" }
+    ] }
+] }
+```
+
+That is the L split by a line going across. The same L split by a line going down is `[[0,0],[4,8]]` and `[[4,0],[10,3]]`; put the two in one `polygon` as two shapes to show that both splits give one area. A T or a staircase takes three parts and draws two lines. Each part takes:
+
+- **`label`**: the number or letter written in the middle of the part, in a ring when it is one or two characters. Leave it off to draw the line alone.
+- **`note`**: a few words under the number saying what this part works out (`"10 × 3 = 30 cm²"`). It is what the split exists to produce, so it belongs in the part when the slide has no working beside the shape. Leave it off when the sums are already written beside the drawing, or the class reads them twice. When a part is too small to hold its note, every note moves to a numbered list under the shape.
+- **`sideLabels`**: `[top, right, bottom, left]`, a length of this part that is not a whole side of the shape, which is usually the one a child has to work out. On a dashed line it is written inside the part beside the line; on a stretch of the outline it is written outside with a bracket marking the stretch. A length that is a whole side of the shape stays in the shape's own `sideLabels`.
+- **`shade: true`**: tints the one part being worked on, for a slide that takes the rectangles one at a time.
+- **`missing: true`**: a rectangle outside the shape, the corner that was cut away, drawn grey with dashed edges. Use it on its own for the other route to the area: the whole rectangle take away the missing corner.
+
+**`partsAnswer: true`** (on the `polygon`) draws the line, the numbers, the notes and the part lengths in answer green. Set it on an answers slide, where the split is what the children were asked to find. Leave it off when the teacher is modelling the split, where it is the method being shown and not yet an answer. An answers slide that repeats its question slide's shape in the same place keeps the shape exactly where it was when the split is added, so the class sees the line arrive on the shape they were looking at.
+
+**Picking out the edge or the inside (`pickOut`).** Per shape, `"pickOut": "edge"` draws the outline thick in the highlight colour with nothing inside, and `"pickOut": "inside"` fills the shape and thins the outline. Perimeter is the distance round the edge and area is the space inside, so use them where a slide is about one of the two (the two word cards, a "which one is the fence?" question): the same plain shape under both words shows a child no difference. A shape that is being measured or split stays plain.
+
 **It is the same shape on every surface.** The worksheet (`shape`), the working wall and the stick-in piece draw it from these same fields. The measurements stay at the board's readable size and the shape shrinks to make room for them; a zone too small to hold both is refused by name (`POLYGON_TOO_SMALL`). The stick-in piece leaves off `symmetryLines`, `verdict` and `fold`, because a child's copy never carries the answer.
 
 ```json
@@ -2660,7 +2874,7 @@ A numbered squared grid showing one marker translated from a start position to a
 
 ### `shaded-fraction`
 
-A single shape divided into equal parts with some shaded green and the rest white — the "shade one quarter of this shape" diagram. Every part is the same size, so the fraction reads as shaded ÷ total. Use for finding a fraction of a shape; set `shaded: 0` for a blank shape children shade in themselves.
+A single shape divided into equal parts with some shaded green and the rest white — the "shade one quarter of this shape" diagram. Every part is the same size, so the fraction reads as shaded ÷ total. Use for finding a fraction of a shape; set `shaded: 0` for a blank shape children shade in themselves. A ten frame is its own object, `ten-frame`, which holds counters and comes as a pair; a grid of two rows of five drawn here is a picture of tenths.
 
 Bar (equal columns), grid (rows × columns), and circle (equal sectors):
 ```json
@@ -2669,7 +2883,7 @@ Bar (equal columns), grid (rows × columns), and circle (equal sectors):
 { "type": "shaded-fraction", "parts": 4,  "shaded": 1, "shape": "circle", "label": "one quarter" }
 ```
 
-**`parts` (required):** total equal parts, 1 to 60. **`shaded` (default 0):** how many to fill green; more than `parts` stops the build, because one shape cannot show more than its whole. **`shape` (default `bar`):** `bar`, `grid`, or `circle`. **`rows`** (grid only): force the number of rows; otherwise the split keeps cells square. **`bars`:** a stack of bars to compare, `[{ "parts": 4, "shaded": 3, "label": "3/4" }, { "parts": 5, "shaded": 2, "label": "2/5" }]`, each bar's `label` drawn under it. **`colour`:** a 6-character hex for the shading. Leave it off unless the lesson design names a colour for this picture or two shadings on one slide have to be told apart: the worksheet is drawn before this deck exists and cannot see a colour chosen here, so a ten frame coloured blue on the board prints soft green on the child's sheet and looks like a different picture. **`label`:** optional caption below the shape, set as text you can edit.
+**`parts` (required):** total equal parts, 1 to 60. **`shaded` (default 0):** how many to fill green; more than `parts` stops the build, because one shape cannot show more than its whole. **`shape` (default `bar`):** `bar`, `grid`, or `circle`. **`rows`** (grid only): force the number of rows; otherwise the split keeps cells square. **`bars`:** a stack of bars to compare, `[{ "parts": 4, "shaded": 3, "label": "3/4" }, { "parts": 5, "shaded": 2, "label": "2/5" }]`, each bar's `label` drawn under it. On an answers slide, write a bar label that is the answer with the reveal marker (`"label": "||6/8"` under the bar the answers slide has shaded), so it prints in answer green like the other answers on the slide; a label that was already given on the question slide stays unmarked. **`colour`:** a 6-character hex for the shading. Leave it off unless the lesson design names a colour for this picture or two shadings on one slide have to be told apart: the worksheet is drawn before this deck exists and cannot see a colour chosen here, so a ten frame coloured blue on the board prints soft green on the child's sheet and looks like a different picture. **`label`:** optional caption below the shape, set as text you can edit.
 
 The same drawing reaches the worksheet (`fraction-bar`), the wall card and the stick-in piece (`shaded-fraction`) from this object, so copy it when the lesson wants the shape there too. A zone too small to show the parts at the readable size stops the build with `SHADED_FRACTION_TOO_SMALL` or `SHADED_FRACTION_ZONE_TOO_SHALLOW`.
 
@@ -2876,14 +3090,15 @@ Fully worked (a worked example to copy):
 ] }
 ```
 
-On an answer slide, mark each answer with the deck's reveal marker so it prints in answer green, as every other answer on the board does; the working before the marker stays black (`"1 + 1 + 4 = ||6"`, `"||yes"`). An answer slide whose frames carry no marker prints its answers black, and the build warns.
+On an answer slide, mark each answer with the deck's reveal marker so it prints in answer green, as every other answer on the board does; the working before the marker stays black (`"1 + 1 + 4 = ||6"`, `"||yes"`). When the slide before shows the same frame with its boxes, the builder reads from it which parts are answers, so one marker at the first answer is enough: `"4 × ||2 = 8"` after `"4 × ___ = 8"` prints the 2 green and the given `= 8` black, and `"3 × ||2 = 6"` after `"3 × ___ = ___"` prints both answers green. Keep the line otherwise word for word the question's, or the builder falls back to colouring everything after the marker. An answer slide whose frames carry no marker prints its answers black, and the build warns.
 
 - `title` — optional purple heading above the lines ("Adjusting strategy", "Round and compensate").
 - `frame` — draw the purple panel behind the lines. Default `true`; set `false` for the bare lines (e.g. a small reference zone where the panel would crowd).
 - `lines` — `[{ label, content, step }]`. `label` is optional (the method language); `content` is a string where `___` or `□` becomes a write-in box and everything else is bold text. Content need not be an equation — `"Take ___ from ___ to make ___"` works too. `step` is optional: a number printed in a small green circle before the label.
+- A fraction with a part to find is typed as a fraction, blank and slash together: `"3/4 = ___/8"` (missing numerator), `"3/___ = 6/8"` (missing denominator), `"2/3 = ___/___"` (the whole fraction is the answer). Each prints top and bottom with the write-in box on the bar, so the fraction the class finishes looks like every other fraction on the board. A bare `___` is a box for one number: a whole fraction typed that way gets a small box and no bar, and looks different from the same frame on the slide before. For a whole fraction the builder picks the form from the year group (a box over a box in Years 1 to 4, one tall box in Years 5 and 6).
 - `numbered` — `true` numbers the lines 1, 2, 3 in the same green circles. Give a line its own `step` instead when the frame's steps should match the success criteria's numbers and they do not start at 1.
 
-Each step is the step number, the label, then its working and its box: the working runs straight on from its own label (`Add the digits: 3 + 1 + 2 =`) and only the boxes, or the answers, line up in one column. Write the label as the question or instruction the child needs (`"Is the total in the 3 times table?"`); a long label wraps onto a second line, split evenly, when that prints the frame at least 3pt bigger, and never onto a third. The purple panel is fitted to its lines and centred in its zone.
+Each step is the step number, the label, then its working and its box: the working runs straight on from its own label (`Add the digits: 3 + 1 + 2 =`) and only the boxes, or the answers, line up in one column. Write the label as the step's short name (`"First, add:"`), or as a question when the line is a decision the child answers (`"Is the total in the 3 times table?"`). The frame prints at the size its longest label allows, so a full sentence on every line shrinks the whole frame (`subject-maths.md` has the measured case); a long label wraps onto a second line, split evenly, when that prints the frame at least 3pt bigger, and never onto a third. The purple panel is fitted to its lines and centred in its zone.
 
 **Sizing:** the lines print at the largest size, up to 32pt, that fits the zone, and the panel hugs them, so it reads at full-body and half-column widths alike. Frames side by side in one `row` print at one size, the smallest any of them needs. For a SINGLE-LINE equation frame, the worksheet's `inequality-with-boxes` already covers that pattern; `method-frame` is for the multi-line, labelled case. A FILLED method (no blanks) on the working wall is the `workedExample` card, not this — a wall card is a reference, never a fill-in.
 
@@ -2951,7 +3166,7 @@ Diagonal mirror (slope +1, line `y = x`), answer in green:
 
 ### `translation-shape`
 
-A **numbered coordinate grid** carrying a **whole shape** and, optionally, its **translated image** — the signature picture of a translation lesson. The original is a solid house-blue filled polygon; with `showImage: true` the image (every vertex slid by the same `translate`) is added in a lighter **dashed** blue and a dashed arrow runs from one original vertex to its match, so the slide — and that every corner moves the same way — is visible. It is plainly the same size and shape, just moved. The grid, axes and numbers are drawn exactly as `coordinate-grid` draws them, so children read a grid they already know. This draws the two-full-polygons picture neither `translation-grid` (single start/end markers) nor `coordinate-grid` (one shape) can.
+A **numbered coordinate grid** carrying a **whole shape** and, optionally, its **translated image** — the signature picture of a translation lesson. The original is a solid house-blue filled polygon; with `showImage: true` the image (every vertex slid by the same `translate`) is added in a lighter **dashed** blue and a dashed arrow runs from one original vertex to its match, so the slide — and that every corner moves the same way — is visible. It is plainly the same size and shape, just moved. The grid, axes and numbers are drawn exactly as `coordinate-grid` draws them, so children read a grid they already know. It starts both axes at zero and carries one shape. For a translation that crosses an axis (Year 6, four quadrants) or a grid with more than one shape on it, use `coordinate-grid` with `shapes`, which draws this same picture on a grid that runs below zero.
 
 Two modes, one object. The **task** the child works on shows the original only, on the clear numbered grid (the child plots and joins the image themselves); the **worked answer** sets `showImage: true` to add the image and the arrow:
 
@@ -3190,6 +3405,7 @@ Which content types fit which zone class.
 | `place-value-mini`  | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `base-ten-blocks`   | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
 | `counter-group`     | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
+| `ten-frame`         | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `fraction-wall`     | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
 | `part-whole-model`  | ✓ | ✓ | ✓ |   | ✓ | ✓ |   |   |
 | `bar-model`         | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
@@ -3211,6 +3427,7 @@ Which content types fit which zone class.
 | `fishbone`          | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `ruler`             | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
 | `process-chain`     | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
+| `cycle`             | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
 | `classification-key` | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `concept-map`       | ✓ |   | ✓ |   | ✓ |   |   |   |
 | `annotated-text`    | ✓ | ✓ | ✓ |   | ✓ |   |   |   |

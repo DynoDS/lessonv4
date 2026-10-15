@@ -118,6 +118,12 @@ FIGURE_HELPERS: dict[str, dict[str, tuple[str, ...]]] = {
         "wall": ("part-whole-model",),
         "stick-in": ("part-whole-model",),
     },
+    # A Year 1 number bonds run recorded its ten frames as covered by the
+    # shaded fraction grid, because no surface had a ten frame under that name
+    # (stress test, 7 October 2026). Every surface draws one now.
+    "ten frame": {s: ("ten-frame",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    "ten-frame": {s: ("ten-frame",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    "tens frame": {s: ("ten-frame",) for s in ("slides", "worksheets", "wall", "stick-in")},
     "concept map": {s: ("concept-map",) for s in ("slides", "worksheets", "wall", "stick-in")},
     "fishbone": {s: ("fishbone",) for s in ("slides", "worksheets", "wall", "stick-in")},
     "map": {s: ("map", "grid-map") for s in ("slides", "worksheets", "wall", "stick-in")},

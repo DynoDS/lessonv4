@@ -66,6 +66,18 @@ ASK_SHARE = 0.55
 ASK_MIN_WORDS = 4
 # A `new` has to bring at least this many words the lesson has not used yet.
 NEW_MIN_UNSAID = 2
+# Words cannot see a new situation told in old words. In the 20-lesson test of
+# 7 October 2026 a Year 5 lesson set a second task on the two cousins of its
+# first (`It is midnight for Jun. Is it light or dark where Noah is?`): every
+# word had been said, the task was sound, and its designer added `wakes up` and
+# `sends a message` to the slide to find two unsaid words. The teacher read
+# that slide as confusing and asked for the plain version (12 October 2026).
+# So a `new` in old words is refused only where the expected answer is close
+# to the teaching word for word, which is the saying-back this count was built
+# to catch (the Year 4 science task was 16 of 17; the test's eleven sound
+# tasks ran from 0.56 to 0.90, all with their two words). Below this share it
+# is the reviewer's to judge, and the beat says so wherever it is printed.
+SAID_BACK_SHARE = 0.85
 # What a task brings is said in a phrase. On 6 October 2026 a design pasted
 # both of a task's options into `new`; the wrong option's words were new, so
 # a task whose right option was its Teach board passed.
@@ -460,6 +472,39 @@ class Beside:
         return closest_taught_sentence(self.right_option or self.answer, self.taught_text)
 
     @property
+    def headline(self) -> str:
+        """The one big sentence of the teaching before this beat: what the
+        child who half listened walks away with."""
+        for unit in reversed(self.shown):
+            if unit is self.pupil:
+                continue
+            content = unit.get("content") or {}
+            takeaway = content.get("takeaway")
+            if isinstance(takeaway, dict):
+                takeaway = takeaway.get("text")
+            for value in (content.get("headline"), takeaway):
+                if isinstance(value, str) and value.strip():
+                    return " ".join(value.split())
+        return ""
+
+    def half_listener_line(self) -> str:
+        """Who to answer the task as. A child who heard nothing cannot attempt
+        a question with a new word in it, so every such task looked as if it
+        needed the lesson: a Year 4 science check of 11 October 2026 followed
+        `Plants are producers ...` with a lettuce, a slug and a frog, and
+        passed its designer and its reviewer."""
+        if not (self.headline and self.declares and self.new):
+            return ""
+        return (
+            f"The child who half listened has this one sentence and everyday sense: "
+            f"\"{self.headline}\" Answer the task as that child "
+            "(`task-contrasts.md` -> `One story, one process, one set of meanings`, `name the wrong answer first`). If they reach the "
+            "expected answer, the cases are doing the thinking (the only plant among "
+            "animals): change a case so that this child goes wrong and the taught reason "
+            "puts it right."
+        )
+
+    @property
     def new(self) -> str | None:
         value = (self.use or {}).get("new")
         return value.strip() if isinstance(value, str) and value.strip() else None
@@ -608,12 +653,36 @@ class Beside:
                     f"\"{self.taught_sentence}\" A different wrong option does not change "
                     f"that. {two_ways}"
                 )
+            if self.share < SAID_BACK_SHARE:
+                # Told in words the lesson has used: `look_again` hands it on.
+                return None
             return (
                 f"`{label}`.use.new is \"{self.new}\", and the lesson had already said {already} "
                 f"before this task was set, so it is not new to the class. The teaching just "
-                f"before already said {count}. {beside}. {two_ways}"
+                f"before already said {count}, which is the teaching said back: this check asks "
+                f"a `new` for at least {NEW_MIN_UNSAID} things the lesson has not named yet only "
+                f"when the answer sits that close to the teaching. Adding detail to the task to "
+                f"find {NEW_MIN_UNSAID} unsaid words does not repair it; a different answer "
+                f"does. {beside}. {two_ways}"
             )
         return None
+
+    def look_again(self) -> str | None:
+        """A declaration that passes on trust: what the task brings is told in
+        words the lesson has already used, so no count can tell a changed
+        situation from the last answer asked again. The reviewer decides."""
+        if not (self.declares and self.asked and self.new) or self.right_option:
+            return None
+        missing, old, fresh = self.new_words()
+        if missing or len(fresh) >= NEW_MIN_UNSAID or self.share >= SAID_BACK_SHARE:
+            return None
+        return (
+            "LOOK AGAIN: every word of that has been used in the lesson already, so nothing "
+            "counted here shows it is new. That is right for a task that carries a case on "
+            "and changes one thing, where the class has to work out what the change does, "
+            "and wrong for a task whose answer is the one children gave or were shown a "
+            "moment ago. Which is this?"
+        )
 
     def declaration_line(self) -> str:
         """The declaration as one line for a view."""
@@ -624,7 +693,9 @@ class Beside:
                 f" A child who has not understood would say: \"{self.wrong}\""
                 if self.wrong else " It does not say what a child who has not understood would answer."
             )
-            return f"The design says this task brings something new: \"{self.new}\"" + wrong
+            again = self.look_again()
+            return (f"The design says this task brings something new: \"{self.new}\"" + wrong
+                    + (f" {again}" if again else ""))
         if self.practice:
             return f"The design says this beat practises the skill itself: \"{self.practice}\""
         if self.rehearsal:

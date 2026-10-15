@@ -125,6 +125,10 @@ function drawRow(pptx, slide, zone, data, ctx) {
       return Math.max(m, clockLabelBandHeight(it));
     }, 0);
   }
+  // The same for what is drawn inside the picture: a face with a digital time
+  // under it, or a minute ring round it, beside one without. Each leaves the
+  // room, so the faces come out one size (`reserve` in clock-svg.js).
+  const clockRowReserve = require('../../../shared/visuals/clock-svg').rowReserve(clockItems);
 
   // Turn diagrams share a row the same way clocks do — equalise their label bands
   // so an answer-reveal caption ("(a) ||half turn clockwise") doesn't shrink its
@@ -322,6 +326,9 @@ function drawRow(pptx, slide, zone, data, ctx) {
     }
     if (clockBandH !== null && item && item.type === 'clock') {
       subZone.clockLabelBandH = clockBandH;
+    }
+    if (clockRowReserve && item && item.type === 'clock') {
+      subZone.clockRowReserve = clockRowReserve;
     }
     if (turnBandH !== null && item && item.type === 'turn-diagram') {
       subZone.turnLabelBandH = turnBandH;

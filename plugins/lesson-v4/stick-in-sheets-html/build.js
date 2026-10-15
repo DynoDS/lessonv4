@@ -34,7 +34,7 @@ const { pieceHandle, A4, CLASS_SIZE, HANDLE_BAND_MM } = require("./src/layout-ru
 const { selectContextPictureSet } = require("../shared/context-picture-set");
 const { renderPieceHtml, letterMarks, esc } = require("./src/render-piece-html");
 const { withoutTaughtMarks } = require("../shared/text/criteria-marks");
-const { normaliseCardSet, renderKitPages, renderSheetPages } = require("./src/render-card-set");
+const { normaliseCardSet, renderKitPages, renderSheetPages, renderSheetPagesMeasured } = require("./src/render-card-set");
 const { normaliseSourceText, renderSourceTextPagesMeasured } = require("./src/render-source-text");
 const { figurePages, sheetPages, promptsOf, normaliseTaskSheet, taskSheetPages, taskOf, hasPartsToBreak } = require("./src/render-activity-page");
 
@@ -334,7 +334,18 @@ function withBoardLetters(item, baseDir) {
   });
 }
 
-function buildKits(cardSetItems, classSize, baseDir) {
+// The page a kit is laid out for. A sheet may turn upright when that is the
+// page that holds it; cut-out cards keep the landscape page.
+function kitPage() {
+  return {
+    printableWMm: PRINTABLE_W_MM,
+    printableHMm: PRINTABLE_H_MM,
+    pageHtml: pageDiv,
+    upright: { printableWMm: PORTRAIT_W_MM, printableHMm: PORTRAIT_H_MM },
+  };
+}
+
+function normaliseKits(cardSetItems, classSize, baseDir) {
   const kits = [];
   const dropped = [];
   for (const original of cardSetItems) {
@@ -347,16 +358,68 @@ function buildKits(cardSetItems, classSize, baseDir) {
     }
     kits.push(Object.assign(kit, { sourceItem: original }));
   }
+  return { kits, dropped };
+}
+
+// By sums alone, with no page drawn: what a machine without a browser prints.
+function buildKits(cardSetItems, classSize, baseDir) {
+  const { kits, dropped } = normaliseKits(cardSetItems, classSize, baseDir);
+  return assembleKits(kits, dropped, (kit) => (kit.form === "sheet" ? renderSheetPages : renderKitPages)(kit, kitPage()));
+}
+
+// How tall a sheet drew, and how many of its fixed-size cards have words
+// running out of them.
+async function measureSheet(browser, pageDivHtml, portrait = false) {
+  const page = await browser.newPage();
+  try {
+    await page.setContent(wrapDocument([pageDivHtml], portrait), { waitUntil: "load" });
+    return await page.evaluate(async () => {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const mm = (px) => (px * 25.4) / 96;
+      const sheet = document.querySelector("[data-sheet]");
+      const spilled = [...document.querySelectorAll("[data-card]")]
+        .filter((card) => card.scrollHeight > card.clientHeight + 1 || card.scrollWidth > card.clientWidth + 1).length;
+      return { heightMm: mm(sheet.getBoundingClientRect().height), spilled };
+    });
+  } finally {
+    await page.close();
+  }
+}
+
+// Sheets are laid out against the page a browser draws, as a full-page text
+// source is: a sheet sized by sums alone ran off the bottom of its page (11
+// October 2026). Without a browser there is no PDF either, and the sums stand.
+async function buildKitsMeasured(cardSetItems, classSize, baseDir) {
+  const { kits, dropped } = normaliseKits(cardSetItems, classSize, baseDir);
+  let browser = null;
+  if (kits.some((kit) => kit.form === "sheet")) {
+    try {
+      browser = await require("../worksheet-html/src/chrome").launchBrowser();
+    } catch (err) {
+      browser = null;
+    }
+  }
+  try {
+    const measure = browser && ((html, portrait) => measureSheet(browser, html, portrait));
+    const laidFor = new Map();
+    for (const kit of kits) {
+      laidFor.set(kit, kit.form === "sheet"
+        ? await renderSheetPagesMeasured(kit, kitPage(), measure)
+        : renderKitPages(kit, kitPage()));
+    }
+    return assembleKits(kits, dropped, (kit) => laidFor.get(kit));
+  } finally {
+    if (browser) await browser.close();
+  }
+}
+
+function assembleKits(kits, dropped, layOut) {
   const pageDivs = [];
   const summaries = [];
   const laidOut = [];
   const perItem = [];
   for (const kit of kits) {
-    const laid = (kit.form === "sheet" ? renderSheetPages : renderKitPages)(kit, {
-      printableWMm: PRINTABLE_W_MM,
-      printableHMm: PRINTABLE_H_MM,
-      pageHtml: pageDiv,
-    });
+    const laid = layOut(kit);
     if (laid.error) {
       console.warn(`[stick-in] card kit "${kit.label}": ${laid.error} - this kit is NOT in the pack.`);
       dropped.push(kit.label);
@@ -364,8 +427,10 @@ function buildKits(cardSetItems, classSize, baseDir) {
     }
     laidOut.push(kit);
     pageDivs.push(...laid.pages);
-    perItem.push({ item: kit.sourceItem, label: kit.label, pages: laid.pages, sheet: kit.form === "sheet" });
-    const fit = kit.form === "sheet"
+    perItem.push({ item: kit.sourceItem, label: kit.label, pages: laid.pages, sheet: kit.form === "sheet", portrait: Boolean(laid.portrait) });
+    const fit = laid.twoUp
+      ? "printed two sheets to a page, cut once down the middle"
+      : kit.form === "sheet"
       ? `printed as a whole sheet, no cutting${laid.pictureMm ? `, pictures about ${laid.pictureMm} mm wide` : ""}`
       : laid.splitSet
       ? `each set runs over ${laid.pagesPerSet} pages`
@@ -464,6 +529,13 @@ async function build(specPath, outDir) {
   if (sixSeven.length) throw new Error(sixSevenMessage(sixSeven, "stick-in sheets"));
   const items = Array.isArray(spec.items) ? spec.items : [];
   const baseDir = path.dirname(specPath);
+  {
+    // A process chain's pictures are read before the chain is drawn.
+    let sharp = null;
+    try { sharp = require("sharp"); } catch (_) { sharp = null; }
+    const unread = await require("../shared/visuals/process-chain-svg").prepareChainsIn(items, baseDir, { sharp });
+    unread.forEach((m) => console.warn(`A process chain names the picture ${m.imagePath}, which could not be read; its place is left empty.`));
+  }
 
   if (items.length === 0) {
     console.log(`No write-on moments - Stick-in Sheets not written${spec.rationaleNote ? ` (${spec.rationaleNote})` : ""}.`);
@@ -476,7 +548,7 @@ async function build(specPath, outDir) {
   const taskSheetItems = items.filter((item) => item && item.visual === "task-sheet");
   const pieceItems = items.filter((item) => item && !["card-set", "source-text", "task-sheet"].includes(item.visual));
   const { moments, dropped } = await renderMoments(pieceItems, baseDir);
-  const kitsBuilt = buildKits(cardSetItems, classSize, baseDir);
+  const kitsBuilt = await buildKitsMeasured(cardSetItems, classSize, baseDir);
   const sourcesBuilt = await buildSourceTexts(sourceTextItems, classSize);
   const taskSheets = [];
   const sheetDropped = [];
@@ -662,4 +734,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { build, buildHtml, renderMoments, buildKits, wrapDocument, measureBodyMm, pageDiv, PRINTABLE_W_MM, PRINTABLE_H_MM };
+module.exports = { build, buildHtml, renderMoments, buildKits, buildKitsMeasured, measureSheet, wrapDocument, measureBodyMm, pageDiv, PRINTABLE_W_MM, PRINTABLE_H_MM, PORTRAIT_W_MM, PORTRAIT_H_MM };

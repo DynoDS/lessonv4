@@ -169,6 +169,25 @@ const helperCss = [...FILES.map((f) => f.css || ""), composeCss, require("./in-b
 function entry(name) {
   const found = REGISTRY[name];
   if (!found) {
+    // `row` and `stack` read like helper names and are not: they are the
+    // wrappers helpers sit in. Five adaptation designers in twenty lessons wrote
+    // `"helper": "row"`, were handed the list of 92 names below, and read this
+    // source to find the form (the stress test of 7 October 2026). So the
+    // refusal shows the form itself, and an entry naming nothing gets the same.
+    const WRAPPERS =
+      'Side by side is written { "row": [ {...}, {...} ] } and one above another ' +
+      '{ "stack": [ {...}, {...} ] }, where each {...} is a helper entry ' +
+      '({ "helper": "<name>", ... }) or another row or stack.';
+    if (name === "row" || name === "stack") {
+      throw new Error(
+        `UNKNOWN_HELPER: "${name}" is not a helper, it is the wrapper helpers sit in. ${WRAPPERS}`
+      );
+    }
+    if (name === undefined || name === null || name === "") {
+      throw new Error(
+        `UNKNOWN_HELPER: this entry names no helper and is not a row or a stack. ${WRAPPERS}`
+      );
+    }
     throw new Error(
       `UNKNOWN_HELPER: "${name}". Known: ${Object.keys(REGISTRY).sort().join(", ")}`
     );

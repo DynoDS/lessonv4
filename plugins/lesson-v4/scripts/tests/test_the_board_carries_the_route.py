@@ -105,8 +105,11 @@ class TheCalibrationIsAtBothOwners(unittest.TestCase):
         self.assertIn("the route from the takeaway to the point where the class can use it", text)
         # Routes decisions 3 and 4 (his 3, widened): how he usually explains
         # anything, not a template, written once for every route.
-        self.assertIn("This is how this teacher usually explains anything, on a Teach board in any kind of lesson or wherever else something is explained: the takeaway, then a because or so that explains that one key point, then an example or what it does not mean.", text)
-        self.assertIn("It is how he usually explains, not a template. The takeaway is on every Teach board, and the because or so is nearly always there with it", text)
+        # Widened 14 October 2026: the way in is chosen first, and the takeaway
+        # is on the board in every way in, told at the top or reached last.
+        self.assertIn("This teacher first chooses the way in, idea by idea, and then explains it", text)
+        self.assertIn("When an idea has to be explained, he usually gives the takeaway, then a because or so that explains that one key point, then an example or what it does not mean, then comes back to the point.", text)
+        self.assertIn("In every way in, the takeaway is on the board somewhere in the Teach: at the top when it is told, at the end when the class reaches it. When it is there, the because or so is nearly always there with it", text)
         for owner in (PREFERENCES, LESSON_DESIGNER, DESIGN_REVIEWER):
             self.assertIn("the takeaway, the because or so, the example the class looks at, and what it does not mean", flat(owner))
         self.assertIn("never `No shops, no switches`", text)

@@ -73,9 +73,15 @@ class ContentGapPictureWaveTests(unittest.TestCase):
             "pitches the evidence at the level the teaching needs",
             playbook,
         )
-        # Filling the hole with a generated photograph of a named real source
-        # would be the lie authentic-real exists to refuse.
-        self.assertIn("authenticity does not bend to fill the hole", playbook)
+        # Until 12 October 2026 nothing real was ever made (`authenticity does
+        # not bend to fill the hole`). The teacher then had six real things
+        # made and ruled that one may stand in when the words beside it say
+        # what it is. The source the lesson is about is still never made.
+        self.assertIn(
+            "could not reach the one source the lesson is about does the dependent task go",
+            playbook,
+        )
+        self.assertIn("anything else may be made honestly (Photograph acquisition)", playbook)
 
     def test_the_owner_repair_round_escalates_instead_of_excluding(self) -> None:
         """A resource owner refusing to invent evidence has diagnosed, not failed.

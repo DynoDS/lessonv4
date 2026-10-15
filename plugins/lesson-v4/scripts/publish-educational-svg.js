@@ -18,6 +18,7 @@ const {
   LOCAL_ROOT_VARIABLE,
   resolveLibrary,
 } = require("../shared/educational-svg-library");
+const { moveIntoPlace, claimName } = require("../shared/final-name");
 
 function libraryHome() {
   const configured = (process.env[LOCAL_ROOT_VARIABLE] || "").trim();
@@ -107,9 +108,9 @@ function ensurePng(sourcePath, pngPath, rasterize) {
   rasterize(sourcePath, temporary);
 
   try {
-    fs.renameSync(temporary, pngPath);
+    moveIntoPlace(temporary, pngPath);
   } catch (error) {
-    if (error && (error.code === "EEXIST" || error.code === "EPERM")) {
+    if (error && (error.code === "EEXIST" || error.code === "EPERM" || error.code === "SAVE_REFUSED")) {
       if (fs.existsSync(pngPath)) {
         try {
           fs.unlinkSync(temporary);
@@ -176,7 +177,7 @@ function publishEducationalSvgAsset(
     fs.writeFileSync(incoming, candidate);
 
     try {
-      fs.linkSync(incoming, sourcePath);
+      claimName(incoming, sourcePath);
       fs.unlinkSync(incoming);
       ensurePng(sourcePath, pngPath, rasterize);
       return {
