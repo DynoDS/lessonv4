@@ -143,10 +143,16 @@ it.
 The printed page carries the decision; you read it before you start, and these
 are the parts of it to hold while you compose.** The page begins top left with
 whatever the questions read from, and the run flows so a child who has just
-finished one question can see the next without hunting: usually down a column,
-though a long question filling one side with the next beside it reads fine,
-and never a run ping-ponging left, right, left, right between short zones (the
-turned and mirrored layout variants always offer a followable arrangement). A
+finished one question can see the next without hunting. Pieces that sit level
+with each other read across like a book: lettered parts in rows, `(1a) (1b)`
+then `(1c) (1d)`, and separate questions of matching size the same way, with
+a group's task line above all its parts. Down a column is for pieces that do
+not line up, such as a long question filling one side with shorter ones
+beside it, and never a run ping-ponging left, right, left, right between short
+zones that do not line up (the turned and mirrored layout variants always
+offer a followable arrangement). Two pieces go side by side only while each
+keeps the room its answer needs. An adaptation that names a page order (`(a), (b) down the left
+column`) is describing a page, which is yours to compose by these rules. A
 stimulus and the questions that read it share a column, stimulus first, and a
 lettered set is one block; the other column is for what the run does not need:
 a drawing task, an independent extension, a question that starts fresh. **That

@@ -187,7 +187,8 @@ NEXT_STEPS: dict[str, tuple[str, ...]] = {
     ),
     "other-resources": (
         "Each of these builds settles on its own. Track D ends when the wall"
-        " builder returns its evidence result; Track F ends when the stick-in"
+        " builder returns its evidence result, or at `WALL_REUSED` or"
+        " `WALL_NOT_NEEDED`; Track F ends when the stick-in"
         " build is accepted.",
         "Load `focused-repair` for a build diagnostic on either.",
         "A track that ends with an empty spec earns no build; record it and"

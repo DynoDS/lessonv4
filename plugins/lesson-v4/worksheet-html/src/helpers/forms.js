@@ -384,6 +384,8 @@ function toCalculation(spec) {
     // must actually show the T and the O - a run on 30 August 2026 shipped
     // Sheet A saying exactly that over headingless grids.
     headings: spec.showHeadings === true,
+    // Set by the row it sits in, never by a designer (compose.js placeRowNumbers).
+    ...(spec.squaresGive === true ? { squaresGive: true } : {}),
     calculation: { operator: spec.operator, numbers: [spec.top, spec.bottom] },
   };
 }

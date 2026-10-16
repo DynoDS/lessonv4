@@ -200,7 +200,7 @@ For each question, part or open task, write:
 
 - `Pupil prompt:` — exact child-facing wording;
 - `Response form:` one value from the vocabulary in `output-template.md` → `responseForm`, and for `written-explanation` a clause saying what the words evidence that no other form would;
-- `Response:` — the printed action and obvious response target;
+- `Response:` — the printed action and obvious response target. Give lettered parts in their order, (a), (b), (c), and leave where they sit on the page to the worksheet designer, who composes the page: naming columns here (`(a), (b) down the left column`) once overrode the teacher's reading order on a printed sheet;
 - `Support:` — any word bank, stem, given labels, representation or reference;
 - `Visual requirements:` — required content, sourcing and composition information.
 
@@ -256,6 +256,21 @@ Price the protected set against the page first, and write that count as the `Pag
 ```
 
 That is two numbered questions side by side, the second made of two pieces one above the other.
+
+Lettered parts under one task line are written as the sheet will number them: each part its own `"question": true`, all sharing one `"questionGroupId"`, the task line as `"groupPrompt"` on the first:
+
+```json
+[
+  { "row": [
+    { "question": true, "questionGroupId": "g1", "groupPrompt": "Use column subtraction.",
+      "helper": "column-method-grid", "operator": "-", "top": 6453, "bottom": 187, "showHeadings": true },
+    { "question": true, "questionGroupId": "g1",
+      "helper": "column-method-grid", "operator": "-", "top": 4531, "bottom": 216, "showHeadings": true }
+  ] }
+]
+```
+
+That prints `Use column subtraction.` once, then (1a) and (1b). Measured as one numbered question holding the row, the same frames print differently from the plan: three column frames numbered once fitted a 174mm page, and the sheet that numbered them (1a) to (1c) did not, so a sum was cut. Lettered drawings in a row a little too wide for their numbers beside them keep them beside with slightly smaller squares, or carry them above when that is not enough, and the tool measures whichever the sheet will print.
 
 Then run:
 
@@ -548,10 +563,24 @@ Assign IDs sequentially in the order those objects appear across the one adaptat
 
 A required adaptation photograph may be requested even when Expected uses none. Name the exact learning or access job and use the smallest coherent set.
 
-The complete automated lesson run may promote at most 16 required Image Team picture requests. The prompt supplies the current promoted count and the number of unconsumed places. Reuse an existing approved picture only when it remains truthful for this adaptation and does not give away thinking the pupil is meant to do.
+A lesson aims for 16 required Image Team picture requests at most, and that aim is the Lesson Designer's: it is a limit to stay well inside, never a number to fill. Your pictures come after the design, so the run lets you go past 16, up to 24 in all and never further, for a picture a sheet truly needs: one whose loss would make a child unable to do the task or would change what it asks. A picture that only makes the sheet nicer does not earn a place beyond 16. The launch gives no count; `check-adaptation` refuses a run over 24. Reuse an existing approved picture only when it remains truthful for this adaptation and does not give away thinking the pupil is meant to do.
 
 **Reuse means naming the picture that already exists, not describing it again.** `Photos for the sheets` declares pictures that are new to this run; a `photo-###` the Lesson Designer already contracted is reused by putting that ID in the item's `Photo refs` and leaving the block alone. Re-declaring it as an `adaptation-photo-###` gives one filename two identities, and the contract merge refuses the whole adaptation for it - a Year 4 history adaptation was dropped entirely that way, over a photograph the lesson already had. Where the reused picture needs a different constraint for this sheet, that is a genuinely different picture: give it a new filename as well as a new ID.
 
 The adaptation's `Photos for the sheets` block remains provisional while Worksheet Designer settles the final page plan. Do not silently delete a required picture merely because the provisional set would exceed the remaining places. If the final required adaptation set still needs more new pictures than the run has places available, report `PHOTO_CAP_GAP` with the exact required visual jobs so the owning adaptation task can be revised before those new pictures are promoted.
 
 Do not write a text-only substitute for a task whose required picture is load-bearing.
+
+---
+
+## Your check before you hand back
+
+Once `adaptation.md` is written, and again after any revision of it, run your check:
+
+```text
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/photo-contract.py" check-adaptation --working-dir "[WORKING_DIR]"
+```
+
+Require `ADAPTATION_CHECK_OK [N]` as its last line, where N is the number of new pictures your `Photos for the sheets` block asks for (0 when there is none). It reads the file the way the orchestrator's contract merge will after the voice editor has read your pages: it is the adaptation document, the picture block is complete and numbered in order, no picture takes a filename or id the lesson already uses for something else, the run stays under its picture cap, and the lesson design still validates with your pictures added. It writes nothing in the working folder and needs no other worker first. A refusal names its fault; mend the file and run it again. The one refusal you do not mend by cutting is the picture cap: report `PHOTO_CAP_GAP` as the section above says.
+
+`photo-contract.py build-provisional` is not yours to run. It is the orchestrator's next step, and it refuses until the voice editor's second pass has read the file.

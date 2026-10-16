@@ -37,10 +37,13 @@ function drawScPanelContent(pptx, slide, zone, data, ctx) {
 // slides: one shared box, steps then table. Panels side by side in a row are
 // left as written (he did not want that one squashed into one), and so is a
 // panel with its own heading or the flipchart easel, whose cue belongs to its
-// own criterion.
+// own criterion. A list of steps that carries its own heading ("How to
+// exchange") is one of a lesson's separate lists, so it keeps its own box too.
 function joinable(item) {
+  const set = item && (item.content || item.criteria);
+  const headed = !!(set && set.type === 'steps' && typeof set.heading === 'string' && set.heading.trim());
   return !!(item && item.type === 'sc-panel' && !item.flipchart &&
-    !item.label && !item.criteriaLabel && (item.content || item.criteria));
+    !item.label && !item.criteriaLabel && set && !headed);
 }
 
 const weightOf = (it) => (typeof it.weight === 'number' && it.weight > 0) ? it.weight : 1;

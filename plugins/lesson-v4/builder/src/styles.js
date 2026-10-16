@@ -81,6 +81,11 @@ function subjectBackground(subject) {
 // the teacher deleted this deck's as "pointless", and a third of them being too
 // long to read says the field is being used for something it is not for. Fix what
 // gets written into it, then this can come up to the floor and stay there.
+//
+// Since 16 October 2026 this is the size of a LONG cue only: a cue short enough
+// to sit on one line at a larger size grows up to 20pt (layout.js,
+// instructionCuePt), so the short cues that were never the problem no longer
+// print at the size the long ones need.
 const SIZE_CEILINGS = {
   slideTitle:       28,
   instruction:      16,

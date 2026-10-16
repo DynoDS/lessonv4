@@ -396,3 +396,84 @@ def test_no_previous_lesson_means_no_earlier_lessons():
         (base / "working").mkdir()
         kv, out = _plain_run(base, "Maths", {"folder": False})
         assert kv.get("PREVIOUS_LESSON") == "" and kv.get("EARLIER_LESSONS") == "", out.stdout
+
+
+def _remember(base, *roots):
+    settings = base / "plugin-home" / "settings.json"
+    data = json.loads(settings.read_text(encoding="utf-8"))
+    data["workingRoots"] = [str(r) for r in roots]
+    settings.write_text(json.dumps(data), encoding="utf-8")
+
+
+def _roots_run(base, working, current, settings):
+    env = dict(os.environ, LESSON_RESOURCES_HOME=str(base / "plugin-home"))
+    out = subprocess.run(
+        [sys.executable, str(SCRIPT), "Year 4", "Maths", "--working", str(working),
+         "--current", str(working / current)],
+        capture_output=True, text=True, env=env,
+    )
+    return dict(l.split("=", 1) for l in out.stdout.splitlines() if "=" in l), out
+
+
+def test_a_lesson_built_in_the_other_apps_folder_is_still_the_lesson_before():
+    # 15 October 2026: lessons 22 to 27 were built on Codex, in its own working
+    # folder, so every Claude Code run for lessons 28 to 32 was handed lesson 21.
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        claude, codex = base / "working", base / "output" / "working"
+        _design(claude, "year-4-maths-lesson-21-subtract-mentally", 4, "Maths")
+        for n in range(22, 28):
+            _design(codex, f"year-4-maths-lesson-{n}-column-addition", 4, "Maths")
+        (claude / "year-4-maths-lesson-28-column-subtraction").mkdir()
+        settings_env(base, folder=False)
+        _remember(base, codex)
+        kv, out = _roots_run(base, claude, "year-4-maths-lesson-28-column-subtraction", {})
+        assert Path(kv["PREVIOUS_LESSON"]).name == "year-4-maths-lesson-27-column-addition", out.stdout
+        names = [Path(p).name for p in kv["EARLIER_LESSONS"].split(" | ")]
+        assert names == [f"year-4-maths-lesson-{n}-column-addition" for n in (26, 25, 24)], out.stdout
+
+
+def test_a_run_remembers_its_folder_so_the_other_app_finds_its_lessons():
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        claude, codex = base / "working", base / "output" / "working"
+        _design(claude, "year-4-maths-lesson-32-column-subtraction", 4, "Maths")
+        (claude / "year-4-maths-lesson-32b").mkdir()
+        settings_env(base, folder=False)
+        _roots_run(base, claude, "year-4-maths-lesson-32b", {})
+        remembered = json.loads((base / "plugin-home" / "settings.json").read_text(encoding="utf-8"))
+        assert remembered.get("delivery") == {}, remembered
+        assert [Path(r) for r in remembered["workingRoots"]] == [claude], remembered
+        _design(codex, "year-4-maths-lesson-28", 4, "Maths")
+        (codex / "year-4-maths-lesson-33-subtraction-across-zero").mkdir()
+        kv, out = _roots_run(base, codex, "year-4-maths-lesson-33-subtraction-across-zero", {})
+        assert Path(kv["PREVIOUS_LESSON"]).name == "year-4-maths-lesson-32-column-subtraction", out.stdout
+
+
+def test_a_remembered_folder_that_has_gone_is_passed_over():
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        claude = base / "working"
+        _design(claude, "year-4-maths-lesson-27-column-addition", 4, "Maths")
+        (claude / "year-4-maths-lesson-28-column-subtraction").mkdir()
+        settings_env(base, folder=False)
+        _remember(base, base / "deleted" / "working", 42)
+        kv, out = _roots_run(base, claude, "year-4-maths-lesson-28-column-subtraction", {})
+        assert out.returncode == 0, out.stderr
+        assert Path(kv["PREVIOUS_LESSON"]).name == "year-4-maths-lesson-27-column-addition", out.stdout
+
+
+def test_a_lesson_started_as_one_of_a_set_carries_its_thread_into_filing():
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        (base / "working").mkdir()
+        env = settings_env(base, folder=False)
+        env.update(LESSON_SET_THREAD=str(base / "thread-year-4-maths.json"), LESSON_SET_LESSON="lesson-29")
+        out = subprocess.run([sys.executable, str(SCRIPT), "Year 4", "Maths", "--working", str(base / "working")],
+                             capture_output=True, text=True, env=env)
+        kv = dict(l.split("=", 1) for l in out.stdout.splitlines() if "=" in l)
+        assert Path(kv["SET_THREAD"]).name == "thread-year-4-maths.json" and kv["SET_LESSON"] == "lesson-29", out.stdout
+        env.pop("LESSON_SET_THREAD")
+        out = subprocess.run([sys.executable, str(SCRIPT), "Year 4", "Maths", "--working", str(base / "working")],
+                             capture_output=True, text=True, env=env)
+        assert "SET_THREAD" not in out.stdout, out.stdout

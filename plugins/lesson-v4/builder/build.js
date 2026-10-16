@@ -79,6 +79,7 @@ const { keepShapesStill } = require('./src/content/shapes-stand-still');
 const { keepWallsStill } = require('./src/content/walls-stand-still');
 const { keepGridsStill } = require('./src/content/grids-stand-still');
 const { keepCyclesStill } = require('./src/content/cycles-stand-still');
+const { keepChartsStill } = require('./src/content/charts-stand-still');
 const { tellFramesWhatWasAsked } = require('./src/content/method-frame-answers');
 const { preRenderLabelDiagrams, rasteriseLabelDiagrams, labelDiagramFindings, clearLabelDiagramFindings } = require('./src/content/label-diagram');
 const { allowHairUnder, setHairUnderSlide, clearHairUnder, hairUnderFindings } = require('../shared/visuals/hair-under');
@@ -209,8 +210,14 @@ async function main() {
   // designer's own check sending faults back for repair. Never in a design
   // preview: that check exists to refuse.
   const deliverFlagged = rawArgs.includes("--deliver-flagged") && !designPreview;
+  // The file's name, when the lesson run gives one (`--name`): every resource
+  // of a lesson carries the one name run-fixed-resource.py sets, so two
+  // lessons sharing a title never build over each other's deck.
+  const nameAt = rawArgs.indexOf("--name");
+  const fileName = nameAt >= 0 ? rawArgs[nameAt + 1] : null;
   const args = rawArgs.filter(
-    (arg) =>
+    (arg, i) =>
+      !(nameAt >= 0 && (i === nameAt || i === nameAt + 1)) &&
       arg !== "--cards" &&
       arg !== "--no-cards" &&
       arg !== "--skip-optional-decorations" &&
@@ -327,6 +334,7 @@ async function main() {
   keepWallsStill(coreLesson);
   keepGridsStill(coreLesson);
   keepCyclesStill(coreLesson);
+  keepChartsStill(coreLesson);
   tellFramesWhatWasAsked(coreLesson);
   await preResizeAll(coreLesson, lessonDir);
   // A process chain's pictures are read here, before anything measures or
@@ -589,7 +597,7 @@ async function main() {
     diagnostic(finding.signal, 'content', { slide: finding.slide }, finding.message);
   }
 
-  const sanitizedName = safeFilenameComponent(lessonName, 'Untitled Lesson');
+  const sanitizedName = safeFilenameComponent(fileName || lessonName, 'Untitled Lesson');
   const outputPath = path.join(outputDir, `${sanitizedName}.pptx`);
 
   // Build to a temporary name and only rename it into place once every

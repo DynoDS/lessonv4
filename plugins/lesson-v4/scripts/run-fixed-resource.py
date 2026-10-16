@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -93,6 +94,63 @@ def safe_filename_component(
     return completed.stdout
 
 
+# The lesson's number by the plan, read from its working folder's name exactly
+# as resolve-filing.py reads it (`year-4-maths-lesson-31-...`).
+LESSON_NUMBER_RE = re.compile(r"(?:^|-)lesson-(\d+)(?:-|$| )")
+# A title that already carries what the name adds (lesson 30's slide designer
+# wrote "Year 4 Maths - Lesson 30 - Column subtraction (one exchange)").
+TITLE_PREFIX_RE = re.compile(r"^\s*(?:Year\s*\d+\b[^-]*-\s*)?Lesson\s+\d+\s*-\s*", re.IGNORECASE)
+
+
+def filing_values(working: Path) -> dict:
+    filing = working / "filing.txt"
+    if not filing.is_file():
+        return {}
+    return {
+        key.strip(): value.strip()
+        for key, value in (
+            line.split("=", 1)
+            for line in filing.read_text(encoding="utf-8").splitlines()
+            if "=" in line
+        )
+    }
+
+
+def name_prefix(working: Path) -> tuple[str, bool]:
+    """What the lesson's file names start with, and whether the drive keeps it.
+
+    Every lesson builds into one shared output folder, and two lessons can share
+    a title (a teach day and a practise day on one objective), so each name
+    carries what tells the lesson apart. The plan's number is kept on the drive
+    (Daniel, 16 October 2026: "number on the drive"); a day or week is for this
+    folder only, because on the drive the lesson's own folder already says it
+    ("day only in working files").
+    """
+    match = LESSON_NUMBER_RE.search(working.name)
+    if match:
+        return f"Lesson {int(match.group(1))} - ", True
+    filing = filing_values(working)
+    if filing.get("DELIVERY") == "sorted":
+        if filing.get("DAY"):
+            return f"{filing['DAY']} - ", False
+        if filing.get("WEEK_NUM"):
+            return f"Week {filing['WEEK_NUM']} - ", False
+    return "", True
+
+
+def lesson_build_name(working: Path, title: str) -> str:
+    """The one name every built file of this lesson carries.
+
+    Set here, not by the helpers: the deck, the sheets, the wall and the
+    activities each took their own title, so one lesson's files disagreed and
+    two lessons on one objective built over each other's (Year 4 lessons 29 to
+    32, 15 October 2026).
+    """
+    prefix, _ = name_prefix(working)
+    clean = TITLE_PREFIX_RE.sub("", str(title or "")).strip() or str(title or "").strip()
+    return f"{prefix}{clean or 'Lesson'}"
+
+
 def archive_name(path: Path) -> Path:
     number = 1
     while True:
@@ -117,12 +175,7 @@ def actual_family(
     kind: str, plugin_root: Path, working: Path, output: Path, lesson_name: str
 ) -> list[Path]:
     if kind == "slides":
-        lesson = read_json(working / "lesson.json", "lesson.json")
-        base = safe_filename_component(
-            plugin_root,
-            lesson.get("lessonName") or "Untitled Lesson",
-            "Untitled Lesson",
-        )
+        base = safe_filename_component(plugin_root, lesson_name, "Untitled Lesson")
         return [output / f"{base}.pptx"]
 
     if kind == "worksheets":
@@ -152,20 +205,16 @@ def actual_family(
         return paths
 
     if kind == "wall":
-        # The wall names its own file from the spec's topic, exactly as the build
-        # script does, so an earlier run's file is archived before this one writes.
-        spec = read_json(working / "working-wall.json", "working-wall.json")
-        base = safe_filename_component(plugin_root, spec.get("topic"), "Lesson")
+        # The name the build is given below, so an earlier run's file is
+        # archived before this one writes.
+        base = safe_filename_component(plugin_root, lesson_name, "Lesson")
         return [
             output / f"Working Wall - {base}.pdf",
             output / f"Working Wall - {base}.html",
         ]
 
     if kind == "stick-in":
-        spec = read_json(working / "stick-in-sheets.json", "stick-in-sheets.json")
-        meta = spec.get("meta")
-        lesson = meta.get("lesson") if isinstance(meta, dict) else None
-        base = safe_filename_component(plugin_root, lesson, "Lesson")
+        base = safe_filename_component(plugin_root, lesson_name, "Lesson")
         # Each printed piece is its own file (`... - Stick-in Sheets - [piece].pdf`),
         # so the family is every file carrying the lesson's stick-in stem, plus
         # the single-file name older builds wrote. Matched by prefix, not glob,
@@ -212,6 +261,8 @@ def command_for(args) -> list[str]:
             str(working / "lesson.json"),
             str(output),
             "--deliver-flagged",
+            "--name",
+            args.build_name,
         ]
     if args.kind == "worksheets":
         # A pack is not lost because one of its sheets will not fit. The deck's
@@ -229,7 +280,7 @@ def command_for(args) -> list[str]:
             str(plugin_root / "worksheet-html" / "scripts" / "build-worksheet.js"),
             str(working / "worksheet.json"),
             str(output),
-            f"{args.lesson_name} - Worksheets",
+            f"{args.build_name} - Worksheets",
         ]
         if args.omit_unfittable:
             command.append("--omit-unfittable")
@@ -240,6 +291,8 @@ def command_for(args) -> list[str]:
             str(plugin_root / "working-wall-html" / "build.js"),
             str(working / "working-wall.json"),
             str(output),
+            "--name",
+            args.build_name,
         ]
     if args.kind == "stick-in":
         return [
@@ -247,6 +300,8 @@ def command_for(args) -> list[str]:
             str(plugin_root / "stick-in-sheets-html" / "build.js"),
             str(working / "stick-in-sheets.json"),
             str(output),
+            "--name",
+            args.build_name,
         ]
     if args.kind == "deliver":
         if not args.file:
@@ -290,7 +345,7 @@ def command_for(args) -> list[str]:
             command.extend(["--letterbox", args.letterbox])
         if args.plan and args.plan_index:
             command.extend(["--plan", args.plan, "--plan-index", str(args.plan_index)])
-        command.extend(["--source", str(output)])
+        command.extend(["--source", str(getattr(args, "save_source", None) or output)])
         for filename in args.file:
             command.extend(["--file", filename])
         return command
@@ -471,6 +526,76 @@ def changed_published_pictures(working: Path) -> list[str]:
     return changed
 
 
+def built_files(working: Path) -> dict[str, str]:
+    """Every file this lesson's builds wrote, by resolved path, with its hash."""
+    recorded = {}
+    for record in sorted((working / "build-results").glob("*.json")):
+        if record.name == "delivery.json":
+            continue
+        try:
+            built = json.loads(record.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(built, dict) or not built.get("ok"):
+            continue
+        for row in built.get("outputs") or []:
+            if isinstance(row, dict) and row.get("path") and row.get("sha256"):
+                recorded[os.path.normcase(str(Path(row["path"]).resolve()))] = row["sha256"]
+    return recorded
+
+
+def stage_for_saving(working: Path, output: Path, requested: list[str]) -> Path:
+    """Copy this lesson's own files into a folder only this lesson uses.
+
+    The shared output folder is written by every lesson, so the file standing
+    under a name when the lesson saves need not be the one it built: on 15
+    October 2026 Thursday's build renamed Friday's deck, wall and activity to
+    "(1)", and only timing kept Friday from saving Thursday's. Each file the
+    builds recorded is checked against its recorded hash; one replaced since is
+    found again by its bytes in the same folder, and one gone is refused rather
+    than saved in its place. A day or week at the front of a name is dropped
+    here, so the drive's copy carries only what its folder does not say.
+    """
+    recorded = built_files(working)
+    staging = working / "build-results" / "to-save"
+    if staging.exists():
+        shutil.rmtree(staging)
+    staging.mkdir(parents=True)
+    for name, saved_as in zip(requested, staged_names(working, requested)):
+        source = output / name
+        expected = recorded.get(os.path.normcase(str(source.resolve())))
+        if expected and not (source.is_file() and sha256_file(source) == expected):
+            siblings = sorted(source.parent.iterdir()) if source.parent.is_dir() else []
+            source = next(
+                (other for other in siblings
+                 if other.is_file() and sha256_file(other) == expected),
+                None,
+            )
+            if source is None:
+                raise FixedResourceError(
+                    f"NOT_THIS_LESSONS_FILE: {name} is no longer the file this lesson "
+                    "built (another lesson has built over it) and this lesson's copy "
+                    "cannot be found; rebuild this resource, then save again"
+                )
+        if not source.is_file():
+            continue  # the delivery names it as missing
+        target = staging / saved_as
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+    return staging
+
+
+def staged_names(working: Path, requested: list[str]) -> list[str]:
+    """Each requested file's name in the folder that is saved."""
+    prefix, keep_prefix = name_prefix(working)
+    names = []
+    for name in requested:
+        if prefix and not keep_prefix and len(Path(name).parts) == 1 and name.startswith(prefix):
+            name = name[len(prefix):]
+        names.append(name)
+    return names
+
+
 def wall_has_no_cards(working: Path) -> bool:
     """True only for a wall spec that reads cleanly and holds an empty `cards`
     list. A missing or unreadable spec is left to the build to report."""
@@ -549,9 +674,13 @@ def run(args) -> int:
     if args.kind != "deliver":
         if not args.lesson_name:
             raise FixedResourceError(f"{args.kind} requires --lesson-name")
+        args.build_name = lesson_build_name(working, args.lesson_name)
         archived = archive_paths(
-            actual_family(args.kind, plugin_root, working, output, args.lesson_name)
+            actual_family(args.kind, plugin_root, working, output, args.build_name)
         )
+    elif args.file:
+        args.save_source = stage_for_saving(working, output, args.file)
+        args.file = staged_names(working, args.file)
 
     command = command_for(args)
     # The Python running this wrapper is one this machine and sandbox can start,
@@ -571,6 +700,7 @@ def run(args) -> int:
         "schemaVersion": SCHEMA_VERSION,
         "ok": False,
         "kind": args.kind,
+        **({"buildName": args.build_name} if getattr(args, "build_name", None) else {}),
         "command": command,
         "exitCode": completed.returncode,
         "stdout": completed.stdout,

@@ -193,6 +193,19 @@ const NUMBER_LABEL_MM = 8;
 const NUMBER_GAP_MM = SPACE.tight;
 const NUMBER_GUTTER_MM = NUMBER_LABEL_MM + NUMBER_GAP_MM;
 
+// A lettered Part that is a drawing in a row - (1a), (1b), (1c) over three
+// column frames - may carry its number ABOVE it instead, centred, as a row's
+// letters already sit. That costs this much height and no width. Beside each
+// frame, three Year 4 column frames needed 179mm on a 174mm page, so a sum was
+// cut or the sheet went back to be planned again, in three lessons of five
+// (15 October 2026). The teacher's ruling: the label above is good to use when
+// the label beside does not fit, or instead of it, but never forced, and he
+// would rather keep it beside with a frame's squares a little smaller while
+// they stay usable (placeRowNumbers has the order). Only drawings: a short
+// written Part ("(2a) 62") keeps its number beside.
+const NUMBER_ABOVE_MM = 6;
+const PART_NUMBER = /^\d+[a-z]+$/;
+
 // ─── which of the three is this? ─────────────────────────────────────────
 
 function isRow(content) {
@@ -461,10 +474,66 @@ function makeCompose({
   function isDrawing(item, widthMm) {
     if (!item || typeof item !== "object" || !item.helper) return false;
     try {
-      return /class="h-figure"/.test(render(item, widthMm));
+      // Any figure: the column frame draws as "h-figure h-colgrid", and read
+      // as no drawing at all its row never started level with the worked
+      // example beside it (the teacher, 15 October 2026: "if one helper like
+      // that is misaligned it looks weird").
+      return /class="h-figure[\s"]/.test(render(item, widthMm));
     } catch {
       return false;
     }
+  }
+
+  // A lettered Part holding a drawing, the one kind whose number may go above
+  // it (NUMBER_ABOVE_MM). Asked often while a page is laid out, so remembered.
+  const holdsDrawing = new WeakMap();
+  function canNumberAbove(item) {
+    if (!item || typeof item !== "object" || item.number === undefined) return false;
+    if (!PART_NUMBER.test(String(item.number))) return false;
+    if (holdsDrawing.has(item)) return holdsDrawing.get(item);
+    const walk = (node) => {
+      if (Array.isArray(node)) return node.some(walk);
+      if (!node || typeof node !== "object") return false;
+      if (node.helper) return isDrawing(node, REFERENCE_WIDTH_MM);
+      return itemsOf(normaliseContent(node)).some(walk);
+    };
+    const { number, numberAbove, mark, ...body } = item;
+    const found = walk(body);
+    holdsDrawing.set(item, found);
+    return found;
+  }
+
+  // A column calculation's squares, asked to give a little (CALC_PAPER_GIVE in
+  // the shared drawing, 9.5mm at the least where 10mm is the floor).
+  const SQUARES = new Set(["column-method-grid", "place-value-chart"]);
+  function withSquaresGive(node) {
+    if (Array.isArray(node)) return node.map(withSquaresGive);
+    if (!node || typeof node !== "object") return node;
+    if (SQUARES.has(node.helper)) return { ...node, squaresGive: true };
+    const out = {};
+    for (const [key, value] of Object.entries(node)) {
+      out[key] = key === "stack" || key === "row" ? withSquaresGive(value) : value;
+    }
+    return out;
+  }
+
+  // A row's items as they print. The teacher's order (15 October 2026): the
+  // numbers stay beside a row of drawn Parts while they fit; then beside, with
+  // the frames' squares a little smaller, if that is enough; and only then
+  // above the drawings. A row that asks (`numbersAbove`) has them above. With
+  // no width given (a floor being asked for) the narrowest form is the floor,
+  // because the row can always take it.
+  function placeRowNumbers(content, items, widthMm) {
+    if (!items.some(canNumberAbove)) return items;
+    const above = () =>
+      items.map((item) => (canNumberAbove(item) ? { ...item, numberAbove: true } : item));
+    if (content.numbersAbove === true || !Number.isFinite(widthMm)) return above();
+    const wide = (cells) =>
+      cells.reduce((sum, item) => sum + needsContent(item).minWidthMm, 0) +
+      GAP_MM * Math.max(0, cells.length - 1);
+    if (wide(items) <= widthMm + 0.01) return items;
+    const given = withSquaresGive(items);
+    return wide(given) <= widthMm + 0.01 ? given : above();
   }
 
   // { leadMm, at } for the first drawing in a column that is a stack (numbered
@@ -472,10 +541,11 @@ function makeCompose({
   function firstDrawingIn(item, widthMm) {
     item = normaliseContent(item);
     if (!item || typeof item !== "object") return null;
-    const inside = item.number !== undefined ? widthMm - NUMBER_GUTTER_MM : widthMm;
+    const above = item.number !== undefined && item.numberAbove === true;
+    const inside = item.number !== undefined && !above ? widthMm - NUMBER_GUTTER_MM : widthMm;
     if (!isStack(item)) return null;
     const inner = itemsOf(item);
-    let leadMm = 0;
+    let leadMm = above ? NUMBER_ABOVE_MM : 0;
     for (let i = 0; i < inner.length; i++) {
       leadMm += gapAboveMm(inner, i);
       if (isDrawing(inner[i], inside)) return { leadMm, at: i };
@@ -510,7 +580,14 @@ function makeCompose({
             "own items, and never both."
         );
       }
-      const { number, mark, ...rest } = content;
+      const { number, mark, numberAbove, ...rest } = content;
+      if (numberAbove === true) {
+        return `
+        <div class="h-numbered h-numbered--above">
+          <span class="h-numbered-n">${esc(formatQuestionLabel(number))}</span>
+          <div class="h-numbered-body">${renderContent(rest, widthMm)}</div>
+        </div>`;
+      }
       return `
         <div class="h-numbered${mark === "book" || mark === "pencil" ? ` h-numbered--${mark}` : ""}">
           <span class="h-numbered-n">${esc(formatQuestionLabel(number))}</span>
@@ -519,6 +596,7 @@ function makeCompose({
     }
 
     if (isRow(content)) {
+      items = placeRowNumbers(content, items, widthMm);
       const shares = sharesOf(content, items.length);
       const renderWidths = widthsIn(content, items, widthMm);
 
@@ -628,14 +706,15 @@ function makeCompose({
 
   function measureContent(content, widthMm) {
     content = normaliseContent(content);
-    const items = itemsOf(content);
+    let items = itemsOf(content);
 
     // The number sits in a gutter beside the content, so it costs width and
     // never height. Measured off the same constant the CSS uses.
     // On a sheet whose questions carry a book or pencil mark, a question is
     // never shorter than its number and the mark under it (in-book.js).
     if (content && content.number !== undefined) {
-      const { number, mark, ...rest } = content;
+      const { number, mark, numberAbove, ...rest } = content;
+      if (numberAbove === true) return measureContent(rest, widthMm) + NUMBER_ABOVE_MM;
       const bodyMm = measureContent(rest, widthMm - NUMBER_GUTTER_MM);
       return mark ? Math.max(bodyMm, MARKED_QUESTION_MM) : bodyMm;
     }
@@ -643,6 +722,7 @@ function makeCompose({
     if (isRow(content)) {
       // Side by side, so the row is as tall as its tallest item, each measured
       // at the width it will actually get.
+      items = placeRowNumbers(content, items, widthMm);
       const widths = widthsIn(content, items, widthMm);
       const letterMm = content.letters ? 6 : 0;
       const downs = levelDownMm(items, widths);
@@ -665,19 +745,24 @@ function makeCompose({
 
   function needsContent(content, widthMm) {
     content = normaliseContent(content);
-    const items = itemsOf(content);
+    let items = itemsOf(content);
 
     // The gutter is width the content does not get, so it is added to what the
     // content asks for. Left out, a numbered question is approved against a
     // zone 9mm wider than it will actually have.
     if (content && content.number !== undefined) {
-      const { number, ...rest } = content;
+      const { number, numberAbove, ...rest } = content;
+      if (numberAbove === true) {
+        const need = needsContent(rest, widthMm);
+        return { ...need, minHeightMm: need.minHeightMm + NUMBER_ABOVE_MM };
+      }
       const need = needsContent(rest,
         Number.isFinite(widthMm) ? widthMm - NUMBER_GUTTER_MM : undefined);
       return { ...need, minWidthMm: need.minWidthMm + NUMBER_GUTTER_MM };
     }
 
     if (isRow(content)) {
+      items = placeRowNumbers(content, items, widthMm);
       const widths = Number.isFinite(widthMm) ? widthsIn(content, items, widthMm) : null;
       const ns = items.map((item, i) => needsContent(item, widths ? widths[i] : undefined));
       return {
@@ -742,14 +827,16 @@ function makeCompose({
   function enoughContent(content, widthMm) {
     content = normaliseContent(content);
     if (!enough) return Infinity;
-    const items = itemsOf(content);
+    let items = itemsOf(content);
 
     if (content && content.number !== undefined) {
-      const { number, ...rest } = content;
+      const { number, numberAbove, ...rest } = content;
+      if (numberAbove === true) return enoughContent(rest, widthMm) + NUMBER_ABOVE_MM;
       return enoughContent(rest, widthMm - NUMBER_GUTTER_MM);
     }
 
     if (isRow(content)) {
+      items = placeRowNumbers(content, items, widthMm);
       const widths = widthsIn(content, items, widthMm);
       const letterMm = content.letters ? 6 : 0;
       return (
@@ -855,8 +942,9 @@ function makeCompose({
     };
 
     if (isRow(content)) {
-      const widths = widthsIn(content, items, widthMm);
-      self.parts = items.map((item, i) => {
+      const placed = placeRowNumbers(content, items, widthMm);
+      const widths = widthsIn(content, placed, widthMm);
+      self.parts = placed.map((item, i) => {
         // Side by side: each gets its share of the width and the row's height.
         const part = inspectContent(item, widths[i], heightMm);
         part.heightImposed = true;
@@ -939,6 +1027,13 @@ const css = `
     align-self: flex-start;
   }
   .h-numbered-body { flex: 1; min-width: 0; min-height: 0; }
+  /* A drawn Part numbered above, centred over its drawing like a row's
+     letters (NUMBER_ABOVE_MM: the label's line and 1mm under it). */
+  .h-numbered--above { flex-direction: column; gap: 0; }
+  .h-numbered--above > .h-numbered-n {
+    flex: none; align-self: stretch; text-align: center;
+    height: ${NUMBER_ABOVE_MM - 1}mm; margin-bottom: 1mm; overflow: visible;
+  }
 
   /* Side by side. Each item takes its share of the width and the row is as
      tall as its tallest, which is exactly what the measurement assumes. */
@@ -992,4 +1087,4 @@ const css = `
   }
 `;
 
-module.exports = { makeCompose, css, GAP_MM, isRow, isStack, isComparisonPair, itemsOf };
+module.exports = { makeCompose, css, GAP_MM, NUMBER_ABOVE_MM, isRow, isStack, isComparisonPair, itemsOf };

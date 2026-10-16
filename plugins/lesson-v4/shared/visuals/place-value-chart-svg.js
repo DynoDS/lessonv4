@@ -319,6 +319,15 @@ const CALC_HEAVY_W = 0.16;     // the two thick rules, at least three times a ce
 // squares are smaller than either. A stick-in keeps the older size.
 const CALC_PAPER_COL_MM = { worksheets: [10, 12], stickin: [14, 15] };
 const calcPaperColPt = (profile) => (CALC_PAPER_COL_MM[profile.surface] || CALC_PAPER_COL_MM.stickin).map((mm) => (mm * 72) / 25.4);
+// How far under its smallest a square may come out when a sheet asks for it
+// (`squaresGive: true`). Asked for only to keep (1a), (1b), (1c) beside a row
+// of frames that is a few millimetres too wide for them: the teacher, shown
+// Monday's Below sheet with 9.7mm squares and the numbers beside, and the same
+// sheet with full squares and the numbers above, chose the first, "as long as
+// helpers are usable for children", and agreed 9.5mm as the least (15 October
+// 2026). Nothing else draws under the floor.
+const CALC_PAPER_GIVE = 0.95;
+const calcPaperFloorPt = (profile, chart) => calcPaperColPt(profile)[0] * (chart && chart.squaresGive ? CALC_PAPER_GIVE : 1);
 const CALC_MAX_NUMBERS = 4;
 const CALC_MAX_PARTIALS = 4;   // rows of working in a long multiplication
 
@@ -1003,6 +1012,8 @@ function normaliseCalculation(spec) {
     title: str(spec.title),
     instances: 1,
     form: 'calculation',
+    squaresGive: spec.squaresGive === true,
+    inBooks: spec.inBooks === true,
     headings: spec.headings !== false && spec.showHeadings !== false,
     calculation: {
       operator,
@@ -1065,6 +1076,7 @@ function normalise(spec = {}) {
     written,
     title: str(spec.title),
     instances: Math.max(1, Math.min(6, Math.floor(Number(spec.instances) || 1))),
+    inBooks: spec.inBooks === true,
   };
 
   const p = spec.pair;
@@ -1121,7 +1133,15 @@ function widthPt(text, pt) {
   return textWidthEm(str(text), true) * pt;
 }
 
-function writeInFor(profile) {
+// A board chart the children answer in their books (`inBooks: true`) has an
+// empty row nobody writes in on the board: it fills only when the answers
+// slide shows it. The handwriting width above was for a row the teacher might
+// write in (4 September 2026), and holding a Your Turn's sums to it spread
+// five view-only sums over three slides; the teacher agreed it goes when the
+// children answer in books (16 October 2026). Paper is where children write,
+// so a sheet keeps its squares whatever the flag says.
+function writeInFor(profile, chart) {
+  if (profile.surface === 'slides' && chart && chart.inBooks) return { colPt: 0, rowPt: 0 };
   return WRITE_IN[profile.surface] || WRITE_IN.worksheets;
 }
 
@@ -1344,7 +1364,7 @@ function stackedLayout(chart, profile) {
   const n = chart.instances;
   const gap = INSTANCE_GAP * hi;
   const perChart = (profile.widthPt - (n - 1) * gap) / n;
-  const writeIn = writeInFor(profile);
+  const writeIn = writeInFor(profile, chart);
   const rows = chart.rows;
   const hasCounters = rows.some((r) => r.counters);
 
@@ -1452,8 +1472,8 @@ function describeStacked(chart, profile) {
       `PLACE_VALUE_WRITE_IN_TOO_NARROW: this chart has a row left blank for somebody to write in, but each column is only ` +
         `${(colW / 72).toFixed(3)}in wide, below the ${(L.writeIn.colPt / 72).toFixed(2)}in one handwritten digit needs at the size this chart prints its own digits. ` +
         'Height is not the lever, so a taller zone will not move it: give the chart more WIDTH - a wider zone, one chart on this slide instead of two, ' +
-        'or a template that does not spend 40% of the board on a side panel. If nobody writes in this chart, say so instead: print the digits in ' +
-        'the blank cells, or ask for the headings alone with "rows": [] for a reference strip.'
+        'or a template that does not spend 40% of the board on a side panel. If nobody writes in this chart, say so instead: set `inBooks: true` ' +
+        'when the children answer it in their books, print the digits in the blank cells, or ask for the headings alone with "rows": [] for a reference strip.'
     );
   }
 
@@ -1661,7 +1681,7 @@ function describeCalculation(chart, profile) {
   // Paper a child writes on: square cells, as a written method is ruled in a
   // maths book, so place value lines up down the page as well as across it.
   const paper = profile.surface === 'worksheets' || profile.surface === 'stickin';
-  const writeIn = paper ? { colPt: calcPaperColPt(profile)[0] } : writeInFor(profile);
+  const writeIn = paper ? { colPt: calcPaperFloorPt(profile, chart) } : writeInFor(profile, chart);
 
   let colW = profile.widthPt / units.total;
   if (!profile.heightPt) colW = Math.min(colW, paper ? calcPaperColPt(profile)[1] : COL_MAX * hi);
@@ -1774,7 +1794,7 @@ function describeCalculation(chart, profile) {
       `PLACE_VALUE_WRITE_IN_TOO_NARROW: this calculation's answer row is blank for somebody to write in, but each column is only ` +
         `${(colW / 72).toFixed(3)}in wide, below the ${(writeIn.colPt / 72).toFixed(2)}in one handwritten digit needs. ` +
         'Height is not the lever: give it more WIDTH - a wider zone, or one calculation on this slide instead of two. ' +
-        'If nobody writes in it, give the `answer`.'
+        'If the children answer it in their books and nobody writes in it on the board, set `inBooks: true` on the chart.'
     );
   }
 
@@ -1801,8 +1821,12 @@ function describeCalculation(chart, profile) {
   };
   // Everything worked out prints in the answer's green, or in the worked
   // example's purple when the class is watching it be done (or done wrong).
+  // The numbers the sum was set with stay in the given ink even then: three
+  // children's finished working of 4,573 - 276 drawn all purple left no way to
+  // tell what they were given from what they wrote (the teacher, 16 October
+  // 2026: given numbers black, the child's working purple, on every worked sum).
   const worked = calc.worked ? pal.worked : pal.answer;
-  const given = calc.worked ? pal.worked : pal.text;
+  const given = pal.text;
 
   let y = 0;
   if (chart.title) {
@@ -2103,7 +2127,7 @@ function describePair(chart, profile) {
       `PLACE_VALUE_CHART_DOES_NOT_FIT: this before-and-after pair needs at least ${(widthAt(lo) / 72).toFixed(2)}in x ${(heightAt(lo) / 72).toFixed(2)}in ` +
         `to print its digits readably${hasCounters ? ' with counters' : ''}${exchanges.length ? ' and an exchange cue' : ''}, and was given ` +
         `${(profile.widthPt / 72).toFixed(2)}in${profile.heightPt ? ` x ${(profile.heightPt / 72).toFixed(2)}in` : ''}. ` +
-        'Give it a full-width zone, or show the two charts on their own slide.'
+        'Beside a written sum, give it only the two columns the exchange moves between and no `exchanges` cue; otherwise give it a full-width zone, or show the two charts on their own slide.'
     );
   }
 
@@ -2322,7 +2346,64 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
   const profile = insetProfile(resolveProfile(profileOrSurface, box), 1.5);
   const chart = normalise(spec);
   if (chart.form === 'calculation') return describeCalculation(chart, profile);
-  return chart.form === 'pair' ? describePair(chart, profile) : describeStacked(chart, profile);
+  return chart.form === 'pair' ? describePairOrSmaller(spec, chart, profile) : describeStacked(chart, profile);
+}
+
+// A counters pair beside a written sum on a slide draws smaller rather than
+// refuse. Drawn whole, the pair was a full-slide picture: a lesson that put it
+// beside the sum it explains lost the criteria (Year 4 Lesson 29) or spread one
+// model over two or three slides (Lessons 30 and 31, 15 October 2026). The
+// teacher chose the sum, the counters and the criteria on one slide, and agreed
+// the counters may show only the columns that change (16 October 2026). So when
+// the whole pair does not fit, it is drawn again, first without its exchange cue
+// box, whose swap the green rings and arrow already show, then without the
+// columns the exchange does not touch. Only a clean single exchange, which is
+// ringed, is shortened: a "10 more" pair keeps every column, because its "same"
+// columns are what it teaches. The counters' own floor is never lowered.
+function describePairOrSmaller(spec, chart, profile) {
+  try {
+    return describePair(chart, profile);
+  } catch (error) {
+    const sizeFault = /^PLACE_VALUE_(CHART_DOES_NOT_FIT|COUNTERS_TOO_SMALL)/.test(error.message);
+    if (!sizeFault || profile.surface !== 'slides' || !profile.pairExchangeMarks || profile.leverProbe) throw error;
+    if (!exchangeBetween(chart.pair, chart.columns)) throw error;
+    for (const smaller of smallerPairs(spec, chart)) {
+      try {
+        return describePair(normalise(smaller), profile);
+      } catch (retry) {
+        if (!/^PLACE_VALUE_(CHART_DOES_NOT_FIT|COUNTERS_TOO_SMALL)/.test(retry.message)) throw retry;
+      }
+    }
+    throw error;
+  }
+}
+
+function smallerPairs(spec, chart) {
+  const out = [];
+  const pair = { ...spec.pair, title: chart.pair.title };
+  delete pair.exchanges;
+  delete pair.exchange;
+  if (chart.pair.exchanges.length) out.push({ ...spec, pair });
+  const cols = chart.columns;
+  if (cols.includes('.')) return out;
+  const p = chart.pair;
+  const keep = cols
+    .map((c, i) => i)
+    .filter((i) => str(p.from[i]) !== str(p.to[i]) || countIn(p.fromCounters, cols[i]) !== countIn(p.toCounters, cols[i]));
+  if (keep.length < 2 || keep.length === cols.length) return out;
+  const pick = (list) => keep.map((i) => list[i]);
+  const counts = (pops) => Object.fromEntries(keep.map((i) => [cols[i], countIn(pops, cols[i])]));
+  out.push({
+    ...spec,
+    columns: pick(spec.columns),
+    pair: {
+      ...pair,
+      from: pick(p.from),
+      to: pick(p.to),
+      ...(p.fromCounters || p.toCounters ? { counters: { from: counts(p.fromCounters), to: counts(p.toCounters) } } : {}),
+    },
+  });
+  return out;
 }
 
 function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
@@ -2391,7 +2472,7 @@ function minWidthPt(spec = {}, profileOrSurface = 'worksheets') {
     const blank = chart.columns.some((c, i) => c !== '.' && chart.calculation.answer[i] === '') ||
       (chart.calculation.partials || []).some((p) => p.cells[chart.columns.indexOf('O')] === '');
     const paper = profile.surface === 'worksheets' || profile.surface === 'stickin';
-    const writeInPt = paper ? calcPaperColPt(profile)[0] : writeInFor(profile).colPt;
+    const writeInPt = paper ? calcPaperFloorPt(profile, chart) : writeInFor(profile, chart).colPt;
     const colPt = Math.max(COL_W * profile.minFontPt, blank ? writeInPt : 0);
     // A long multiplication's labels widen its left column, and the explained
     // look's sentences stand beside it.
@@ -2401,7 +2482,7 @@ function minWidthPt(spec = {}, profileOrSurface = 'worksheets') {
     return calculationUnits(chart).total * colPt + extra + 2 * 1.5 + 1;
   }
   const units = unitsOf(chart);
-  const writeIn = writeInFor(profile);
+  const writeIn = writeInFor(profile, chart);
   const writes = chart.rows.some((r) => isWriteRow(r, chart.columns));
   const labelled = chart.rows.some((r) => r.counters && r.counterLabels);
   let col = Math.max(COL_W * profile.minFontPt, writes ? writeIn.colPt : 0);

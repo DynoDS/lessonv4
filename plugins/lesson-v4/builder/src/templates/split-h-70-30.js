@@ -4,6 +4,7 @@ const { bodyZone } = require('../layout');
 const { drawHeader } = require('../headers');
 const { drawContent } = require('../content');
 const { alignSplitHPair } = require('../split-pair');
+const { snugSplitCriteria } = require('../criteria-width');
 
 // ─── COORDINATES ──────────────────────────────────────────────
 const GAP_X         = 0.20;
@@ -26,6 +27,9 @@ function drawSplitH7030(pptx, slide, data, ctx) {
     secondaryZone = { x: bz.x,                            y: bz.y, w: secondaryW, h: bz.h, class: 'E-narrow' };
     primaryZone   = { x: bz.x + secondaryW + GAP_X,       y: bz.y, w: primaryW,   h: bz.h, class: 'E-wide'   };
   }
+
+  // A criteria side takes only the width its words need (criteria-width.js).
+  snugSplitCriteria(primaryZone, data.primary, secondaryZone, data.secondary, ctx);
 
   alignSplitHPair(primaryZone, data.primary, secondaryZone, data.secondary, ctx);
 

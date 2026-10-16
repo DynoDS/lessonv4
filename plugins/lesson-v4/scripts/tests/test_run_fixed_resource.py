@@ -167,9 +167,11 @@ console.log('Wrote: ' + out);
         )
         self.assertEqual((self.output / "Lesson.pptx").read_text(), "new")
 
-    def test_slide_filename_comes_from_builder_marker_and_sanitized_spec(self) -> None:
+    def test_slide_filename_is_the_runs_sanitized_name_not_the_specs(self) -> None:
+        # The deck carries the lesson's one name, given to the build with
+        # --name; the slide designer's own lessonName no longer names the file.
         (self.working / "lesson.json").write_text(
-            json.dumps({"lessonName": "More/Less: patterns"}) + "\n",
+            json.dumps({"lessonName": "Year 4 Maths - Lesson 30 - Something else"}) + "\n",
             encoding="utf-8",
         )
         old = self.output / "More-Less patterns.pptx"
@@ -177,12 +179,13 @@ console.log('Wrote: ' + out);
         self.js_writer(
             "builder/build.js",
             """const fs=require('fs'); const p=require('path');
-const out=p.join(process.argv[3], 'More-Less patterns.pptx');
+const a=process.argv; const name=a[a.indexOf('--name')+1].replace('/', '-').replace(':', '');
+const out=p.join(a[3], name + '.pptx');
 fs.writeFileSync(out, 'new');
 console.log('Wrote: ' + out);
 """,
         )
-        self.run_script("slides", "--lesson-name", "Different CLI title")
+        self.run_script("slides", "--lesson-name", "More/Less: patterns")
         summary = json.loads(
             (self.root / "summary.json").read_text(encoding="utf-8")
         )
@@ -293,11 +296,11 @@ console.log('Built: ' + pdf);
         )
         self.assertFalse(summary["ok"])
 
-    def test_stick_in_uses_sanitized_meta_lesson_filename(self) -> None:
+    def test_stick_in_is_named_by_the_run_not_meta_lesson(self) -> None:
         (self.working / "stick-in-sheets.json").write_text(
             json.dumps(
                 {
-                    "meta": {"lesson": "More/Less: patterns"},
+                    "meta": {"lesson": "Something else"},
                     "items": [{}],
                 }
             )
@@ -307,14 +310,15 @@ console.log('Built: ' + pdf);
         self.js_writer(
             "stick-in-sheets-html/build.js",
             """const fs=require('fs'); const p=require('path');
-const out=p.join(process.argv[3], 'More-Less patterns - Stick-in Sheets.pdf');
+const a=process.argv; const name=a[a.indexOf('--name')+1].replace('/', '-').replace(':', '');
+const out=p.join(a[3], name + ' - Stick-in Sheets.pdf');
 fs.writeFileSync(out, 'pdf');
 console.log('Built: ' + out);
 console.log('Moments: 1');
 console.log('Class set: 1');
 """,
         )
-        self.run_script("stick-in", "--lesson-name", "Different CLI title")
+        self.run_script("stick-in", "--lesson-name", "More/Less: patterns")
         summary = json.loads(
             (self.root / "summary.json").read_text(encoding="utf-8")
         )
@@ -394,21 +398,22 @@ console.log('Cards: 1');
         self.assertTrue(summary["ok"])
         self.assertTrue(summary["degraded"])
 
-    def test_wall_filename_comes_from_the_spec_topic(self) -> None:
+    def test_wall_is_named_by_the_run_not_the_spec_topic(self) -> None:
         (self.working / "working-wall.json").write_text(
-            json.dumps({"topic": "More/Less: patterns", "cards": [{}]}) + "\n",
+            json.dumps({"topic": "Something else", "cards": [{}]}) + "\n",
             encoding="utf-8",
         )
         self.js_writer(
             "working-wall-html/build.js",
             """const fs=require('fs'); const p=require('path');
-const out=p.join(process.argv[3], 'Working Wall - More-Less patterns.pdf');
+const a=process.argv; const name=a[a.indexOf('--name')+1].replace('/', '-').replace(':', '');
+const out=p.join(a[3], 'Working Wall - ' + name + '.pdf');
 fs.writeFileSync(out, 'pdf');
 console.log('Built: ' + out);
 console.log('Cards: 1');
 """,
         )
-        self.run_script("wall", "--lesson-name", "Different CLI title")
+        self.run_script("wall", "--lesson-name", "More/Less: patterns")
         summary = json.loads((self.root / "summary.json").read_text(encoding="utf-8"))
         self.assertTrue(summary["ok"])
         self.assertTrue(

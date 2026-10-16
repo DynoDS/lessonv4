@@ -571,7 +571,11 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # Raised by 100 bytes on 14 October 2026, with the teacher's agreement,
         # for the report's one line naming a level that uses the Expected sheet
         # (see the delivery slice's own raise below).
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 81 * 1024 + 656)
+        # Raised by 312 bytes on 16 October 2026, with the teacher's agreement,
+        # for the adaptation step's SUCCESS_CHECK (`photo-contract.py
+        # check-adaptation`): the one launch with no check named anywhere, so
+        # every orchestrator in the 15 October five-lesson round invented one.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 81 * 1024 + 968)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

@@ -101,7 +101,11 @@ const FIGURES = {
   'coordinate-grid': { module: require('../../../shared/visuals/coordinate-grid-svg'), name: 'coordinate grid' },
   'area-grid': { module: require('../../../shared/visuals/area-grid-svg'), name: 'area grid' },
   'comparison-slot': { module: require('../../../shared/visuals/comparison-svg'), name: 'comparison slot' },
-  'place-value-chart': { module: require('../../../shared/visuals/place-value-chart-svg'), name: 'place value chart' },
+  // A column sum's `label` is its typed caption, for an answer that is words
+  // rather than marks ("||no exchange" under a sum where no column needs one).
+  // Steady, so a question slide's empty caption keeps the same room and the
+  // chart does not move (charts-stand-still.js).
+  'place-value-chart': { module: require('../../../shared/visuals/place-value-chart-svg'), name: 'place value chart', caption: { bandKey: 'placeValueLabelBandH', h: 0.5, hAnswer: 0.5, font: 24, fontAnswer: 24, steady: true } },
   'place-value-mini': { module: require('../../../shared/visuals/place-value-mini-svg'), name: 'place value picture' },
   'base-ten-blocks': { module: require('../../../shared/visuals/base-ten-blocks-svg'), name: 'base-ten blocks' },
   'counter-group': { module: require('../../../shared/visuals/counter-group-svg'), name: 'counters' },

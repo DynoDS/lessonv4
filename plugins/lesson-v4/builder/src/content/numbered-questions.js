@@ -60,6 +60,16 @@ const PAD           = 0.15;   // inset from the zone edge, inches
 const CARD_GAP      = 0.15;   // gap between cards, inches
 const CARD_PAD_X    = 0.20;   // text inset inside a card, left+right, inches
 const CARD_PAD_Y    = 0.16;   // text inset inside a card, top+bottom, inches
+// The top and bottom inset never takes more than a quarter of the type's own
+// size. 0.16in is right around large type, and it is what every set at 46pt or
+// more still gets. Held fixed under small type it was most of each card: six
+// sums in half a slide spent more of the column on padding and gaps than on
+// the sums, so the type stopped at about 23pt with a strip of the column empty
+// beside the cards, which the decorator then filled with drawings (Year 4
+// column subtraction, five decks, 15 October 2026). Tighter cards let a tall
+// set's type take that height; shown the six sums at 27pt the teacher said
+// "much better".
+const CARD_PAD_EM   = 0.25;
 const CARD_RADIUS   = 0.08;   // corner radius, inches
 const CARD_FILL     = 'F2F2F2';
 const CARD_LINE     = '0070C0';
@@ -121,6 +131,10 @@ const MIN_COLUMN_W  = 1.2;    // narrowest column a card may be laid out in, inc
                               // A one-character question technically fits a
                               // sliver; a row of slivers is not a question set.
 // ─── END CONSTANTS ────────────────────────────────────────────
+
+function cardPadY(fontPt) {
+  return Math.min(CARD_PAD_Y, (CARD_PAD_EM * fontPt) / 72);
+}
 
 function stripLeadingLabel(text) {
   return String(text).replace(/^\(\s*(?:[a-z]|\d+)\s*\)\s*/i, '');
@@ -227,7 +241,7 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
       pictureSlotW: pictureSlots[i],
       lines: lines,
       h: Math.max(
-        lines * lineH + 2 * CARD_PAD_Y,
+        lines * lineH + 2 * cardPadY(fontPt),
         Number(minimumCardHeights[i]) || 0
       )
     };
@@ -249,7 +263,7 @@ function measureStack(questions, fontPt, maxW, answerBoxes, options) {
 
 // The height one card needs when its question stays on a single line.
 function oneLineCardHeight(fontPt) {
-  return (fontPt * LINE_H_RATIO) / 72 + 2 * CARD_PAD_Y;
+  return (fontPt * LINE_H_RATIO) / 72 + 2 * cardPadY(fontPt);
 }
 
 // Column counts that leave no ragged tail: either the columns divide the set
@@ -418,7 +432,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
     };
     const proposedSlots = questions.map(function (q, i) {
       if (!q.picture) return 0;
-      const pictureH = Math.max(0.28, cards[i].h - 2 * CARD_PAD_Y);
+      const pictureH = Math.max(0.28, cards[i].h - 2 * cardPadY(fontPt));
       return pictureMetrics(q.picture, pictureH, ctx, QUESTION_PICTURE_MAX_W).w + PICTURE_GAP;
     });
     let acceptedSlots = proposedSlots.slice();
@@ -604,7 +618,7 @@ function drawNumberedQuestions(pptx, slide, zone, data, ctx) {
     if (ownPictureSlotW && c.picture) {
       const metrics = pictureMetrics(
         c.picture,
-        Math.max(0.28, c.h - 2 * CARD_PAD_Y),
+        Math.max(0.28, c.h - 2 * cardPadY(fontPt)),
         ctx,
         ownPictureSlotW - PICTURE_GAP
       );

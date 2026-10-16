@@ -507,12 +507,12 @@ async function build(specPath, outDir, options = {}) {
       // The folder the wall is written to is made if it is not there: three
       // workers in one trial lost a build to a folder they had not made first.
       fs.mkdirSync(outDir, { recursive: true });
-      outPath = path.join(outDir, naturalFilename(spec.topic, "pdf"));
+      outPath = path.join(outDir, naturalFilename(options.name || spec.topic, "pdf"));
       fs.writeFileSync(outPath, pdf);
     } catch (err) {
       if (err && err.physicalPageMismatch) throw err;
       fs.mkdirSync(outDir, { recursive: true });
-      outPath = path.join(outDir, naturalFilename(spec.topic, "html"));
+      outPath = path.join(outDir, naturalFilename(options.name || spec.topic, "html"));
       fs.writeFileSync(outPath, html);
       console.log(`PDF_SKIPPED: ${err && err.message ? err.message.split("\n")[0] : err}`);
     }
@@ -569,13 +569,18 @@ module.exports = { build, assertRequiredPhotosAreReadable, pdfPageCount, assertP
 if (require.main === module) {
   const args = process.argv.slice(2);
   const validateOnly = args.includes("--validate-only");
-  const [specPath, outDirArg] = args.filter((arg) => arg !== "--validate-only");
+  // `--name`: the lesson's one file name, set by run-fixed-resource.py.
+  const nameAt = args.indexOf("--name");
+  const name = nameAt >= 0 ? args[nameAt + 1] : undefined;
+  const [specPath, outDirArg] = args.filter(
+    (arg, i) => arg !== "--validate-only" && !(nameAt >= 0 && (i === nameAt || i === nameAt + 1))
+  );
   if (!specPath) {
     console.error("Usage: node build.js <working-wall.json> [output-dir] [--validate-only]");
     process.exit(1);
   }
   const outDir = outDirArg ? path.resolve(outDirArg) : path.dirname(path.resolve(specPath));
-  build(path.resolve(specPath), outDir, { validateOnly }).catch((err) => {
+  build(path.resolve(specPath), outDir, { validateOnly, name }).catch((err) => {
     console.error(err.message || err);
     process.exit(1);
   });

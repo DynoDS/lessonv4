@@ -13,7 +13,7 @@ const { drawImage, measureImage, isClassCharacterPortrait } = require('./image')
 const { drawTable } = require('./table');
 // Pictures drawn once in shared/visuals/ and placed here without a slide file
 // of their own (see shared-figure.js).
-const { drawerFor, measurerFor, maxUsefulWidthFor, placedRectFor } = require('./shared-figure');
+const { FIGURES, drawerFor, measurerFor, maxUsefulWidthFor, placedRectFor } = require('./shared-figure');
 const drawNumberline = drawerFor('numberline');
 const drawClock = drawerFor('clock');
 const drawTurnDiagram = drawerFor('turn-diagram');
@@ -347,7 +347,13 @@ const SELF_PADDED = new Set([
   // 0.97in, under the 1.12in floor, and the Slide Designer spent every
   // repair pass on it (7 October 2026). The teacher, shown the slide both
   // ways, chose the one margin.
-  'table'
+  'table',
+  // Every drawing from shared/visuals/ is placed with the same PAD of its own,
+  // so it takes the same one margin. Left off this list they stood in two, a
+  // fifth of an inch of white round each chart: three children's column sums
+  // side by side came out tall and thin inside thick cards (the teacher, 16
+  // October 2026: "cards behind them don't have to be as thick").
+  ...Object.keys(FIGURES)
 ]);
 
 // The card look (slide visual refresh, Aug 2026): one white rounded card

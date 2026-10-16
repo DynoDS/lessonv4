@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import re
 import sys
 from contextlib import contextmanager
@@ -4336,7 +4337,11 @@ def run_design_checks(
             expect_bool(sc[MARKED_TOO_LONG], f"{path}.{MARKED_TOO_LONG}")
         content = expect_dict(sc["content"], f"{path}.content")
         if sc_type == "steps":
-            expect_exact_keys(content, {"steps"}, {"steps"}, f"{path}.content")
+            # A method only some questions need is a list of its own, and each
+            # list then says what it is for (output-template.md -> heading).
+            expect_exact_keys(content, {"steps", "heading"}, {"steps"}, f"{path}.content")
+            if "heading" in content:
+                expect_string(content["heading"], f"{path}.content.heading")
             steps = expect_list(content["steps"], f"{path}.content.steps")
             expect(bool(steps), f"{path}.content.steps must not be empty")
             # Brevity is reviewed in the deterministic review packet. Word
@@ -5016,6 +5021,107 @@ def check_no_spent_photo_id_reused(photos: object, folder: Path) -> None:
             )
 
 
+# A lesson built as one of a set (lesson-batch.py) carries the set's agreed
+# thread in filing.txt. Lessons built side by side cannot read each other, so
+# the thread is the only place the week's method steps and word cards are
+# settled: lessons 28 to 32 worded the exchange step four ways in four days
+# before it existed (15 October 2026). Colour marks may differ day to day, the
+# words may not, so the check compares the plain words.
+CRITERIA_MARKS = re.compile(r"\(\(|\)\)|\{\{|\}\}|<<|>>")
+
+
+def plain_words(text: Any) -> str:
+    """The words without colour marks, each line (a step and its smaller points) kept apart."""
+    lines = (" ".join(line.split()) for line in CRITERIA_MARKS.sub("", str(text)).split("\n"))
+    return "\n".join(line for line in lines if line)
+
+
+def set_thread_entry(folder: Path) -> tuple[str, dict[str, Any]] | None:
+    try:
+        lines = (folder / "filing.txt").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        lines = []
+    values = dict(line.split("=", 1) for line in lines if "=" in line)
+    path = values.get("SET_THREAD", "").strip()
+    key = values.get("SET_LESSON", "").strip()
+    if not path:
+        # The set's session is started with the thread (lesson-batch.py), so a
+        # filing.txt rewritten for a named day or folder cannot lose it.
+        path = os.environ.get("LESSON_SET_THREAD", "").strip()
+        key = os.environ.get("LESSON_SET_LESSON", "").strip()
+    if not path:
+        return None
+    try:
+        thread = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise ContractError(f"filing.txt names the set's thread {path}, but it could not be read ({exc})")
+    entries = thread.get("lessons") if isinstance(thread, dict) else None
+    entry = next((e for e in entries or [] if isinstance(e, dict) and e.get("key") == key), None)
+    if entry is None:
+        raise ContractError(f"filing.txt names lesson {key!r} in the set's thread {path}, which has no such lesson")
+    return path, entry
+
+
+def check_set_thread(design: Any, folder: Path) -> None:
+    found = set_thread_entry(folder)
+    if not found or not isinstance(design, dict):
+        return
+    path, entry = found
+    faults = []
+    wanted = [plain_words(step) for step in entry.get("methodSteps") or []]
+    headed = [
+        (plain_words((item.get("content") or {}).get("heading") or ""),
+         [plain_words(step) for step in (item.get("content") or {}).get("steps") or []])
+        for item in design.get("successCriteria") or []
+        if isinstance(item, dict) and item.get("type") == "steps" and isinstance(item.get("content"), dict)
+    ]
+    lists = [steps for _heading, steps in headed]
+    # A method only some questions need is a list of its own (teacher-voice.md
+    # -> Success criteria), so the thread can agree those too, each under its
+    # heading, and the main list then carries a heading of its own.
+    for extra in entry.get("sometimesLists") or []:
+        steps = [plain_words(step) for step in extra.get("steps") or []]
+        heading = plain_words(extra.get("heading") or "")
+        if (heading, steps) not in headed:
+            numbered = " ".join(f"[{n}] " + step.replace("\n", " [smaller point] ") for n, step in enumerate(steps, 1))
+            faults.append(
+                f"successCriteria: the set's thread ({path}) gives the list {heading!r} as: {numbered} "
+                "No steps list here has that heading and those steps in those words. Write it as a list "
+                "of its own with that heading, word for word, so the class meets it the same way all week."
+            )
+    if wanted and entry.get("methodHeading"):
+        main = (plain_words(entry["methodHeading"]), wanted)
+        if wanted in lists and main not in headed:
+            faults.append(
+                f"successCriteria: the set's thread ({path}) heads this lesson's method list "
+                f"{plain_words(entry['methodHeading'])!r}; give the list that heading."
+            )
+    if wanted:
+        if wanted not in lists:
+            numbered = " ".join(f"[{n}] " + step.replace("\n", " [smaller point] ")
+                                for n, step in enumerate(wanted, 1))
+            faults.append(
+                "successCriteria: the set's thread (" + path + ") gives this lesson's method list as: "
+                + numbered + " No steps list here has those steps in those words. Every lesson in the set "
+                "shows the list word for word, so the class meets one method all week: use it as this "
+                "lesson's full steps list. Colour marks may differ; the words, the order and the smaller "
+                "points under each step may not."
+            )
+    terms = {str(card.get("term", "")).strip().lower(): card for card in entry.get("wordCards") or []
+             if isinstance(card, dict)}
+    for word in design.get("vocabulary") or []:
+        if not isinstance(word, dict):
+            continue
+        card = terms.get(str(word.get("term", "")).strip().lower())
+        if card and plain_words(word.get("definition", "")) != plain_words(card.get("definition", "")):
+            faults.append(
+                f"vocabulary {word.get('id', '')}: the set's thread defines {card.get('term')!r} as "
+                f"{plain_words(card.get('definition', ''))!r}; every lesson in the set uses that definition word for word."
+            )
+    if faults:
+        raise ContractError("; ".join(faults))
+
+
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     initial_photo_namespace = False
@@ -5041,6 +5147,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         if not initial_photo_namespace:
             check_no_spent_photo_id_reused(photos, Path(args[1]).resolve().parent)
+        check_set_thread(design, Path(args[0]).resolve().parent)
     except (OSError, json.JSONDecodeError, ContractError) as exc:
         print(f"LESSON_DESIGN_INVALID: {exc}", file=sys.stderr)
         return 1

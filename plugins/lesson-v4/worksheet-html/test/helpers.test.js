@@ -294,7 +294,10 @@ test("a row that is too wide is priced item by item, so the total cannot be pinn
   // was passed upstream as "the pair of grids needs 191mm", and a sheet that
   // fits one page was replanned onto two.
   const grid = { helper: "column-method-grid", operator: "+", top: 3462, bottom: 175, showHeadings: true };
-  const row = { row: [{ helper: "instruction", text: "Use column addition." }, { number: "1a", stack: [grid] }, { number: "1b", stack: [grid] }] };
+  // Whole questions, whose numbers always sit beside: lettered Parts that are
+  // drawings may take their numbers above instead (number-above.test.js), and
+  // then this row fits.
+  const row = { row: [{ helper: "instruction", text: "Use column addition." }, { number: 1, stack: [grid] }, { number: 2, stack: [grid] }] };
   const verdict = fits({ stack: [{ helper: "section-label", text: "Fluency" }, row] }, 144, 239);
   assert.equal(verdict.ok, false);
   const priced = /needs (\d+)mm wide, zone is 144mm \(the width goes on this row, side by side: instruction (\d+)mm \+ a stack of \[1 x column-method-grid\] (\d+)mm \+ a stack of \[1 x column-method-grid\] (\d+)mm, with (\d+)mm between each\)/.exec(verdict.why);

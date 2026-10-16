@@ -28,7 +28,7 @@ Fields that every card shares, whatever its family.
 
 | Field | Notes |
 |---|---|
-| `topic` | Topic of the lesson — drives the output filename. |
+| `topic` | Topic of the lesson. The lesson run names the file, not this field. |
 | `yearGroup` | Year group — passed through for any year-aware styling. |
 | `lessonSlug` | Slug used elsewhere in the pipeline; included for symmetry. |
 | `rationaleNote` | One or two sentences explaining why these cards earn a place. Never printed; included on the orchestrator's final report so the teacher sees the reasoning. |

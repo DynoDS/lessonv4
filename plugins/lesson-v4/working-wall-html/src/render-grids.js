@@ -22,7 +22,7 @@ const {
   defaultBodyPt,
   minBodyPt,
 } = require("./visuals");
-const { esc, markedHtml, mm, hash, imgTag, titleBarHtml, panelHtml } = require("./shared");
+const { esc, markedHtml, mm, hash, imgTag, titleBarHtml, panelHtml, offerRoom } = require("./shared");
 const { plainCriteria } = require("../../shared/text/criteria-marks");
 
 // Arrows come from "Wall Arrows" (shared.js says why).
@@ -240,6 +240,7 @@ function referenceTableHtml(columns, rows, headerPt, bodyPt, columnWidths, style
         let hIn = wIn / aspect;
         const maxHIn = (opts.rowImageMaxHeights && opts.rowImageMaxHeights[idx]) || opts.imageMaxHeight || 1.8;
         if (hIn > maxHIn) { hIn = maxHIn; wIn = hIn * aspect; }
+        offerRoom(cell.image, mm(Math.max(0.6, colIn - 0.35)), mm(maxHIn));
         innerHtml = imgTag(cell.image, mm(wIn), mm(hIn), "margin:0 auto;");
       } else {
         // A key row says each column's main point in that column's colour.
@@ -315,6 +316,7 @@ function renderEquivalenceGrid(card, style, specDir, ctx = {}) {
       let wPx = rowImageSizePx;
       let hPx = Math.round(wPx / aspect);
       if (hPx > rowImageSizePx) { hPx = rowImageSizePx; wPx = Math.round(hPx * aspect); }
+      offerRoom(rv.buf, mm(rowImageSizePx / 96), mm(rowImageSizePx / 96));
       visualInner = imgTag(rv.buf, mm(wPx / 96), mm(hPx / 96), "margin:0 auto;");
     }
 

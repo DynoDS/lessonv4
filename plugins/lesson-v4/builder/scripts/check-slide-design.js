@@ -430,6 +430,107 @@ function sharedModelWarnings(lesson) {
   return warnings;
 }
 
+// `inBooks: true` lets a chart's empty row go under handwriting width, because
+// the children answer it in their books and nobody writes in it on the board
+// (the teacher, 16 October 2026). On a My Turn or Our Turn the teacher does
+// write in it, so there the flag would take away the room his pen needs.
+function inBooksWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const warnings = [];
+  slides.forEach((slideData, index) => {
+    if (!slideData || typeof slideData !== 'object') return;
+    const title = typeof slideData.title === 'string' ? slideData.title.trim() : '';
+    if (!MODELLING_TITLE.test(title)) return;
+    let found = false;
+    const walk = (value) => {
+      if (found || !value || typeof value !== 'object') return;
+      if (Array.isArray(value)) { value.forEach(walk); return; }
+      if (value.type === 'place-value-chart' && value.inBooks === true) { found = true; return; }
+      Object.keys(value).forEach((key) => walk(value[key]));
+    };
+    walk(slideData);
+    if (!found) return;
+    warnings.push({
+      signal: 'IN_BOOKS_ON_A_MODELLING_SLIDE',
+      slide: index + 1,
+      field: 'inBooks',
+      message:
+        `"${title}" is a slide the teacher completes on the board, but a chart on it says ` +
+        '`inBooks: true`, which gives its empty row no room for the teacher\'s pen. Take ' +
+        '`inBooks` off this chart. It is only for a sum the children answer in their books, ' +
+        'such as a Your Turn, where the empty row fills on the answers slide.',
+    });
+  });
+  return warnings;
+}
+
+// The criteria are on the board from the first slide where the class watches
+// or does the steps (the teacher, 16 October 2026). Two saved decks held them
+// back a slide or two inside the same unit: a Year 4 My Turn that wrote the
+// first exchange down beside its counters with no criteria, because the three
+// would not fit, and an Apply whose first slide put a checking tip where the
+// criteria later went. A unit that shows its criteria later has them, so the
+// fault is only ever where they first arrive. A slide before the work (a
+// story, a recap, a case) may go without; a working slide is one the class
+// works from: a figure the teacher completes, children use, or children write
+// on. A task in words alone is not read here.
+const WORKING_INTERACTIONS = new Set(['teacher-completes', 'pupil-uses', 'pupil-writes-on']);
+
+function slideShowsCriteria(slideData) {
+  if (Array.isArray(slideData.successCriteriaRefs) && slideData.successCriteriaRefs.length) return true;
+  if (typeof slideData.template === 'string' && /-sc$/.test(slideData.template)) return true;
+  let found = false;
+  const walk = (value) => {
+    if (found || !value || typeof value !== 'object') return;
+    if (Array.isArray(value)) { value.forEach(walk); return; }
+    if (value.type === 'sc-panel') { found = true; return; }
+    Object.keys(value).forEach((key) => { if (key !== 'decorations') walk(value[key]); });
+  };
+  walk(slideData);
+  return found;
+}
+
+function isWorkingSlide(slideData) {
+  const title = typeof slideData.title === 'string' ? slideData.title.trim() : '';
+  if (ANSWER_TITLE.test(title)) return false;
+  const refs = Array.isArray(slideData.representationRefs) ? slideData.representationRefs : [];
+  return refs.some((ref) => ref && WORKING_INTERACTIONS.has(ref.interaction));
+}
+
+function lateCriteriaWarnings(lesson) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const byUnit = new Map();
+  slides.forEach((slideData, index) => {
+    if (!slideData || typeof slideData !== 'object') return;
+    slideUnitIds(slideData).forEach((id) => {
+      if (!byUnit.has(id)) byUnit.set(id, []);
+      byUnit.get(id).push(index);
+    });
+  });
+  const warnings = [];
+  byUnit.forEach((indexes) => {
+    const firstCriteria = indexes.find((index) => slideShowsCriteria(slides[index]));
+    if (firstCriteria === undefined) return;
+    const early = indexes.find((index) => index < firstCriteria && isWorkingSlide(slides[index]));
+    if (early === undefined) return;
+    const title = String(slides[early].title || '').trim();
+    warnings.push({
+      signal: 'CRITERIA_AFTER_THE_WORK_STARTS',
+      slide: early + 1,
+      field: 'successCriteriaRefs',
+      message:
+        `"${title}" is where the class first works from this unit's figure, but its ` +
+        `success criteria first appear on slide ${firstCriteria + 1}. Put the criteria ` +
+        'on this slide too, and keep them on the slides after it. If they do not fit, ' +
+        'change the arrangement or let the picture shrink (a counters pair beside a ' +
+        'sum drops its cue box and untouched columns on its own); the criteria are ' +
+        'not what gives way. A tip on how to check shares the slide with the criteria ' +
+        'rather than taking their place.',
+    });
+  });
+  return warnings;
+}
+
 function consecutiveModellingWarnings(lesson) {
   const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
   const warnings = [];
@@ -2405,6 +2506,8 @@ function runSlideDesignCheck(inputPath, options = {}) {
     .concat(turnWarnings(lesson))
     .concat(consecutiveModellingWarnings(lesson))
     .concat(sharedModelWarnings(lesson))
+    .concat(inBooksWarnings(lesson))
+    .concat(lateCriteriaWarnings(lesson))
     .concat(mixedBlockWarnings(lesson))
     .concat(blueStatementWarnings(lesson))
     .concat(taskBlueWarnings(lesson, jsonPath))
@@ -2984,6 +3087,7 @@ module.exports = {
   pictureLookAgainLines,
   ordinaryRevealWarnings,
   caseAfterItsInstructionWarnings,
+  lateCriteriaWarnings,
   buildDiagnostic,
   main,
   orderReport,

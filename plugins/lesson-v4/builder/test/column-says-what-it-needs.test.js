@@ -43,9 +43,13 @@ const COLUMN_SUM = {
   calculation: { operator: '+', numbers: ['264', '172'], answer: '436', carry: { H: '1' } },
 };
 
+// One line longer than Lesson 24's own words. Since the counter pair and the
+// sum keep one margin in their cards (16 October 2026) the real slide's column
+// can just be held by weights; the extra line keeps this a column none can.
 const EXPLANATION =
   '264 + 172 = 436\n\n6 tens + 7 tens = 13 tens.\n\n13 tens = 1 hundred and 3 tens.\n\n' +
-  '2 hundreds + 1 hundred + 1 exchanged hundred = 4 hundreds.\n\nThe counters show 4 hundreds, 3 tens and 6 ones.';
+  '2 hundreds + 1 hundred + 1 exchanged hundred = 4 hundreds.\n\nThe counters show 4 hundreds, 3 tens and 6 ones.\n\n' +
+  'So the answer is 436.';
 
 function deck(body) {
   return {

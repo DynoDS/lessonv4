@@ -36,7 +36,7 @@ const {
 } = require("./visuals");
 const { badgeKey } = require("./svg-renderer");
 const { renderPictureFirstWorkedExample } = require("./render-method");
-const { esc, markedHtml, mm, hash, imgTag, visualTag, titleBarHtml, panelHtml, panelWithVisualHtml, twoUpPanelsHtml } = require("./shared");
+const { esc, markedHtml, mm, hash, imgTag, visualTag, titleBarHtml, panelHtml, panelWithVisualHtml, twoUpPanelsHtml, offerRoom } = require("./shared");
 const { criteriaSegments, plainCriteria } = require("../../shared/text/criteria-marks");
 
 // A step's marked parts in the colour the board gave them.
@@ -771,6 +771,7 @@ function pictureBeneathPair(card, style, specDir, ctx, dims) {
     }
 
     const topMm = mm(200 / 1440);
+    if (!photoBuf && v.buf) offerRoom(v.buf, mm(baseIn * (72 / 96)), mm(maxHeightIn));
     return {
       html: `<div style="text-align:center;padding:${topMm}mm 0 0 0;">${visualTag(v, mm(widthIn), mm(heightIn), "margin:0 auto;")}</div>`,
       heightIn: (topMm + mm(heightIn)) / 25.4,

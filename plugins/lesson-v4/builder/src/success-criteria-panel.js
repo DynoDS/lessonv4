@@ -88,8 +88,15 @@ function tallestPanel(zone, ctx) {
 
 function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
   const { drawContent } = require('./content');
-  const label = data.criteriaLabel || data.label || '\u2713 Success Criteria';
   const criteria = data.criteria || data.content;
+  // A list that says what it is for ("How to exchange") heads its own box, so
+  // a lesson's two lists read as two matching boxes rather than "Success
+  // Criteria" over one and a small black line over the other (the teacher,
+  // 16 October 2026). The heading is then stripped from the content below.
+  const headingWords = criteria && criteria.type === 'steps' && typeof criteria.heading === 'string'
+    ? criteria.heading.replace(/^[\s\u2713]+/, '').trim() : '';
+  const listHeading = headingWords ? '\u2713 ' + headingWords : null;
+  const label = data.criteriaLabel || data.label || listHeading || '\u2713 Success Criteria';
 
   const share = (zone.w * zone.h) / (SLIDE_W * SLIDE_H);
   if (share > MAX_SLIDE_SHARE + 0.005 && !(ctx && ctx._criteriaSlide) && !workIsOnPaper(ctx)) {
@@ -180,7 +187,10 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
       // The panel's interior takes the card look in its compact form: white
       // cards on the green read well (the children prefer them), but only
       // with the tight padding that keeps the step text at full size.
-      compactCards: true
+      compactCards: true,
+      // One of a lesson's headed lists: every such list on a slide shares one
+      // text size and one number size, so two boxes read as a pair (steps.js).
+      criteriaList: !!listHeading
     };
     // A container measuring how tall this panel must be to hold its criteria at
     // a given size draws it on a slide nobody sees with that size as the floor

@@ -31,6 +31,17 @@ Every mode prints, with --working:
                      year and subject, nearest first, joined by " | " (empty when
                      none): context for what the class has already met, never a
                      rota to vary against
+Both are looked for in every working folder this computer has built lessons
+in, not only --working: Codex and Claude Code build in different folders, and a
+lesson either one built is still the class's lesson before. --working is added
+to that remembered list (settings key workingRoots) as the run starts.
+
+A lesson started as one of a set (lesson-batch.py) takes PREVIOUS_LESSON and
+EARLIER_LESSONS from the set (LESSON_SET_PREVIOUS, LESSON_SET_EARLIER): the
+lessons before the set, never a sibling being written at the same time. It
+also prints:
+    SET_THREAD    the set's agreed thread file (LESSON_SET_THREAD)
+    SET_LESSON    this lesson's key in it (LESSON_SET_LESSON)
 
 Sorted mode also prints:
     TERM_FOLDER   the half-term folder, e.g. "Summer 2"
@@ -97,9 +108,80 @@ def parse_args(argv):
     return year, subject, working_root
 
 
+# Codex builds lessons under one working folder and Claude Code under another,
+# and a lesson built in either is still the class's lesson before. Searching only
+# this run's folder sent every Claude Code run for lessons 28 to 32 back to
+# lesson 21, because 22 to 27 had been built on Codex (15 October 2026). So each
+# run adds its folder to a list in the plugin's settings, and the search covers
+# every folder on the list that still exists.
+WORKING_ROOTS_KEY = "workingRoots"
+
+
+def _same_folder(a, b):
+    return os.path.normcase(os.path.abspath(a)) == os.path.normcase(os.path.abspath(b))
+
+
+def working_roots(working_root):
+    """This run's working folder first, then every other one remembered."""
+    roots = []
+    remembered = plugin_settings.read_settings().get(WORKING_ROOTS_KEY)
+    for root in [working_root, *(remembered if isinstance(remembered, list) else [])]:
+        if isinstance(root, str) and root and os.path.isdir(root)                 and not any(_same_folder(root, seen) for seen in roots):
+            roots.append(root)
+    return roots
+
+
+def remember_working_root(working_root):
+    """Add this run's working folder to the remembered list. Never fails the run."""
+    if not working_root or not os.path.isdir(working_root):
+        return
+    remembered = plugin_settings.read_settings().get(WORKING_ROOTS_KEY)
+    remembered = [r for r in remembered if isinstance(r, str)] if isinstance(remembered, list) else []
+    if any(_same_folder(working_root, r) for r in remembered):
+        return
+    try:
+        plugin_settings.write_settings({WORKING_ROOTS_KEY: [*remembered, os.path.abspath(working_root)]})
+    except OSError:
+        pass
+
+
+# A lesson in a set is told by lesson-batch.py which lesson the class had
+# before the set (LESSON_SET_PREVIOUS, NO_LESSON when there was none) and the
+# ones before that (LESSON_SET_EARLIER). Searching here instead could hand it a
+# sibling built at the same moment, half-written.
+NO_LESSON = "none"
+
+
+def set_neighbours():
+    """(previous, earlier) the set decided, or None for a lesson not in a set."""
+    previous = os.environ.get("LESSON_SET_PREVIOUS", "").strip()
+    if not previous:
+        return None
+    earlier = [p.strip() for p in os.environ.get("LESSON_SET_EARLIER", "").split(" | ") if p.strip()]
+    return ("" if previous == NO_LESSON else previous), earlier
+
+
+def print_neighbours(find_previous, find_earlier):
+    """PREVIOUS_LESSON and EARLIER_LESSONS, from the set when there is one."""
+    decided = set_neighbours()
+    if decided:
+        previous, earlier = decided
+    else:
+        previous = find_previous()
+        earlier = find_earlier(previous) if previous else []
+    print(f"PREVIOUS_LESSON={previous}")
+    print(f"EARLIER_LESSONS={' | '.join(earlier)}")
+
+
+def lesson_designs(working_root):
+    for root in working_roots(working_root):
+        yield from glob.glob(os.path.join(root, "*", "lesson-design.json"))
+
+
 def delivery_records(working_root):
-    for name in RECORD_NAMES:
-        yield from glob.glob(os.path.join(working_root, "*", "build-results", name))
+    for root in working_roots(working_root):
+        for name in RECORD_NAMES:
+            yield from glob.glob(os.path.join(root, "*", "build-results", name))
 
 
 def record_args(record):
@@ -147,7 +229,7 @@ def numbered_previous(working_root, year, subject, current_folder):
         return ""
     here = os.path.normcase(os.path.abspath(current_folder))
     best = None
-    for design in glob.glob(os.path.join(working_root, "*", "lesson-design.json")):
+    for design in lesson_designs(working_root):
         folder = os.path.dirname(os.path.abspath(design))
         if os.path.normcase(folder) == here or lesson_identity(folder) != (year, subject.lower()):
             continue
@@ -182,7 +264,7 @@ def earlier_lessons(working_root, year, subject, current_folder, previous, limit
     prev = os.path.normcase(os.path.abspath(previous)) if previous else ""
     current = lesson_number(current_folder) if current_folder else None
     candidates = []
-    for design in glob.glob(os.path.join(working_root, "*", "lesson-design.json")):
+    for design in lesson_designs(working_root):
         folder = os.path.dirname(os.path.abspath(design))
         key = os.path.normcase(folder)
         if key in (here, prev) or lesson_identity(folder) != (year, subject.lower()):
@@ -209,7 +291,7 @@ def latest_lesson(working_root, year, subject):
     """Without a calendar there is no slot order, so the latest built lesson in
     the same year and subject is the one before this run's."""
     best = None
-    for design in glob.glob(os.path.join(working_root, "*", "lesson-design.json")):
+    for design in lesson_designs(working_root):
         folder = os.path.dirname(os.path.abspath(design))
         if lesson_identity(folder) != (year, subject.lower()):
             continue
@@ -412,11 +494,10 @@ class SortedFiling:
         # calendar's guess and must not be announced as free.
         print(f"DRIVE_CHECKED={'yes' if slot['checked'] else 'no'}")
         if self.working_root:
-            previous = numbered_previous(self.working_root, self.year, self.subject, CURRENT_FOLDER) \
-                or not_this_lesson_or_later(self.previous_lesson(slot['term'], slot['week'], slot['day']), CURRENT_FOLDER)
-            print(f"PREVIOUS_LESSON={previous}")
-            earlier = earlier_lessons(self.working_root, self.year, self.subject, CURRENT_FOLDER, previous) if previous else []
-            print(f"EARLIER_LESSONS={' | '.join(earlier)}")
+            print_neighbours(
+                lambda: numbered_previous(self.working_root, self.year, self.subject, CURRENT_FOLDER)
+                or not_this_lesson_or_later(self.previous_lesson(slot['term'], slot['week'], slot['day']), CURRENT_FOLDER),
+                lambda previous: earlier_lessons(self.working_root, self.year, self.subject, CURRENT_FOLDER, previous))
         return 0
 
 
@@ -435,6 +516,7 @@ def main(argv=None):
             os.environ[plugin_settings.LETTERBOX_VARIABLE] = args[i + 1]
         del args[i:i + 2]
     year, subject, working_root = parse_args(args)
+    remember_working_root(working_root)
     chosen = plugin_settings.delivery()
     route = ""
     if chosen["mode"] == "letterbox":
@@ -451,6 +533,13 @@ def main(argv=None):
                 route = "connector"
                 chosen["reason"] = prepared.get("error", "")
     print(f"DELIVERY={chosen['mode']}")
+    # A lesson built side by side with others in its set (lesson-batch.py) is
+    # started with the set's agreed thread, and filing.txt carries it to the
+    # lesson designer and the design check, as it carries PREVIOUS_LESSON.
+    thread = os.environ.get("LESSON_SET_THREAD", "").strip()
+    if thread:
+        print(f"SET_THREAD={thread}")
+        print(f"SET_LESSON={os.environ.get('LESSON_SET_LESSON', '').strip()}")
     if chosen["mode"] == "letterbox":
         # A cloud run. The teacher's computer places the lesson when it collects
         # it, so there is no slot to announce here, only where it is going.
@@ -475,11 +564,10 @@ def main(argv=None):
             return 1
         return filing.run(today())
     if working_root:
-        previous = numbered_previous(working_root, year, subject, CURRENT_FOLDER) \
-            or not_this_lesson_or_later(latest_lesson(working_root, year, subject), CURRENT_FOLDER)
-        print(f"PREVIOUS_LESSON={previous}")
-        earlier = earlier_lessons(working_root, year, subject, CURRENT_FOLDER, previous) if previous else []
-        print(f"EARLIER_LESSONS={' | '.join(earlier)}")
+        print_neighbours(
+            lambda: numbered_previous(working_root, year, subject, CURRENT_FOLDER)
+            or not_this_lesson_or_later(latest_lesson(working_root, year, subject), CURRENT_FOLDER),
+            lambda previous: earlier_lessons(working_root, year, subject, CURRENT_FOLDER, previous))
     return 0
 
 

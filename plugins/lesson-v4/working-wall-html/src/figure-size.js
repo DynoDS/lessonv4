@@ -70,7 +70,12 @@ function notePlacement(buf, wMm, hMm) {
   if (!Number.isFinite(w) || !Number.isFinite(h)) return;
   const room = rooms.get(buf);
   rooms.delete(buf);
-  placements.push({ wMm: w, hMm: h, room: room || { wMm: w, hMm: h }, ...drawn.get(buf) });
+  // `roomOffered` says whether the card told the build its room at all. A
+  // sheet that never does is never laid out again for that room, so its
+  // drawing keeps a narrow first shape however much of the sheet is blank:
+  // the one-big-picture sheet was missed this way when the rule reached every
+  // other picture-led sheet (stress test, 15 October 2026).
+  placements.push({ wMm: w, hMm: h, room: room || { wMm: w, hMm: h }, roomOffered: Boolean(room), ...drawn.get(buf) });
 }
 
 // The drawings placed since the last call, and an empty ledger for the next card.

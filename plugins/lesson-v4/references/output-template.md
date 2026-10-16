@@ -282,6 +282,8 @@ How-to steps:
 
 A smaller point under a step goes on its own line inside that step's string (`"Rub the nail's mark with your finger.\nStays? Write medium.\nRubs off, or no mark? Write hard."`), never in a step of its own. What to do for a different kind of question is an item of its own after the steps, opening with ❓ (`"❓ How many more or fewer? Read both bars, then bigger number - smaller number."`), which the board prints unnumbered; `teaching-sequence-skill-based.md` → Writing the Success Criteria says when a step has one.
 
+A list of steps may carry a `heading` beside `steps` (`"content": { "heading": "How to exchange", "steps": [...] }`) when a method the lesson teaches is needed only on some questions and so is a list of its own (`teacher-voice.md` → Success criteria, `A method only some questions need`). Give every list of steps in that lesson a heading then (`How to subtract`, `How to exchange`): the board prints each list in its own box under its heading, and a unit's `successCriteriaRefs` names only the lists its own work uses. A lesson with one list of steps leaves `heading` out, and its box keeps the usual `Success Criteria` heading.
+
 Reference table:
 
 ```json
@@ -572,6 +574,8 @@ Keep these delivery meanings exact:
 - `answer-slide` stores the answer, model or standard for speaker-note use and also authorises a separate visible answer/reveal slide.
 - `visible-in-unit` stores a completed prepared model that is visible in its source unit as a worked example, in the worked-example purple. It is not an answer reveal.
 - `none` carries no answer, model or standard.
+
+An answer slide shows the answer to every part the task asks for, including a part whose right answer is that nothing needs doing (`no exchange`, `no mistake`, `already in order`). Write that part's answer as those words, never as no marks, because a child marking their own work reads a blank as a forgotten answer (Year 4 column subtraction, 16 October 2026).
 
 `answer-slide` is valid for `starter`, `your-turn`, `practise`, `use-learning`, `do-task`, `apply` and `reflect`. On any other source-unit kind, `answer-slide` is valid only when `answer.kind` is `model` or `standard`, or when the unit is a My Turn or Our Turn completed live on a representation, where it is required and its reveal slide shows that representation finished. An exact answer on a Do beat, Our Turn or another smaller check uses `teacher-only`.
 

@@ -26,8 +26,103 @@ function isFillText(data) {
     String(data.heightMode || '').toLowerCase() === 'fill';
 }
 
+// Criteria on the right may rise into the title row when they need the room.
+//
+// The title sits at the left of the header, so on a slide with no task line,
+// tick or Do sign the header's right-hand side is empty. A lesson's two lists
+// ("How to subtract", "How to exchange") in two boxes did not fit beside a
+// model sum at 18pt, with that strip empty above them; the teacher pointed at
+// it (16 October 2026). Only criteria that do not fit their zone rise, so every
+// slide that fits keeps the layout it has.
+const RISE_TOP = 0.12;
+
+function isCriteria(data) {
+  if (!data) return false;
+  if (data.type === 'sc-panel') return true;
+  return data.type === 'stack' && Array.isArray(data.items) && data.items.length > 0 &&
+    data.items.every((item) => item && item.type === 'sc-panel');
+}
+
+function headerRightIsEmpty(slideData) {
+  if (!slideData || slideData.headerStyle === 'starter') return false;
+  return !slideData.instruction && !slideData.doSign && !slideData.signal;
+}
+
+function fitsAt(zone, data, ctx) {
+  const PptxGenJS = require('./require-global')('pptxgenjs');
+  const { withoutRecording } = require('./warnings');
+  const { drawContent } = require('./content');
+  const dry = new PptxGenJS();
+  const barrier = ctx._cardBarrier;
+  const container = ctx._containerType;
+  try {
+    withoutRecording(() => drawContent(dry, dry.addSlide(), Object.assign({}, zone), data, ctx));
+    return true;
+  } catch (err) {
+    return false;
+  } finally {
+    ctx._cardBarrier = barrier;
+    ctx._containerType = container;
+  }
+}
+
+// Where the criteria really end when drawn in this zone: each box hugs its
+// steps, so the drawing usually stops short of the zone's foot.
+function drawnBottom(zone, data, ctx) {
+  const PptxGenJS = require('./require-global')('pptxgenjs');
+  const { withoutRecording } = require('./warnings');
+  const { drawContent } = require('./content');
+  const dry = new PptxGenJS();
+  const real = dry.addSlide();
+  let bottom = zone.y;
+  const note = (opts) => {
+    if (opts && Number.isFinite(opts.y) && Number.isFinite(opts.h)) bottom = Math.max(bottom, opts.y + opts.h);
+  };
+  const slide = new Proxy(real, {
+    get(target, key) {
+      const value = target[key];
+      if (typeof value !== 'function') return value;
+      if (key === 'addShape') return (kind, opts) => { note(opts); return value.call(target, kind, opts); };
+      return value.bind(target);
+    }
+  });
+  const barrier = ctx._cardBarrier;
+  const container = ctx._containerType;
+  try {
+    withoutRecording(() => drawContent(dry, slide, Object.assign({}, zone), data, ctx));
+  } finally {
+    ctx._cardBarrier = barrier;
+    ctx._containerType = container;
+  }
+  return bottom;
+}
+
+function riseCriteriaIfNeeded(zone, data, ctx) {
+  const { SLIDE_W, MARGIN_X } = require('./layout');
+  const slideData = ctx && ctx.lesson && Array.isArray(ctx.lesson.slides) ? ctx.lesson.slides[ctx.slideIndex] : null;
+  if (!isCriteria(data) || !headerRightIsEmpty(slideData)) return false;
+  if (Math.abs(zone.x + zone.w - (SLIDE_W - MARGIN_X)) > 0.05 || zone.y <= RISE_TOP) return false;
+  if (fitsAt(zone, data, ctx)) return false;
+  const risen = Object.assign({}, zone, { y: RISE_TOP, h: zone.h + (zone.y - RISE_TOP) });
+  if (!fitsAt(risen, data, ctx)) return false;
+  // The boxes hug their steps, so drawn from the top of the risen zone they
+  // left an empty strip at the foot and looked pushed up. The teacher asked
+  // for them centred in the room they were given (16 October 2026), so the
+  // pair sits in the middle of the slide's height, as far from its foot as
+  // from its top, using the bottom margin as he said it could be. The whole
+  // drawing moves down as it is, so the boxes keep the sizes they fitted at.
+  const { SLIDE_H } = require('./layout');
+  const drawnH = drawnBottom(risen, data, ctx) - risen.y;
+  zone.y = Math.min(SLIDE_H - RISE_TOP - drawnH, Math.max(RISE_TOP, (SLIDE_H - drawnH) / 2));
+  zone.h = risen.h;
+  return true;
+}
+
 function alignSplitHPair(primaryZone, primaryData, secondaryZone, secondaryData, ctx) {
   if (!primaryData || !secondaryData) return;
+  // A side that rose keeps its own place; the other side settles as it would.
+  if (riseCriteriaIfNeeded(secondaryZone, secondaryData, ctx) ||
+      riseCriteriaIfNeeded(primaryZone, primaryData, ctx)) return;
   const sides = [
     { zone: primaryZone, data: primaryData },
     { zone: secondaryZone, data: secondaryData }

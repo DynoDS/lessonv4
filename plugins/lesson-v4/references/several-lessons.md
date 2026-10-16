@@ -101,22 +101,73 @@ take the same first free day.
 When the teacher redirects a lesson that has already started, let it finish,
 then move its saved files to the new place and say where they went.
 
-## 4. Start the lessons and report as they move on
+## 4. Agree the set's thread
+
+Lessons started together cannot read each other, so a lesson cannot keep the
+day before's steps the way a single run does: the day before is being written
+at the same moment. Each `THREAD <key>: <tags>` line from `plan` is a group in
+one year and subject; before those lessons start, one lesson designer writes
+what they share (the method steps as they grow day by day, the word cards, the
+picture of the method), and every lesson in the group starts from it. Lessons
+outside any group, and the in-chat route, which builds in order and reads the
+real day before, need none.
+
+Tell the teacher in one line that the set's shared steps are being agreed
+first, then launch one `lesson-v4:lesson-designer` per thread, in the
+background and all at once:
+
+```text
+This is not a lesson design. Write the shared thread for a set of lessons by
+following [PLUGIN_ROOT]/references/set-thread.md in place of your design
+workflow.
+
+PLUGIN_ROOT: [PLUGIN_ROOT]
+PYTHON: [PYTHON]
+OUTPUT_DIR: [OUTPUT_DIR]
+THREAD: [key]
+```
+
+When it returns, run
+`lesson-batch.py thread-check --output "[OUTPUT_DIR]" --thread "[key]"`
+yourself. On `THREAD_FAULT` lines, send the same designer those lines once. If
+the thread still fails, or the designer could not run, start the lessons with
+`launch --without-thread` and tell the teacher in one line that the days may
+word their shared steps differently.
+
+## 5. Start the lessons and report as they move on
 
 Run `lesson-batch.py launch --output "[OUTPUT_DIR]"`. Every lesson starts at
-once: the teacher asked for this many, and the number is theirs to choose.
+once: the teacher asked for this many, and the number is theirs to choose. A
+lesson whose thread is not yet `THREAD_OK` prints `THREAD_MISSING` and waits;
+launch again once it is.
+
+Launching also starts the set's keeper, a plain program that uses no usage.
+It alone decides each lesson's state, so a set survives interruptions without
+you or the teacher: a lesson counts as finished only once its session has
+ended and every file it saved is in its day folder; after a usage limit it
+waits until the limit resets, then reopens that lesson's own session so each
+stopped helper finishes its job; a lesson that stops for no reason it gives
+gets one more go; and a lesson never has two sessions. Do not start, stop or
+restart lesson sessions yourself while it runs: a second session on one lesson
+overwrites the first one's files.
 
 Then run `lesson-batch.py watch --output "[OUTPUT_DIR]"` in the background.
-It returns when any lesson says something new or ends, and the host wakes you
-then; run it again each time while any lesson is still building. Report from
-what it prints:
+It returns when the keeper reports something new, and the host wakes you
+then; run it again each time until it prints `BATCH_DONE`. Report from what
+it prints:
 
 - `STEP <tag>: ...` is that lesson's own update to the teacher. Pass it on as
   one short line in your words ("Food chains: design done, building the slides
   now"). Several lines from one wake go in one message.
-- `FINISHED <tag>`: "2 of 4 done: food chains." Where it was saved comes from
-  the final report in step 5, so name it there if you do not have it yet.
-- `FAILED` or `STOPPED <tag>`: say which lesson and that the others carry on.
+- `FINISHED <tag>: saved to <folder>`: "2 of 4 done: food chains, saved to
+  Monday."
+- `PAUSED <tag>`: "Food chains paused for the usage limit; it carries on by
+  itself at 17:11." Nothing is needed from the teacher.
+- `CARRYING_ON <tag>`: one line saying it is going again and why.
+- `NOT_SAVED <tag>`: the lesson was made but its files did not reach the save
+  folder; say why and that the files are in `[OUTPUT_DIR]`. It is not rebuilt.
+- `STOPPED <tag>`: it stopped twice before saving; say which lesson, its last
+  words, and that the others carry on.
 - `WATCH_QUIET`: nothing moved. Start the watch again and say nothing, since
   an update with no news is noise.
 
@@ -124,7 +175,7 @@ Read `status`, never a session's log, when you need the state: a log is a
 whole lesson run, and reading several of them is the memory problem this
 route exists to avoid.
 
-## 5. Finish
+## 6. Finish
 
 When `watch` prints `BATCH_DONE`, run
 `lesson-batch.py status --output "[OUTPUT_DIR]" --final`. It prints each
@@ -138,9 +189,13 @@ teacher one combined report:
 
 ## Carrying on after an interruption
 
-The sessions run apart from this chat, so closing it does not stop them; only
-the updates stop. When the teacher comes back and asks how the lessons are
-going, run `status`. When they ask to carry on after a usage limit or a
-crash, run `lesson-batch.py resume --output "[OUTPUT_DIR]"`: finished lessons
-are left alone, and each unfinished one starts again from its last saved step
-rather than from scratch. Then watch and report as in step 4.
+The sessions and the keeper run apart from this chat, so closing it does not
+stop them, and a usage limit is waited out without anyone asking; only the
+updates stop. When the teacher comes back and asks how the lessons are going,
+run `status`: it also restarts the keeper if the computer was restarted, which
+carries on any lesson whose session ended. When the teacher asks to carry on a
+lesson that `STOPPED` or another that has not finished, run
+`lesson-batch.py resume --output "[OUTPUT_DIR]"`: finished lessons, lessons
+still running and lessons waiting for the limit are left alone (`LEFT`,
+`WAITING`), and each other one carries on from where it stopped. Then watch and
+report as in step 5.

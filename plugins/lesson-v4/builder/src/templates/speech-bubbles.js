@@ -121,6 +121,13 @@ function speechFont(speech, innerW) {
 // much that the statement itself stops fitting: each narrower width is tried on
 // a slide nobody sees, and the narrowest that the statement still fits is used.
 // A deck with no calculation in its speech keeps the share it asked for.
+//
+// Each slide gives its speakers the room that slide has, so the same children
+// can stand smaller on a slide whose panel is full and grow on the next. Their
+// words never go below the 18pt floor: when they would, the slide is reported
+// and split rather than shrunk. The teacher chose this over keeping them in one
+// place at the smaller size (Year 4 maths lesson 30, slides 37 to 39, 16 October
+// 2026), so do not share one layout across slides that repeat the speakers.
 const NARROWEST_STATEMENT = 0.3;
 const STATEMENT_STEP = 0.02;
 

@@ -1,6 +1,6 @@
 'use strict';
 
-const { lineWidthIn, usableWidth } = require('../content/steps');
+const { snugCriteriaWidth } = require('../criteria-width');
 const { drawHeader } = require('../headers');
 const { drawContent } = require('../content');
 const { drawQuestions, drawWorkingSpace, measureQuestionsHeight, largestQuestionFont } = require('./maths-turn');
@@ -29,9 +29,6 @@ const SC_H           = 6.50;
 // teacher's half-slide limit. Its right edge stays where it is, and the
 // question and working side give up what the panel takes.
 const SC_WIDTHS      = [SC_W, 5.50, 6.35];
-// The widths a panel of short steps may narrow to, narrowest first: 3.90 is
-// what the "Success Criteria" heading needs.
-const SC_NARROW_WIDTHS = [3.90, 4.25];
 
 const VISUAL_GAP     = 0.18;   // gap between visual and working space
 const Q_VISUAL_GAP   = 0.15;
@@ -197,58 +194,17 @@ function scPanelWidth(data, ctx) {
 
 // A list of short steps does not need 4.60in: `Write a comma.` sat in a box
 // built for a sentence, with empty card to its right (the teacher, 8 October
-// 2026: "sometimes success criteria doesn't have to be that wide"). So the
-// panel narrows, and the question and working side take the room, but only
-// when narrowing costs the list nothing: every line of every step still sits
-// on one line, at a size no smaller than the 4.60 panel gave it. A step that
-// would wrap, a sticky line, a live-drawing cue beside the heading, or
-// criteria that are not steps keep the panel as it is.
-function stepLinesDrawn(data, ctx, panelW) {
-  const PptxGenJS = requireGlobal('pptxgenjs');
-  const dry = new PptxGenJS();
-  const page = dry.addSlide();
-  const texts = [];
-  const slide = new Proxy(page, {
-    get(target, prop) {
-      if (prop === 'addText') return (content, opts) => { texts.push({ content, opts }); return target.addText(content, opts); };
-      const value = target[prop];
-      return typeof value === 'function' ? value.bind(target) : value;
-    }
-  });
-  withoutRecording(() => drawSuccessCriteriaPanel(dry, slide, scPanelZone(panelW), data, ctx));
-  return texts.filter((t) => /step-(text|with-points|reference)-/.test(String(t.opts && t.opts.objectName)));
-}
-
-function everyLineOnOneLine(texts) {
-  return texts.every(({ content, opts }) => {
-    const runs = Array.isArray(content) ? content : [{ text: String(content), options: {} }];
-    const widths = [0];
-    runs.forEach((run) => {
-      const pt = (run.options && run.options.fontSize) || opts.fontSize;
-      String(run.text).split('\n').forEach((piece, index) => {
-        if (index > 0) widths.push(0);
-        widths[widths.length - 1] += lineWidthIn(piece, pt);
-      });
-    });
-    return widths.every((width) => width <= usableWidth(opts.w) + 1e-6);
-  });
-}
-
-const smallestSize = (texts) => Math.min(...texts.map(({ content, opts }) =>
-  (Array.isArray(content)
-    ? Math.min(...content.map((run) => (run.options && run.options.fontSize) || opts.fontSize))
-    : opts.fontSize)));
-
+// 2026: "sometimes success criteria doesn't have to be that wide"). So a list
+// that fits 4.60 takes the width its words need, the way every criteria box
+// does (criteria-width.js), and the question and working side take the room.
+// It used to narrow only when every line of every step stayed on one line, so
+// a list with one longer step never did.
 function narrowerPanelWidth(data, ctx) {
-  const criteria = data && data.criteria;
-  if (!criteria || criteria.type !== 'steps' || data.flipchart) return null;
+  if (!data || !data.criteria || data.criteria.type !== 'steps') return null;
   try {
-    const usual = stepLinesDrawn(data, ctx, SC_W);
-    if (!usual.length || usual.some((t) => /step-reference-/.test(t.opts.objectName))) return null;
-    for (const w of SC_NARROW_WIDTHS) {
-      const drawn = stepLinesDrawn(data, ctx, w);
-      if (drawn.length === usual.length && everyLineOnOneLine(drawn) && smallestSize(drawn) >= smallestSize(usual)) return w;
-    }
+    const draw = (pptx, slide, zone) => drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx);
+    const w = snugCriteriaWidth(scPanelZone(SC_W), data, draw);
+    return w < SC_W ? w : null;
   } catch (err) {
     // Whatever refuses the panel is raised by the ordinary choice below.
   }

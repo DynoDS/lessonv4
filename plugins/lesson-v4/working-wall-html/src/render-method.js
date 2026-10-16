@@ -27,7 +27,7 @@ const { printableInches, fitTitleSize, titleBarHeightInches, TITLE_BAR_LINE_HEIG
 const { pickVisual, isStepLabel } = require("./visuals");
 const { badgeKey } = require("./svg-renderer");
 const { methodVisual, stepTheme } = require("./step-colours");
-const { esc, mm, hash, imgTag, titleBarHtml } = require("./shared");
+const { esc, mm, hash, imgTag, titleBarHtml, offerRoom } = require("./shared");
 const { criteriaSegments, plainCriteria } = require("../../shared/text/criteria-marks");
 
 const FONT_STACK_FALLBACK = "'Wall Arrows', 'Segoe Print', cursive";
@@ -123,6 +123,15 @@ function fitRows(steps, widthIn, ceilingIn, floorPt) {
       const m = measureRows(steps, pt, widthIn, workPt);
       if (m && m.heightIn <= ceilingIn) return m;
     }
+  }
+  return null;
+}
+
+// The steps at one size, the working given back towards it until they fit.
+function fitRowsAt(steps, widthIn, ceilingIn, pt) {
+  for (let workPt = Math.round(pt * WORKING_SCALE); workPt >= pt; workPt -= 2) {
+    const m = measureRows(steps, pt, widthIn, workPt);
+    if (m && m.heightIn <= ceilingIn) return m;
   }
   return null;
 }
@@ -228,8 +237,27 @@ function renderPictureFirstWorkedExample(card, style, specDir, ctx = {}) {
     // A wide figure (a number line) is at full size in well under 40% of the
     // sheet; the words may have whatever height it does not need.
     const figureNaturalH = innerW / (figure.aspect || 1);
-    rows = fitRows(steps, rowsW, Math.max(body * TEXT_SHARE, body - figureNaturalH), floorPt);
-    if (rows) figureBox = figureSize(figure, innerW, body - rows.heightIn);
+    const ceilingIn = Math.max(body * TEXT_SHARE, body - figureNaturalH);
+    // The picture has first call on the room, as on a section sheet
+    // (render-section.js). The steps used to be set as large as their share
+    // allowed and the picture took what was left: a column sum 136mm wide on a
+    // 297mm sheet (stress test, 15 October 2026, four of five lessons), after the teacher had ruled the other way for every
+    // picture-led sheet (10 October 2026). So the steps start at their floor
+    // and grow only while that costs the picture nothing.
+    rows = fitRowsAt(steps, rowsW, ceilingIn, floorPt);
+    if (rows) {
+      const areaFor = (m) => {
+        const f = figureSize(figure, innerW, body - m.heightIn);
+        return f.wIn * f.hIn;
+      };
+      const areaAtFloor = areaFor(rows);
+      for (let pt = floorPt + 2; pt <= STEP_PT_CEILING; pt += 2) {
+        const m = fitRowsAt(steps, rowsW, ceilingIn, pt);
+        if (!m || areaFor(m) < areaAtFloor * 0.98) break;
+        rows = m;
+      }
+      figureBox = figureSize(figure, innerW, body - rows.heightIn);
+    }
   }
   if (!rows) {
     throw new Error(
@@ -239,6 +267,13 @@ function renderPictureFirstWorkedExample(card, style, specDir, ctx = {}) {
     );
   }
 
+  // Tell the build the room the picture was offered, so a drawing shrunk to
+  // fit is laid out again for it and fills it (figure-size.js).
+  offerRoom(
+    figure.buf,
+    mm(sideBySide ? innerW * SIDE_FIGURE_SHARE : innerW),
+    mm(sideBySide ? innerH - questionH : innerH - questionH - GAP_IN - rows.heightIn)
+  );
   const font = `font-family:'${style.fonts.body}', ${FONT_STACK_FALLBACK};font-weight:bold;`;
   const questionHtml = question
     ? `<div data-part="question" style="text-align:center;${font}font-size:${question.pt}pt;line-height:1.1;` +

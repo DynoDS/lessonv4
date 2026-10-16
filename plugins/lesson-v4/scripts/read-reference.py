@@ -41,6 +41,9 @@ STRUCTURES = (
     "Task-Centred",
 )
 STRUCTURES_HEADING = "9. Lesson Structures — When Each Is Evidence-Based"
+# A companion entry that stands for the five structures' `Use when` paragraphs
+# (what --structure-menu prints) rather than a heading.
+STRUCTURE_MENU = "@structure-menu"
 
 # A page is what one tool call may print and still arrive whole. Codex caps
 # each command's output at about 10,000 tokens and removes the MIDDLE of
@@ -115,6 +118,35 @@ ROLE_COMPANIONS: dict[str, tuple[tuple[str, tuple[str, ...]], ...]] = {
             "Optional context pictures and relevant decoration > Where an optional picture sits on a slide",
         )),
     ),
+    # The lesson designer's "At the start" reading, the sections every lesson
+    # reads before anything is decided. Chosen and fetched a few at a time, they
+    # took a designer about 17 reads in the five lessons of 15 October 2026,
+    # most of them a turn of their own, with index look-ups and misnamed
+    # headings in between. Here they are one read of a known number of pages.
+    # What waits for a decision point stays out, and so does task-contrasts.md
+    # `One story, one process, one set of meanings`, which the role reads alone.
+    "lesson-designer": (
+        ("preferences.md", (
+            "@intro",
+            "Teacher Preferences > Contents — each agent reads its own sections",
+            "Teacher Preferences > What a Lesson Is For",
+            "Teacher Preferences > Classroom Norms",
+            "Teacher Preferences > The Teach → Do → Teach → Do Rhythm",
+            "Teacher Preferences > How Much Fits in One Lesson",
+            "Teacher Preferences > Source and Scenario Integrity",
+            "Teacher Preferences > Pride Lessons (Quality Anchor)",
+            "Teacher Preferences > Written Voice (House Style) > Core rules",
+        )),
+        ("evidence-synthesis.md", (
+            "@intro",
+            "Evidence Synthesis for UK Primary Lesson Design > Contents — read what this design touches",
+            "Evidence Synthesis for UK Primary Lesson Design > Cross-Cutting Principles",
+            STRUCTURE_MENU,
+        )),
+        ("teacher-voice.md", (
+            "5. Explanations and definitions",
+        )),
+    ),
 }
 
 
@@ -162,7 +194,13 @@ def locate(text: str, selector: str) -> Heading:
                    if tuple(t.replace("`", "") for t in h.path[-len(path):]) == bare]
     if len(matches) != 1:
         reason = "missing" if not matches else "ambiguous"
-        raise ReferenceError(f"{reason} heading: {selector}; use --index for exact paths")
+        # Name the headings it could have meant, so the next read is the right
+        # one rather than an index look-up and then the read (a designer lost
+        # two turns this way on `Contents` in October 2026).
+        last = path[-1].replace("`", "").casefold()
+        near = matches or [h for h in headings(text) if last in h.title.replace("`", "").casefold()]
+        hint = "; it may be: " + " | ".join(" > ".join(h.path) for h in near[:8]) if near else ""
+        raise ReferenceError(f"{reason} heading: {selector}{hint}; use --index for exact paths")
     return matches[0]
 
 
@@ -204,14 +242,29 @@ def read_role(root: Path, name: str) -> str:
         raise ReferenceError(f"cannot read role {name}: {exc}") from exc
 
 
-def role_reading(root: Path, name: str) -> str:
-    """The role file, then the guidance its first steps are written in, as one read."""
-    parts = [read_role(root, name)]
+def role_reading(root: Path, name: str, companions_only: bool = False) -> str:
+    """The role file, then the guidance its first steps are written in, as one read.
+
+    `companions_only` leaves the role out: on Claude Code the role arrives as the
+    worker's own instructions, so it reads only what comes after it.
+    """
+    if companions_only:
+        if name not in ROLE_COMPANIONS:
+            raise ReferenceError(f"role {name} has no start-up reading; read its sections with --select")
+        parts = []
+    else:
+        parts = [read_role(root, name)]
     for source, selectors in ROLE_COMPANIONS.get(name, ()):
-        if selectors:
-            text, _ = selected_text(root, [f"{source}::{selector}" for selector in selectors])
+        sections = [s for s in selectors if s != STRUCTURE_MENU]
+        if sections:
+            text, _ = selected_text(root, [f"{source}::{selector}" for selector in sections])
+        elif selectors:
+            text = ""
         else:
             text = f"<!-- reference: {source} -->\n" + read_source(root, source)
+        if STRUCTURE_MENU in selectors:
+            menu, _ = structure_menu(read_source(root, source))
+            text = f"{text}\n<!-- structure menu: {source} -->\n{menu}" if text else menu
         parts.append(
             f"<!-- companion reading for {name}: {source}. It is part of your instructions: "
             f"the words it governs are written from your first step. -->\n{text}"
@@ -233,6 +286,19 @@ def read_working_file(path: Path) -> str:
             return handle.read()
     except (OSError, UnicodeError) as exc:
         raise ReferenceError(f"cannot read {path}: {exc}") from exc
+
+
+def reference_or_path(root: Path, path: Path) -> Path:
+    """A bare guide name that is not a file here is the plugin's guide of that name.
+
+    Roles say `read subject-maths.md with --file`, and the path resolves from the
+    worker's own folder; four of eight designers on 15 October 2026 lost a turn
+    to `cannot read subject-maths.md` before adding `references/`.
+    """
+    if path.exists() or len(path.parts) != 1 or path.suffix.lower() != ".md":
+        return path
+    guide = root / "references" / path.name
+    return guide if guide.is_file() else path
 
 
 def pages(text: str, limit: int = PAGE_CHARS) -> list[str]:
@@ -462,6 +528,29 @@ def finish_read(log: Path) -> None:
         pass
 
 
+def partial_note(page: int, total: int) -> str:
+    """What to run after a page that is not the last.
+
+    Each page must be a command of its own on every host. On Codex those commands
+    go one at a time (the same-call guard above). Claude Code returns each
+    command's output whole up to its own limit and runs commands sent together
+    in one turn side by side, so there the remaining pages can all be asked for
+    at once: one turn instead of one turn a page.
+    """
+    if os.environ.get("CODEX_THREAD_ID", "").strip() or page > 1:
+        return (
+            f"REFERENCE_READ_PARTIAL: page {page} of {total}. Run the same command "
+            f"with --page {page + 1}, as a command of its own, and read every page before "
+            f"relying on this reading."
+        )
+    rest = f"--page {page + 1}" if total == page + 1 else f"--page {page + 1} to --page {total}"
+    return (
+        f"REFERENCE_READ_PARTIAL: page {page} of {total}. Run the same command with {rest}, each "
+        f"page as a command of its own, all sent together in your next turn so they run side by side, "
+        f"and read every page before relying on this reading."
+    )
+
+
 def refusal(args: list[str]) -> str:
     return (
         "REFERENCE_READ_REFUSED: this read ran in the same command as another long read, and together they are "
@@ -484,6 +573,9 @@ def main(argv: list[str] | None = None) -> int:
     # A role file and a run's review view are read whole, so they are the reads
     # most likely to outgrow one page; both go through the same pager.
     parser.add_argument("--role", metavar="ROLE")
+    # With --role: only the start-up reading that follows the role, for a host
+    # that already gave the worker its role file as its instructions.
+    parser.add_argument("--companions-only", action="store_true")
     parser.add_argument("--file", type=Path, metavar="PATH")
     parser.add_argument("--page", type=int, default=1, metavar="N")
     args = parser.parse_args(argv)
@@ -492,6 +584,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(f"{whole[0]} is read on its own: run it without --select, --structure-menu or another whole-file flag")
     if not (whole or args.select or args.structure_menu):
         parser.error("one of --select, --index, --role, --file or --structure-menu is required")
+    if args.companions_only and not args.role:
+        parser.error("--companions-only goes with --role")
     if args.page < 1:
         parser.error("--page counts from 1")
     # Configure before reading so even missing Unicode headings report safely.
@@ -505,10 +599,10 @@ def main(argv: list[str] | None = None) -> int:
             output = "\n".join(" > ".join(h.path) for h in headings(source))
             size = 0
         elif args.role:
-            output = role_reading(args.plugin_root, args.role)
+            output = role_reading(args.plugin_root, args.role, args.companions_only)
             size = len(output.encode("utf-8"))
         elif args.file:
-            output = read_working_file(args.file)
+            output = read_working_file(reference_or_path(args.plugin_root, args.file))
             size = len(output.encode("utf-8"))
         else:
             output, size = selected_text(args.plugin_root, args.select) if args.select else ("", 0)
@@ -540,11 +634,7 @@ def main(argv: list[str] | None = None) -> int:
                 # No success line until the last page: a reader who stops here has
                 # read part of the guidance, and the success line is what the
                 # instructions tell it to require.
-                print(
-                    f"REFERENCE_READ_PARTIAL: page {args.page} of {len(split)}. Run the same command "
-                    f"with --page {args.page + 1}, as a command of its own, and read every page before "
-                    f"relying on this reading."
-                )
+                print(partial_note(args.page, len(split)))
                 return 0
             done = f", page {args.page} of {len(split)}" if len(split) > 1 else ""
             print(f"REFERENCE_INDEX_OK{done}" if args.index else f"REFERENCE_READ_OK: {size} source bytes{done}")

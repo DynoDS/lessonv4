@@ -417,6 +417,40 @@ def cmd_build_provisional(args) -> int:
     return 0
 
 
+def cmd_check_adaptation(args) -> int:
+    """The adaptation designer's own check, run before it hands back.
+
+    `build-provisional` is the orchestrator's step and waits for the voice
+    editor's second pass, so the designer cannot finish on it. Until this
+    existed the designer had no check of its own: in round four of the stress
+    test (five Year 4 maths lessons, 15 October 2026) every orchestrator wrote
+    the launch a made-up "run the adaptation check your role names", and three
+    designers dug into this script's insides to find something to run. A
+    picture block the merge would refuse then reached the orchestrator, whose
+    answer after one retry is to deliver no Below or Greater Depth sheet.
+
+    This runs the same reading, merge, photo cap and lesson-design validator
+    as `build-provisional`, on a copy outside the working folder, and writes
+    nothing in the lesson's folder. The voice editor is not needed for it.
+    """
+    work = Path(args.working_dir)
+    adaptation_path = work / "adaptation.md"
+    if not adaptation_path.is_file():
+        raise PhotoContractError(f"no adaptation.md in {work}")
+    initial_path = work / "phase2-initial-photo-requirements.json"
+    initial = require_schema2(read_json(initial_path, "initial photo requirements"), "initial photo requirements")
+    base, _ = design_photo_base(initial, work / "photo-requirements.json")
+    additions = adaptation_photos(adaptation_path)
+    merged, new_ids, _ = merge_photos(base, additions)
+    with tempfile.TemporaryDirectory(prefix="adaptation-check-") as scratch:
+        trial = Path(scratch) / "photo-requirements.json"
+        trial.write_text(json.dumps(merged, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        run_photo_cap(trial)
+        run_lesson_design_validator(work / "lesson-design.json", trial)
+    print(f"ADAPTATION_CHECK_OK {len(new_ids)}")
+    return 0
+
+
 def cmd_promote_used(args) -> int:
     initial_path = Path(args.initial)
     provisional_path = Path(args.provisional)
@@ -652,6 +686,10 @@ def parser() -> argparse.ArgumentParser:
     # The immutable copy the early adaptation picture wave compiles from.
     provisional.add_argument("--requirements-snapshot")
     provisional.set_defaults(func=cmd_build_provisional)
+
+    check = sub.add_parser("check-adaptation")
+    check.add_argument("--working-dir", required=True)
+    check.set_defaults(func=cmd_check_adaptation)
 
     promote = sub.add_parser("promote-used")
     promote.add_argument("--initial", required=True)

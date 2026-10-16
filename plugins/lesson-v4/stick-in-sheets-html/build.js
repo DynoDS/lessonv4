@@ -523,7 +523,7 @@ function sheetKey(item) {
   return null;
 }
 
-async function build(specPath, outDir) {
+async function build(specPath, outDir, options = {}) {
   const spec = sanitizeHouseStyle(JSON.parse(fs.readFileSync(specPath, "utf8")));
   const sixSeven = sixSevenNumbers(spec);
   if (sixSeven.length) throw new Error(sixSevenMessage(sixSeven, "stick-in sheets"));
@@ -644,7 +644,7 @@ async function build(specPath, outDir) {
     const built = [...sourcesBuilt.perItem, ...kitsBuilt.perItem, ...taskSheets].find((p) => p.item === item);
     if (built) prints.push({ label: built.label, pageDivs: built.pages, portrait: Boolean(built.portrait) });
   }
-  const lesson = spec.meta && spec.meta.lesson;
+  const lesson = options.name || (spec.meta && spec.meta.lesson);
 
   // PDF through the worksheets' Chrome step; the HTML itself when that step
   // cannot run, flagged with the same PDF_SKIPPED signal the worksheets use so
@@ -722,13 +722,17 @@ async function build(specPath, outDir) {
 }
 
 if (require.main === module) {
-  const [, , specPath, outDirArg] = process.argv;
+  // `--name`: the lesson's one file name, set by run-fixed-resource.py.
+  const args = process.argv.slice(2);
+  const nameAt = args.indexOf("--name");
+  const name = nameAt >= 0 ? args[nameAt + 1] : undefined;
+  const [specPath, outDirArg] = args.filter((arg, i) => !(nameAt >= 0 && (i === nameAt || i === nameAt + 1)));
   if (!specPath) {
     console.error("Usage: node build.js <stick-in-sheets.json> [output-dir]");
     process.exit(1);
   }
   const outDir = outDirArg ? path.resolve(outDirArg) : path.dirname(path.resolve(specPath));
-  build(path.resolve(specPath), outDir).catch((err) => {
+  build(path.resolve(specPath), outDir, { name }).catch((err) => {
     console.error(err.message || err);
     process.exit(1);
   });

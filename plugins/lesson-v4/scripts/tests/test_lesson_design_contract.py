@@ -554,7 +554,12 @@ def test_image_team_cap_is_authoritative_and_current_aware():
         "Keep its immutable schema-2 assignments, staged worker results, "
         "per-filename terminal receipts and final provenance" in flat
     )
-    assert "may promote at most 16 required Image Team picture requests" in adaptation
+    # The teacher's ruling (16 October 2026): 16 is the lesson's aim, not a
+    # quota; a picture a sheet truly needs may take the run past it, to 24.
+    assert "may promote at most 16 required Image Team picture requests" not in adaptation
+    assert "A lesson aims for 16 required Image Team picture requests at most" in adaptation
+    assert "up to 24 in all and never further, for a picture a sheet truly needs" in " ".join(adaptation.split())
+    assert "The prompt supplies the current promoted count" not in adaptation
     assert "Do not impose a fixed picture ceiling." not in adaptation
     assert "P2 and P3 are outside the lesson's 16" in context_pictures
 

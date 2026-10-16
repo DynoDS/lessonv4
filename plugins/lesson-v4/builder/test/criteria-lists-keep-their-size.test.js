@@ -13,6 +13,13 @@
 // designs, saved slide specs and his approved rewrites) and its six long lists
 // in his style, each with the size the 4.2.288 builder drew it at, or its
 // refusal, in fourteen shapes. Each list is drawn again here in the same shape.
+//
+// One later ruling changes the promise for a box beside the work: the teacher
+// asked (16 October 2026) for a criteria box only as wide as its words need,
+// so a split's criteria side may narrow and its steps come out a little
+// smaller, never under the 20pt a panel is read best at (or the size a list
+// already under that had). Every fitting list still draws, and the practice
+// panel still never widens for a list that fitted 4.60in.
 
 const assert = require('node:assert/strict');
 const test = require('node:test');
@@ -85,6 +92,11 @@ const SHAPES = {
     reference: { type: 'text', value: '346' }, criteria,
   }),
 };
+// The width each shape's criteria box had before it could narrow to its words.
+const SNUG_FROM = {
+  'sc-template (maths-turn-sc)': 4.6, 'maths-your-turn-sc': 4.6, 'maths-turn-ref-sc': 4.6, 'writing-turn-ref-sc': 4.6,
+  'split-h-70-30 secondary': 3.81, 'split-h-60-40 secondary': 5.08, 'split-h-50-50 secondary': 6.35,
+};
 const PRACTICE = new Set(['sc-template (maths-turn-sc)', 'maths-your-turn-sc', 'maths-turn-ref-sc', 'writing-turn-ref-sc']);
 
 // The step size a slide's criteria were drawn at, and its panel's width; or the
@@ -112,7 +124,7 @@ test('the fixture covers the lists and shapes it says it does', () => {
   assert.equal(FIXTURE.lists.filter((l) => l.kind === 'real').length, 114);
 });
 
-test('every list that fitted before keeps its size, and a practice panel keeps 4.60in', () => {
+test('every list that fitted before still draws, no smaller than it may go, and a practice panel never widens', () => {
   const moved = [];
   let kept = 0;
   for (const list of FIXTURE.lists) {
@@ -121,8 +133,9 @@ test('every list that fitted before keeps its size, and a practice panel keeps 4
       if (typeof before !== 'number') return;
       const now = drawn(SHAPES[shape]({ type: 'steps', steps: list.steps }));
       if (now.refused) moved.push(`${shape}: ${list.source} was ${before}pt, now refused (${now.refused})`);
-      else if (now.font !== before) moved.push(`${shape}: ${list.source} was ${before}pt, now ${now.font}pt`);
-      else if (PRACTICE.has(shape) && now.w !== 4.6) moved.push(`${shape}: ${list.source} panel widened to ${now.w}in`);
+      else if (now.font < Math.min(before, 20)) moved.push(`${shape}: ${list.source} was ${before}pt, now ${now.font}pt`);
+      else if (now.font !== before && !(now.w < SNUG_FROM[shape] - 0.02)) moved.push(`${shape}: ${list.source} was ${before}pt, now ${now.font}pt at full width`);
+      else if (PRACTICE.has(shape) && now.w > 4.6) moved.push(`${shape}: ${list.source} panel widened to ${now.w}in`);
       else kept += 1;
     });
   }

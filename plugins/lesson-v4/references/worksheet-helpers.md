@@ -340,6 +340,17 @@ whole. Where a Part's body is a helper holding several items, wrap it in a
 `stack` first — otherwise the ID would sit on a set that takes a run of numbers
 rather than one.
 
+Parts that are drawings, set side by side in a `row` (column frames, clocks,
+bar models), print their numbers beside them while the row has the width; then,
+for column frames, beside with the squares up to 5% smaller (9.5mm at least);
+and only then above each drawing, centred: (1a), (1b), (1c) over three column
+frames costs 6mm of height and no width, where beside them it needs 10mm of
+width each. So lettered drawings that will not sit three across are written
+as Parts like any other, not as one numbered question with `letters: true` (that
+prints a stray (1) and (a), (b), (c)). `"numbersAbove": true` on the row puts
+the numbers above even when they would fit beside; it is a choice, never needed.
+A written Part keeps its number beside.
+
 Numbers kept by hand leave a gap wherever a question could not be built, and to
 a child the gap is not information: it is a sheet that looks like a mistake.
 Numbers written by hand also come out in whatever weight the thing around them

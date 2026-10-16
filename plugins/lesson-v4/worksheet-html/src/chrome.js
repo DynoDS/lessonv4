@@ -367,8 +367,10 @@ function whyNoBrowser(error) {
 // looked for inside the part the designer flagged when a question follows its
 // material (`data-number-here`), and the flagged part itself when it has no
 // such sentence. A question with neither keeps its number where it was.
+// A number printed above its drawing (compose.js NUMBER_ABOVE_MM) is already
+// over the work it names, so it is left where it is.
 const PLACE_QUESTION_NUMBERS = `(() => {
-  const labels = document.querySelectorAll(".h-numbered > .h-numbered-n, li.h-q > .h-num");
+  const labels = document.querySelectorAll(".h-numbered:not(.h-numbered--above) > .h-numbered-n, li.h-q > .h-num");
   for (const label of labels) {
     const block = label.parentElement;
     // The nearest block that prints a number of its own: a lone written answer

@@ -217,7 +217,7 @@ Work through each card type in turn. For each, ask: does this lesson's content m
 
 If more than one candidate exists within a type (e.g. two separate misconceptions), pick the one most likely to recur and be independently useful to a child reading the card alone.
 
-Before settling the type, inspect any earlier `working-wall.json` files available for the same unit. Repeating a layout is correct when the learning relationship repeats; it is a warning when a different relationship has merely been squeezed into the previous sheet's shape. Do not force novelty, but if the same dominant type would appear for a third time, state in `rationaleNote` why the relationship—not convenience—requires it.
+Before settling the type, follow the view's `The wall before this one`, when there is one. Repeating a layout is correct when the learning relationship repeats; it is a warning when a different relationship has merely been squeezed into the previous sheet's shape. Do not force novelty, but if the same dominant type would appear for a third time, state in `rationaleNote` why the relationship—not convenience—requires it.
 
 ### Step 3a: Check for an Explicit Wall-Setup Request
 

@@ -531,6 +531,21 @@ function zoneContentMm(zone, area) {
 // a little height where a column ended short, and a sheet that fitted is never
 // pushed over by them. Otherwise the columns stay, and the group's task line
 // is lifted above them (`hoistGroupLines`).
+//
+// The columns are found however the sheet drew them. That first repair looked
+// only at a layout's own columns, which is how round two's sheet was written;
+// the next lesson wrote the same page as one full-width zone holding a `row`
+// of two stacks, the repair never saw it, and (1a) (1b) / (1c) (1d) ran down
+// again with the task line over (1a) alone (15 October 2026). So the zones'
+// own rows of stacks are read the same way (`readInlineAcross`).
+//
+// The rule is the teacher's for the whole page, not only for lettered parts
+// (15 October 2026): where things sit level with each other the child reads
+// across, like a book, and down a column only where the pieces do not line
+// up. So columns holding nothing but separate questions of matching height
+// read across as well. A column carrying its own facts, pictures or heading is
+// never moved: a question stays with what it reads from, as on a science sheet
+// with (1) under its food facts on the left and (2) under its own on the right.
 const PART_LABEL = /^(\d+)([a-z])$/;
 
 function partGroup(item) {
@@ -561,7 +576,7 @@ function groupAcrossColumns(stacks) {
 // One stack, in reading order, with each run of one question's parts laid in
 // rows of `across`. A short last row keeps the grid: its part sits in the
 // left-hand place at the same width as the parts above it.
-function partsInRows(items, across) {
+function partsInRows(items, across, runOf = partGroup) {
   const out = [];
   let run = [];
   const flush = () => {
@@ -573,8 +588,8 @@ function partsInRows(items, across) {
     run = [];
   };
   for (const item of items) {
-    const group = partGroup(item);
-    if (group !== null && run.length && partGroup(run[0]) !== group) flush();
+    const group = runOf(item);
+    if (group !== null && run.length && runOf(run[0]) !== group) flush();
     if (group !== null) run.push(item);
     else {
       flush();
@@ -585,8 +600,96 @@ function partsInRows(items, across) {
   return out;
 }
 
+// Separate questions line up when every column holds questions and nothing
+// else, and the tallest is no more than a quarter taller than the shortest at
+// the width a column gives them. A long question beside short ones does not
+// line up, and keeps its column.
+const LINE_UP_RATIO = 1.25;
+const isQuestion = (item) => Boolean(item && typeof item === "object" && item.number !== undefined);
+
+function questionsLineUp(stacks, columnMm) {
+  if (stacks.length < 2 || stacks.some((items) => !items.length)) return false;
+  const items = stacks.flat();
+  if (!items.every(isQuestion)) return false;
+  const heights = items.map((item) => measureContent(item, Math.max(1, columnMm)));
+  return Math.max(...heights) <= Math.min(...heights) * LINE_UP_RATIO;
+}
+
+// The columns' contents set out in rows across, or null where they stay as
+// columns.
+function rowsAcross(stacks, columnMm) {
+  if (groupAcrossColumns(stacks) !== null) return partsInRows(stacks.flat(), stacks.length);
+  if (questionsLineUp(stacks, columnMm)) {
+    return partsInRows(stacks.flat(), stacks.length, (item) => (isQuestion(item) ? "question" : null));
+  }
+  return null;
+}
+
+// A `row` inside a zone whose cells are plain stacks is two columns drawn
+// another way. Only the zone's own items are looked at, never the inside of a
+// numbered question, where a row is that question's own figures side by side.
+const isColumnRow = (item) =>
+  Boolean(
+    item &&
+      Array.isArray(item.row) &&
+      !item.partsAcross &&
+      item.row.length > 1 &&
+      item.row.every((cell) => isStack(cell) && cell.number === undefined)
+  );
+
+function readInlineAcross(content, wMm) {
+  if (!isStack(content) || content.number !== undefined) return content;
+  let changed = false;
+  const stack = content.stack.flatMap((item) => {
+    if (isColumnRow(item)) {
+      const columnMm = (wMm - GUTTER_MM) / item.row.length;
+      const rows = rowsAcross(
+        item.row.map((cell) => cell.stack),
+        columnMm
+      );
+      if (rows) {
+        changed = true;
+        return rows;
+      }
+      return [item];
+    }
+    const inner = readInlineAcross(item, wMm);
+    if (inner !== item) changed = true;
+    return [inner];
+  });
+  return changed ? { ...content, stack } : content;
+}
+
+// When a zone's own columns stay, the task line the parts share comes out of
+// the first column to sit across the row, as `hoistGroupLines` does for a
+// layout's columns.
+function liftInlineGroupLines(content) {
+  if (!isStack(content) || content.number !== undefined) return content;
+  let changed = false;
+  const stack = content.stack.flatMap((item) => {
+    if (isColumnRow(item)) {
+      const columns = item.row.map((cell) => cell.stack);
+      const group = groupAcrossColumns(columns);
+      const first = item.row.findIndex(
+        (cell) => isGroupLine(cell.stack[0]) && partGroup(cell.stack[1]) === group
+      );
+      if (group === null || first < 0) return [item];
+      changed = true;
+      const row = item.row.map((cell, i) => (i === first ? { ...cell, stack: cell.stack.slice(1) } : cell));
+      return [item.row[first].stack[0], { ...item, row }];
+    }
+    const inner = liftInlineGroupLines(item);
+    if (inner !== item) changed = true;
+    return [inner];
+  });
+  return changed ? { ...content, stack } : content;
+}
+
 function readPartsAcross(node, zones, box) {
-  if (typeof node === "string") return node;
+  if (typeof node === "string") {
+    if (zones[node]) zones[node] = readInlineAcross(zones[node], box.wMm);
+    return node;
+  }
   const total = node.parts.reduce((a, b) => a + b, 0);
   const children = node.children.map((child, i) => {
     const share = node.parts[i] / total;
@@ -602,9 +705,11 @@ function readPartsAcross(node, zones, box) {
     return rebuilt;
   }
   const stacks = children.map((id) => zones[id].stack);
-  if (groupAcrossColumns(stacks) === null) return rebuilt;
+  const columnMm = (box.wMm * Math.min(...node.parts)) / total - GUTTER_MM;
+  const rows = rowsAcross(stacks, columnMm);
+  if (rows === null) return rebuilt;
 
-  zones[children[0]] = { ...zones[children[0]], stack: partsInRows(stacks.flat(), children.length) };
+  zones[children[0]] = { ...zones[children[0]], stack: rows };
   for (const id of children.slice(1)) delete zones[id];
   return children[0];
 }
@@ -743,14 +848,18 @@ function sheetGeometry(spec) {
   const area = contentArea(spec);
   const box = { wMm: area.widthMm, hMm: area.heightMm };
   const shape = (start, from) => {
-    const own = { ...from };
+    const own = {};
+    for (const [id, content] of Object.entries(from)) own[id] = liftInlineGroupLines(content);
     const titled = hoistSectionTitles(start, own, box);
     return { tree: hoistGroupLines(titled, own, box), sheet: { ...spec, zones: own } };
   };
   const across = { ...zones };
   const rowsTree = readPartsAcross(layout.tree, across, box);
   const columns = shape(layout.tree, zones);
-  if (rowsTree === layout.tree || JSON.stringify(rowsTree) === JSON.stringify(layout.tree)) return columns;
+  const unchanged =
+    JSON.stringify(rowsTree) === JSON.stringify(layout.tree) &&
+    Object.keys(zones).every((id) => across[id] === zones[id]);
+  if (unchanged) return columns;
   const rows = shape(rowsTree, across);
   const fitsPage = (g) => measureTree(g.tree, g.sheet, area.widthMm).height <= area.heightMm + 0.01;
   return fitsPage(rows) || !fitsPage(columns) ? rows : columns;

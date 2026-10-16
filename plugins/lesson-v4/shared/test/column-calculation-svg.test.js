@@ -84,7 +84,21 @@ test('a blank answer prints nothing; a given one prints green; a worked one purp
   assert.equal(worked(layout(BLANK)).length, 0);
   assert.ok(worked(layout(SUM)).every((t) => t.fill === GREEN));
   const model = layout({ calculation: { ...SUM.calculation, worked: true } });
-  assert.ok(model.texts.filter((t) => t.role !== 'heading').every((t) => t.fill === PURPLE));
+  assert.ok(worked(model).length && worked(model).every((t) => t.fill === PURPLE));
+});
+
+// The teacher, 16 October 2026, on three children's finished working drawn all
+// purple: given numbers black, the child's working purple, on every worked sum.
+test('a worked sum keeps the numbers it was set with black, and only the working purple', () => {
+  for (const surface of Object.keys(SURFACES)) {
+    const L = layout({ calculation: { operator: '-', numbers: ['4573', '276'], answer: '4297', worked: true,
+      exchanges: [{ from: 'T', to: 'O' }, { from: 'H', to: 'T' }] } }, surface);
+    const given = L.texts.filter((t) => (t.role === 'digit' && t.row === 'number') || t.role === 'operator');
+    const written = L.texts.filter((t) => t.role === 'exchange' || t.role === 'exchange-one' || t.row === 'answer');
+    assert.ok(given.length >= 7 && given.every((t) => t.fill !== PURPLE), `${surface}: given ink`);
+    // The stick-in pack is photocopied, so it prints in ink and has no purple.
+    if (surface !== 'stickin') assert.ok(written.length >= 6 && written.every((t) => t.fill === PURPLE), `${surface}: working purple`);
+  }
 });
 
 test('subtraction has no carry row: an exchange is written above', () => {

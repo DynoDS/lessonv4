@@ -1,7 +1,7 @@
 'use strict';
 
 const { FONT, COLOURS, SIZE_CEILINGS, FIT, CARD } = require('./styles');
-const { HEADER_TITLE, HEADER_STARTER, starterPrompt, instructionNeedsTwoLines, INSTRUCTION_TWO_LINE_H, doSignRoom, starterLoNeedsTwoLines, STARTER_LO_TWO_LINE, STARTER_LO_TWO_LINE_PT } = require('./layout');
+const { HEADER_TITLE, HEADER_STARTER, starterPrompt, instructionNeedsTwoLines, instructionCuePt, INSTRUCTION_TWO_LINE_H, doSignRoom, starterLoNeedsTwoLines, STARTER_LO_TWO_LINE, STARTER_LO_TWO_LINE_PT } = require('./layout');
 const { drawSignal, signalWidth, DO_SIGNS } = require('./signals');
 
 // Card look: a white pill hugging a header text, so the title and the task
@@ -104,11 +104,17 @@ function drawTitleHeader(slide, data, ctx) {
     let textX = 0;
     // Two lines at the same size when one will not hold it (layout.js,
     // instructionNeedsTwoLines); the body zone has already moved down for it.
-    const instructionH = instructionNeedsTwoLines(data)
+    const twoLines = instructionNeedsTwoLines(data);
+    const instructionH = twoLines
       ? INSTRUCTION_TWO_LINE_H
       : HEADER_TITLE.instructionH;
+    // A short cue grows into its band (layout.js, instructionCuePt); a cue
+    // that wraps keeps the size its two lines were priced at.
+    const cuePt = twoLines
+      ? SIZE_CEILINGS.instruction
+      : instructionCuePt(instruction, HEADER_TITLE.instructionW - badgeRoom, data.signal);
     if (pills) {
-      textX = drawHeaderPill(slide, instruction, SIZE_CEILINGS.instruction, {
+      textX = drawHeaderPill(slide, instruction, cuePt, {
         x: HEADER_TITLE.instructionX, y: HEADER_TITLE.instructionY,
         w: HEADER_TITLE.instructionW - badgeRoom, h: instructionH
       }, 'right', data.signal);
@@ -118,7 +124,7 @@ function drawTitleHeader(slide, data, ctx) {
       x: textX || HEADER_TITLE.instructionX, y: HEADER_TITLE.instructionY,
       w: (right - (pills ? 0.12 : 0)) - (textX || HEADER_TITLE.instructionX),
       h: instructionH,
-      fontFace: FONT, fontSize: SIZE_CEILINGS.instruction, bold: true,
+      fontFace: FONT, fontSize: cuePt, bold: true,
       color: COLOURS.body, align: textX ? 'left' : (instructionH > HEADER_TITLE.instructionH ? 'center' : 'right'), valign: 'middle',
       margin: 0, fit: FIT
     });
@@ -214,8 +220,9 @@ function drawStarterHeader(slide, data, ctx) {
 
   if (instruction) {
     let textX = 0;
+    const cuePt = instructionCuePt(instruction, HEADER_STARTER.instructionW, data.signal);
     if (pills) {
-      textX = drawHeaderPill(slide, instruction, SIZE_CEILINGS.instruction, {
+      textX = drawHeaderPill(slide, instruction, cuePt, {
         x: HEADER_STARTER.instructionX, y: HEADER_STARTER.instructionY + below,
         w: HEADER_STARTER.instructionW, h: HEADER_STARTER.instructionH
       }, 'right', data.signal);
@@ -225,7 +232,7 @@ function drawStarterHeader(slide, data, ctx) {
       x: textX || HEADER_STARTER.instructionX, y: HEADER_STARTER.instructionY + below,
       w: (right - (pills ? 0.12 : 0)) - (textX || HEADER_STARTER.instructionX),
       h: HEADER_STARTER.instructionH,
-      fontFace: FONT, fontSize: SIZE_CEILINGS.instruction, bold: true,
+      fontFace: FONT, fontSize: cuePt, bold: true,
       color: COLOURS.body, align: textX ? 'left' : 'right', valign: 'middle',
       margin: 0, fit: FIT
     });

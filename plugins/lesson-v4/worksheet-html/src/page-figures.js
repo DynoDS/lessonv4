@@ -61,6 +61,7 @@ function pageFigures() {
     landscapeColumnMm: Math.round(half("landscape").wMm),
     questionGapMm: Math.round(questionGapMm),
     numberGutterMm: Math.round(numberGutterMm),
+    numberAboveMm: require("./helpers/compose").NUMBER_ABOVE_MM,
     rowGapMm: Math.round(rowGapMm),
   };
 }
@@ -74,7 +75,12 @@ function measureFooter(figures = pageFigures()) {
     `${figures.questionGapMm}mm between one question and the next; a row is as tall ` +
     `as its tallest part and as wide as its parts plus ${figures.rowGapMm}mm between ` +
     "each. Anything marked `question: true` is measured with its printed number, " +
-    `which takes ${figures.numberGutterMm}mm of width beside it.`
+    `which takes ${figures.numberGutterMm}mm of width beside it. A row of lettered ` +
+    "Parts that are drawings ((1a), (1b), (1c) over column frames) keeps its numbers " +
+    "beside while they fit, if need be with the frames' squares up to 5% smaller; " +
+    `past that it puts each number above its drawing instead: ` +
+    `${figures.numberAboveMm}mm of height and no width. Write each lettered Part as ` +
+    "a Part of its own, as the sheet will number it, and these heights are the sheet's."
   );
 }
 

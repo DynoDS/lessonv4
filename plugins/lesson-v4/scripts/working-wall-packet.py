@@ -74,8 +74,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
+import shutil
 import sys
+import time
+from datetime import datetime
 from pathlib import Path
 
 
@@ -509,6 +513,7 @@ def build_view(
             "`cards: []` for anything that is this lesson's own technique."
         )
     lines.append("")
+    lines.extend(earlier_wall_section(working_dir))
     lines.extend(["## Lesson", ""])
     for key in ("structure", "subject", "yearGroup", "lo", "displayedLo", "durationMinutes"):
         if key in meta:
@@ -930,6 +935,302 @@ def prepare(args: argparse.Namespace) -> int:
     return 0
 
 
+# ─── earlier: the wall a lesson inherits from the lesson before ─────────
+#
+# Lessons 28 to 32 (Year 4 column subtraction, 15 October 2026) each ran the
+# wall designer, and Thursday's and Friday's sheets came out the same: same
+# title, layout, steps and kind of example. The teacher's rulings that day: a
+# repeated sheet is fine, the helper time spent making it again is not; over a
+# week of one method each day's wall adds to the one before; a new sheet is
+# made only when the method steps change, not when the example gets harder;
+# and in a set built side by side a day waits for the earlier wall it builds
+# on, never for a lesson that has stopped.
+#
+# So a lesson's wall is settled against the lesson before it, here, before any
+# helper starts. Same method steps word for word: the earlier sheet is copied
+# and no designer runs (if the earlier lesson decided no sheet, neither does
+# this one). Different steps: the designer runs with the earlier sheet in its
+# view, to add to it. No steps list on either side: the designer runs as before.
+
+WALL_RECORD = "wall-earlier.json"
+WAIT_LIMIT_SECONDS = 60 * 60
+WAIT_POLL_SECONDS = 20
+STOPPED_STATES = ("stopped", "not saved", "finished")
+
+
+def _script_module(filename: str, name: str):
+    import importlib.util
+
+    scripts = Path(__file__).resolve().parent
+    if str(scripts) not in sys.path:
+        sys.path.insert(0, str(scripts))
+    spec = importlib.util.spec_from_file_location(name, scripts / filename)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def filing_values(working_dir: Path) -> dict[str, str]:
+    try:
+        lines = (working_dir / "filing.txt").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        lines = []
+    return {key.strip(): value.strip() for key, value in (line.split("=", 1) for line in lines if "=" in line)}
+
+
+def method_list(design: dict | None, plain) -> tuple[str, ...]:
+    """The lesson's full method list in plain words: its longest steps list, () when it has none."""
+    best: tuple[str, ...] = ()
+    for item in (design or {}).get("successCriteria") or []:
+        if isinstance(item, dict) and item.get("type") == "steps" and isinstance(item.get("content"), dict):
+            steps = tuple(plain(step) for step in item["content"].get("steps") or [])
+            if len(steps) >= len(best):
+                best = steps
+    return best
+
+
+def related(one: tuple[str, ...], other: tuple[str, ...]) -> bool:
+    """Two method lists teach one method when both exist and they share a step."""
+    return bool(one and other and set(one) & set(other))
+
+
+def wall_state(folder: Path | None, since: float = 0.0) -> dict | None:
+    """What a lesson folder decided about its wall, or None while it has not decided.
+
+    `since` ignores a record older than the lesson's own session, which belongs
+    to an earlier run in the same folder.
+    """
+    if folder is None:
+        return None
+    record = folder / "build-results" / "wall.json"
+    spec = folder / "working-wall.json"
+    try:
+        if not spec.is_file() or spec.stat().st_mtime < since:
+            return None
+        wall = json.loads(spec.read_text(encoding="utf-8"))
+        if isinstance(wall, dict) and wall.get("cards") == []:
+            # No sheet is a finished answer; the playbook builds nothing for it.
+            return {"folder": folder, "spec": wall, "pdf": None}
+        if not record.is_file() or record.stat().st_mtime < since:
+            return None
+        built = json.loads(record.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not built.get("ok") or not isinstance(wall, dict) or not wall.get("cards"):
+        return None
+    for output in built.get("outputs") or []:
+        path = Path(str(output.get("path", "")))
+        if path.suffix.lower() != ".pdf":
+            continue
+        if path.is_file() and sha256_file(path) == output.get("sha256"):
+            return {"folder": folder, "spec": wall, "pdf": path}
+        # The shared output folder archives a file when a later lesson of the
+        # same name builds over it: find the same bytes under its new name.
+        for other in sorted(path.parent.glob("Working Wall - *.pdf")) if path.parent.is_dir() else []:
+            if sha256_file(other) == output.get("sha256"):
+                return {"folder": folder, "spec": wall, "pdf": other}
+    return {"folder": folder, "spec": wall, "pdf": None, "lost": True}
+
+
+def earlier_lessons(working_dir: Path, design: dict, plain) -> tuple[tuple[str, ...], list[dict]]:
+    """This lesson's method list and the lessons before it, nearest first.
+
+    Each is {"name", "steps", "folder", "sibling", "status", "since"}. A lesson
+    in a set built side by side takes every list from the set's thread, which
+    every design in the set is held to word for word, because a sibling may
+    not have a design yet; a lesson on its own reads the designs.
+    """
+    values = filing_values(working_dir)
+    thread_path = values.get("SET_THREAD") or os.environ.get("LESSON_SET_THREAD", "")
+    key = values.get("SET_LESSON") or os.environ.get("LESSON_SET_LESSON", "")
+    previous = values.get("PREVIOUS_LESSON", "")
+    no_lesson = {"", "NO_LESSON", "NONE"}
+
+    def design_steps(folder: Path) -> tuple[str, ...]:
+        try:
+            return method_list(json.loads((folder / "lesson-design.json").read_text(encoding="utf-8")), plain)
+        except (OSError, ValueError):
+            return ()
+
+    found: list[dict] = []
+    own = method_list(design, plain)
+    if thread_path and key:
+        thread_file = Path(thread_path)
+        try:
+            entries = json.loads(thread_file.read_text(encoding="utf-8")).get("lessons") or []
+            batch = json.loads((thread_file.parent / "batch.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError, AttributeError):
+            entries, batch = [], {}
+        keys = [entry.get("key") for entry in entries if isinstance(entry, dict)]
+        if key in keys:
+            steps = {entry.get("key"): tuple(plain(s) for s in entry.get("methodSteps") or [])
+                     for entry in entries if isinstance(entry, dict)}
+            own = steps[key] or own
+            members = {lesson.get("key"): lesson for lesson in batch.get("lessons") or []}
+            output = thread_file.parent.parent.parent
+            finder = _script_module("lesson-batch.py", "lesson_batch_for_wall")
+            for sibling in reversed(keys[: keys.index(key)]):
+                lesson = members.get(sibling) or {}
+                folder = finder.working_folder_for(output, lesson) if lesson.get("brief") else None
+                started = lesson.get("firstStarted") or lesson.get("started") or ""
+                try:
+                    since = datetime.fromisoformat(started).timestamp() if started else 0.0
+                except ValueError:
+                    since = 0.0
+                found.append({"name": sibling, "steps": steps.get(sibling, ()), "folder": folder,
+                              "sibling": True, "status": lesson.get("status", ""), "since": since})
+            previous = (members.get(key) or {}).get("setPrevious") or previous
+    if previous not in no_lesson and Path(previous).is_dir():
+        folder = Path(previous)
+        found.append({"name": folder.name, "steps": design_steps(folder), "folder": folder,
+                      "sibling": False, "status": "finished", "since": 0.0})
+    return own, found
+
+
+def settle_earlier(working_dir: Path, design: dict, plain) -> dict:
+    """One look: {"decision": reuse|none|wait|design, ...}."""
+    own, before = earlier_lessons(working_dir, design, plain)
+    if not before:
+        return {"decision": "design", "why": "no earlier lesson was found"}
+    owner = None
+    for lesson in before:
+        if own and lesson["steps"] == own:
+            owner = lesson
+        else:
+            break
+    nearest = before[0]
+    target = owner or (nearest if related(own, nearest["steps"]) else None)
+    if target is None:
+        state = wall_state(nearest["folder"], nearest["since"]) if not nearest["sibling"] else None
+        return {"decision": "design", "earlier": nearest["name"], "related": False, "state": state,
+                "why": "the lesson before teaches a different method, or no steps list"}
+    state = wall_state(target["folder"], target["since"])
+    if state is None and target["sibling"] and target["status"] not in STOPPED_STATES:
+        return {"decision": "wait", "earlier": target["name"], "reuse": owner is not None,
+                "why": f"{target['name']} has not made its wall yet"}
+    if owner is not None and state is not None:
+        if not state["spec"].get("cards"):
+            return {"decision": "none", "earlier": owner["name"], "state": state,
+                    "why": f"{owner['name']} has the same method steps and decided no wall"}
+        if state.get("pdf"):
+            return {"decision": "reuse", "earlier": owner["name"], "state": state,
+                    "why": f"{owner['name']} has the same method steps"}
+    return {"decision": "design", "earlier": target["name"], "related": True, "state": state,
+            "why": (f"{target['name']} adds to the method" if owner is None
+                    else f"{target['name']} has the same steps but its wall could not be found")}
+
+
+def copy_earlier_wall(plugin_root: Path, working_dir: Path, output_dir: Path, lesson_name: str, settled: dict) -> Path:
+    fixed = _script_module("run-fixed-resource.py", "run_fixed_resource_for_wall")
+    state = settled["state"]
+    base = fixed.safe_filename_component(
+        plugin_root, fixed.lesson_build_name(working_dir, lesson_name), "Lesson"
+    )
+    target = output_dir / f"Working Wall - {base}.pdf"
+    source = Path(state["pdf"])
+    archived = []
+    if target.exists() and target.resolve() != source.resolve() and sha256_file(target) != sha256_file(source):
+        archived = fixed.archive_paths([target])
+    if target.resolve() != source.resolve():
+        output_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+    write_reused_spec(working_dir, settled)
+    record = {
+        "schemaVersion": 1, "ok": True, "kind": "wall", "exitCode": 0,
+        "stdout": f"Reused: {source}\nBuilt: {target}\nCards: {len(state['spec'].get('cards') or [])}\n",
+        "stderr": "", "archived": archived, "degraded": False, "reusedFrom": str(state["folder"]),
+        "outputs": [{"path": str(target), "sha256": sha256_file(target)}],
+    }
+    (working_dir / "build-results").mkdir(parents=True, exist_ok=True)
+    (working_dir / "build-results" / "wall.json").write_text(
+        json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    return target
+
+
+def write_reused_spec(working_dir: Path, settled: dict) -> None:
+    """The earlier spec, so the run report sees the wall decided; its note says where it came from."""
+    spec = dict(settled["state"]["spec"])
+    note = f"Same method steps as {settled['earlier']}, so its wall is used again rather than made again."
+    spec["rationaleNote"] = note if not spec.get("cards") else note + " " + str(spec.get("rationaleNote") or "")
+    (working_dir / "working-wall.json").write_text(
+        json.dumps(spec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+
+
+def earlier(args: argparse.Namespace) -> int:
+    plugin_root = Path(args.plugin_root).resolve()
+    working_dir = Path(args.working_dir).resolve()
+    design = read_json(working_dir / "lesson-design.json", "lesson-design.json")
+    plain = _script_module("validate-lesson-design.py", "validate_lesson_design_for_wall").plain_words
+    record_path = working_dir / WALL_RECORD
+    try:
+        first_wait = float(json.loads(record_path.read_text(encoding="utf-8")).get("firstWaited") or 0)
+    except (OSError, ValueError, AttributeError):
+        first_wait = 0.0
+    deadline = time.time() + 60 * max(0.0, float(args.wait_minutes or 0))
+    while True:
+        settled = settle_earlier(working_dir, design, plain)
+        if settled["decision"] != "wait":
+            break
+        first_wait = first_wait or time.time()
+        if time.time() - first_wait >= WAIT_LIMIT_SECONDS:
+            settled = {"decision": "design", "earlier": settled["earlier"], "related": False, "state": None,
+                       "why": f"waited an hour for {settled['earlier']}'s wall; making this lesson's own"}
+            break
+        if time.time() >= deadline:
+            break
+        time.sleep(WAIT_POLL_SECONDS)
+
+    state = settled.get("state") or {}
+    record = {
+        "decision": settled["decision"],
+        "earlierLesson": settled.get("earlier", ""),
+        "why": settled["why"],
+        "buildsOn": bool(settled["decision"] == "design" and settled.get("related") and state.get("spec")),
+        "earlierWall": str(Path(state["folder"]) / "working-wall.json") if state.get("folder") else "",
+        "firstWaited": first_wait,
+    }
+    if settled["decision"] == "reuse":
+        target = copy_earlier_wall(plugin_root, working_dir, Path(args.output_dir).resolve(), args.lesson_name, settled)
+        record["copied"] = str(target)
+    elif settled["decision"] == "none":
+        write_reused_spec(working_dir, settled)
+    record_path.write_text(json.dumps(record, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+
+    lines = {
+        "reuse": f"WALL_REUSED: {settled['why']}; its sheet is copied to {record.get('copied', '')} and build-results/wall.json records it",
+        "none": f"WALL_NOT_NEEDED: {settled['why']}; working-wall.json records the empty wall",
+        "wait": f"WALL_WAIT: {settled['why']}; carry on and run this again",
+        "design": f"WALL_DESIGN: {settled['why']}" + ("; the view shows its wall to add to" if record["buildsOn"] else ""),
+    }
+    print(lines[settled["decision"]])
+    return 0
+
+
+def earlier_wall_section(working_dir: Path) -> list[str]:
+    """The view's part about the earlier sheet, when `earlier` found one to add to."""
+    try:
+        record = json.loads((working_dir / WALL_RECORD).read_text(encoding="utf-8"))
+        if not record.get("earlierWall"):
+            return []
+        wall = json.loads(Path(record["earlierWall"]).read_text(encoding="utf-8"))
+    except (OSError, ValueError, AttributeError):
+        return []
+    lines = [f"## The wall before this one ({record.get('earlierLesson', '')})", ""]
+    if record.get("buildsOn"):
+        lines.append(
+            "That lesson teaches the same method, and this lesson's steps change it. The teacher hangs a week's "
+            "sheets side by side, so this wall is that sheet with this lesson's new step added: "
+            "keep its title, card type, colours and wording, change only what this lesson's "
+            "steps change, and swap the example only if the new step needs one that shows it."
+        )
+    else:
+        lines.append(
+            "Teaches something else. Shown so a repeated layout is a choice the learning makes."
+        )
+    lines.extend(["", "```json", json.dumps(wall, ensure_ascii=False, indent=2), "```", ""])
+    return lines
+
+
 # ─── check: the design invariants a wall must not break ────────────────
 #
 # This once also refused a wall whose cards carried no picture while the lesson
@@ -1141,7 +1442,14 @@ def build_parser() -> argparse.ArgumentParser:
     prep.add_argument("--reference-output", required=True)
     prep.add_argument("--receipt-output", required=True)
     prep.set_defaults(func=prepare)
-    chk = commands.add_parser("check", help="refuse a wall that breaks a design invariant")
+    ear = commands.add_parser("earlier", help="copy the lesson before's wall when the method steps match, else say what to build on")
+    ear.add_argument("--plugin-root", required=True)
+    ear.add_argument("--working-dir", required=True)
+    ear.add_argument("--output-dir", required=True)
+    ear.add_argument("--lesson-name", required=True)
+    ear.add_argument("--wait-minutes", type=float, default=0, help="keep looking this long while an earlier lesson in the set is still making its wall")
+    ear.set_defaults(func=earlier)
+    chk =commands.add_parser("check", help="refuse a wall that breaks a design invariant")
     chk.add_argument("--plugin-root", required=True)
     chk.add_argument("--working-dir", required=True)
     chk.add_argument("--working-wall", required=True)

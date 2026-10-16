@@ -149,11 +149,11 @@ whatever the mode.
   resources in `OUTPUT_DIR`; saving never gates the lesson.
 - A folder the teacher names for this lesson wins over any saved mode except a
   letterbox: rewrite `filing.txt` as `DELIVERY=folder` with that
-  `SAVE_FOLDER=`, keeping its `PREVIOUS_LESSON=` and `EARLIER_LESSONS=` lines.
+  `SAVE_FOLDER=`, keeping its `PREVIOUS_LESSON=`, `EARLIER_LESSONS=` and `SET_` lines.
 
-For direct fixed slides, worksheets and stick-in sheets, let
-`run-fixed-resource.py` own output-family collision archiving. The retained wall
-builder owns its wall-family archive.
+Give every build one `[TOPIC]`: the plan's short lesson name, else the
+objective in a few words. `run-fixed-resource.py` adds the number or day,
+archives clashes and records it as `buildName`.
 
 ---
 
@@ -951,6 +951,16 @@ Launch directly with approved lesson design, teacher worksheet when supplied,
 teacher brief/clarifications, and the frozen initial photo contract. It owns
 `adaptation.md` and, through it, a provisional adaptation photo contract.
 
+Its launch, and any bounded revision of `adaptation.md`, carries:
+
+```text
+SUCCESS_CHECK:
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/photo-contract.py" check-adaptation --working-dir "[WORKING_DIR]"
+Require ADAPTATION_CHECK_OK [N] as the last line.
+```
+
+That check writes nothing; `build-provisional` below stays yours.
+
 `adaptation.md` is the only adaptation file, and its `Photos for the sheets`
 block is the only place adaptation pictures are written. Every command below
 reads that path. There is no `adaptation.json`.
@@ -1199,9 +1209,19 @@ invent it. Mention the omission only when the approved design requested one.
 
 ### Track D — Working Wall (working-wall-designer → fixed wall build, runs after slide-designer; in parallel with Tracks B and the rest of A)
 
-Launch Working Wall Designer on every run, the moment the Slide Designer's
-`lesson.json` passes its checks (beside the Slide Decorator, never after it),
-after preparing its packet:
+The moment the Slide Designer's `lesson.json` passes its checks
+(beside the Slide Decorator, never after it), settle the wall against the
+lesson before:
+
+```text
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" earlier --plugin-root "[PLUGIN_ROOT]" --working-dir "[WORKING_DIR]" --output-dir "[OUTPUT_DIR]" --lesson-name "[TOPIC]"
+```
+
+`WALL_REUSED` (same steps: that sheet is copied, its build record written for
+the save) and `WALL_NOT_NEEDED` end Track D: no designer, build or wall review.
+`WALL_WAIT`: carry on with other tracks, rerunning it with `--wait-minutes 9`
+(in the background) until it settles.
+Launch Working Wall Designer on every run that reaches `WALL_DESIGN`, after preparing its packet:
 
 ```text
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" prepare   --plugin-root "[PLUGIN_ROOT]" --working-dir "[WORKING_DIR]"   --lesson-design "[WORKING_DIR]/lesson-design.json"   --lesson "[WORKING_DIR]/lesson.json"   --photo-requirements "[applicable photo contract]"   --plan-lesson "[WORKING_DIR]/plan-lesson.md"   --view-output "[WORKING_DIR]/working-wall-view.md"   --reference-output "[WORKING_DIR]/working-wall-reference.md"   --receipt-output "[WORKING_DIR]/working-wall-packet.receipt.json"
@@ -1211,11 +1231,9 @@ Require `WORKING_WALL_PACKET_OK`. The view holds every string and figure a
 card can carry, byte for byte; the reference holds the rules and only the
 card contracts this lesson triggers.
 
-Pass `--plan-lesson` on any run from a long-term plan: the wall is the one
-resource whose question looks forward, and that row names what the unit
-still has to come. Omit it otherwise; the view then tells the designer to be
-correspondingly cautious. That is what replaced two complete
-reference files and a hunt through the lesson. Name the two packet files as
+Pass `--plan-lesson` on any run from a long-term plan: that row names what the
+unit still has to come, which the wall looks forward to. Omit it otherwise;
+the view then says to be cautious. Name the two packet files as
 authoritative inputs beside `lesson-design.json`, `lesson.json` and the
 photo contract. If prepare fails after its one infrastructure retry, launch
 the designer on the full files anyway and write one `FRICTION:` line: a
@@ -1231,19 +1249,14 @@ report. It owns only `working-wall.json`. Its deterministic check is:
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" check \n  --plugin-root "[PLUGIN_ROOT]" \n  --working-dir "[WORKING_DIR]" \n  --working-wall "[WORKING_DIR]/working-wall.json" \n  --lesson "[WORKING_DIR]/lesson.json"
 ```
 
-Require exactly `WORKING_WALL_DESIGN_OK`. The check refuses an empty wall with no
-reason given, a worked example that ends on the number it started from, and a
-reference table that repeats its title as a heading or changes the slides' rows.
-It also refuses a teaching card with no picture: every wall sheet carries one,
-and the designer leaves a card off rather than print words. Then
+Require exactly `WORKING_WALL_DESIGN_OK`; its refusals name their fault. Then
 build the wall directly, only when `cards` is non-empty:
 
 ```text
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" wall   --plugin-root "[PLUGIN_ROOT]"   --working-dir "[WORKING_DIR]"   --output-dir "[OUTPUT_DIR]"   --lesson-name "[TOPIC]"   --chrome-state "[ready|unavailable]"   --summary-output "[WORKING_DIR]/build-results/wall.json"
 ```
 
-Same command as the slides, worksheets and stick-ins; no builder agent. The
-build script refuses a wall whose printed sheets do not match the pages its
+No builder agent. The build script refuses a wall whose printed sheets do not match the pages its
 cards laid out, and `working-wall-designer` judges the finished sheet at FINAL
 RESOURCE REVIEW.
 
@@ -1539,7 +1552,7 @@ Write `[WORKING_DIR]/run-report.md` with:
 - delivered resources with exact paths from fixed build summaries or the wall
   builder, each path in backticks;
 - the lesson walk-through: copy `[WORKING_DIR]/design-decisions.md` to
-  `[OUTPUT_DIR]/[lesson title] - walk-through.md`, listed with the delivered
+  `[OUTPUT_DIR]/[buildName] - walk-through.md`, listed with the delivered
   resources. It is the lesson as the designer would teach it, and what the
   teacher reads to see where the lesson is going; it goes wherever the deck goes;
 - excluded earned resources and exact reasons;

@@ -1581,6 +1581,49 @@ test('one modelled number per figure passes, and so does a Your Turn with severa
   }
 });
 
+// `inBooks` narrows a sum's empty row because nobody writes in it on the board
+// (the teacher, 16 October 2026). On a My Turn or Our Turn the teacher does.
+function sumSlide(title, inBooks) {
+  return {
+    template: 'maths-turn-sc',
+    title,
+    questions: ['6,284 - 2,139 ='],
+    questionVisual: {
+      type: 'place-value-chart',
+      columns: ['Th', 'H', 'T', 'O'],
+      calculation: { operator: '-', numbers: ['6284', '2139'] },
+      ...(inBooks ? { inBooks: true } : {})
+    },
+    criteria: { type: 'steps', steps: ['Start with the ones.'] }
+  };
+}
+
+test('a sum the teacher completes on the board may not be marked as answered in books', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    for (const title of ['My Turn', 'Our Turn']) {
+      const result = runSlideDesignCheck(
+        writeLesson(root, { ...ordinaryLesson(), slides: [sumSlide(title, true)] }),
+        { buildPath: fakeBuilder }
+      );
+      assert.equal(result.ok, false, title);
+      assert.match(result.stdout, /"signal":"IN_BOOKS_ON_A_MODELLING_SLIDE"/);
+    }
+    for (const [title, inBooks] of [['Your Turn', true], ['My Turn', false]]) {
+      assert.doesNotMatch(
+        runSlideDesignCheck(
+          writeLesson(root, { ...ordinaryLesson(), slides: [sumSlide(title, inBooks)] }),
+          { buildPath: fakeBuilder }
+        ).stdout,
+        /IN_BOOKS_ON_A_MODELLING_SLIDE/
+      );
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 // Blue is a question or the child's short task, and an instruction about how to
 // go about the task stays black: the teacher's answer of 24 September 2026,
 // narrowing his "can we make only questions to children blue" of 3 September.
@@ -2171,4 +2214,52 @@ test('a story left black is still known from the lesson design beside the deck',
   ];
   assert.equal(storySignals(items, design, unitId).length, 1);
   assert.equal(storySignals(items, null, unitId).length, 0);
+});
+
+// The criteria are on the board from the first slide the class works from
+// (the teacher, 16 October 2026): Tuesday's first exchange was written down
+// with its counters and no criteria, which arrived two slides later.
+function unitSlide(title, interaction, withCriteria) {
+  return {
+    template: 'body-full',
+    title,
+    designUnitId: 'lesson-section/teaching-sequence/unit-002',
+    representationRefs: interaction ? [{ ref: 'rep-001', configuration: 'decide', interaction }] : [],
+    ...(withCriteria ? { successCriteriaRefs: ['sc-001'] } : {}),
+    body: {
+      type: 'stack',
+      items: [
+        { type: 'text', value: '4,352 - 1,218' },
+        ...(withCriteria ? [{ type: 'sc-panel', content: { type: 'steps', steps: ['Start with the ones.'] } }] : [])
+      ]
+    }
+  };
+}
+
+test('criteria that arrive after the class has started working are refused', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';\n`);
+    const run = (slides) => runSlideDesignCheck(
+      writeLesson(root, { ...ordinaryLesson(), slides }),
+      { buildPath: fakeBuilder }
+    );
+    for (const interaction of ['teacher-completes', 'pupil-uses', 'pupil-writes-on']) {
+      const late = run([unitSlide('My Turn', interaction, false), unitSlide('My Turn', interaction, true)]);
+      assert.equal(late.ok, false, interaction);
+      assert.match(late.stdout, /"signal":"CRITERIA_AFTER_THE_WORK_STARTS"/);
+    }
+    // Criteria from the first working slide, a set-up slide before the work,
+    // an answers slide, and a unit with no criteria on any slide all pass.
+    for (const slides of [
+      [unitSlide('My Turn', 'teacher-completes', true), unitSlide('My Turn', 'teacher-completes', true)],
+      [unitSlide('A story first', 'view', false), unitSlide('My Turn', 'teacher-completes', true)],
+      [unitSlide('Answers', 'teacher-completes', false), unitSlide('My Turn', 'teacher-completes', true)],
+      [unitSlide('My Turn', 'teacher-completes', false), unitSlide('My Turn', 'teacher-completes', false)]
+    ]) {
+      assert.doesNotMatch(run(slides).stdout, /CRITERIA_AFTER_THE_WORK_STARTS/, slides[0].title);
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });

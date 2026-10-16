@@ -126,3 +126,102 @@ test("when rows would not fit the page, the columns stay and the task line goes 
   const html = renderSheet(spec);
   assert.equal((html.match(/zone-rule zone-rule--down/g) || []).length, 1, "a line down: the right column holds other questions too");
 });
+
+// Round three (15 October 2026): the same page written as ONE full-width zone
+// holding a row of two stacks, not as a layout's two columns. The first
+// repair looked only at the layout's columns, so it never saw this sheet.
+const inline = (left, right, after = []) => ({
+  a: {
+    stack: [
+      { helper: "section-label", text: "Fluency" },
+      { row: [{ stack: left }, { stack: right }] },
+      ...after,
+    ],
+  },
+});
+const problem = () => [
+  { helper: "section-label", text: "Problem Solving" },
+  { helper: "instruction", text: "A library has 3,368 books. It gets 632 more books." },
+  { question: true, stack: [{ helper: "instruction", text: "How many books does it have altogether?" }] },
+];
+
+test("columns drawn as a row of stacks inside one zone read across too", () => {
+  const first = sum("2,478 + 1,657 =");
+  first.groupPrompt = "Use column addition.";
+  const spec = below(
+    inline([first, sum("3,657 + 2,348 =")], [sum("4,231 + 2,156 ="), sum("2,743 + 1,138 =")], problem()),
+    "full"
+  );
+  const stack = sheetGeometry(spec).sheet.zones.a.stack;
+  assert.equal(stack[1].groupPrompt, true, "the task line runs across above all four");
+  const rows = stack.filter((item) => item.row);
+  assert.deepEqual(
+    rows.map((r) => r.row.map((cell) => cell.number)),
+    [["1a", "1b"], ["1c", "1d"]]
+  );
+  assert.deepEqual(order(renderSheet(spec)), ["1a", "1b", "1c", "1d"]);
+});
+
+test("when rows would not fit, a zone's own columns stay and the task line goes above them", () => {
+  const first = sum("2,476 + 1,357 =");
+  first.groupPrompt = "Use column addition.";
+  const other = (text) => ({ question: true, stack: [{ helper: "instruction", text }, sum("1 + 1 =").stack[1]] });
+  const spec = below(
+    inline(
+      [first, sum("3,658 + 1,347 ="), sum("4,586 + 1,519 =")],
+      [sum("2,769 + 1,236 ="), other("How many books?"), other("How many pens?")]
+    ),
+    "full"
+  );
+  const stack = sheetGeometry(spec).sheet.zones.a.stack;
+  const at = stack.findIndex((item) => item.row);
+  assert.ok(at > 0 && !stack[at].partsAcross, "the columns stay");
+  assert.equal(stack[at - 1].groupPrompt, true, "the task line sits above the row, across both columns");
+  assert.ok(!stack[at].row[0].stack.some((item) => item.groupPrompt), "and no longer over (1a) alone");
+});
+
+test("separate questions that line up read across, like a book", () => {
+  const q = (text) => ({ question: true, stack: [{ helper: "instruction", text }, sum("1 + 1 =").stack[1]] });
+  const spec = below(inline([q("2,478 + 1,657 ="), q("3,657 + 2,348 =")], [q("4,231 + 2,156 ="), q("2,743 + 1,138 =")]), "full");
+  const rows = sheetGeometry(spec).sheet.zones.a.stack.filter((item) => item.row);
+  assert.deepEqual(
+    rows.map((r) => r.row.map((cell) => String(cell.number))),
+    [["1", "2"], ["3", "4"]]
+  );
+});
+
+test("a long question beside short ones does not line up, and keeps its column", () => {
+  const short = (text) => ({ question: true, stack: [{ helper: "instruction", text }] });
+  const long = {
+    question: true,
+    stack: [{ helper: "instruction", text: "Draw it." }, { helper: "drawing-space", heightMm: 90 }],
+  };
+  const spec = below(inline([long], [short("What is 3 + 4?"), short("What is 5 + 2?")]), "full");
+  const stack = sheetGeometry(spec).sheet.zones.a.stack;
+  const row = stack.find((item) => item.row);
+  assert.ok(row && !row.partsAcross, "the two columns are left as written");
+});
+
+test("a column with its own facts and pictures is never moved", () => {
+  const drawing = (text) => ({ helper: "drawing-space", question: true, text, heightMm: 52 });
+  const spec = below(
+    {
+      a: {
+        stack: [
+          { helper: "source-text", paragraphs: ["Foxes eat rabbits.", "Rabbits eat dandelion leaves."] },
+          drawing("Draw a food chain from these food facts."),
+        ],
+      },
+      b: {
+        stack: [
+          { helper: "source-text", paragraphs: ["Sparrowhawks eat blue tits.", "Blue tits eat caterpillars."] },
+          drawing("Draw a food chain from these food facts."),
+        ],
+      },
+    },
+    "halves-side"
+  );
+  const { sheet } = sheetGeometry(spec);
+  assert.ok(sheet.zones.b, "(2) stays under its own food facts on the right");
+  assert.equal(sheet.zones.a.stack[0].helper, "source-text");
+});

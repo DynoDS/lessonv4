@@ -525,7 +525,7 @@ of each of these lines:
 ```text
 PLUGIN_ROOT: [literal verified PLUGIN_ROOT]
 PYTHON: [literal PYTHON found at start-up]
-SCRATCH_DIR: [WORKING_DIR]/_scratch/[this launch's task_name] (yours alone: every throwaway file goes here, never the host's shared scratch folder)
+SCRATCH_DIR: [WORKING_DIR]/_scratch/[this launch's task_name] (yours alone: every throwaway file goes here, never the host's shared scratch folder; save a script longer than a few lines here with your file tool and run it by path, because the shell cuts a long typed command short on Windows; delete no file outside it that you did not make)
 ```
 
 `SCRATCH_DIR` is where that one worker keeps every throwaway file it makes: a
@@ -540,6 +540,20 @@ prompt templates print the path; send it with the words in brackets, and add the
 line to any worker prompt that has no template. When the run tidies its
 transient work at finalisation, delete `[WORKING_DIR]/_scratch/` with it, in a
 run with no picture stage too: nothing in it is a record.
+
+The line also says how a script gets there. Claude Code on Windows hands a
+command to the shell whole, and one longer than about 7,500 characters arrives
+cut short: the shell then finds a quote with no partner (`unexpected EOF`), or,
+past about 32,000, the command is refused (`ENAMETOOLONG`). A worker that types
+a page-filling script straight into the shell meets this, and each apostrophe
+in a child's sentence makes the command longer once escaped. Across about 5,000
+typed scripts from 15 September to 15 October 2026 none under 7,000 characters
+failed and nearly all over 8,000 did, in four of the five lessons of the 15
+October round.
+A script saved as a file never crosses the shell, so it runs at any length; a
+short one-line command is still fine typed. The run clears `_scratch/` itself,
+so a worker tidies nothing elsewhere: a decorator in that round deleted the
+slide designer's attempt file beside `lesson.json`.
 
 In every runtime prompt template, `[PLUGIN_ROOT]` and `[PYTHON]` mean those
 literal values. Replace the placeholders before launching the worker. Do not pass

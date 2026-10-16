@@ -174,6 +174,28 @@ function instructionNeedsTwoLines(data) {
   return textBoxWidthIn(text, INSTRUCTION_PT, true) > width;
 }
 
+// The size a one-line header cue prints at. 16pt was every cue's size, held
+// there because a third of cues were long sentences that only fitted at 16
+// (styles.js, SIZE_CEILINGS.instruction). Holding a short cue down for that
+// left "Use column subtraction." at 16pt in a strip with room to spare on
+// every Your Turn of a Year 4 week (stress test, 15 October 2026). A short cue
+// now takes the largest size up to INSTRUCTION_GROW_PT at which it still sits
+// on one line in its band; a longer cue keeps 16, so no slide lays out
+// differently. 20 was the teacher's choice from the rebuilt slide, kept below
+// the 28pt title so the cue still reads as a reminder rather than the task.
+// `bandW` is the band the cue's text frame may use, before the inset and icon.
+const INSTRUCTION_GROW_PT = 20;
+function instructionCuePt(text, bandW, signal) {
+  const cue = typeof text === 'string' ? text.trim() : '';
+  if (!cue) return INSTRUCTION_PT;
+  const { textBoxWidthIn } = require('./glyph-width');
+  const width = bandW - INSTRUCTION_TEXT_INSET - (signal ? 0.55 : 0);
+  for (let pt = INSTRUCTION_GROW_PT; pt > INSTRUCTION_PT; pt -= 1) {
+    if (textBoxWidthIn(cue, pt, true) <= width) return pt;
+  }
+  return INSTRUCTION_PT;
+}
+
 function titleHeaderHeight(data) {
   return instructionNeedsTwoLines(data) ? HEADER_TITLE_TWO_LINE_H : HEADER_TITLE_H;
 }
@@ -204,6 +226,6 @@ module.exports = {
   HEADER_TITLE, HEADER_STARTER,
   starterPrompt, starterHeaderHeight,
   starterLoNeedsTwoLines, carryObjectiveToStarters, STARTER_LO_TWO_LINE, STARTER_LO_TWO_LINE_PT,
-  instructionNeedsTwoLines, titleHeaderHeight, INSTRUCTION_TWO_LINE_H, doSignRoom,
+  instructionNeedsTwoLines, instructionCuePt, titleHeaderHeight, INSTRUCTION_TWO_LINE_H, doSignRoom,
   bodyZone
 };

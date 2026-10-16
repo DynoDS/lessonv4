@@ -278,12 +278,12 @@ class PagingTests(unittest.TestCase):
         self.assertTrue(out.rstrip().endswith("source bytes"))
 
     def test_only_the_last_page_reports_success(self):
-        (self.root / "agents" / "lesson-designer.md").write_text(self.long_text(), encoding="utf-8")
-        total = len(reader.pages(reader.role_reading(self.root, "lesson-designer")))
+        (self.root / "agents" / "worksheet-designer.md").write_text(self.long_text(), encoding="utf-8")
+        total = len(reader.pages(reader.role_reading(self.root, "worksheet-designer")))
         self.assertGreater(total, 1)
         seen = ""
         for page in range(1, total + 1):
-            rc, out, _ = self.run_main("--role", "lesson-designer", "--page", str(page))
+            rc, out, _ = self.run_main("--role", "worksheet-designer", "--page", str(page))
             self.assertEqual(rc, 0)
             self.assertIn(f"<!-- page {page} of {total} -->", out)
             if page < total:
@@ -345,10 +345,106 @@ class PagingTests(unittest.TestCase):
         for piece in ("core", "read-back", "tudor boards", "shaftesbury lesson"):
             self.assertIn(piece, out)
         self.assertNotIn("not this", out)
-        # The designer decides the teaching; the voice guide is not its role read.
-        (self.root / "agents" / "lesson-designer.md").write_text("# Lesson Designer\ndesigns\n", encoding="utf-8")
-        rc, out, _ = self.run_main("--role", "lesson-designer")
-        self.assertNotIn("voice", out)
+
+    def write_designer_guides(self):
+        refs = self.root / "references"
+        (refs / "preferences.md").write_text(
+            "# Teacher Preferences\n\nprefs intro\n\n## Contents — each agent reads its own sections\n\ncontents page\n\n"
+            "## Written Voice (House Style)\n\n### Core rules\n\ncore rules\n\n### Written Voice read-back\n\nvoice editor only\n\n"
+            "## Classroom Norms\n\nnorms\n\n## What a Lesson Is For\n\nlesson purpose\n\n"
+            "## The Teach → Do → Teach → Do Rhythm\n\nrhythm\n\n## How Much Fits in One Lesson\n\nhow much\n\n"
+            "## Starters\n\nat its decision\n\n## Source and Scenario Integrity\n\nsources\n\n"
+            "## Pride Lessons (Quality Anchor)\n\npride\n",
+            encoding="utf-8",
+        )
+        routes = "".join(f"### {r}\n\n**Use when.** route {n} fits.\n\nroute {n} execution detail\n\n" for n, r in enumerate(reader.STRUCTURES))
+        (refs / "evidence-synthesis.md").write_text(
+            "# Evidence Synthesis for UK Primary Lesson Design\n\nevidence intro\n\n"
+            "## Contents — read what this design touches\n\nevidence contents\n\n## 1. Opener / Retrieval Practice\n\nopener detail\n\n"
+            f"## {reader.STRUCTURES_HEADING}\n\nstructures intro\n\n{routes}## Cross-Cutting Principles\n\ncross-cutting\n",
+            encoding="utf-8",
+        )
+        (refs / "teacher-voice.md").write_text(
+            "# Teacher Voice Guide\n\nguide intro\n\n## 5. Explanations and definitions\n\nexplaining\n\n"
+            "## 6. Questions and pupil instructions\n\nquestions later\n",
+            encoding="utf-8",
+        )
+        (self.root / "agents" / "lesson-designer.md").write_text("# Lesson Designer\ndesigns lessons\n", encoding="utf-8")
+
+    def test_the_lesson_designer_start_up_reading_is_one_read(self):
+        # Fetched a section or two at a time it took about 17 turns a lesson.
+        self.write_designer_guides()
+        rc, out, _ = self.run_main("--role", "lesson-designer", "--companions-only")
+        self.assertEqual(rc, 0)
+        for piece in ("prefs intro", "contents page", "core rules", "norms", "lesson purpose", "rhythm", "how much",
+                      "sources", "pride", "evidence intro", "evidence contents", "cross-cutting", "route 0 fits",
+                      "route 4 fits", "explaining"):
+            self.assertIn(piece, out)
+        # The role arrived as the worker's instructions; decision-point reading,
+        # route detail and the voice editor's sections wait for their moment.
+        for piece in ("designs lessons", "at its decision", "voice editor only", "opener detail",
+                      "route 0 execution detail", "questions later"):
+            self.assertNotIn(piece, out)
+        # On Codex the role read carries the same pages after the role.
+        rc, whole, _ = self.run_main("--role", "lesson-designer")
+        self.assertLess(whole.index("designs lessons"), whole.index("prefs intro"))
+        self.assertIn("route 4 fits", whole)
+
+    def test_companions_only_needs_a_role_that_has_them(self):
+        (self.root / "agents" / "worksheet-designer.md").write_text("# Role\nshort\n", encoding="utf-8")
+        rc, out, err = self.run_main("--role", "worksheet-designer", "--companions-only")
+        self.assertEqual(rc, 2)
+        self.assertEqual(out, "")
+        self.assertIn("no start-up reading", err)
+        with self.assertRaises(SystemExit):
+            with contextlib.redirect_stderr(io.StringIO()):
+                reader.main(["--plugin-root", str(self.root), "--companions-only", "--select", "teacher-voice.md::@intro"])
+
+    def test_a_bare_guide_name_reads_the_plugins_guide(self):
+        # Four of eight designers lost a turn asking for subject-maths.md from their own folder.
+        (self.root / "references" / "subject-maths.md").write_text("# Maths\n\nmaths thinking\n", encoding="utf-8")
+        here = os.getcwd()
+        work = tempfile.TemporaryDirectory()
+        self.addCleanup(work.cleanup)
+        os.chdir(work.name)
+        try:
+            rc, out, _ = self.run_main("--file", "subject-maths.md")
+            # A file of that name in the worker's own folder is still the one read.
+            Path("subject-maths.md").write_text("local copy\n", encoding="utf-8")
+            rc2, out2, _ = self.run_main("--file", "subject-maths.md")
+            rc3, _, err3 = self.run_main("--file", "subject-nothing.md")
+        finally:
+            os.chdir(here)
+        self.assertEqual(rc, 0)
+        self.assertIn("maths thinking", out)
+        self.assertIn("local copy", out2)
+        self.assertEqual(rc3, 2)
+        self.assertIn("cannot read", err3)
+
+    def test_a_missed_heading_names_the_ones_it_may_mean(self):
+        self.write_designer_guides()
+        rc, _, err = self.run_main("--select", "teacher-voice.md::Teacher Voice Guide > 5. Explanations")
+        self.assertEqual(rc, 2)
+        self.assertIn("5. Explanations and definitions", err)
+        rc, _, err = self.run_main("--select", "preferences.md::Contents")
+        self.assertIn("Contents — each agent reads its own sections", err)
+
+    def test_off_codex_the_first_page_asks_for_the_rest_together(self):
+        # Claude Code runs commands sent in one turn side by side, each output whole.
+        self.write_designer_guides()
+        (self.root / "agents" / "lesson-designer.md").write_text(self.long_text(), encoding="utf-8")
+        total = len(reader.pages(reader.role_reading(self.root, "lesson-designer")))
+        self.assertGreater(total, 2)
+        with unittest.mock.patch.dict(os.environ, {"CODEX_THREAD_ID": ""}):
+            _, out, _ = self.run_main("--role", "lesson-designer", "--page", "1")
+        self.assertIn(f"--page 2 to --page {total}", out)
+        self.assertIn("side by side", out)
+        self.assertNotIn("REFERENCE_READ_OK", out)
+        # On Codex the pages still go one command at a time.
+        with unittest.mock.patch.dict(os.environ, {"CODEX_THREAD_ID": "thread-1"}):
+            note = reader.partial_note(1, total)
+        self.assertIn("--page 2, as a command of its own", note)
+        self.assertNotIn("side by side", note)
 
     def test_the_slide_designer_role_read_carries_its_start_up_guidance(self):
         # It lays every slide out from these, so they arrive whole as pages of the role read.

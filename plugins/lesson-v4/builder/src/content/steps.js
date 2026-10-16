@@ -18,6 +18,8 @@ const BADGE_MARGIN_MAX = 0.08;
 const BADGE_GAP        = 0.10;
 const BADGE_FONT_MAX   = 20;
 const BADGE_FONT_MIN   = 8;
+// The smallest number badge each slide's headed criteria lists drew, by lesson.
+const LIST_BADGES      = new WeakMap();
 // Two different questions, so two different numbers.
 //
 // TARGET is what a step should be set at, and the size every card's height is
@@ -655,7 +657,8 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     }
     return error;
   };
-  const { rowH, badgeW, badgeFont, cardW, cardX, stepTextW, rowGapForFit } = rows;
+  const { rowH, cardW, cardX, stepTextW, rowGapForFit } = rows;
+  let { badgeW, badgeFont } = rows;
   const plan = hasPoints ? planPointedList(steps, rows, innerH, floorPt) : null;
 
   // The height each item genuinely needs at the readable floor.
@@ -936,7 +939,8 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   const coherentFont = perStepFont.map(function (font, i) {
     return isReferenceStep(steps[i]) ? font : sharedFont;
   });
-  const stepTextGroup = fitGroupId(zone, 'step-text');
+  // Headed lists on one slide fit as one group, so their words take one size.
+  const stepTextGroup = zone.criteriaList ? 'criteria-lists' : fitGroupId(zone, 'step-text');
 
   const fontForStep = (i, availableW) => {
     if (availableW >= stepTextW - 0.001) return coherentFont[i];
@@ -980,6 +984,28 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   const P         = zone.compactCards ? CARD_COMPACT : CARD;
   const rowGap    = itemCards ? Math.min(P.itemGap, rowH * 0.18) : 0;
   const cardPad   = itemCards ? P.pad : 0;
+
+  // A number never stands taller than the card it numbers. Its size came from
+  // the list's share of the height, so where cards hug one line of words the
+  // number overhung them above and below (Year 4 lesson 30, 16 October 2026;
+  // Friday's slides 8 to 11 in the same round).
+  const cardHeights = rowHeights.filter((h, i) => !isReferenceStep(steps[i])).map((h) => h - rowGap);
+  if (cardHeights.length && Math.min(...cardHeights) < badgeW) badgeW = Math.max(0.2, Math.min(...cardHeights));
+  // A slide's headed criteria lists ("How to subtract", "How to exchange")
+  // share the smallest number any of them draws, so two boxes meant to read as
+  // a pair have numbers of one size (the teacher, 16 October 2026). The build
+  // draws every slide twice, so the real pass knows them all.
+  if (zone.criteriaList && ctx && ctx.lesson && ctx.slideIndex !== undefined) {
+    if (!LIST_BADGES.has(ctx.lesson)) LIST_BADGES.set(ctx.lesson, new Map());
+    const seen = LIST_BADGES.get(ctx.lesson);
+    const smallest = Math.min(badgeW, seen.has(ctx.slideIndex) ? seen.get(ctx.slideIndex) : Infinity);
+    // A trial fit (a panel tried at another size) records nothing.
+    if (require('../warnings').recording()) seen.set(ctx.slideIndex, smallest);
+    badgeW = smallest;
+  }
+  if (badgeW < rows.badgeW) {
+    badgeFont = Math.max(BADGE_FONT_MIN, Math.min(BADGE_FONT_MAX, Math.floor(badgeW * 72 * 0.55)));
+  }
 
   // The final text fit holds each line to the floor its name carries, so a
   // list drawn under the readable floor names its steps as a marked list's,
