@@ -482,6 +482,18 @@ def test_budget_names_height_when_the_box_cannot_hold_one_line():
     assert "fit that by count" not in message
 
 
+def test_budget_counts_a_joined_calculation_as_one_word():
+    """A calculation the builder keeps whole is one word to PowerPoint. Read
+    as four short words it "fit by count", and a Year 4 card too narrow for
+    "2,648 + 10 =" was told it could be taller, which cannot help (17 October
+    2026). It needs a wider card, and says so."""
+    box = _Box("2,648 + 10 =", 1.35, 1.45)
+    message = MODULE.text_budget(box, 18, box.text_frame.text)
+    assert "needs a wider box" in message
+    assert "2,648 + 10 =" in message
+    assert "fit that by count" not in message
+
+
 def test_budget_says_nothing_rather_than_guessing_at_empty_text():
     box = _Box("   ", 3.0, 1.0)
     assert MODULE.text_budget(box, 18, box.text_frame.text) == ""
@@ -751,3 +763,57 @@ def test_a_blank_typed_as_underscores_is_a_part_of_a_fraction():
     assert fit.FRACTION_RE.search("= ___/8").group(2) == "___"
     assert not fit.has_fraction("___ on 9/10/2026")
     assert not fit.has_fraction("and/or ___ / no")
+
+
+# PowerPoint wraps a line at the font's own letter widths. The fitter used to
+# read widths off a picture of the words drawn one pixel to the point, where
+# every letter snaps to a whole pixel, and at 31pt that reads a line about 1%
+# shorter than PowerPoint draws it. Two cards spilled their last word below the
+# card for it, chosen at 31pt as two lines and one (17 October 2026). The widths
+# below are PowerPoint's own: the narrowest box, in inches, that keeps each line
+# on one line in bold Comic Sans, found by asking PowerPoint.
+POWERPOINT_ONE_LINE_WIDTH_IN = {
+    ("How does the oxygen get there from your lungs?", 20): 6.6441,
+    ("How does the oxygen get there from your lungs?", 30): 9.9861,
+    ("How does the oxygen get there from your lungs?", 31): 10.3316,
+    ("How does the oxygen get there from your lungs?", 33): 10.9844,
+    ("The heart squeezes and pushes the blood out.", 24): 7.5382,
+    ("The heart squeezes and pushes the blood out.", 31): 9.7587,
+    ("The heart squeezes and pushes the blood out.", 33): 10.3715,
+    ("Your big toe needs oxygen too.", 31): 6.5712,
+}
+
+
+def test_a_line_is_measured_as_wide_as_powerpoint_draws_it():
+    if MODULE.FONT_MODE != "exact":
+        return  # the look-alike font is measured wide on purpose
+    bold = MODULE.pick_font_file(True, False)
+    for (text, pt), drawn in POWERPOINT_ONE_LINE_WIDTH_IN.items():
+        measured = MODULE._rendered_size(text, pt, bold)[0] / 914400
+        assert abs(measured - drawn) / drawn < 0.005, (text, pt, measured, drawn)
+
+
+def test_a_question_card_powerpoint_wraps_to_three_lines_is_not_given_that_size():
+    # Year 6 circulatory system, slide 8: a telling sentence and its question,
+    # each on its own line, in the card beside the body picture.
+    presentation = Presentation()
+    slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+    shape = add_box(slide, "GROWFIT__size-column__32__size-group",
+                    "Your big toe needs oxygen too.", 2.774, 5.518, 10.259, 1.175, size=32)
+    paragraph = shape.text_frame.add_paragraph()
+    run = paragraph.add_run()
+    run.text = "How does the oxygen get there from your lungs?"
+    run.font.name = "Comic Sans MS"
+    run.font.bold = True
+    run.font.size = Pt(32)
+    assert MODULE.measure_shape(shape, 32, 18)["best"] == 30
+
+
+def test_a_starter_question_powerpoint_wraps_to_two_lines_is_not_given_that_size():
+    # Year 4 digestive system starter, question 4, in a card one line tall.
+    presentation = Presentation()
+    slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+    shape = add_box(slide, "GROWFIT__numbered-question-text__120__MIN18__question-text-4",
+                    "What does your large intestine take out of the waste?",
+                    0.5, 5.0, 11.591, 0.725, size=31)
+    assert MODULE.measure_shape(shape, 31, 18)["best"] <= 30

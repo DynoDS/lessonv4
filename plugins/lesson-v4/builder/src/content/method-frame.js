@@ -407,7 +407,7 @@ function drawMethodFrame(pptx, slide, zone, data) {
         slide.addText(seg.text, {
           x: cx, y: segY, w, h: segH,
           fontFace: FONT, fontSize: font, bold: true,
-          color: seg.answer ? COLOURS.green : COLOURS.body, align: 'left', valign: 'middle', margin: 0, fit: FIT
+          color: seg.answer ? COLOURS.textGreen : COLOURS.body, align: 'left', valign: 'middle', margin: 0, fit: FIT
         });
         cx += w + m.segGap;
       }

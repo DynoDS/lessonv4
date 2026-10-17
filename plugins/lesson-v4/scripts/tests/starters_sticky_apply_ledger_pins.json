@@ -4466,7 +4466,7 @@
    "present": [
     {
      "file": "references/teacher-slide-visual-profile.md",
-     "text": "And it **never touches the sticky line**, which is purple because it is the one to keep,",
+     "text": "A question or short task keeps blue, a sticky fact and prepared worked example keep purple",
      "section": {
       "heading": "## Semantic colour",
       "occurrence": 0,
@@ -8891,10 +8891,24 @@
      "section": null
     },
     {
+     "file": "scripts/preview-deck.py",
+     "text": "check.append(\"--settled\")",
+     "section": null
+    },
+    {
      "file": "agents/slide-decorator.md",
-     "text": "--preview --settled \\",
+     "text": "\"[PLUGIN_ROOT]/scripts/preview-deck.py\" --settled \\",
      "section": {
       "heading": "## The pass",
+      "occurrence": 0,
+      "intro": false
+     }
+    },
+    {
+     "file": "agents/slide-decorator.md",
+     "text": "\"[PLUGIN_ROOT]/scripts/preview-deck.py\" --settled \\",
+     "section": {
+      "heading": "## Confirm the layer landed where you put it",
       "occurrence": 0,
       "intro": false
      }

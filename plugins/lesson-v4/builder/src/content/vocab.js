@@ -254,7 +254,7 @@ function drawVocab(pptx, slide, zone, data, ctx) {
     // written voice anywhere a child reads (preferences.md, Written Voice).
     const runs = [
       { text: item.word || '',
-        options: { color: COLOURS.green, bold: true } },
+        options: { color: COLOURS.textGreen, bold: true } },
       { text: ': ' + (item.definition || ''),
         options: { color: COLOURS.body, bold: true } }
     ];

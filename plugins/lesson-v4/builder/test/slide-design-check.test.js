@@ -1902,8 +1902,11 @@ test('a starter that tells and then asks has its question in blue', () => {
 test("the slide designer's own check never runs with --settled; only the decorator's does", () => {
   const plugin = path.join(__dirname, '..', '..');
   const read = (rel) => fs.readFileSync(path.join(plugin, rel), 'utf8').replace(/\r\n/g, '\n');
+  // scripts/preview-deck.py runs the same check, then draws the pages
+  // (17 October 2026), so its commands count as check commands too.
   const commands = (text) =>
-    text.split(/\n\s*\n/).filter((block) => block.includes('builder/scripts/check-slide-design.js'));
+    text.split(/\n\s*\n/).filter((block) =>
+      block.includes('builder/scripts/check-slide-design.js') || block.includes('scripts/preview-deck.py'));
   let designerCommands = 0;
   for (const name of fs.readdirSync(path.join(plugin, 'agents')).filter((file) => file.endsWith('.md'))) {
     for (const block of commands(read(path.join('agents', name)))) {

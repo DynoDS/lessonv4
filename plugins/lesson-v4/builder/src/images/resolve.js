@@ -72,9 +72,15 @@ function resolveAbsolute(imagePath, ctx) {
   return path.join(base, local);
 }
 
+// The file a slide puts on the board: the prepared copy in `.resized` when there
+// is one, otherwise the picture itself. A copy only ever stands in for a picture
+// that is still there. With the picture gone, a copy left from an earlier build
+// would put a removed photo back on the board, so the missing path is returned
+// and the slide shows its placeholder.
 function resolveForEmbed(imagePath, ctx) {
   const absolute = resolveAbsolute(imagePath, ctx);
   if (!absolute) return null;
+  if (!fs.existsSync(absolute)) return absolute;
   const base = normalizeLocalPath((ctx && ctx.lessonDir) || process.cwd());
   const relative = path.relative(base, absolute);
   if (!relative.startsWith('..') && !path.isAbsolute(relative)) {

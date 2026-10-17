@@ -448,7 +448,7 @@ function drawStackedCard(pptx, slide, item, card, ctx, fonts, visual) {
   slide.addText(item.word || '', {
     x: textX, y: card.y + CARD_PAD, w: textW, h: wordH,
     fontFace: FONT, fontSize: fonts.word, bold: true,
-    color: COLOURS.green, align: 'left', valign: 'middle', margin: 0, fit: FIT
+    color: COLOURS.textGreen, align: 'left', valign: 'middle', margin: 0, fit: FIT
   });
   slide.addText(item.definition || '', {
     x: textX, y: card.y + CARD_PAD + wordH, w: textW, h: defnH,
@@ -506,7 +506,7 @@ function drawCard(pptx, slide, item, card, ctx, fonts, resolvedVisual, visualW) 
   slide.addText(item.word || '', {
     x: textX, y: textY + offset, w: textW, h: wordH,
     fontFace: FONT, fontSize: wordFont, bold: true,
-    color: COLOURS.green, align: 'left', valign: 'middle',
+    color: COLOURS.textGreen, align: 'left', valign: 'middle',
     margin: 0, fit: FIT
   });
 

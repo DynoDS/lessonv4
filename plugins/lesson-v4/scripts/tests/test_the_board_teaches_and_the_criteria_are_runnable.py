@@ -184,45 +184,19 @@ class TheExplanationIsSeparatePiecesNotABlock(unittest.TestCase):
         self.assertIn("a line about one part sits next to that part", composition)
         self.assertIn("concatenated into one black card because they arrived in one field", composition)
 
-    def test_one_line_may_be_orange_and_layout_comes_first(self) -> None:
-        """Daniel settled the colour question the same day: "Orange was fine
-        to break up black teach, we should do that." Orange is free on a Teach
-        slide because its existing text job tints a value a question hands the
-        child, and a Teach slide is not asking.
-
-        On 4 October 2026, having judged a hundred slides and asked for colour
-        wherever a card's sentences were all black, he made it the ordinary
-        treatment: "Any card of three or more black sentences gets its key
-        line in orange." So the permission is now the default, and the playbook
-        no longer tells the designer to reach for layout first."""
+    def test_explanation_emphasis_is_chosen_per_card(self) -> None:
         profile = flat(self.PROFILE)
-        self.assertIn("A card of black sentences takes its key line in orange", profile)
-        self.assertIn("the ordinary treatment of such a card, not an occasional one", profile)
-        self.assertIn("a Teach slide is not asking", profile)
-        self.assertIn("the one you would say louder", profile)
-        self.assertIn("a card of black sentences takes its key line in orange", flat(self.COMPOSITION))
-        self.assertNotIn("Reach for layout first", flat(self.COMPOSITION))
+        self.assertIn("Orange emphasis gives an explanation card a way in", profile)
+        self.assertIn("One key-line span per card; no slide-wide quota for spans", profile)
+        self.assertIn("Choose the span for what it says", profile)
+        self.assertIn("a taught vocabulary word still prints green and bold", profile)
+        self.assertIn("Text weight and readable cards", flat(self.COMPOSITION))
 
-    def test_the_three_bounds_hold_the_permission(self) -> None:
-        """Without these it becomes the tic Daniel asked about on the last
-        rule the same afternoon."""
+    def test_colour_does_not_replace_cards_or_readable_type(self) -> None:
         profile = flat(self.PROFILE)
-        self.assertIn("One line per slide", profile)
-        # 4 October 2026: the colour is wanted on every such card, so the bound
-        # is no longer how often, but that the line is chosen for what it says,
-        # and that a card of equal lines takes none.
-        self.assertNotIn("Not on every Teach slide", profile)
-        self.assertIn("Chosen by what the line says, never by where it sits", profile)
-        self.assertIn("Not where the lines are equals", profile)
-        self.assertIn("has a tic rather than a voice", profile)
-        self.assertIn("never touches the sticky line", profile)
-        # And not a line carrying a taught term: a PSHE slide put a whole line
-        # in orange around the green word `Oxygen` and the term stopped reading
-        # as vocabulary.
-        self.assertIn("nor a line carrying a taught vocabulary term", profile)
-        self.assertIn("the term wins and the line loses", profile)
-        # And the general case is unchanged outside that one permission.
-        self.assertIn(
-            "Outside that one case, prominence on a black explanatory line is still size, position and spacing",
-            profile,
-        )
+        self.assertIn("Keep meaningful cards separate", profile)
+        self.assertIn("do not merge explanation cards or reduce the type", profile)
+        self.assertIn('Set `textWeight: "regular"`', profile)
+        self.assertIn("A question or short task keeps blue", profile)
+        self.assertIn("an answer keeps green", profile)
+        self.assertIn("a source or case the task runs on keeps supplied orange", profile)

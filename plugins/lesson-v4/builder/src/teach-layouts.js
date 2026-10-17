@@ -23,7 +23,8 @@
 // error that names the layouts which do use it, never a silent omission.
 
 const QUESTION_BLUE = '0070C0';
-const TEACH_ORANGE = 'E46C0A';
+const { COLOURS } = require('./styles');
+const TEACH_ORANGE = COLOURS.textOrange;
 const STAR = '✨ ';
 
 class TeachLayoutError extends Error {
@@ -79,6 +80,10 @@ function textSlot(value, where, role) {
     const words = value.value != null ? value.value : value.text;
     item = { value: words };
     if (value.emphasis !== undefined) item.emphasis = value.emphasis;
+    if (value.textWeight !== undefined) {
+      if (value.textWeight !== 'regular' && value.textWeight !== 'bold') fail(where, 'textWeight must be regular or bold.');
+      item.textWeight = value.textWeight;
+    }
     if (value.picture !== undefined) item.picture = value.picture;
     if (value.orange === true) item.orange = true;
     if (value.colorRole === 'worked-purple') item.worked = true;
@@ -94,7 +99,7 @@ function textSlot(value, where, role) {
   }
   if (item.worked && role === 'extract') {
     fail(where, 'an extract is the source\'s own words, drawn as they are written, so it ' +
-      'takes no colour. A worked example is not an extract: put its lines in "lines" with ' +
+      'cannot be a purple worked example. Supplied source material may use "orange": true. Put worked lines in "lines" with ' +
       '"colorRole": "worked-purple".');
   }
   if (item.worked && (role === 'question' || role === 'sticky')) {
@@ -107,7 +112,7 @@ function textSlot(value, where, role) {
   }
   const keyLines = Array.isArray(item.emphasis) ? item.emphasis.filter((e) => e && e.role === 'key-line') : [];
   if (keyLines.length > 1) {
-    fail(where, `${keyLines.length} sentences of this line are marked "key-line". One sentence of a card is orange, the one you would say louder.`);
+    fail(where, `${keyLines.length} spans of this card are marked "key-line". Keep one meaningful phrase or sentence orange and bold within a card.`);
   }
   if (keyLines.length && (role === 'question' || role === 'sticky')) {
     fail(where, `a ${role === 'question' ? 'question stays blue' : 'line to remember stays purple'}; ` +
@@ -196,6 +201,7 @@ function toText(slot, role, extra) {
   const out = { type: 'text', value: slot.value, align: 'center' };
   if (role === 'sticky' && !/^\s*✨/.test(out.value)) out.value = STAR + out.value;
   if (slot.emphasis !== undefined) out.emphasis = slot.emphasis;
+  if (slot.textWeight !== undefined) out.textWeight = slot.textWeight;
   if (slot.picture !== undefined) out.picture = slot.picture;
   // A question slot whose words tell before they ask keeps the telling in
   // black and puts each asking sentence on its own line in blue
@@ -665,7 +671,9 @@ const LAYOUTS = {
       // A passage is read line by line, so it keeps a left edge: centred prose
       // loses the reader's place at the start of every line.
       items.push(Object.assign({ type: 'text', value: s.extract.value, align: 'left',
-        heightMode: 'fill', weight: 3 }, s.extract.emphasis ? { emphasis: s.extract.emphasis } : {}));
+        heightMode: 'fill', weight: 3 }, s.extract.emphasis ? { emphasis: s.extract.emphasis } : {},
+        s.extract.textWeight !== undefined ? { textWeight: s.extract.textWeight } : {},
+        s.extract.orange === true ? { color: TEACH_ORANGE } : {}));
       if (s.lines.length) {
         items.push(Object.assign(cardRow(s.lines.map((l) => toText(l, 'line')), 'lines'), { weight: 1 }));
       }
@@ -837,9 +845,9 @@ function expandSlide(slide, slideNumber) {
   const oranges = [s.lead, s.sticky, s.statement].concat(s.questions || [])
     .concat(s.lines || [], s.captions || [], s.answers || [],
       (s.sides || []).map((x) => x.text), (s.columns || []).map((x) => x.text))
-    .filter((x) => x && x.orange);
+    .filter((x) => x && x.orange === true);
   if (oranges.length > 1) {
-    fail(at, `${oranges.length} lines are orange or carry a "key-line". One line per slide is orange, the one you would say louder.`);
+    fail(at, `${oranges.length} lines are orange as a whole. Keep at most one whole orange explanation line per slide; separate explanation cards may each carry one key-line span.`);
   }
 
   if (def.column) {

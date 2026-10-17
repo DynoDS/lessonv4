@@ -68,5 +68,5 @@ test('word and definition join with a colon, never an em dash', () => {
   assert.ok(!joined.includes('–'), 'no en dash either');
   assert.equal(joined, 'Equator: an invisible line around the middle of Earth');
   // The word keeps its vocabulary green; the definition stays body ink.
-  assert.equal(runs[0].options.color, '00B050');
+  assert.equal(runs[0].options.color, '007A3D');
 });

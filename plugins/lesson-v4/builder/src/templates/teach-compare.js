@@ -31,7 +31,7 @@ function drawTeachCompare(pptx, slide, data, ctx) {
   // two competing categories when the words are equals.
   const vocabHeadings =
     String(data.headingRole || '').toLowerCase() === 'vocabulary';
-  const headingColor = vocabHeadings ? COLOURS.green : null;
+  const headingColor = vocabHeadings ? COLOURS.textGreen : null;
 
   drawCard(pptx, slide, {
     x: leftX, y: bz.y, w: cardW, h: bz.h

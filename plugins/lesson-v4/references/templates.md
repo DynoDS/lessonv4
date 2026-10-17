@@ -289,7 +289,7 @@ For a content Teach unit the design's fields map straight across: `headline` is 
 - `sides`: for the compare layouts, two entries of `heading`, `text`, and on `compare-pictures` a `picture`. Add `headingRole: "vocabulary"` when the two headings are taught words.
 - `speakers`, `steps`, `columns` (`heading` and `text`), `answers` and `extract` (a passage read closely, kept left-aligned because prose is read line by line) are as they read.
 
-A text slot is a string, or an object with `value` plus `emphasis` for inline taught words and for the `key-line` sentence of a longer line, and `"orange": true` for a whole explanation line you would say louder (`teacher-slide-visual-profile.md` → Semantic colour owns its limits; the build refuses a second orange line, orange on a question or the line to remember, and orange on a line carrying a taught word). The lines of a worked example, a prepared model the class sees finished, take `"colorRole": "worked-purple"` and print purple; no other role is taken, and never on the question, the line to remember, an orange line or a source's extract. A step of a worked example on `steps` or `picture-steps` is `{ "text": "...", "colorRole": "worked-purple" }`. `align`, `fontSize`, `color` and the other sizing fields are refused on these slots, because the layout owns them. A slot the chosen layout does not arrange is refused with the names of the layouts that do, so nothing you write is ever silently left off the board. Slide-level fields (`title`, `headerStyle`, `instruction`, `designUnitId`, `speakerNotes`, `decorations` and the reference arrays) sit beside the slots as on any slide.
+A text slot is a string, or an object with `value`, optional `textWeight: "regular"` or `"bold"`, and `emphasis` for inline taught words or a `key-line` phrase or sentence, and `"orange": true` for a whole explanation line you would say louder (`teacher-slide-visual-profile.md` → Semantic colour owns its limits; the build refuses a second whole orange explanation line and orange on a question or the line to remember; separate cards may each carry one key-line span, and taught words inside that span keep green). The lines of a worked example, a prepared model the class sees finished, take `"colorRole": "worked-purple"` and print purple; no other role is taken, and never on the question, the line to remember, an orange line or a source's extract. A step of a worked example on `steps` or `picture-steps` is `{ "text": "...", "colorRole": "worked-purple" }`. `align`, `fontSize`, `color` and the other sizing fields are refused on these slots, because the layout owns them. A slot the chosen layout does not arrange is refused with the names of the layouts that do, so nothing you write is ever silently left off the board. Slide-level fields (`title`, `headerStyle`, `instruction`, `designUnitId`, `speakerNotes`, `decorations` and the reference arrays) sit beside the slots as on any slide.
 
 | Layout | Slots | What it is for |
 |---|---|---|
@@ -320,7 +320,7 @@ A text slot is a string, or an object with `value` plus `emphasis` for inline ta
 | `compare-words` | `sides` 2, `headingRole` optional | Two words, or a wrong idea and the truth, in two matching cards with no pictures. |
 | `word-meaning-example` | `columns` 3 | Three equal columns with a heading each, such as the word, what it means and an example. |
 | `question-three-answers` | `question`, `answers` 3 | One big question, then three possible answers in equal cards for the class to weigh up. |
-| `source-text` | `lead` optional, `extract`, `lines` optional (up to 2), `question` optional, `task` optional, `sticky` optional | A written source or passage children read closely: the lead line on top, the passage full width, then any explanation, question and line to remember under it. |
+| `source-text` | `lead` optional, `extract`, `lines` optional (up to 2), `question` optional, `task` optional, `sticky` optional | A written source or passage children read closely: the lead line on top, the passage full width, then any explanation, question and line to remember under it. A supplied source uses `extract: { "value": "...", "orange": true, "textWeight": "regular" }`; use `**existing phrase**` or modern `stress` for same-colour bold. Omitted `orange` preserves an existing black passage. The source identity does not consume the one whole orange explanation line. |
 
 #### `teach-compare`
 
@@ -645,7 +645,7 @@ own text column and add a line when the full set still fits at that same font.
 
 **Optional `categoryColor` on a category container:** use `blue`, `orange`, or `purple` only when parallel categories are the teaching structure. The builder draws that colour as the border of the ordinary white card. A `row` or `stack` with this field becomes one category container instead of passing separate cards to its children. Repeat the same value when the category returns elsewhere on the slide, including a hint bar. Green and unknown values fail validation. Do not put the field on `question-cards`, `numbered-questions`, `steps`, `chip-bank`, `callout`, or another helper that draws its own surface; wrap a genuine category block in a `row` or `stack` instead. Ordinary lists remain plain.
 
-**Presentation-only text roles:** `colorRole` and `emphasis` change presentation only. They never change, remove, reorder or paraphrase source wording.
+**Presentation-only text roles:** `colorRole`, `emphasis` and `textWeight` change presentation only. They never change, remove, reorder or paraphrase source wording.
 
 `colorRole` is one of:
 
@@ -681,15 +681,18 @@ Supported roles are:
 - `reasoning-demand` - bold single underline;
 - `problem-state` - bold problem red for a failed/wrong state;
 - `safety-warning` - bold problem red for exact source-authored safety wording;
-- `vocabulary` - bold vocabulary green.
+- `vocabulary` - bold vocabulary green (`007A3D`);
+- `stress` - selective bold in the existing line colour, for an important existing phrase without another semantic role.
 
-One more role belongs to explanation cards, not tasks: `key-line` puts one sentence of a longer black card in orange, the one you would say louder (`teacher-slide-visual-profile.md` → Semantic colour owns when). One per card, and it counts as the slide's one orange line.
+One more role belongs to explanation cards, not tasks: `key-line` puts one exact meaningful phrase or sentence in orange and bold (`teacher-slide-visual-profile.md` → Semantic colour owns when). One span per card; separate explanation cards may each carry it. A taught word within the span keeps vocabulary green.
 
 Every `emphasis[].text` must occur exactly once in the visible source string and emphasis ranges must not overlap. Do not combine `emphasis` with the legacy `||`, `**`, `[[ ]]`, `{{ }}` or `<< >>` markers in the same string.
 
-These fields are supported on `text`, on object entries inside `bullets`, `numbered-questions` and `question-cards`, and on object entries inside fixed-template `questions` arrays.
+`colorRole` and `emphasis` are supported on `text`, on object entries inside `bullets`, `numbered-questions` and `question-cards`, and on object entries inside fixed-template `questions` arrays. `textWeight` is narrower: only `type: "text"` content and teach-layout text slot objects, which expand into that type.
 
 ### `text`
+
+`textWeight` is `"regular"` or `"bold"` on a `type: "text"` object; omission preserves the existing bold rendering. Use regular for ordinary explanatory prose, source or case prose and prose model answers under `teacher-slide-visual-profile.md` → Text weight and readable cards. It is also accepted on a teach-layout text slot object and reaches the expanded text unchanged. Existing `**bold**` markers, action emphasis and vocabulary green remain selectively bold. A prose answer may use `"value": "||... **existing phrase** ..."` with `"textWeight": "regular"`; do not combine modern `emphasis` with legacy markers in the same string. This field does not change size, fit groups, geometry, alignment or card grouping. Other rendered helpers keep their own weight contract.
 
 `heightMode` is optional, and **the default is what almost every text card should use.** Omit it, or use `"hug"`, and the card wraps closely around its own words at their natural size. Ordinary body text, a pupil instruction, a prompt, a question, a caption, a teaching sentence: all hug. Say nothing and you get the right answer.
 
@@ -738,9 +741,9 @@ of text. It is not a way to place free decoration on an empty part of a slide.
 
 When two items are genuinely separate pieces of content (especially different types, e.g. a text label above a table), prefer a `stack` of content objects instead. `stack` items always render with visible vertical spacing between them; `\n\n` is for within-one-text-block paragraph breaks.
 
-**Optional `color`:** pass a hex colour (no `#`) to tint the text when the text has a deck role such as the blue question or orange supplied material. Category identity belongs on the container through `categoryColor`, not on the words. Defaults to body black when omitted. The blue is asking-versus-telling (the playbook's Colour section): every child-facing question carries it, and a short task carries it through `colorRole: "task-blue"`, never a hex, so the check can see it is one; an instruction about how to go about the task, explanation and statements stay black, and a block that does both splits at the boundary - colour only the asking sentence (via a separate block or a `[[ ]]` span), never the whole mixed block.
+**Optional `color`:** pass a hex colour (no `#`) to tint the text when the text has a deck role such as the blue question or orange supplied material. Use `A94700` for supplied prose and `007A3D` for semantic green text; the builder applies these darker text tokens to its vocabulary, answer and emphasis routes. Figure-owned colours, picture-part marks and category labels keep their matching drawing palette. Category identity belongs on the container through `categoryColor`, not on the words. Defaults to body black when omitted. The blue is asking-versus-telling (the playbook's Colour section): every child-facing question carries it, and a short task carries it through `colorRole: "task-blue"`, never a hex, so the check can see it is one; an instruction about how to go about the task, explanation and statements stay black, and a block that does both splits at the boundary - colour only the asking sentence (via a separate block or a `[[ ]]` span), never the whole mixed block.
 
-Green answer text is not an ordinary emphasis option. Do not set text `color` to `00B050` and do not use `||`, `{{green}}` or `{{answer-green}}` on a teaching slide. Prepared examples and `visible-in-unit` models are worked examples: give their lines `colorRole: "worked-purple"`. Use answer green only on an answer/reveal slide. Vocabulary and success criteria keep their established green treatments.
+Green answer text is not an ordinary emphasis option. Do not set text `color` to `00B050` or `007A3D` and do not use `||`, `{{green}}` or `{{answer-green}}` on a teaching slide. Prepared examples and `visible-in-unit` models are worked examples: give their lines `colorRole: "worked-purple"`. Use answer green only on an answer/reveal slide. Vocabulary and success criteria keep their established green treatments.
 
 ```json
 { "type": "text", "value": "What we see.", "color": "0070C0" }

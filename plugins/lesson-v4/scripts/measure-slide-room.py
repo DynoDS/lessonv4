@@ -92,9 +92,27 @@ FLOOR_CELLS_H = max(1, round(READABLE_INCHES / (SLIDE_H_INCHES / GRID_H)))
 INK_LUMINANCE = 170
 
 # ...or strongly coloured. A pale but saturated fill would slip past the
-# luminance test; the tinted surfaces this deck uses are all inside this spread
-# (the peach paper is the widest, at 43) and no text colour is.
+# luminance test, so colour counts as ink when its spread across red, green and
+# blue reaches this. The spread is read after the page has been balanced to its
+# own paper (see `paper_colour`), because paper is surface whatever its tint.
+#
+# It was read against pure white until 17 October 2026, when the line had been
+# set under the peach paper (spread 43) and the Writing decks' cream paper
+# (255,235,179, spread 76) arrived later and sat above it. Every bare stretch of
+# a cream slide, and the soft shadow round each card, measured as ink: the Year
+# 6 renga deck had half-empty slides with no clear area at all, and every
+# drawing the decorator laid on the cream was refused as touching words.
 INK_CHROMA = 60
+
+# The paper is read at the slide's outer edge, the strip no card or line of text
+# reaches. The commonest colour there counts as paper when it fills at least
+# this share of the strip and is pale enough to be surface; otherwise (a photo
+# to the edge, a dark band) the page is read against white as it always was.
+# Not the commonest colour of the whole page: a slide of coloured writing can
+# have more writing than bare paper, and that writing must stay ink.
+PAPER_EDGE_SHARE = 0.5
+PAPER_SAMPLE = (320, 180)
+PAPER_EDGE_CELLS = 2
 
 # ...or part of a picture. Surface is flat by construction - one fill colour, or
 # a slow shadow gradient - and a photograph, map or chart never is, so a pixel
@@ -137,6 +155,55 @@ def load_image(path: Path):
     return image.convert("RGB"), Image, ImageChops, ImageFilter
 
 
+def paper_colour(image) -> tuple[int, int, int]:
+    """The colour the page is printed on, read at its outer edge.
+
+    The builder draws each subject on its own paper (peach, maths blue,
+    history green, writing cream) and decks may gain more, so the paper is read
+    off the page rather than listed here.
+    """
+    from PIL import Image
+
+    sample = image.resize(PAPER_SAMPLE, Image.NEAREST)  # real colours only, no blends
+    width, height = PAPER_SAMPLE
+    edge = PAPER_EDGE_CELLS
+    pixels = sample.load()
+    counts: dict[tuple[int, int, int], int] = {}
+    for y in range(height):
+        for x in range(width):
+            if edge <= x < width - edge and edge <= y < height - edge:
+                continue
+            counts[pixels[x, y]] = counts.get(pixels[x, y], 0) + 1
+    colour, count = max(counts.items(), key=lambda item: item[1])
+    red, green, blue = colour
+    if (
+        count < PAPER_EDGE_SHARE * sum(counts.values())
+        or 0.299 * red + 0.587 * green + 0.114 * blue < INK_LUMINANCE
+    ):
+        return (255, 255, 255)
+    return colour
+
+
+def balanced_to_paper(image):
+    """The page as if its paper were white, for judging colour.
+
+    Each channel is scaled so the paper reads 255 in it. Bare paper and the
+    shadow a card casts on it (the paper, darker) lose their tint, and white
+    card stays white; a word written in colour keeps its colour, because no
+    paper is that strongly tinted. On white paper this changes nothing.
+    """
+    paper = paper_colour(image)
+    if paper == (255, 255, 255):
+        return image
+    channels = [
+        channel.point([min(255, round(v * 255 / max(1, tint))) for v in range(256)])
+        for channel, tint in zip(image.split(), paper)
+    ]
+    from PIL import Image
+
+    return Image.merge("RGB", channels)
+
+
 def ink_and_texture_masks(image, ImageChops, ImageFilter):
     """Two one-band images: where the page is ink, and where it is textured.
 
@@ -147,12 +214,11 @@ def ink_and_texture_masks(image, ImageChops, ImageFilter):
     apart because they are judged differently: a single ink pixel matters, and a
     thin line of texture (the edge of a card) does not.
     """
-    red, green, blue = image.split()
-
     grey = image.convert("L")
     dark = grey.point([255 if v < INK_LUMINANCE else 0 for v in range(256)])
 
-    high = ImageChops.lighter(ImageChops.lighter(red, green), blue)
+    red, green, blue = balanced_to_paper(image).split()
+    high =ImageChops.lighter(ImageChops.lighter(red, green), blue)
     low = ImageChops.darker(ImageChops.darker(red, green), blue)
     chroma = ImageChops.difference(high, low)
     coloured = chroma.point([255 if v >= INK_CHROMA else 0 for v in range(256)])
@@ -187,12 +253,14 @@ def clear_grid(image, Image, ImageChops, ImageFilter) -> list[list[bool]]:
     ]
 
 
-def largest_clear_rectangle(grid: list[list[bool]]):
-    """The biggest all-clear rectangle in the grid, by area.
+def largest_clear_rectangle(grid: list[list[bool]], min_width: int = 1, min_height: int = 1):
+    """The biggest all-clear rectangle in the grid, by area, at least this size.
 
     The usual histogram sweep: each row keeps how many clear cells stand above
     every column, and the widest bar span at each height is the best rectangle
-    ending on that row.
+    ending on that row. Every rectangle that cannot grow in any direction is
+    met this way, and the biggest one of at least a given size is always one
+    of those, so the minimum is a filter on the candidates.
     """
     heights = [0] * GRID_W
     best = None
@@ -210,7 +278,11 @@ def largest_clear_rectangle(grid: list[list[bool]]):
                 left = stack[-1] + 1 if stack else 0
                 width = column - left
                 area = width * height
-                if height and width and (best is None or area > best["area"]):
+                if (
+                    height >= min_height
+                    and width >= min_width
+                    and (best is None or area > best["area"])
+                ):
                     best = {
                         "area": area,
                         "left": left,
@@ -230,14 +302,18 @@ def clear_areas(grid: list[list[bool]]) -> list[dict]:
     Each one found is marked occupied before the next is looked for, so the
     count is separate places a drawing could go rather than one gap counted
     several ways.
+
+    Only rectangles a drawing fits are looked for. Until 17 October 2026 the
+    biggest rectangle of any shape was taken and the count stopped at the first
+    one too thin to hold a drawing, so a long strip under a table (thirteen
+    inches by a third of an inch) ended the count before the two-inch square
+    beside the title was reached, and that slide was reported as having no room.
     """
     working = [row[:] for row in grid]
     found: list[dict] = []
     while len(found) < MAX_AREAS:
-        best = largest_clear_rectangle(working)
+        best = largest_clear_rectangle(working, FLOOR_CELLS_W, FLOOR_CELLS_H)
         if not best:
-            break
-        if best["width"] < FLOOR_CELLS_W or best["height"] < FLOOR_CELLS_H:
             break
         found.append(best)
         for row in range(best["top"], best["top"] + best["height"]):

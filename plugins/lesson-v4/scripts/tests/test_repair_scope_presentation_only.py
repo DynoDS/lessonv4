@@ -124,6 +124,20 @@ class ColourMarkTests(Scope):
         self.allowed(before, deck({"title": "Read", "body": text("Tariq smiles.")}))
         self.refused(before, deck({"title": "Read", "body": text("Tariq smiles.", color="00B050")}), "green")
 
+    def test_regular_weight_is_presentation_only_but_changed_words_still_fail(self):
+        before = deck({"title": "Read", "body": text("Tariq smiles.")})
+        self.allowed(before, deck({"title": "Read", "body": text("Tariq smiles.", textWeight="regular")}))
+        self.refused(before, deck({"title": "Read", "body": text("Tariq cries.", textWeight="regular")}))
+
+    def test_darker_green_keeps_the_existing_protected_identity(self):
+        before = deck({"title": "Read", "body": text("Tariq smiles.")})
+        old = deck({"title": "Read", "body": text("Tariq smiles.", color="00B050")})
+        new = deck({"title": "Read", "body": text("Tariq smiles.", color="007A3D")})
+        self.allowed(old, new)
+        self.refused(before, new, "green")
+        self.refused(new, before, "green")
+        self.refused(before, deck({"title": "Read", "body": text("Tariq smiles.", colour="#007a3d")}), "green")
+
     def test_the_orange_line_may_be_marked_but_a_taught_word_may_not_turn_green(self):
         before = deck({"title": "Read", "body": text(" ".join(FACTS))})
         orange = text(" ".join(FACTS), emphasis=[{"text": FACTS[1], "role": "key-line"}])

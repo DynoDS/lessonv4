@@ -111,7 +111,7 @@ test('a taught word inside the asking sentence keeps its green', () => {
   const value = 'Some children came with no shoes. Why might a free school matter to them?';
   const runs = presentationRuns(value, true, COLOURS.body, owner);
   assert.equal(runText(runs), value.replace('shoes. Why', 'shoes.Why'));
-  assert.equal(runs.find((r) => r.text === 'free school').options.color, COLOURS.green);
+  assert.equal(runs.find((r) => r.text === 'free school').options.color, COLOURS.textGreen);
   assert.equal(runs.find((r) => r.text.startsWith('Why')).options.color, COLOURS.title);
 });
 

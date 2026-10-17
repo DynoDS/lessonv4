@@ -16,16 +16,16 @@ const COLOR_ROLES = new Set([
 const EMPHASIS_ROLES = new Set([
   'core-action',
   'task-action',
+  'stress',
   'required-material',
   'response-demand',
   'reasoning-demand',
   'problem-state',
   'safety-warning',
   'vocabulary',
-  // The one sentence of a longer card you would say louder, in orange: the
-  // way into a card of black sentences (teacher-slide-visual-profile ->
-  // Semantic colour). On a teach-layout line that is one sentence, the line's
-  // own "orange": true does the same job.
+  // One meaningful phrase or sentence within an explanation card, orange
+  // and bold. Separate cards may each carry it; a taught word keeps green.
+  // A whole orange explanation line remains the narrower orange:true case.
   'key-line'
 ]);
 
@@ -59,6 +59,15 @@ function validatePresentationSpec(value, owner) {
   const data = owner && typeof owner === 'object' && !Array.isArray(owner)
     ? owner
     : {};
+
+  if (hasOwn(data, 'textWeight')) {
+    if (data.textWeight !== 'regular' && data.textWeight !== 'bold') {
+      return 'textWeight must be regular or bold';
+    }
+    if (data.type !== 'text') {
+      return 'textWeight is supported only on text content and teach-layout text slots';
+    }
+  }
 
   if (hasOwn(data, 'colorRole')) {
     if (
@@ -127,6 +136,10 @@ function validatePresentationSpec(value, owner) {
     });
   }
 
+  if (ranges.filter((range) => range.role === 'key-line').length > 1) {
+    return 'at most one key-line emphasis is allowed per card';
+  }
+
   ranges.sort((a, b) => a.start - b.start);
   for (let i = 1; i < ranges.length; i += 1) {
     if (ranges[i].start < ranges[i - 1].end) {
@@ -164,6 +177,8 @@ function emphasisOptions(role, baseColor, bold) {
     bold: !!bold
   };
 
+  if (role === 'stress') return { ...base, bold: true };
+
   if (role === 'core-action' || role === 'task-action') {
     // Bold, in the line's own colour. House blue is the colour of the child's
     // job as a whole line, a question or a short task (teacher-slide-visual-
@@ -191,10 +206,10 @@ function emphasisOptions(role, baseColor, bold) {
     return { ...base, color: COLOURS.problem, bold: true };
   }
   if (role === 'vocabulary') {
-    return { ...base, color: COLOURS.green, bold: true };
+    return { ...base, color: COLOURS.textGreen, bold: true };
   }
   if (role === 'key-line') {
-    return { ...base, color: COLOURS.orange };
+    return { ...base, color: COLOURS.textOrange, bold: true };
   }
 
   throw new Error(
@@ -551,6 +566,7 @@ function presentationRuns(value, bold, baseColor, owner) {
     throw new Error(`PRESENTATION_TEXT_INVALID: ${error}`);
   }
 
+  bold = data.textWeight === 'regular' ? false : data.textWeight === 'bold' ? true : bold;
   const base = baseColourForRole(baseColor, data.colorRole);
 
   if (!Array.isArray(data.emphasis) || data.emphasis.length === 0) {
@@ -593,10 +609,16 @@ function presentationRuns(value, bold, baseColor, owner) {
     if (range.start > cursor) {
       pushLines(text.slice(cursor, range.start), plain);
     }
-    pushLines(
-      text.slice(range.start, range.end),
-      emphasisOptions(range.role, base, bold)
-    );
+    const marked = text.slice(range.start, range.end);
+    const options = emphasisOptions(range.role, base, bold);
+    if (range.role === 'key-line') {
+      const protectedRuns = taughtWordsInGreen(
+        [{ text: marked, options }], COLOURS.textOrange, true, true
+      );
+      protectedRuns.forEach((run) => pushLines(run.text, run.options));
+    } else {
+      pushLines(marked, options);
+    }
     cursor = range.end;
   }
 

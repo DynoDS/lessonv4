@@ -64,7 +64,7 @@ test('the answer reveal stays white and adds green text without moving', () => {
   assert.ok(slide.shapes[0].options.shadow);
   assert.equal(slide.shapes[0].options.fill.color, COLOURS.pureWhite);
   assert.equal(slide.shapes[1].options.fill.color, COLOURS.pureWhite);
-  assert.equal(slide.texts[0].options.color, COLOURS.green);
+  assert.equal(slide.texts[0].options.color, COLOURS.textGreen);
   assert.deepEqual(
     ['x', 'y', 'w', 'h'].map((key) => slide.shapes[0].options[key]),
     ['x', 'y', 'w', 'h'].map((key) => slide.shapes[1].options[key])

@@ -114,7 +114,7 @@ test('a newline before an emphasised word is its own run, so the line stays one 
   assert.ok(runs.every((run) => run.text === '\n' || !run.text.includes('\n')));
   const index = runs.findIndex((run) => run.text === 'protein');
   assert.equal(runs[index - 1].text, 'We also need ');
-  assert.equal(runs[index].options.color, COLOURS.green);
+  assert.equal(runs[index].options.color, COLOURS.textGreen);
 });
 
 test('safety-warning uses problem red without becoming problem-state', () => {
@@ -157,7 +157,7 @@ test('peer colour roles recolour every run of the string', () => {
   assert.equal(purple.map((run) => run.text).join(''), 'The switch opens.');
   assert.deepEqual(
     purple.map((run) => run.options.color),
-    [COLOURS.green, COLOURS.lo]
+    [COLOURS.textGreen, COLOURS.lo]
   );
 });
 

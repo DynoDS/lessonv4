@@ -7,7 +7,7 @@
 // could follow them on one slide and miss them on the next. These are nudges,
 // not refusals: each names the card and says when leaving it alone is right.
 
-const INLINE_COLOUR = /\|\||\[\[|\{\{|<<|✨/;
+const INLINE_COLOUR = /\|\||\[\[|<<|✨/;
 const SKIPPED_TEMPLATES = new Set(['key-vocabulary', 'strong-and-weak']);
 const SKIPPED_KEYS = new Set(['speakerNotes', 'notes', 'speakers', 'extract', 'criteria', 'words']);
 
@@ -36,7 +36,8 @@ function coloured(node, text) {
   if (!node || typeof node !== 'object') return false;
   if (node.color || node.orange === true || node.asksInBlue) return true;
   if (node.colorRole && node.colorRole !== 'default') return true;
-  return Array.isArray(node.emphasis) && node.emphasis.length > 0;
+  return Array.isArray(node.emphasis) && node.emphasis.some((entry) =>
+    entry && ['key-line', 'problem-state', 'safety-warning'].includes(entry.role));
 }
 
 function isModel(node, text) {
@@ -74,8 +75,8 @@ function readabilityWarnings(slide, n, warnings) {
         'A poem\'s lines, or a short run read as one list, keep their single line breaks.');
     }
     if ((sentences >= 3 || wordCount(text) >= 30) && !coloured(card, text) && !model) {
-      warnings.push(`slide ${n}: the card beginning "${opening(text)}" is all black (${sentences} sentence${sentences === 1 ? '' : 's'}, ${wordCount(text)} words). ` +
-        'Put its key line in orange, the one you would say louder: an emphasis entry with role "key-line" on that sentence, or "orange": true where the whole teach-layout line is that sentence. ' +
+      warnings.push(`slide ${n}: the card beginning "${opening(text)}" has no emphasis for its main idea (${sentences} sentence${sentences === 1 ? '' : 's'}, ${wordCount(text)} words). ` +
+        'Review its main meaning: an exact key phrase or sentence can take role "key-line" in orange and bold while taught words remain green. Separate cards may each carry that emphasis. ' +
         'A case or quotation the task runs on is supplied orange as a whole (<< >>). ' +
         'Leave the card black only where its lines are equals with no line that carries the rest: a poem, a list, the steps of a sequence.');
     }

@@ -197,6 +197,61 @@ class WhatCountsAsRoomTests(MeasureRunner):
         self.assertEqual(slides[0]["readableAreas"], 0)
 
 
+CREAM = (255, 235, 179)   # the Writing deck's paper, stronger than any other
+
+
+def cream_with_a_shadowed_card(draw, image) -> None:
+    """Half a cream page empty, and a white card whose soft shadow darkens the
+    paper beside it, as PowerPoint draws one."""
+    for step in range(12):
+        k = 0.88 + step * 0.01
+        shade = tuple(round(channel * k) for channel in CREAM)
+        draw.rectangle([60 - step, 60 - step, 760 + 12 - step, 500 + 12 - step], outline=shade)
+    draw.rectangle([60, 60, 760, 500], fill=CARD)
+    _text_line(draw, 90, 100, 600)
+
+
+def pale_coloured_words_on_cream(draw, image) -> None:
+    """Lines of pale but strongly coloured writing straight on the cream."""
+    for top in range(45, PAGE_H - 60, 62):
+        draw.rectangle([45, top, PAGE_W - 45, top + 42], fill=(156, 196, 224))
+
+
+class TintedPaperTests(MeasureRunner):
+    """The Writing decks' cream paper is more strongly coloured than the ink
+    test allowed, so a half-empty cream slide measured as solid ink and every
+    drawing on it was refused (Year 6 renga deck, 17 October 2026). The paper
+    a page is printed on is surface whatever its tint; words in colour on it
+    are still words."""
+
+    def test_empty_cream_paper_is_room(self):
+        _, slides = self.measure([cream_with_a_shadowed_card], background=CREAM)
+        self.assertGreaterEqual(slides[0]["readableAreas"], 2)
+        self.assertGreater(slides[0]["clearFraction"], 0.8)
+
+    def test_coloured_words_on_cream_are_still_words(self):
+        _, slides = self.measure([pale_coloured_words_on_cream], background=CREAM)
+        self.assertEqual(slides[0]["readableAreas"], 0)
+
+
+def a_long_thin_strip_and_one_square(draw, image) -> None:
+    """Ink everywhere but a strip along the foot too thin for a drawing, and
+    one two-inch square: the strip is bigger, the square is the room."""
+    draw.rectangle([0, 0, PAGE_W, PAGE_H - 40], fill=INK)
+    side = round(2 * PER_INCH)
+    draw.rectangle([1100, 150, 1100 + side, 150 + side], fill=CARD)
+
+
+class EveryDrawingSizedPlaceIsCountedTests(MeasureRunner):
+    def test_a_thin_strip_does_not_end_the_count(self):
+        """Renga deck slide 12 (17 October 2026): the strip under a table was
+        the biggest clear shape, too thin to hold a drawing, and the count
+        stopped there with the square beside the title still unseen."""
+        _, slides = self.measure([a_long_thin_strip_and_one_square])
+        self.assertEqual(slides[0]["readableAreas"], 1)
+        self.assertGreaterEqual(slides[0]["areas"][0]["heightInches"], 1.8)
+
+
 class TheShapeIsReportedTests(MeasureRunner):
     def test_the_per_slide_shape_is_printed(self):
         result, slides = self.measure([small_card, ink_dense, central_photograph])

@@ -25,7 +25,7 @@ function body(card) {
 test('a card of three run-on sentences is asked for a gap and for its key line', () => {
   const found = nudges(body({ type: 'text', value: THREE }));
   assert.equal(found.filter((w) => /no gap between its ideas/.test(w)).length, 1);
-  assert.equal(found.filter((w) => /is all black/.test(w)).length, 1);
+  assert.equal(found.filter((w) => /has no emphasis for its main idea/.test(w)).length, 1);
 });
 
 test('a gap between the ideas and one sentence in orange answers both', () => {
@@ -38,14 +38,14 @@ test('a long card of two sentences is still a wall of black', () => {
   const long = 'In your small intestine, the soup is broken down even more, and only really tiny pieces can pass through the walls.\n' +
     'It is a bit like squeezing soup through a pair of tights: the runny part drips through, and the lumps stay inside.';
   const found = nudges({ template: 'teach-layout', layout: 'lead-picture-lines', title: 'x', lines: [long] });
-  assert.equal(found.filter((w) => /is all black/.test(w)).length, 1);
+  assert.equal(found.filter((w) => /has no emphasis for its main idea/.test(w)).length, 1);
   assert.equal(found.filter((w) => /no gap/.test(w)).length, 0, 'two sentences are not asked for a gap');
 });
 
-test('a short card, a question in blue, a taught word and a line to remember are left alone', () => {
+test('a short card, a question and a sticky are left alone; vocabulary alone still prompts review', () => {
   assert.deepEqual(nudges(body({ type: 'text', value: 'Look at both pictures. What is the same?' })), []);
   assert.deepEqual(nudges(body({ type: 'text', value: THREE.replace(/\. /g, '.\n\n'), colorRole: 'task-blue' })), []);
-  assert.deepEqual(nudges(body({ type: 'text', value: THREE.replace(/\. /g, '.\n\n'), emphasis: [{ text: 'small intestine', role: 'vocabulary' }] })), []);
+  assert.equal(nudges(body({ type: 'text', value: THREE.replace(/\. /g, '.\n\n'), emphasis: [{ text: 'small intestine', role: 'vocabulary' }] })).filter((w) => /has no emphasis for its main idea/.test(w)).length, 1);
   assert.deepEqual(nudges(body({ type: 'text', value: '✨ ' + THREE.replace(/\. /g, '.\n\n') })), []);
 });
 
@@ -55,7 +55,7 @@ test('lines kept tight on purpose are not asked for a gap, only a model answer i
   const model = '||My teeth crush my sandwich into smaller pieces.\nMy stomach squeezes it until it is a runny soup.\nOnly tiny pieces can get through the walls.';
   const found = nudges(body({ type: 'text', value: model }));
   assert.equal(found.filter((w) => /no gap/.test(w)).length, 1, 'a model answer takes the gap');
-  assert.equal(found.filter((w) => /is all black/.test(w)).length, 0, 'and is not black: it is green');
+  assert.equal(found.filter((w) => /has no emphasis for its main idea/.test(w)).length, 0, 'and is not black: it is green');
 });
 
 test('a vocabulary slide and a strong-and-weak pair are not judged as cards of prose', () => {
@@ -69,11 +69,11 @@ test('key-line is an emphasis the builder draws, in orange and once', () => {
     emphasis: [{ text: 'The lumps stay inside.', role: 'key-line' }] }, 'body'));
 });
 
-test('a teach-layout line takes one key-line, and it counts as the slide\'s orange', () => {
+test('separate teach-layout cards may carry key-line emphasis alongside one whole orange line', () => {
   const slide = (lines) => ({ slides: [{ template: 'teach-layout', layout: 'lead-three-cards', headerStyle: 'title', title: 'x',
     lead: 'Food is broken down.', lines: lines.concat(['A plain line.', 'Another plain line.']).slice(0, 3) }] });
   const one = { value: THREE, emphasis: [{ text: 'The lumps stay inside.', role: 'key-line' }] };
   assert.doesNotThrow(() => expandTeachLayouts(slide([one])));
-  assert.throws(() => expandTeachLayouts(slide([one, { value: 'A second line.', orange: true }])), /One line per slide is orange/);
+  assert.doesNotThrow(() => expandTeachLayouts(slide([one, { value: 'A second line.', orange: true }])));
   assert.throws(() => expandTeachLayouts(slide([Object.assign({}, one, { orange: true })])), /takes no "key-line"/);
 });

@@ -417,17 +417,37 @@ def output_note(text: str) -> str | None:
     )
 
 
+def record_folder() -> Path:
+    """A temp folder that outlives the command, where the reads' record is kept.
+
+    Since 0.162 (7 October 2026) the Codex app gives every command a temp folder
+    of its own, `...\\Packages\\sandbox.{id}\\AC\\Temp`, and deletes it when the
+    command ends. A record kept there was gone before the next read in the same
+    cell looked for it, so from 12 October nothing was refused and 25 batched
+    reads reached workers cut in the middle. Proved in the app on 17 October:
+    a note left in the command's own temp folder was gone a second later, while
+    one left in the user's ordinary temp folder, beside `Packages`, was still
+    there and could be written from inside the sandbox.
+    """
+    temp = Path(tempfile.gettempdir())
+    for folder in temp.parents:
+        if re.fullmatch(r"sandbox\.\{[0-9A-Fa-f-]+\}", folder.name) and folder.parent.name.lower() == "packages":
+            return folder.parent.parent / "Temp"
+    return temp
+
+
 def same_call_log() -> Path | None:
     """This Codex session's record of recent reads, or None off Codex or where it cannot be kept."""
     thread = os.environ.get("CODEX_THREAD_ID", "").strip()
     if not thread:
         return None
     try:
-        folder = Path(tempfile.gettempdir()) / "lesson-v4-reads"
+        folder = record_folder() / "lesson-v4-reads"
         folder.mkdir(parents=True, exist_ok=True)
     except OSError:
         # A read-only sandbox has no temp folder at all (`No usable temporary
-        # directory found`): it loses the guard, never the read.
+        # directory found`), and a sandbox may refuse the lasting one beside its
+        # own: either loses the guard, never the read.
         return None
     return folder / f"{re.sub(r'[^A-Za-z0-9_.-]', '_', thread)[:80]}.log"
 

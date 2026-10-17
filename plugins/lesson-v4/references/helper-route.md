@@ -31,7 +31,7 @@ Launch `helper-builder` with its bundled role file and exactly:
 ```text
 PLUGIN_ROOT: [literal verified PLUGIN_ROOT]
 WORKING_DIR: [WORKING_DIR]
-SCRATCH_DIR: [WORKING_DIR]/_scratch/[task_name] (yours alone: every throwaway file goes here, never the host's shared scratch folder; save a script longer than a few lines here with your file tool and run it by path, because the shell cuts a long typed command short on Windows; delete no file outside it that you did not make)
+SCRATCH_DIR: [WORKING_DIR]/_scratch/[task_name] (yours alone: every throwaway file goes here, never the host's shared scratch folder; save a script longer than a few lines here with your file tool and run it by path, because the shell cuts a long typed command short on Windows; a command that waits for input you never give it (`cat > file` with nothing after it, `python -` with no script, an empty here-block to test Python) sits silently until the time limit stops it, so write files with your file tool and run PYTHON as given; delete no file outside it that you did not make)
 
 HELPERS: [count]
 

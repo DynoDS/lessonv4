@@ -25,15 +25,37 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "scripts"))
 import python_extras  # noqa: F401,E402
 
-from PIL import ImageFont  # noqa: F401,E402 - kept for compatibility
+from PIL import ImageFont  # noqa: E402
 
 from pptx import Presentation
 from pptx.enum.text import MSO_AUTO_SIZE
 from pptx.util import Emu
-from pptx.text.layout import _rendered_size
 
 
 from functools import lru_cache
+
+
+# PowerPoint wraps a line at the font's own letter widths. python-pptx's
+# measure, used here until 17 October 2026, draws the words one pixel to the
+# point and reads the inked box, so every letter snaps to a whole pixel: a line
+# came out up to about 1% narrower or wider than PowerPoint draws it, depending
+# on the size, and at 31pt the shortfall put "lungs?" on a third line below a
+# card the fitter had sized for two. Drawn this large the snapping is gone, and
+# the width is the one PowerPoint wraps at, to within half a percent.
+_TRUE_WIDTH_PX = 1000
+
+
+@lru_cache(maxsize=16)
+def _large_font(font_file):
+    return ImageFont.truetype(font_file, _TRUE_WIDTH_PX, layout_engine=ImageFont.Layout.BASIC)
+
+
+def _rendered_size(text, point_size, font_file):
+    """(width, height) of `text` at `point_size` in EMU, at the font's true widths."""
+    font = _large_font(font_file)
+    scale = float(point_size) / _TRUE_WIDTH_PX / 72.0 * 914400
+    left, top, right, bottom = font.getbbox(text) if text else (0, 0, 0, 0)
+    return int(font.getlength(text) * scale), int((bottom - top) * scale)
 
 
 @lru_cache(maxsize=8)
@@ -744,7 +766,13 @@ def text_budget(shape, floor_pt, text):
     answer has to be true of the words actually on the slide: a line of digits
     and a line of prose do not fit the same box.
     """
-    body = " ".join(str(text).split())
+    # Words as PowerPoint breaks them: a calculation joined with no-break spaces
+    # is one word, so a card too narrow for "2,648 + 10 =" is told it needs to
+    # be wider. Split at every space, the sum read as four short words that
+    # "fit by count", and the card was told it could be taller instead, which
+    # cannot help (17 October 2026).
+    words = breakable_words(str(text))
+    body = " ".join(words)
     if not body:
         return ""
 
@@ -779,7 +807,7 @@ def text_budget(shape, floor_pt, text):
     chars_per_line = max(1, int(usable_w // per_char))
     lines = max(1, int(usable_h // line_h))
     budget = chars_per_line * lines
-    longest_word = max((len(w) for w in body.split()), default=0)
+    longest_word = max((len(w) for w in words), default=0)
 
     # Two different problems wear the same refusal, and the repair is different
     # for each. Too many words is a volume problem, answered by cutting or by a
@@ -801,7 +829,7 @@ def text_budget(shape, floor_pt, text):
             "%d characters, so this text cannot break into lines that short. It "
             "needs a wider box, not fewer words."
             % (lines, "" if lines == 1 else "s", chars_per_line, floor_pt,
-               max(body.split(), key=len), longest_word)
+               max(words, key=len).replace("\u00a0", " "), longest_word)
         )
 
     return (

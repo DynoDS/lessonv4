@@ -68,7 +68,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             "PICTURE_RESULT_OK",
             "PICTURE_PROVENANCE_OK",
             "PICTURE_MANIFEST_OK",
-            "validate-image-scout.py result",
+            'validate-image-scout.py" result',
             "validate-image-scout.py manifest",
         ):
             self.assertIn(marker, text)
@@ -234,7 +234,7 @@ class MakeLessonStaticContractTests(unittest.TestCase):
             "## Central design evidence",
             reviewer,
         )
-        self.assertIn("After return, run `design-review-packet.py verify`", playbook)
+        self.assertIn('After return, run:\n\n```text\n"[PYTHON]" "[PLUGIN_ROOT]/scripts/design-review-packet.py" verify', playbook)
         self.assertIn(
             "Do not run design-review-packet.py verify. "
             "The orchestrator owns that check.",

@@ -31,6 +31,8 @@ EXPECTED_CLAUDE_TOKEN_COUNTS = {
     "skills/make-lesson/SKILL.md": 1,
     "commands/edit-templates.md": 1,
     "commands/install-helper.md": 1,
+    # Claude Code's start-up step: the host fills the path in before it runs.
+    "hooks/hooks.json": 1,
 }
 
 TEXT_SUFFIXES = {

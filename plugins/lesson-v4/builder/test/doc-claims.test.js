@@ -966,10 +966,15 @@ test("the slide self-check is required by both the role and orchestrator", () =>
     true,
     "builder/scripts/check-slide-design.js is missing"
   );
+  // The designer runs the check through scripts/preview-deck.py, which runs
+  // check-slide-design.js and then draws the pages (17 October 2026).
+  const previewDeck = fs.readFileSync(
+    path.join(__dirname, "..", "..", "scripts", "preview-deck.py"),
+    "utf8"
+  );
   assert.ok(
-    SLIDE_DESIGNER_MD.includes(
-      'builder/scripts/check-slide-design.js'
-    ),
+    SLIDE_DESIGNER_MD.includes('scripts/preview-deck.py') &&
+      previewDeck.includes('"check-slide-design.js"'),
     "slide-designer.md does not run the disposable scratch check"
   );
   assert.ok(

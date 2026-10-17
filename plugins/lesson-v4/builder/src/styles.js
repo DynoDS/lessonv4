@@ -11,6 +11,9 @@ const COLOURS = {
   questionLabel: '7030A0',
   green:       '00B050',
   orange:      'E46C0A',
+  // Semantic slide text only; picture/category palettes keep green/orange.
+  textGreen:   '007A3D',
+  textOrange:  'A94700',
   problem:     'C00000',
   vocabBg:     'D5F5E3',
   stickyBg:    'DEEAF1',

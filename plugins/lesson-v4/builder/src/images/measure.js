@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { normalizeLocalPath, longPathSafe } = require('./resolve');
+const { resolveForEmbed, longPathSafe } = require('./resolve');
 
 const requireGlobal = require('../require-global');
 let sharp = null;
@@ -28,6 +28,12 @@ function collectImagePaths(lesson) {
 // Returns a Map keyed by the original imagePath string (relative or absolute,
 // exactly as it appears in the lesson JSON) so the draw step can look up
 // dims synchronously by the same key it already has.
+//
+// What is measured is the file the slide embeds, which after a white border is
+// trimmed is the copy in `.resized`, not the picture as it arrived. Measuring
+// the arrival instead fitted a box to the untrimmed shape and PowerPoint
+// stretched the trimmed copy into it: a fire bucket 18% too narrow on two Great
+// Fire of London slides (17 October 2026). So this runs after preResizeAll.
 async function preMeasureAll(lesson, lessonDir) {
   const dims = Object.create(null);
   const paths = collectImagePaths(lesson);
@@ -36,11 +42,8 @@ async function preMeasureAll(lesson, lessonDir) {
   for (const rel of paths) {
     // `rel` stays the key the lesson JSON used, because the draw step looks the
     // dimensions up by that exact string. Only the path opened off disk changes.
-    const local = normalizeLocalPath(rel);
-    const abs = path.isAbsolute(local)
-      ? local
-      : path.join(normalizeLocalPath(lessonDir), local);
-    if (!fs.existsSync(abs)) continue;
+    const abs = resolveForEmbed(rel, { lessonDir });
+    if (!abs || !fs.existsSync(abs)) continue;
     try {
       // sharp gets the long-path form. Without it a photograph in a lesson
       // folder past 260 characters is reported missing by sharp alone, and the

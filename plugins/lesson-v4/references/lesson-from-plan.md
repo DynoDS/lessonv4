@@ -5,8 +5,8 @@ Read this when the request asks for the next lesson from a plan (for example
 A scheduled run cannot remember where the last one got to, so each plan's
 lessons and counters live in the teacher's letterbox repository, on the
 letterbox branch, under `plans/<plan>/`, and `scripts/plan-tracker.py` decides
-what is due. `plan-tracker.py` below means
-`"[PYTHON]" "[PLUGIN_ROOT]/scripts/plan-tracker.py" --plans-dir "<plans folder>"`.
+what is due. `[PLANS_DIR]` below is the plans folder found in step 1, and
+`[PLAN]` and `[INDEX]` are the plan's name and the lesson's index.
 
 ## 1. Reach the plan
 
@@ -15,7 +15,8 @@ the request names the letterbox), because it says which route this box has.
 
 - **Git route** (`LETTERBOX=` is printed, or on the teacher's own computer the
   clone `letterbox_filer.py status` names as `LETTERBOX_CLONE`): the plans
-  folder is that clone. Run `plan-tracker.py open`.
+  folder is that clone. Run
+  `"[PYTHON]" "[PLUGIN_ROOT]/scripts/plan-tracker.py" --plans-dir "[PLANS_DIR]" open`.
 - **Connector route** (`LETTERBOX_ROUTE=connector`): with the host's GitHub
   tools, copy `plan.json`, `lessons.json`, `built.json` and `filed.json` from
   `plans/<plan>/` on `LETTERBOX_BRANCH` of `LETTERBOX_REPO` into
@@ -29,7 +30,10 @@ not been imported.
 
 ## 2. Ask what is due
 
-`plan-tracker.py next --plan <plan> --brief "[WORKING_DIR]/plan-lesson.md"`
+```text
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/plan-tracker.py" --plans-dir "[PLANS_DIR]" \
+  next --plan "[PLAN]" --brief "[WORKING_DIR]/plan-lesson.md"
+```
 
 - `"status": "skip"`: build nothing and launch no worker. Tell the teacher in
   one line: the plan is finished (`plan_complete`), or it is already the
@@ -48,12 +52,14 @@ Move the plan on only once the lesson is really delivered: `STATUS=COPIED`, or a
 staged lesson posted and read back. A lesson that did not arrive must be built
 again by the next run, so leave the counter alone and say so.
 
-1. `plan-tracker.py advance --plan <plan> --index <index>`
+1. `"[PYTHON]" "[PLUGIN_ROOT]/scripts/plan-tracker.py" --plans-dir "[PLANS_DIR]" advance --plan "[PLAN]" --index [INDEX]`
 2. When the delivery saved straight to the teacher's folder (`DELIVERY=folder`
    or `sorted`), the lesson is saved as well as built:
-   `plan-tracker.py set-filed --plan <plan> --index <index>`. In letterbox mode,
+   `"[PYTHON]" "[PLUGIN_ROOT]/scripts/plan-tracker.py" --plans-dir "[PLANS_DIR]" set-filed --plan "[PLAN]" --index [INDEX]`.
+   In letterbox mode,
    do not: the teacher's computer does that when it saves the lesson.
-3. Publish the change. Git route: `plan-tracker.py publish --plan <plan>`.
+3. Publish the change. Git route:
+   `"[PYTHON]" "[PLUGIN_ROOT]/scripts/plan-tracker.py" --plans-dir "[PLANS_DIR]" publish --plan "[PLAN]"`.
    Connector route: commit the changed `plans/<plan>/built.json` to
    `LETTERBOX_BRANCH` with the host's GitHub tools, and read it back.
 

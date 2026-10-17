@@ -270,7 +270,9 @@ function textNeed(item, zone, pt, ctx, countSign) {
     const availW = (zone.w - 2 * TEXT_BOX_PAD - indent) * RENDER_SAFETY;
     if (availW <= 0.3) return null;
     let ems = 0;
-    for (const para of visibleText(value).split('\n')) {
+    // Measured as it is drawn: a calculation is kept on one line.
+    const { keepCalculationsWhole } = require('../presentation-text');
+    for (const para of keepCalculationsWhole(visibleText(value)).split('\n')) {
       const n = para.trim() ? wrappedLineCount(para, size, availW, true) : 1;
       if (!Number.isFinite(n)) return null;
       ems += (FIRST_LINE_EM + NEXT_LINE_EM * (Math.max(1, n) - 1)) * LINE_SAFETY;
@@ -413,7 +415,9 @@ function rowNeed(item, zone, pt, ctx, most) {
     if (need == null) return null;
     tallest = Math.max(tallest, need);
   }
-  return tallest || null;
+  if (!tallest) return null;
+  const row = require('./row');
+  return row.lineCountHeight(row.rowLineCount(zone, item), tallest);
 }
 
 // What one item needs at `pt`, and whether it may take more: words and a
@@ -676,7 +680,9 @@ function columnNeed(item, zone, share, most, ctx) {
       names.push(part.name);
       if (!tallest || part.need > tallest.need) tallest = part;
     }
-    return { need: tallest.need, name: 'row of ' + names.join(' beside '), tallest: tallest.name };
+    const row = require('./row');
+    const need = row.lineCountHeight(row.rowLineCount(zone, item), tallest.need);
+    return { need, name: 'row of ' + names.join(' beside '), tallest: tallest.name };
   }
   if (item.type === 'stack') {
     const items = Array.isArray(item.items) ? item.items : [];

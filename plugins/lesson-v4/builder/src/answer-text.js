@@ -54,7 +54,7 @@ const { pictureColour } = require('../../shared/text/criteria-marks');
 // brick that is wholly an answer (a grid/pyramid reveal) renders as a single
 // clean green run.
 const FOCUS_BLUE = COLOURS.title; // 0070C0 — the same blue the deck uses for the focus/question
-const SUPPLIED_ORANGE = COLOURS.orange; // E46C0A — supplied/given material the child works from
+const SUPPLIED_ORANGE = COLOURS.textOrange; // A94700 - supplied/given material the child works from
 
 // A taught word is green wherever a child reads it, so the word in a question
 // looks like the word on its vocabulary card (teacher-slide-visual-profile ->
@@ -106,10 +106,10 @@ function sameColour(a, b) {
   return String(a || '').replace('#', '').toUpperCase() === String(b || '').replace('#', '').toUpperCase();
 }
 
-function taughtWordsInGreen(runs, baseColor, bold) {
+function taughtWordsInGreen(runs, baseColor, bold, keyLine) {
   if (!taughtWords) return runs;
   const base = baseColor || COLOURS.body;
-  if (!TAUGHT_WORD_GROUNDS.some(function (ground) { return sameColour(ground, base); })) return runs;
+  if (!keyLine && !TAUGHT_WORD_GROUNDS.some(function (ground) { return sameColour(ground, base); })) return runs;
   let list = runs;
   if (typeof runs === 'string') {
     taughtWords.lastIndex = 0;
@@ -150,7 +150,7 @@ function taughtWordsInGreen(runs, baseColor, bold) {
       // piece keeps it.
       const own = Object.assign({}, options);
       if (index < pieces.length - 1) delete own.breakLine;
-      if (piece.green) Object.assign(own, { color: COLOURS.green, bold: true });
+      if (piece.green) Object.assign(own, { color: COLOURS.textGreen, bold: true });
       out.push({ text: piece.text, options: own });
     });
   });
@@ -179,14 +179,14 @@ function splitMarkedRuns(text, bold, baseColor) {
   // the whole block, and the inline markers still keep their own colours.
   if (str.startsWith('||') && str.indexOf('||', 2) === -1) {
     const body = str.slice(2).replace(/^\s+/, '');
-    const inner = splitAnswerRuns(body, bold, COLOURS.green);
+    const inner = splitAnswerRuns(body, bold, COLOURS.textGreen);
     if (Array.isArray(inner)) return inner;
     const lines = String(inner).split('\n');
     const green = [];
     lines.forEach(function (line, index) {
-      if (line !== '') green.push({ text: line, options: { color: COLOURS.green, bold: !!bold } });
+      if (line !== '') green.push({ text: line, options: { color: COLOURS.textGreen, bold: !!bold } });
       if (index < lines.length - 1) {
-        green.push({ text: '\n', options: { color: COLOURS.green, bold: !!bold } });
+        green.push({ text: '\n', options: { color: COLOURS.textGreen, bold: !!bold } });
       }
     });
     return green;
@@ -245,7 +245,7 @@ function splitMarkedRuns(text, bold, baseColor) {
             !/\s$/.test(head) &&
             !/^\s/.test(tail);
           push(needsSpace ? ' ' + tail : tail, {
-            color: COLOURS.green,
+            color: COLOURS.textGreen,
             bold: base.bold
           });
         }
@@ -267,7 +267,7 @@ function splitMarkedRuns(text, bold, baseColor) {
     } else if (match[2] !== undefined) {
       pushSpan(match[2], FOCUS_BLUE, true);
     } else if (match[3] !== undefined) {
-      pushSpan(match[3], COLOURS.green, true);
+      pushSpan(match[3], COLOURS.textGreen, true);
     } else if (match[4] !== undefined) {
       pushSpan(match[4], SUPPLIED_ORANGE, true);
     } else if (match[5] !== undefined) {

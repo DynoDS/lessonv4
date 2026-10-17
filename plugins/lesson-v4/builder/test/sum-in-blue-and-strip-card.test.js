@@ -38,7 +38,7 @@ test('on the answer slide the sum stays blue and its answer stays green', () => 
   const seen = colours(runs);
   assert.equal(seen[0][1], COLOURS.body);
   assert.deepEqual(seen[1], ['236 + 148 = ', COLOURS.title]);
-  assert.deepEqual(seen[2], ['384', COLOURS.green]);
+  assert.deepEqual(seen[2], ['384', COLOURS.textGreen]);
 });
 
 test('a line counts as the sum only when it is left for the child to finish', () => {
@@ -90,7 +90,7 @@ test('an answers slide prints its sum the colour the task slide printed it', (t)
   setSumsFollowed(sumsTheTaskPrintedBlue(slides, 1));
   assert.deepEqual(colours(presentationRuns('247 + 135 = ||382', true, COLOURS.body, {})), [
     ['247 + 135 = ', COLOURS.title],
-    ['382', COLOURS.green]
+    ['382', COLOURS.textGreen]
   ]);
   // Another sum on the same answers slide, one no task slide printed blue.
   assert.equal(typeof presentationRuns('300 + 135 =', true, COLOURS.body, {}), 'string');

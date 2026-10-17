@@ -507,13 +507,14 @@ It reads sizes only. A slide it calls `OK` can still be refused by the check for
 Now run exactly:
 
 ```bash
-node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
-  --preview \
-  --photo-requirements "[PHOTO_REQUIREMENTS_PATH]" \
-  "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/preview-deck.py" \
+  --candidate "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]" \
+  --photo-requirements "[PHOTO_REQUIREMENTS_PATH]"
 ```
 
-This command performs the real specification validation, real layout preflight and real PowerPoint text-fitting pass in a unique scratch directory. It removes the scratch directory before returning and never writes, replaces or publishes the teacher-facing PowerPoint. Do not run `builder/build.js` directly and do not treat the scratch build as the final deck.
+It runs the check below and, when the check passes, draws the preview pages and builds the overview sheets, one step after another, printing each step's own lines as they come. It takes twenty to forty seconds and has finished only when its last line is `DECK_PREVIEW_DONE` or `DECK_PREVIEW_STOPPED`. Some hosts hand a command back after about ten seconds whatever it is doing, so output without either line is a command still running: wait for it, and read nothing in that early output as a result. A failed check stops it there with `DECK_PREVIEW_STOPPED`, and nothing is drawn.
+
+The check performs the real specification validation, real layout preflight and real PowerPoint text-fitting pass in a unique scratch directory. It removes the scratch directory before returning and never writes, replaces or publishes the teacher-facing PowerPoint. Do not run `builder/build.js` directly and do not treat the scratch build as the final deck.
 
 A pass exits 0 and ends with exactly:
 
@@ -563,39 +564,27 @@ SLIDE_DESIGN_PREVIEW_DIR: [absolute private preview directory]
 SLIDE_DESIGN_PREVIEW: [absolute checked scratch PowerPoint]
 ```
 
-A failed preview check still keeps the pages it could draw, printed as `SLIDE_DESIGN_REFUSED_PREVIEW: [path]` before the failure marker, with each refused slide replaced by a "check this slide" page. Render it to see the rest of the deck while you repair; it is never the checked preview and is never promoted.
+A failed preview check still keeps the pages it could draw, printed as `SLIDE_DESIGN_REFUSED_PREVIEW: [path]` before the failure marker, with each refused slide replaced by a "check this slide" page. Render it to see the rest of the deck while you repair, with the three drawing commands below run on that path in place of `[PREVIEW_PPTX]` and on its folder in place of `[PREVIEW_DIR]`; it is never the checked preview and is never promoted.
 
 The preview copy is private disposable evidence. It is not the classroom PowerPoint and never replaces the orchestrator's final build. Leave it where it is when you finish: it sits inside the run's working directory, which is kept, so deleting it tidies nothing, and the deletion is refused outright by some approval policies - which cost a friction line and a note in the teacher's report on every run for no gain.
 
-After the deterministic check passes, render the preview before promoting the candidate.
-
-Run exactly:
+The candidate is rendered before it is promoted: when the check passes, the command has already probed the render route, drawn the preview pages into `[PREVIEW_DIR]/render` and built the overview sheets, which are these three commands, run in this order:
 
 ```bash
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/render-pages.py" \
   --probe-route "[PREVIEW_DIR]/render-route.json"
-```
-
-When that exits 0, run exactly:
-
-```bash
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/render-pages.py" \
   "[PREVIEW_PPTX]" \
   "[PREVIEW_DIR]/render" \
   --route-file "[PREVIEW_DIR]/render-route.json" \
   --manifest "[PREVIEW_DIR]/render-manifest.json"
-```
-
-When that exits 0, run exactly:
-
-```bash
 "[PYTHON]" "[PLUGIN_ROOT]/scripts/build-visual-consistency-overview.py" build \
   --output-dir "[PREVIEW_DIR]/overview" \
   --output-manifest "[PREVIEW_DIR]/overview-manifest.json" \
   --manifest "Deck=[PREVIEW_DIR]/render-manifest.json"
 ```
 
-If the overview command exits 0, inspect every overview PNG it records. If the overview command cannot produce an overview but the render manifest and page PNGs exist, inspect every page PNG from `render-manifest.json` in order.
+Run them yourself only for a refused preview (above). When the overview was built, inspect every overview PNG it records. When the last line says the overview failed but the render manifest and page PNGs exist, inspect every page PNG from `render-manifest.json` in order.
 
 The pages are drawn when the render prints `RENDER_PAGES_OK`. Nothing could be drawn only when the finished render itself prints `VISUAL_ROUTE_UNVERIFIED`: then record `Visual self-read: unavailable` in the short completion report and continue from the successful deterministic check, because a missing visual-render route is not a reason to fail an otherwise checked slide specification. A PowerPoint line from the probe is not that (LibreOffice draws the deck where PowerPoint cannot be reached), and nor is output that stops at `RENDER_PAGES_RUNNING`: drawing takes ten to twenty seconds and is still going, so wait for it to finish. A deck has reached the teacher unseen with every page already drawn beside it.
 

@@ -74,7 +74,7 @@ test('both routes carry the same panel label, colour and size', () => {
   labels.forEach((label, route) => {
     assert.ok(label, `route ${route + 1}: panel label renders once`);
     assert.equal(label.fontSize, 28);
-    assert.equal(label.color, '00B050');
+    assert.equal(label.color, '007A3D');
     assert.equal(label.bold, true);
   });
   assert.equal(labels[0].fontSize, labels[1].fontSize);

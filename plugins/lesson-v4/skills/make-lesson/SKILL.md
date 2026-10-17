@@ -174,8 +174,10 @@ own initiative, because the teacher owns that cost.
 `WORKER_LAUNCH_AUDIT_UNCHECKED` names launches whose task name carried no role,
 which is a naming fault to report, not a silent pass.
 
-Claude Code keeps no such record, so there is nothing to read back and the ask
-above is the only gate. That is why you ask even though Claude Code needs no
+On Claude Code the audit has nothing to read; the run record described under
+"The run's friction record" reads Claude Code's own worker transcripts
+afterwards and marks any worker whose model or thinking level differs from its
+role file. That is after the fact, so the ask above is the gate. That is why you ask even though Claude Code needs no
 fields from you: asking resolves the role's settings and prints them, so a role
 whose settings are missing or misspelled fails there, where you can see it,
 rather than at launch, where Claude Code cannot place the name and drops the
@@ -287,10 +289,17 @@ that contradicted what you found, or an asset that took several attempts to get)
 add one line per obstacle beginning `Friction:`. In that one sentence say what
 you expected, what you actually met, and what you did instead - a line that names
 only the workaround leaves a reader unable to tell whether anything was wrong.
-End it with `- run unharmed` when your workaround reached the result the
-assignment asked for, or `- run harmed: [what the lesson lost]` when it did not.
-That verdict is what separates an obstacle worth engineering away from one that
-merely cost a second attempt. Opinions about lesson quality do not belong here.
+End it with one verdict. `- run unharmed` means the teacher and children get
+exactly what the assignment planned, so nobody would notice the workaround.
+`- run changed: [what they will see differently]` means the result still does
+its job but looks or runs differently from the plan: a model split over three
+slides, words smaller than their target, a planned cut used, a plainer card.
+`- run harmed: [what the lesson lost]` means it no longer does what was asked.
+A difference only the build can see, such as a file layout, is unharmed. That
+verdict is what separates an obstacle worth engineering away from one that
+merely cost a second attempt, and a later checker compares it with the
+delivered files, so a visible difference called unharmed reads as a missed
+fault. Opinions about lesson quality do not belong here.
 If there was no friction, add no friction line.
 ```
 
@@ -349,6 +358,25 @@ Copy every line into the run report's `## Friction` section. That section is the
 run's investigation record and holds blocks that were later fixed; `## Blocking
 faults` still lists only what is still broken at delivery. If the run met no
 friction, no block and no repair, do not create the file.
+
+Beside it, `[WORKING_DIR]/run-record.md` holds what nobody has to notice to
+record: every session and worker that touched this lesson, how each ended
+(including a worker cut off or a session that stopped without a word), each
+worker's failed checks and how many runs it took, every kind of message the
+builds printed and the designers' saved notes, each friction verdict marked as
+unchecked, and each worker's time, cost, model and thinking level. A script
+writes it from the host's own records:
+
+```bash
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/run-record.py" --working-dir "[WORKING_DIR]" --host [claude|codex]
+```
+
+Run it just before the run report and leave the file in the working folder; it
+prints `RUN_RECORD_OK` or `RUN_RECORD_UNAVAILABLE` and never stops a run. A set
+of lessons also writes it whenever a lesson's session ends, so a lesson that
+dies part-way still leaves one. Because it exists, you do not need to log
+launches, kills, retries or timings in friction.md yourself; write there what
+only you know, such as why you stopped or relaunched a worker.
 
 ---
 
@@ -525,7 +553,7 @@ of each of these lines:
 ```text
 PLUGIN_ROOT: [literal verified PLUGIN_ROOT]
 PYTHON: [literal PYTHON found at start-up]
-SCRATCH_DIR: [WORKING_DIR]/_scratch/[this launch's task_name] (yours alone: every throwaway file goes here, never the host's shared scratch folder; save a script longer than a few lines here with your file tool and run it by path, because the shell cuts a long typed command short on Windows; delete no file outside it that you did not make)
+SCRATCH_DIR: [WORKING_DIR]/_scratch/[this launch's task_name] (yours alone: every throwaway file goes here, never the host's shared scratch folder; save a script longer than a few lines here with your file tool and run it by path, because the shell cuts a long typed command short on Windows; a command that waits for input you never give it (`cat > file` with nothing after it, `python -` with no script, an empty here-block to test Python) sits silently until the time limit stops it, so write files with your file tool and run PYTHON as given; delete no file outside it that you did not make)
 ```
 
 `SCRATCH_DIR` is where that one worker keeps every throwaway file it makes: a

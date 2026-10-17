@@ -4,11 +4,11 @@ This is the active runtime playbook. It deliberately avoids a generic job
 controller. The host launches named workers directly, waits through the host's
 normal worker lifecycle, and runs deterministic checks at meaningful file
 boundaries. Do not create orchestration job specs, completion events, worker
-snapshots, transition receipts, scheduler audits or latency reports. The one
-timing record a run keeps is the `WORKER_TIMELINE:` block that
-`worker-launch.py audit` prints from the host's own log: it costs the
-orchestrator nothing to produce, it is copied once into the run report, and
-it is what says whether a change made runs faster.
+snapshots, transition receipts, scheduler audits or latency reports. The
+timing records a run keeps are the `WORKER_TIMELINE:` block that
+`worker-launch.py audit` prints from the host's own log and `run-record.md`
+(SKILL.md): they cost the orchestrator nothing to produce, and they are what
+say whether a change made runs faster.
 
 ## Lightweight execution protocol
 
@@ -320,9 +320,20 @@ ALLOWED_TERMINAL_STATES:
 - REDESIGN REQUIRED
 ```
 
-After return, run `design-review-packet.py verify` with the prepared preflight,
-reference, view and review, writing `design-review-postflight.json`. Require
-`DESIGN_REVIEW_POSTFLIGHT_OK` and use its exact `reviewResult`.
+After return, run:
+
+```text
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/design-review-packet.py" verify \
+  --plugin-root "[PLUGIN_ROOT]" \
+  --working-dir "[WORKING_DIR]" \
+  --preflight "[WORKING_DIR]/design-review-preflight.json" \
+  --reference "[WORKING_DIR]/design-review-reference.md" \
+  --view "[WORKING_DIR]/design-review-view.md" \
+  --review "[WORKING_DIR]/design-review.md" \
+  --postflight-output "[WORKING_DIR]/design-review-postflight.json"
+```
+
+Require `DESIGN_REVIEW_POSTFLIGHT_OK` and use its exact `reviewResult`.
 
 The preflight's validator and photo-cap commands are already right for the
 review's stage (after the verified Phase 2 freeze: no initial namespace, run
@@ -851,11 +862,31 @@ assignment `work_root`, and one unique result path:
 ```
 
 The worker may write only its work root, authorised AI ledger paths and result.
-After return, run `validate-image-scout.py result` against the exact assignment,
-result, work root and batch ID. Require `PICTURE_RESULT_OK`.
+After return, check the result against the exact assignment:
 
-Finalise each valid batch immediately with
-`finalize-picture-assignment.py assignment --replace no`. The finaliser
+```text
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/validate-image-scout.py" result \
+  --assignment "[assignment path]" \
+  --result "[WORKING_DIR]/picture-results/[batch-id]/result.json" \
+  --working-dir "[WORKING_DIR]" \
+  --work-root "[assignment work_root]" \
+  --expected-batch-id "[batch-id]"
+```
+
+Require `PICTURE_RESULT_OK`. Finalise each valid batch immediately:
+
+```text
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/finalize-picture-assignment.py" assignment \
+  --assignment "[assignment path]" \
+  --result "[WORKING_DIR]/picture-results/[batch-id]/result.json" \
+  --working-dir "[WORKING_DIR]" \
+  --work-root "[assignment work_root]" \
+  --expected-batch-id "[batch-id]" \
+  --summary-output "[WORKING_DIR]/picture-results/[batch-id]/finalize-summary.json" \
+  --replace no
+```
+
+The finaliser
 independently validates the whole result before publishing, derives source or AI
 provenance, and writes one terminal receipt per filename under
 `[WORKING_DIR]/orchestration-receipts/picture-terminal/`. This retained folder
@@ -1063,7 +1094,15 @@ which pictures the sheet keeps, so a sheet parked behind picture work is a
 sheet nothing can finish.
 
 Before every attempt, obtain the exact worksheet photo-contract path through
-`photo-contract.py select-worksheet`. Launch Worksheet Designer directly:
+`photo-contract.py select-worksheet`. Use its printed `path`:
+
+```text
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/photo-contract.py" select-worksheet \
+  --working-dir "[WORKING_DIR]" \
+  [--adaptation-accepted]
+```
+
+Pass `--adaptation-accepted` when adaptation was accepted. Launch Worksheet Designer directly:
 
 ```text
 You are the worksheet designer. Read your agent instructions at:
@@ -1246,7 +1285,11 @@ finds nothing wall-worthy writes `cards: []` with its rationale for the run
 report. It owns only `working-wall.json`. Its deterministic check is:
 
 ```bash
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" check \n  --plugin-root "[PLUGIN_ROOT]" \n  --working-dir "[WORKING_DIR]" \n  --working-wall "[WORKING_DIR]/working-wall.json" \n  --lesson "[WORKING_DIR]/lesson.json"
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/working-wall-packet.py" check \
+  --plugin-root "[PLUGIN_ROOT]" \
+  --working-dir "[WORKING_DIR]" \
+  --working-wall "[WORKING_DIR]/working-wall.json" \
+  --lesson "[WORKING_DIR]/lesson.json"
 ```
 
 Require exactly `WORKING_WALL_DESIGN_OK`; its refusals name their fault. Then
@@ -1637,11 +1680,22 @@ printed activity. The activities sit in `[lesson] - Activities`; pass each as
 walk-through stays in `OUTPUT_DIR`. `FILE=` lines give the drive's names.
 
 When `filing.txt` says `DELIVERY=folder`, `DELIVERY=sorted` or
-`DELIVERY=letterbox`, run `run-fixed-resource.py deliver` directly with
-`--summary-output "[WORKING_DIR]/build-results/delivery.json"`, `--year`,
-`--subject` and `--lesson-name`, one `--file` per exact basename, and in sorted
-mode the term, week and day from `filing.txt` (`--day` only when
-`IS_CORE=yes`). The year and subject are passed
+`DELIVERY=letterbox`, run directly:
+
+```text
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/run-fixed-resource.py" deliver \
+  --plugin-root "[PLUGIN_ROOT]" \
+  --working-dir "[WORKING_DIR]" \
+  --output-dir "[OUTPUT_DIR]" \
+  --summary-output "[WORKING_DIR]/build-results/delivery.json" \
+  --year "[YEAR]" --subject "[SUBJECT]" --lesson-name "[LESSON_NAME]" \
+  [--term-folder "[TERM_FOLDER]" --week "[WEEK_NUM]"] \
+  [--day "[DAY]"] \
+  --file "[one exact basename per resource]"
+```
+
+Repeat `--file` per resource. Sorted mode adds the term and week from
+`filing.txt`, and `--day` only when `IS_CORE=yes`. The year and subject are passed
 in every mode because that record is how the next run finds this lesson. Require
 schema 1 `ok: true`, `DESTINATION=` and `STATUS=COPIED`, then tell the teacher
 where it was saved in one line. The save folder is outside the lesson folder, so

@@ -575,7 +575,12 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # for the adaptation step's SUCCESS_CHECK (`photo-contract.py
         # check-adaptation`): the one launch with no check named anywhere, so
         # every orchestrator in the 15 October five-lesson round invented one.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 81 * 1024 + 968)
+        # Raised by 1,450 bytes on 17 October 2026, with the teacher's
+        # agreement, for five commands printed whole where they had been
+        # described (the review postflight, the picture result check and
+        # finalise, the worksheet picture contract, the delivery): of 29 runs
+        # reaching the review postflight, 25 looked its command up first.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 81 * 1024 + 968 + 1450)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.
@@ -595,11 +600,14 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # else. On 14 October 2026, again with his agreement, the delivery slice
         # gains 100 bytes for one report line: a level the plan gives the
         # Expected task unchanged is said in the run ("the best place to say is
-        # in the run"). Every other slice keeps the 7 KiB cap.
+        # in the run"). On 17 October 2026, again with his agreement, three
+        # slices gain what their command, printed whole in place of a
+        # description, needs: the review postflight, the worksheet picture
+        # contract and the delivery. Every other slice keeps the 7 KiB cap.
         raised = {
-            "delivery": 7 * 1024 + 612,
-            "design-review": 7 * 1024 + 64,
-            "worksheet-render": 7 * 1024 + 64,
+            "delivery": 7 * 1024 + 612 + 300,
+            "design-review": 7 * 1024 + 400,
+            "worksheet-render": 7 * 1024 + 300,
         }
         for name in BOUNDS:
             with self.subTest(slice=name):

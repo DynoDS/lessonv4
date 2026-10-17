@@ -12,7 +12,7 @@ const test = require('node:test');
 const { drawMethodFrame } = require('../src/content/method-frame');
 const { tellFramesWhatWasAsked, answerPieces } = require('../src/content/method-frame-answers');
 
-const GREEN = '00B050';
+const GREEN = '007A3D';
 const ZONE = { x: 0, y: 0, w: 9, h: 3, class: 'A' };
 
 function colours(frame) {

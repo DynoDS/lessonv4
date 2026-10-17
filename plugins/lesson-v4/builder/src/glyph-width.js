@@ -35,15 +35,28 @@ function textBoxWidthIn(text, fontPt, bold) {
 // spaces only, measured with the same glyph widths as the boxes. A word wider
 // than the box is Infinity: a helper that meets it has to widen the box or
 // refuse, never let PowerPoint split the word.
+//
+// A calculation the builder keeps whole ("2,648 + 10 =", joined with no-break
+// spaces by presentation-text.js) is one word here, as it is to PowerPoint. The
+// split used to be on JavaScript's \s, which takes a no-break space for a
+// break, so a Year 4 card was counted as "2,648 +" over "10 =" and sized for a
+// break PowerPoint never makes: it broke inside the number instead ("2,648 + 1"
+// over "0 =", 17 October 2026). Measured with an ordinary space and hyphen, as
+// the speech bubbles do, because the width table does not know the joining
+// space or the minus sign.
+function measurable(word) {
+  return word.replace(/ /g, ' ').replace(/−/g, '-');
+}
+
 function wrappedLineCount(text, fontPt, availW, bold) {
-  const words = String(text == null ? '' : text).trim().split(/\s+/).filter(Boolean);
+  const words = String(text == null ? '' : text).trim().split(/[ \t\r\n\f\v]+/).filter(Boolean);
   if (words.length === 0) return 0;
   let lines = 1;
   let current = '';
   for (const word of words) {
-    if (textBoxWidthIn(word, fontPt, bold) > availW + 1e-6) return Infinity;
+    if (textBoxWidthIn(measurable(word), fontPt, bold) > availW + 1e-6) return Infinity;
     const candidate = current ? current + ' ' + word : word;
-    if (textBoxWidthIn(candidate, fontPt, bold) <= availW + 1e-6) {
+    if (textBoxWidthIn(measurable(candidate), fontPt, bold) <= availW + 1e-6) {
       current = candidate;
     } else {
       lines += 1;

@@ -7413,7 +7413,7 @@
    "present": [
     {
      "file": "skills/make-lesson/playbook-lite.md",
-     "text": "After return, run `design-review-packet.py verify` with the prepared preflight, reference, view and review, writing `design-review-postflight.json`. Require `DESIGN_REVIEW_POSTFLIGHT_OK` and use its exact `reviewResult`.",
+     "text": "Require `DESIGN_REVIEW_POSTFLIGHT_OK` and use its exact `reviewResult`.",
      "section": {
       "heading": "## Phase 1.25 — Review the Design (Sequential, Blocking)",
       "occurrence": 0,

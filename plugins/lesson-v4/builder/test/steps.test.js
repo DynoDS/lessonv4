@@ -268,11 +268,11 @@ test('a smaller point under a step is lighter, no larger, and opens in orange, i
   assert.equal(run(/Write medium/).bold, false);
   assert.ok(run(/Write medium/).fontSize < 24 && run(/Write medium/).fontSize >= 18);
 
-  assert.equal(run(/^Stays\?$/).color, 'E46C0A');
+  assert.equal(run(/^Stays\?$/).color, 'A94700');
   assert.equal(run(/^Stays\?$/).bold, true);
   // The designer's own mark later in a line stays, and its question is still orange.
-  assert.equal(run(/^Rubs off\?$/).color, 'E46C0A');
-  assert.equal(run(/^hard$/).color, '00B050');
+  assert.equal(run(/^Rubs off\?$/).color, 'A94700');
+  assert.equal(run(/^hard$/).color, '007A3D');
 
   // One box, inside the card, left alone by the final fit so both sizes stay.
   const card = cards[1];
@@ -294,10 +294,10 @@ test('a sentence starter that is a question prints plain, like the starters besi
     .find((r) => pattern.test(r.text)).options;
 
   assert.equal(runOf(/Please can you/).bold, false);
-  assert.notEqual(runOf(/Please can you/).color, 'E46C0A');
+  assert.notEqual(runOf(/Please can you/).color, 'A94700');
   assert.equal(runOf(/Please can you/).color, runOf(/I noticed that/).color);
   // A real what-if is untouched.
-  assert.equal(runOf(/^10 or more\?$/).color, 'E46C0A');
+  assert.equal(runOf(/^10 or more\?$/).color, 'A94700');
   assert.equal(runOf(/^10 or more\?$/).bold, true);
 });
 
@@ -348,6 +348,6 @@ test('an item for a different kind of question is unnumbered, on its own card', 
   assert.deepEqual(badges, ['1', '2', '?', '3']);
 
   const other = texts.find((t) => Array.isArray(t.content) && t.content.some((r) => /How many more\?/.test(r.text)));
-  assert.equal(other.content.find((r) => /How many more\?/.test(r.text)).options.color, 'E46C0A');
+  assert.equal(other.content.find((r) => /How many more\?/.test(r.text)).options.color, 'A94700');
   assert.ok(!other.content.some((r) => /❓/.test(r.text)), 'the marker was printed');
 });

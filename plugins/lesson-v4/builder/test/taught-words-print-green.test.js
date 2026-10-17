@@ -14,7 +14,7 @@ const { COLOURS } = require('../src/styles');
 const { splitAnswerRuns, setTaughtWords } = require('../src/answer-text');
 const { presentationRuns } = require('../src/presentation-text');
 
-const green = (runs) => runs.filter((run) => run.options.color === COLOURS.green).map((run) => run.text);
+const green = (runs) => runs.filter((run) => run.options.color === COLOURS.textGreen).map((run) => run.text);
 
 test('a slide with no taught words prints exactly as it always has', () => {
   setTaughtWords([]);
@@ -43,12 +43,12 @@ test('a colour that already says what the words are is left alone', () => {
     // A weak example is red throughout, and an answer is already green.
     assert.equal(splitAnswerRuns('A Christingle has an orange.', true, COLOURS.problem), 'A Christingle has an orange.');
     assert.equal(splitAnswerRuns('A Christingle has an orange.', true, COLOURS.orange), 'A Christingle has an orange.');
-    // The key line keeps its orange; the taught word outside it turns green.
+    // A key-line span keeps orange around the taught words, which stay green inside and outside it.
     const card = presentationRuns('The Christingle matters. A Christingle is round.', true, undefined, {
       emphasis: [{ text: 'The Christingle matters.', role: 'key-line' }]
     });
-    assert.equal(card[0].options.color, COLOURS.orange);
-    assert.deepEqual(green(card), ['Christingle']);
+    assert.equal(card[0].options.color, COLOURS.textOrange);
+    assert.deepEqual(green(card), ['Christingle', 'Christingle']);
     // A paired card is two words, each green by itself.
     assert.deepEqual(green(splitAnswerRuns('One change and one continuity.', true)), ['change', 'continuity']);
   } finally {

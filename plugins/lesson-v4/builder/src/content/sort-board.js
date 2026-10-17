@@ -561,7 +561,7 @@ function drawSortBoard(pptx, slide, zone, data, ctx) {
         fontFace: FONT,
         fontSize: ITEM_FONT_MAX,
         bold: true,
-        color: COLOURS.green,
+        color: COLOURS.textGreen,
         align: 'center',
         valign: 'middle',
         margin: 0,

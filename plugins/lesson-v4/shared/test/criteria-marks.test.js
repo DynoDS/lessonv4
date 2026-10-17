@@ -16,6 +16,9 @@ const wallStyle = require("../../working-wall-html/style.json");
 const STEP = "Compare the ((thousands)) first, then <<stop at the first digit that is different>>";
 const THOUSANDS = "#2E75B6";
 const ORANGE = "#E46C0A";
+// Slide text takes a darker orange than the sheet and the wall (17 October
+// 2026, Daniel's choice), so the board half of the check expects it.
+const BOARD_ORANGE = "#A94700";
 
 test("each kind of mark takes its own colour and the rest stays plain", () => {
   const coloured = criteriaSegments(`${STEP} and use the {{interval}}`).filter((s) => s.colour);
@@ -35,7 +38,7 @@ test("the board, the sheet and the wall colour the same words the same way", () 
   const runs = splitAnswerRuns(STEP, true);
   assert.deepEqual(
     runs.filter((r) => r.options.color !== "000000").map((r) => [r.text, `#${r.options.color}`]),
-    [["thousands", THOUSANDS], ["stop at the first digit that is different", ORANGE]]
+    [["thousands", THOUSANDS], ["stop at the first digit that is different", BOARD_ORANGE]]
   );
 
   const sheet = renderHelper({ helper: "steps", title: "Success criteria", steps: [STEP] }, 174);

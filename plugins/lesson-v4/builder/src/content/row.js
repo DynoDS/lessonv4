@@ -58,6 +58,81 @@ function itemWidths(items, equalW, zone, ctx) {
   return widths;
 }
 
+// A row of cards holding calculations goes onto as many lines as it needs for
+// each calculation to stand whole in its card.
+//
+// The builder keeps a calculation on one line (presentation-text.js), so a card
+// narrower than its sum has nowhere to break it but inside a number. Four
+// Year 4 sums laid across half a slide each had 1.35" for "2,648 + 10 =", which
+// needs 1.7" at the 18pt floor, and PowerPoint drew "2,648 + 1" over "0 ="
+// (17 October 2026). The width a calculation needs is known before anything is
+// drawn, so the row does what a set of question cards does: it wraps. Two
+// lines of two drew every sum whole at 28pt. Cards keep one width on every
+// line and a shorter last line is centred, so the set still reads as one.
+//
+// Only a row made wholly of text cards, and only when a calculation will not
+// fit the width the row gives it: any other row, and a row whose words
+// already fit, lays out on one line exactly as before. When even one card to
+// a line is too narrow, nothing is gained by wrapping, so the row stays as it
+// is and the fit pass reports the card.
+const CALCULATION_FLOOR_PT = 18;
+const CARD_TEXT_PAD = 0.08; // a text card's inset each side (content/text.js PAD)
+
+function widestCalculationIn(items) {
+  const { keepCalculationsWhole } = require('../presentation-text');
+  const { textBoxWidthIn } = require('../glyph-width');
+  let widest = 0;
+  items.forEach(function (item) {
+    const visible = String(item.value || item.text || '')
+      .replace(/^\s*✨\s*/, '')
+      .replace(/\*\*|\|\||\[\[|\]\]|<<|>>|\{\{|\}\}/g, '');
+    keepCalculationsWhole(visible).split(/[ \t\r\n\f\v]+/).forEach(function (unit) {
+      if (unit.indexOf(' ') === -1 || !/\d/.test(unit)) return;
+      const plain = unit.replace(/ /g, ' ').replace(/−/g, '-');
+      widest = Math.max(widest, textBoxWidthIn(plain, CALCULATION_FLOOR_PT, !!item.bold));
+    });
+  });
+  return widest;
+}
+
+function rowLines(items, zone) {
+  const n = items.length;
+  const one = [items.map(function (_, i) { return i; })];
+  if (n < 2 || !zone || !(zone.w > 0)) return one;
+  if (!items.every(function (item) { return item && item.type === 'text' && !item.picture; })) return one;
+  const need = widestCalculationIn(items);
+  if (!(need > 0)) return one;
+  for (let count = 1; count <= n; count += 1) {
+    const perLine = Math.ceil(n / count);
+    const share = (zone.w - GAP * (perLine - 1)) / perLine;
+    if (need > share - 2 * CARD_TEXT_PAD + 1e-6) continue;
+    if (count === 1) return one;
+    const lines = [];
+    for (let i = 0; i < n; i += perLine) {
+      lines.push(one[0].slice(i, i + perLine));
+    }
+    return lines;
+  }
+  return one;
+}
+
+// Where each line of a wrapped row is drawn: one height per line, cards of one
+// width, a short last line centred.
+function lineZones(lines, zone) {
+  const perLine = lines[0].length;
+  const cardW = (zone.w - GAP * (perLine - 1)) / perLine;
+  const lineH = (zone.h - GAP * (lines.length - 1)) / lines.length;
+  return lines.map(function (line, l) {
+    const w = cardW * line.length + GAP * (line.length - 1);
+    return {
+      x: zone.x + (zone.w - w) / 2,
+      y: zone.y + l * (lineH + GAP),
+      w: w,
+      h: lineH
+    };
+  });
+}
+
 // A row holding cards that fit their words (a packing stack, content/stack.js)
 // lines them up with what stands beside them instead of stretching everything
 // to the row's height. Each item is measured at the full height; the tallest
@@ -97,6 +172,26 @@ function drawRow(pptx, slide, zone, data, ctx) {
   const { numberRowItems } = require('../question-labels');
   const items = numberRowItems(data);
   if (items.length === 0) return;
+
+  // Calculations too wide to sit side by side: each line is drawn as a row of
+  // its own, already numbered, and an equalised set keeps one text size across
+  // every line.
+  const lines = rowLines(items, zone);
+  if (lines.length > 1) {
+    const group = data.equaliseTextCards === true ? fitGroupId(zone, 'row-text') : null;
+    lineZones(lines, zone).forEach(function (lineZone, l) {
+      const lineData = Object.assign({}, data, {
+        items: lines[l].map(function (i) { return items[i]; }),
+        _textFitGroup: group
+      });
+      delete lineData.questionNumbering;
+      delete lineData.startAt;
+      delete lineData.groupAccent;
+      drawRow(pptx, slide, Object.assign({}, zone, lineZone), lineData, ctx);
+    });
+    drawGroupAccent(pptx, slide, zone, data.groupAccent);
+    return;
+  }
 
   const { drawContent } = require('./index');
   // Pictures placed by the shared placer reserve the caption band it sets.
@@ -269,10 +364,10 @@ function drawRow(pptx, slide, zone, data, ctx) {
   // exactly as they have always been.
   const equaliseTextCards =
     data.equaliseTextCards === true &&
-    items.length > 1 &&
+    (items.length > 1 || Boolean(data._textFitGroup)) &&
     items.every(function (item) { return item && item.type === 'text'; });
   const rowTextFitGroup = equaliseTextCards
-    ? fitGroupId(zone, 'row-text')
+    ? (data._textFitGroup || fitGroupId(zone, 'row-text'))
     : null;
 
   // A picture beside a filling text card used to make a shorter card than its
@@ -390,11 +485,9 @@ function measureRow(zone, data, ctx) {
   if (items.length === 0) return null;
 
   const { measureCompositionExtent } = require('./index');
-  const totalGap = GAP * (items.length - 1);
-  const itemW = (zone.w - totalGap) / items.length;
-  if (!(itemW > 0)) return null;
-
-  const widths = itemWidths(items, itemW, zone, ctx);
+  const lines = rowLines(items, zone);
+  const widths = rowWidths(zone, data, ctx);
+  if (widths.length !== items.length) return null;
 
   let tallest = 0;
   for (let i = 0; i < items.length; i += 1) {
@@ -409,7 +502,14 @@ function measureRow(zone, data, ctx) {
     tallest = Math.max(tallest, extent.h);
   }
 
-  return tallest > 0 ? { h: Math.min(tallest, zone.h) } : null;
+  if (!(tallest > 0)) return null;
+  return { h: Math.min(lineCountHeight(lines.length, tallest), zone.h) };
+}
+
+// How tall a row is when every line of it holds `tallest`: one line, or a
+// wrapped row's lines one above another with the row's gap between.
+function lineCountHeight(count, tallest) {
+  return count * tallest + GAP * (count - 1);
 }
 
 // The width each item of a row is drawn at, for a stack working out how tall
@@ -417,9 +517,22 @@ function measureRow(zone, data, ctx) {
 function rowWidths(zone, data, ctx) {
   const items = Array.isArray(data.items) ? data.items : [];
   if (items.length === 0) return [];
+  const lines = rowLines(items, zone);
+  if (lines.length > 1) {
+    const perLine = lines[0].length;
+    const cardW = (zone.w - GAP * (perLine - 1)) / perLine;
+    return items.map(function () { return cardW; });
+  }
   const itemW = (zone.w - GAP * (items.length - 1)) / items.length;
   if (!(itemW > 0)) return [];
   return itemWidths(items, itemW, zone, ctx);
 }
 
-module.exports = { drawRow, measureRow, rowWidths };
+// How many lines a row is drawn on (see rowLines), for a stack adding up the
+// height a wrapped row of cards needs.
+function rowLineCount(zone, data) {
+  const items = Array.isArray(data.items) ? data.items : [];
+  return items.length ? rowLines(items, zone).length : 1;
+}
+
+module.exports = { drawRow, measureRow, rowWidths, rowLineCount, lineCountHeight };

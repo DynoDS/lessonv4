@@ -169,7 +169,7 @@ test('teach-compare headingRole vocabulary turns both headings green, borders st
 
   const headings = slide.texts.filter((t) => t.value === 'complete' || t.value === 'incomplete');
   assert.equal(headings.length, 2);
-  headings.forEach((h) => assert.equal(h.options.color, '00B050'));
+  headings.forEach((h) => assert.equal(h.options.color, '007A3D'));
 
   const borders = slide.shapes
     .filter((s) => s.type === 'roundRect' && s.options.line && s.options.line.color)

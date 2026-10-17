@@ -236,7 +236,7 @@ test('multiple answer reveals reset after each line', () => {
     false
   );
   const greenRuns = runs.filter(
-    (run) => run.options && run.options.color === '00B050'
+    (run) => run.options && run.options.color === '007A3D'
   );
   assert.deepEqual(
     greenRuns.map((run) => run.text),
@@ -737,7 +737,7 @@ test('completed sort prints its placed items in answer green', () => {
   const items = texts.filter((entry) => /__sort-item-/.test(entry.objectName || ''));
   assert.equal(items.length, 4);
   assert.ok(
-    items.every((entry) => entry.color === '00B050'),
+    items.every((entry) => entry.color === '007A3D'),
     'the placed items are the revealed answers, so their words are answer green'
   );
   assert.ok(

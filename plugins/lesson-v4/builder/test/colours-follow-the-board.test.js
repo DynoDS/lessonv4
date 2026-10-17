@@ -110,8 +110,8 @@ test('a chip written {{word}} prints green without its braces, and the others ke
     chips: ['{{enamel}}', '{{dentine}}', 'because']
   });
   const chip = (label) => result.texts.find((entry) => entry.content === label);
-  assert.equal(chip('enamel').color, COLOURS.green);
-  assert.equal(chip('dentine').color, COLOURS.green);
+  assert.equal(chip('enamel').color, COLOURS.textGreen);
+  assert.equal(chip('dentine').color, COLOURS.textGreen);
   assert.equal(chip('because').color, COLOURS.body);
   assert.ok(!result.texts.some((entry) => String(entry.content).includes('{{')));
 });
@@ -259,7 +259,7 @@ test('a worked step that carries a mark stays purple, on a Teach slide and a fre
     const runs = drawn.texts.flatMap((entry) => (Array.isArray(entry.content) ? entry.content : []));
     const colourOf = (text) => runs.find((run) => run.text === text).options.color;
     assert.equal(colourOf('Sugar sits on the '), COLOURS.worked, where);
-    assert.equal(colourOf('enamel'), COLOURS.green, where);
+    assert.equal(colourOf('enamel'), COLOURS.textGreen, where);
     assert.equal(colourOf('Acid makes a '), COLOURS.worked, where);
     assert.equal(colourOf('hole'), COLOURS.worked, `${where}: a bold word in a worked step is purple too`);
   }
@@ -331,7 +331,7 @@ test('on the board a taught word prints plain inside a figure, and a caption set
   // The Venn's caption is board text through answer-text: its word stays green.
   assert.equal(venn.label, 'A {{Venn}} of shapes');
   const green = splitAnswerRuns(venn.label, false).find((run) => run.text === 'Venn');
-  assert.equal(green.options.color, COLOURS.green);
+  assert.equal(green.options.color, COLOURS.textGreen);
   // Words outside a figure keep their marks for the helper that draws them.
   assert.equal(text.value, 'The {{enamel}} protects the tooth.');
   // The build applies it once, to the lesson it both pre-renders and draws.

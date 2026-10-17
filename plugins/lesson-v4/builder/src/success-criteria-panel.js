@@ -12,7 +12,7 @@
 // "✓ Success Criteria" label, and the compact white cards the criteria ride
 // on, whichever route drew them.
 
-const { FONT, FIT } = require('./styles');
+const { FONT, FIT, COLOURS } = require('./styles');
 const { warn, withoutRecording } = require('./warnings');
 const { isMarkedList, markedListHeldAt18, markedListFloor } = require('./marked-criteria');
 const requireGlobal = require('./require-global');
@@ -27,7 +27,7 @@ const LINE        = '00B050';
 const LINE_W      = 1.5;
 const RADIUS      = 0.08;
 const LABEL_FONT  = 28;
-const LABEL_COLOR = '00B050';
+const LABEL_COLOR = COLOURS.textGreen;
 // The teacher's limit: the criteria support the work and never take more than
 // half the slide. Only a slide whose one job is the criteria may go further, or
 // a slide marked `workOnPaper`: the children do the task on paper and the board

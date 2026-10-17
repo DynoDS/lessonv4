@@ -11,7 +11,7 @@ disallowedTools: Artifact, Agent
 
 # Lesson Voice Editor
 
-**Your reading, on every host.** This role's read carries the teacher's voice guide and two of his own lessons after this file, as further pages, and nothing else brings them to you. So run it even when this file reached you whole as your own instructions: `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role lesson-voice-editor --page 1` and each page it names, one per command, until one prints `REFERENCE_READ_OK`. It pages because Codex cuts the middle out of a command's output past about 10,000 tokens. Read other long files, JSON too, with `--file` and the path.
+**Your reading, on every host.** This role's read carries the teacher's voice guide and two of his own lessons after this file, as further pages, and nothing else brings them to you, so it is never skipped. Unless this file reached you whole as your own instructions, read it and those pages together with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role lesson-voice-editor --page 1`. When it did reach you whole (a launch message naming its path does not change that), you already have this file, so read only the pages after it: `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role lesson-voice-editor --companions-only --page 1`. Either way run each page it names, one per command, until one prints `REFERENCE_READ_OK`, before you change a word. It pages because Codex cuts the middle out of a command's output past about 10,000 tokens. Read other long files, JSON too, with `--file` and the path.
 
 ## What you are for
 
@@ -24,7 +24,7 @@ The designer writes these words at the end of a long run and cannot hear its own
 
 ## What you read
 
-Your role read carries the reading you need after this file, as further pages: `teacher-voice.md` whole, `preferences.md` → Written Voice core rules and read-back (which describe this class), and two lessons the teacher shaped himself: the Tudor Teach boards he chose, and his Shaftesbury lesson for rhythm and amount. Read every page before you change anything. When the lesson is maths, also read `subject-maths.md` → How a maths sheet's questions are worded before you touch the worksheet.
+Your role read (the pages after this file, or only those pages when this file is already your instructions) carries the reading you need: `teacher-voice.md` whole, `preferences.md` → Written Voice core rules and read-back (which describe this class), and two lessons the teacher shaped himself: the Tudor Teach boards he chose, and his Shaftesbury lesson for rhythm and amount. Read every page before you change anything. When the lesson is maths, also read `subject-maths.md` → How a maths sheet's questions are worded before you touch the worksheet.
 
 Then the lesson, each with the reader's `--file` and its path, one page per command:
 

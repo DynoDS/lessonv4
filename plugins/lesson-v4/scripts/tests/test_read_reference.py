@@ -4,12 +4,14 @@ import contextlib
 import importlib.util
 import io
 import os
+import shutil
 import subprocess
 from pathlib import Path
 import sys
 import tempfile
 import unittest
 import unittest.mock
+import uuid
 
 SCRIPT = Path(__file__).resolve().parents[1] / "read-reference.py"
 spec = importlib.util.spec_from_file_location("lesson_reference_reader", SCRIPT)
@@ -346,6 +348,20 @@ class PagingTests(unittest.TestCase):
             self.assertIn(piece, out)
         self.assertNotIn("not this", out)
 
+    def test_the_voice_editor_reads_only_its_companions_when_it_has_its_file(self):
+        # On Claude Code the role file is the worker's instructions; reading it again
+        # cost about 8,000 tokens twice a lesson. The voice must still arrive whole.
+        (self.root / "agents" / "lesson-voice-editor.md").write_text("# Lesson Voice Editor\nedits the words\n", encoding="utf-8")
+        rc, whole, _ = self.run_main("--role", "lesson-voice-editor")
+        rc2, out, _ = self.run_main("--role", "lesson-voice-editor", "--companions-only")
+        self.assertEqual((rc, rc2), (0, 0))
+        self.assertIn("edits the words", whole)
+        self.assertNotIn("edits the words", out)
+        footer = lambda text: text.rsplit("REFERENCE_READ_OK", 1)[0].strip()
+        self.assertEqual(footer(whole.split("edits the words", 1)[1]), footer(out))
+        for piece in ("voice", "core", "read-back", "tudor boards", "shaftesbury lesson"):
+            self.assertIn(piece, out)
+
     def write_designer_guides(self):
         refs = self.root / "references"
         (refs / "preferences.md").write_text(
@@ -561,6 +577,45 @@ class SameCallTests(unittest.TestCase):
             for page in (1, 2):
                 rc, out = self.read(page)
                 self.assertEqual(rc, 0)
+
+    def throwaway_temp(self):
+        """A fresh per-command temp folder, as the Codex app gives each command since
+        0.162, with the last one gone, as the app deletes it when its command ends."""
+        local = self.root / "AppData" / "Local"
+        for old in (local / "Packages").glob("sandbox.*"):
+            shutil.rmtree(old)
+        folder = local / "Packages" / f"sandbox.{{{uuid.uuid4()}}}" / "AC" / "Temp"
+        folder.mkdir(parents=True)
+        return str(folder)
+
+    def test_a_codex_throwaway_temp_folder_does_not_wipe_the_record(self):
+        # Proved in the Codex app on 17 October 2026: page 3 printed beside page 2.
+        with unittest.mock.patch.object(reader.tempfile, "gettempdir", side_effect=self.throwaway_temp):
+            rc, first = self.read(1)
+            self.assertEqual(rc, 0)
+            self.assertNotIn("REFERENCE_READ_REFUSED", first)
+            rc, second = self.read(2)
+        self.assertEqual(rc, 3)
+        self.assertIn("REFERENCE_READ_REFUSED", second)
+        self.assertTrue((self.root / "AppData" / "Local" / "Temp" / "lesson-v4-reads" / "thread-1.log").exists())
+
+    def test_a_throwaway_temp_folder_with_no_lasting_one_beside_it_loses_the_guard_not_the_read(self):
+        local = self.root / "AppData" / "Local"
+        local.mkdir(parents=True)
+        (local / "Temp").write_text("not a folder", encoding="utf-8")
+        with unittest.mock.patch.object(reader.tempfile, "gettempdir", side_effect=self.throwaway_temp):
+            for page in (1, 2):
+                rc, out = self.read(page)
+                self.assertEqual(rc, 0, page)
+                self.assertIn("Rule", out)
+
+    def test_no_temp_folder_at_all_loses_the_guard_not_the_read(self):
+        missing = FileNotFoundError("No usable temporary directory found")
+        with unittest.mock.patch.object(reader.tempfile, "gettempdir", side_effect=missing):
+            for page in (1, 2):
+                rc, out = self.read(page)
+                self.assertEqual(rc, 0, page)
+                self.assertIn("Rule", out)
 
     def test_reads_started_together_print_at_most_one_page(self):
         # Real processes, as a code cell's parallel reads are.

@@ -155,6 +155,10 @@ def test_a_session_waits_for_its_own_workers_however_long_they_take():
     with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         batch_mod.start_session(Path(tmp), {"key": "a"}, "message", "note")
     assert (seen.get("env") or {}).get("CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS") == "0", seen.get("env")
+    # Without this, Claude Code copies every untracked file in the checkout
+    # (8 GB on 17 October 2026) before a session's first two commands, and the
+    # setup check that opens each lesson waited 20 seconds to 4 minutes for it.
+    assert (seen.get("env") or {}).get("CLAUDE_CODE_BASH_EDIT_DIFF") == "0", seen.get("env")
 
 
 # Keeping a set going. Lessons 28 to 32 (15 October 2026): the usage limit

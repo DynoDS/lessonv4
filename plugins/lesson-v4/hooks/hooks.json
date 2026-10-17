@@ -1,0 +1,16 @@
+{
+  "description": "Sets PYTHON_BASIC_REPL=1 for every shell command in a Claude Code session, so a Python 3.13 command given an empty script exits instead of freezing (scripts/session-env.js).",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/session-env.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

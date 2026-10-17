@@ -260,10 +260,11 @@ function drawText(pptx, slide, zone, data, ctx) {
   // as styled runs instead of literal asterisks and pipes. The block's own colour
   // is passed as the base so a coloured line (a blue question, a green prompt)
   // keeps that colour on its unmarked words.
-  slide.addText(presentationRuns(value, true, color, data), {
+  const bold = data.textWeight !== 'regular';
+  slide.addText(presentationRuns(value, bold, color, data), {
     x: zone.x + PAD + indent, y: zone.y + PAD + topInset,
     w: zone.w - 2 * PAD - indent - pictureSlotW, h: zone.h - 2 * PAD - topInset,
-    fontFace: FONT, fontSize: ceiling, bold: true,
+    fontFace: FONT, fontSize: ceiling, bold: bold,
     // The zone normally centres its text, which is the teacher's standard.
     // A zone that sets `valignTop` is one where two cards hold the same kind of
     // thing at different lengths and the pair has to be read line against line:

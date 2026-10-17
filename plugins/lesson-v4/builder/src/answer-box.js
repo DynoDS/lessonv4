@@ -125,7 +125,7 @@ function drawAnswerBox(pptx, slide, box, answer, revealed, options) {
     fontFace: FONT,
     fontSize: fontSize,
     bold: true,
-    color: COLOURS.green,
+    color: COLOURS.textGreen,
     align: 'center',
     valign: 'middle',
     margin: 0,

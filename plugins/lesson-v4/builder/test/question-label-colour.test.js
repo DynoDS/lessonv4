@@ -9,7 +9,7 @@ test('question labels stay purple while question and answer retain their roles',
     const runs = splitAnswerRuns(`${label} What is 2 + 3? ||5`, true, COLOURS.title);
     assert.equal(runs[0].options.color, COLOURS.questionLabel);
     assert.equal(runs[1].options.color, COLOURS.title);
-    assert.equal(runs.at(-1).options.color, COLOURS.green);
+    assert.equal(runs.at(-1).options.color, COLOURS.textGreen);
     assert.equal(runs.map(r => r.text).join(''), `${label} What is 2 + 3? 5`);
   }
 });

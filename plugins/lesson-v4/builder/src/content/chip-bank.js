@@ -213,7 +213,7 @@ function drawChipBank(pptx, slide, zone, data) {
       slide.addText(c.label, {
         x: chipX, y: rowY, w: c.w, h: chipH,
         fontFace: FONT, fontSize: chipFont, bold: true,
-        color: c.taught ? COLOURS.green : variant.text,
+        color: c.taught ? COLOURS.textGreen : variant.text,
         align: 'center', valign: 'middle', margin: 0, fit: FIT,
         objectName: growFitObjectName(chipTextGroup, CHIP_FONT_MAX, 'chip-' + c.label)
       });

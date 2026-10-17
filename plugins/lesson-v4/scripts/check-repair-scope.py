@@ -187,6 +187,7 @@ PRESENTATION_KEYS = {
     # green, the one colour that tells children something, is kept.
     "colorRole",
     "categoryColor",
+    "textWeight",
 }
 
 # How a word is DRAWN, as opposed to what the word is. Bold, question blue and
@@ -202,7 +203,7 @@ PRESENTATION_KEYS = {
 # without changing a letter. With the mark left in the string, adding or
 # removing it reads as the change of wording it amounts to.
 DRAWING_MARKS = re.compile(r"\*\*|\[\[|\]\]|<<|>>")
-GREEN = "00B050"
+GREENS = {"00B050", "007A3D"}
 GREEN_EMPHASIS_ROLES = {"vocabulary"}
 
 
@@ -654,9 +655,9 @@ class Census:
             if key == "parts" and is_width_split(child):
                 continue
             child_channel = channel_of(channel, key, child)
-            if key == "color" and isinstance(child, str):
+            if key in {"color", "colour"} and isinstance(child, str):
                 # A colour is how a line is drawn, unless it is green.
-                if child.strip().lstrip("#").upper() == GREEN:
+                if child.strip().lstrip("#").upper() in GREENS:
                     self._note_key("green", "a whole line", times, own, child_channel)
                 continue
             if key == "emphasis" and isinstance(child, list):

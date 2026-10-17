@@ -82,7 +82,8 @@ class SlideDecoratorRoleTests(unittest.TestCase):
             "check-optional-pictures.py",
             "OPTIONAL_PICTURE_PASS_OK",
             "--preview",
-            "scripts/render-pages.py",
+            # It renders through the one command that checks, draws and measures.
+            "scripts/preview-deck.py",
             "measure",
             "Slide decoration check: SLIDE_DECORATION_OK: [N] slides",
             "SLIDE_DECORATION_FAILED",
@@ -212,11 +213,15 @@ def test_the_decorator_measures_the_pages_it_rendered_on_every_run():
     science deck had two slides repaired after the designer measured, and the
     decorator placed every drawing against pages the deck no longer had."""
     role = (ROOT / "agents" / "slide-decorator.md").read_text(encoding="utf-8")
-    assert "Measure the pages you have just rendered, on every run." in role
-    assert "let the result replace the file that arrived" in role
+    assert "The pages you have just rendered are measured on every run." in role
+    assert "lets the result replace the file that arrived" in role
+    assert "Never skip the command to reuse what arrived." in role
     assert "If `slide-room.json` is not there" not in role
     assert "measure-slide-room.py" in role
     assert "--render-manifest" in role
+    # The warm-up is one command, and that command measures the pages it drew.
+    assert '"[PLUGIN_ROOT]/scripts/preview-deck.py"' in role
+    assert '--room-output "[WORKING_DIR]/slide-room.json"' in role
     # And the exception stays only for a machine that cannot render at all.
     assert "Only a run with no render route at all" in role
     # The orchestrator lets it write the file it is told to replace.

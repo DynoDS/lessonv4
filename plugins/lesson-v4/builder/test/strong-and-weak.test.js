@@ -129,7 +129,7 @@ test('the strong instance keeps its taught words green inside a black card', () 
   }), ctx());
   const green = slide.texts.some((t) => {
     const runs = Array.isArray(t.value) ? t.value : [];
-    return runs.some((r) => r.options && r.options.color === COLOURS.green);
+    return runs.some((r) => r.options && r.options.color === COLOURS.textGreen);
   });
   assert.ok(green, 'the taught word lost its vocabulary green');
 });

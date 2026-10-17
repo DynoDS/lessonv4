@@ -130,8 +130,8 @@ test('a marked answer prints green and its working stays black', () => {
     ]
   });
   const { COLOURS } = require('../src/styles');
-  assert.equal(texts.find((t) => t.content === '6').color, COLOURS.green);
-  assert.equal(texts.find((t) => t.content === 'yes').color, COLOURS.green);
+  assert.equal(texts.find((t) => t.content === '6').color, COLOURS.textGreen);
+  assert.equal(texts.find((t) => t.content === 'yes').color, COLOURS.textGreen);
   assert.equal(texts.find((t) => t.content === '1 + 1 + 4 =').color, COLOURS.body);
   assert.ok(!texts.some((t) => String(t.content).includes('||')), 'the marker printed');
 });

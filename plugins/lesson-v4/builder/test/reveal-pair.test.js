@@ -65,7 +65,7 @@ test('numbered-questions sizes its question slide on its own and keeps the pair 
   assert.equal(question.filter((shape) => /GROWFIT__revealpair-/.test(shape)).length, 0,
     'the question slide is not held to the answer slide size');
   assert.match(textOf(answer[answer.length - 1]), /twelve/);
-  assert.match(answer.join(''), /00B050/i, 'answer green is emitted');
+  assert.match(answer.join(''), /007A3D/i, 'answer green is emitted');
   assert.ok(answer.some((shape) => /GROWFIT__revealpair-/.test(shape)), 'the answer slide keeps the pair group');
 });
 
@@ -82,7 +82,7 @@ for (const [type, draw] of [
     assert.equal(question.length, answer.length);
     assert.deepEqual(question.map(geometry), answer.map(geometry));
     assert.match(textOf(answer[answer.length - 1]), /twelve/);
-    assert.match(answer.join(''), /00B050/i, 'answer green is emitted');
+    assert.match(answer.join(''), /007A3D/i, 'answer green is emitted');
     const fitted = question.filter((shape) => /GROWFIT__revealpair-/.test(shape));
     assert.equal(fitted.length, 4);
     assert.match(textOf(fitted[0]), /VII/, 'the paired fit name belongs to answer-bearing text');

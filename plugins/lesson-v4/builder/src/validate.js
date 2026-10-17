@@ -186,7 +186,7 @@ function validatePresentationFields(slide, slideNumber, errors) {
     const value = presentationText(owner);
     if (value == null) {
       errors.push(
-        `slide ${slideNumber}: colorRole/emphasis is attached to an object ` +
+        `slide ${slideNumber}: colorRole/emphasis/textWeight is attached to an object ` +
         `with no text or value string — presentation roles must style existing ` +
         `visible wording.`
       );
@@ -201,6 +201,7 @@ function validatePresentationFields(slide, slideNumber, errors) {
 
   forEachValue(slide, 'colorRole', (_value, owner) => check(owner));
   forEachValue(slide, 'emphasis', (_value, owner) => check(owner));
+  forEachValue(slide, 'textWeight', (_value, owner) => check(owner));
 
   // A step list draws one role, a worked example's purple (steps.js); any other
   // role on a step would print black without a word, so it is refused.

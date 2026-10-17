@@ -517,7 +517,12 @@ def start_session(output: Path, lesson: dict, message: str, note: str, resume_se
     # stops that worker after ten minutes unless told to wait. A lesson
     # designer runs longer than that, so without this a lesson "finishes"
     # mid-design with nothing made (15 October 2026).
-    extra["env"] = dict(os.environ, CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS="0")
+    # In auto mode Claude Code snapshots the checkout before a session's first
+    # commands so it can show what each one changed, and in this checkout that
+    # means reading every untracked file. Nobody watches a background session's
+    # changes, and the snapshot held each lesson's setup check for 20 seconds
+    # to 4 minutes (17 October 2026), so it is switched off here.
+    extra["env"] = dict(os.environ, CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS="0", CLAUDE_CODE_BASH_EDIT_DIFF="0")
     # The set's thread reaches the lesson through resolve-filing.py, which
     # writes it into filing.txt beside PREVIOUS_LESSON.
     if lesson.get("threadFile"):
@@ -885,10 +890,14 @@ def keep_once(output: Path) -> bool:
         if not batch:
             return False
         events = []
+        changed = []
         now = time.time()
         for lesson in batch["lessons"]:
             if lesson.get("status") in ("building", "paused"):
-                events += keep_lesson(output, batch, lesson, now)
+                news = keep_lesson(output, batch, lesson, now)
+                events += news
+                if any(not line.startswith("STEP ") for line in news):
+                    changed.append(lesson)
         still = active(batch)
         if events:
             events.append(summary_line(batch))
@@ -898,7 +907,27 @@ def keep_once(output: Path) -> bool:
         if events:
             with open(events_file(output), "a", encoding="utf-8") as fh:
                 fh.write("\n".join(events) + "\n")
-        return still
+    for lesson in changed:
+        write_run_record(output, lesson)
+    return still
+
+
+def write_run_record(output: Path, lesson: dict) -> None:
+    """Refresh the lesson's run record whenever its session finishes, pauses or stops.
+
+    The orchestrator writes it at delivery, but a session that dies part-way
+    never gets there, and that is the run an investigator most needs to see.
+    Outside the batch lock, and never allowed to stop the keeper.
+    """
+    folder = working_folder_for(output, lesson)
+    if folder is None:
+        return
+    try:
+        subprocess.run([sys.executable, str(Path(__file__).with_name("run-record.py")),
+                        "--working-dir", str(folder), "--host", "claude"],
+                       capture_output=True, timeout=120, check=False)
+    except Exception:  # a missing record is a gap to report, never a stopped set
+        pass
 
 
 def keep(args: list[str]) -> int:

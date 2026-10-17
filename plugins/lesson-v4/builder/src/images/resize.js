@@ -18,8 +18,10 @@ const MAX_DIMENSION = 1600;
 // is dead space on the board: the picture is sized to its file, so the padding
 // eats the room and the map itself renders smaller than the slide could show. The
 // teacher's own fix is to crop the white away so the picture can be bigger, and
-// this does the same thing once, centrally, so every surface that draws the photo
-// (slides, worksheets, the working wall, stick-in sheets) gets the cropped version.
+// this does the same thing once, centrally, before a slide build. Only the slides
+// read the cropped copy: worksheets, the working wall and stick-in sheets draw
+// the picture as it arrived. The slide is laid out by the copy's own shape
+// (measure.js), so the crop changes the picture's size and never its proportions.
 //
 // Only a near-WHITE border is taken, because that is a matte rather than content:
 // trimming any uniform edge would eat a real sky or a plain wall out of a
@@ -64,17 +66,38 @@ async function trimWhiteMatte(s, absolute, width, height) {
   }
 }
 
+// Is the copy the whole picture, only smaller? Resizing to fit 1600 pixels
+// rounds each side to a whole pixel, so "the same shape" allows a pixel.
+async function sameShape(s, copy, width, height) {
+  try {
+    const meta = await s(copy).metadata();
+    if (!meta.width || !meta.height) return false;
+    return Math.abs(meta.width / meta.height - width / height) <= 1.5 / Math.min(meta.width, meta.height);
+  } catch (err) {
+    return false;
+  }
+}
+
+// A copy with no picture to stand in for, or one the picture no longer needs, is
+// taken away: the slide would otherwise go on showing it.
+function removeCopy(cachePath) {
+  try { fs.rmSync(cachePath, { force: true }); } catch (err) { /* left for next time */ }
+}
+
 async function resizeIfNeeded(imagePath, lessonDir, keepFraming) {
   if (!imagePath) return;
   const local = normalizeLocalPath(imagePath);
   const base = normalizeLocalPath(lessonDir);
   const absolute = path.isAbsolute(local) ? local : path.join(base, local);
-  if (!fs.existsSync(absolute)) return;
 
   const relative = path.relative(base, absolute);
   if (relative.startsWith('..') || path.isAbsolute(relative)) return;
 
   const cachePath = path.join(base, '.resized', relative);
+  if (!fs.existsSync(absolute)) {
+    removeCopy(cachePath);
+    return;
+  }
   const s = getSharp();
 
   // Every sharp call gets the long-path form of the file. Node's own fs calls
@@ -85,22 +108,33 @@ async function resizeIfNeeded(imagePath, lessonDir, keepFraming) {
   const writable = longPathSafe(cachePath);
 
   try {
+    // A copy written after the picture was last saved was made from this
+    // picture. Publishing a picture always writes a new file, so a replaced
+    // picture is newer than any copy made from the one before it.
+    const fresh = fs.existsSync(cachePath) &&
+      fs.statSync(cachePath).mtimeMs >= fs.statSync(absolute).mtimeMs;
+
     const metadata = await s(readable).metadata();
     const width = metadata.width || 0;
     const height = metadata.height || 0;
+    const oversized = width > MAX_DIMENSION || height > MAX_DIMENSION;
 
     // A labelled diagram pins each dot to a percentage of its base image, so
     // re-cropping that image would slide every dot off the part it names. Those
-    // bases keep their framing and are only ever resized.
-    const trimmed = keepFraming ? null : await trimWhiteMatte(s, readable, width, height);
-    const oversized = width > MAX_DIMENSION || height > MAX_DIMENSION;
-    if (!trimmed && !oversized) return;
-
-    if (fs.existsSync(cachePath)) {
-      const srcStat = fs.statSync(absolute);
-      const cacheStat = fs.statSync(cachePath);
-      if (cacheStat.mtimeMs >= srcStat.mtimeMs) return;
+    // bases keep their framing and are only ever resized. A copy the same
+    // picture was given as a plain photo is trimmed, so it is replaced, however
+    // fresh it is.
+    if (keepFraming) {
+      if (!oversized) { removeCopy(cachePath); return; }
+      if (fresh && await sameShape(s, writable, width, height)) return;
+    } else if (fresh) {
+      // Trimming reads every pixel, and the answer for this picture is already
+      // on disk.
+      return;
     }
+
+    const trimmed = keepFraming ? null : await trimWhiteMatte(s, readable, width, height);
+    if (!trimmed && !oversized) { removeCopy(cachePath); return; }
 
     fs.mkdirSync(path.dirname(cachePath), { recursive: true });
     await s(trimmed || readable)

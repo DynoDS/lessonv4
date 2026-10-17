@@ -114,10 +114,10 @@ test('the reveal marker stays per line', () => {
     runs.map((run) => [run.text, run.options.color]),
     [
       ['Object: ', '000000'],
-      ['Hairdryer', '00B050'],
+      ['Hairdryer', '007A3D'],
       ['\n', '000000'],
       ['Power: ', '000000'],
-      ['Mains', '00B050'],
+      ['Mains', '007A3D'],
     ]
   );
 });
@@ -195,10 +195,10 @@ test('a leading reveal marker colours every paragraph of the answer', () => {
     runs.map((run) => run.text).join(''),
     'Sophie could have pitta for energy.\n\nPepper strips add vitamins.'
   );
-  assert.ok(runs.every((run) => run.options.color === '00B050'));
+  assert.ok(runs.every((run) => run.options.color === '007A3D'));
   // A single-line answer keeps rendering exactly as before.
   assert.deepEqual(
     splitAnswerRuns('||100', true, '000000'),
-    [{ text: '100', options: { color: '00B050', bold: true } }]
+    [{ text: '100', options: { color: '007A3D', bold: true } }]
   );
 });

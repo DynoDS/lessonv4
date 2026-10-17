@@ -44,42 +44,25 @@ Do not read the lesson design, the teacher's brief or the design review. The ped
 
 **Run the whole-deck pass against the rendered pages, not against the specification.** Render the settled deck first, so the pass has something to look at. Room is a physical fact about a drawn slide, and a specification cannot show it to you. A three-zone template reads as full in JSON whether its cards are packed to the margins or holding four words each, so a pass run over the file declines slides that turn out to be half white the moment anybody looks at them. That is not a resolve failure; it is asking the question in a place that has no answer.
 
-Copy `[WORKING_DIR]/lesson.json` to `[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]` and run exactly:
+Check, draw and measure the settled deck with one command. It copies `[WORKING_DIR]/lesson.json` to your candidate `[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]` and then runs, in this order and skipping none, the settled preview check, the render-route probe, the page render, the overview sheets and the room measurement:
 
 ```bash
-node "[PLUGIN_ROOT]/builder/scripts/check-slide-design.js" \
-  --preview --settled \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/preview-deck.py" --settled \
+  --copy-from "[WORKING_DIR]/lesson.json" \
+  --candidate "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]" \
   --photo-requirements "[PHOTO_REQUIREMENTS_PATH]" \
-  "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]"
+  --room-output "[WORKING_DIR]/slide-room.json"
 ```
 
-The command performs the real specification check and a real scratch build in a unique private directory, and prints `SLIDE_DESIGN_PREVIEW_DIR:` and `SLIDE_DESIGN_PREVIEW:` before `SLIDE_DESIGN_CHECK_OK: [N] slides`. Leave that directory where it is when you finish: it sits inside the run's working directory, which is kept, so deleting it tidies nothing, and the deletion is refused outright by some approval policies - which cost a friction line and a note in the teacher's report on every run for no gain. A settled deck passes. `--settled` prints a wording, title or layout fault the designer's round left as a note, never a failure: it is not yours to mend, and it never costs the deck its drawings. If the check still fails, the composition was not settled and the fault is not yours: return `SLIDE_DECORATION_FAILED` with every `BUILD_DIAGNOSTIC:` line verbatim and stop.
+It takes twenty to forty seconds and has finished only when its last line is `DECK_PREVIEW_DONE` or `DECK_PREVIEW_STOPPED`. Some hosts hand a command back after about ten seconds whatever it is doing, so output without either line is a command still running: wait for it, and read nothing in that early output as a result. Every step's own lines are printed as they come, so what follows reads them exactly as if you had run each one.
 
-**Unless the orchestrator launched you on a flagged deck.** A deck whose repair round did not clear still ships, its bad slides flagged for the teacher, and then it is settled: nothing further will change it. The orchestrator says so by giving you `FLAGGED_SLIDES:` with the numbers the build could not lay out. Run the pass over it as normal, with two differences: add `--flagged-slides "[FLAGGED_SLIDES]"` to every `--preview --settled` check you run, so the deck renders at all (a fault on a flagged slide then prints as a note, and a fault anywhere else still fails), and answer each flagged slide `slide-flagged`, which takes no drawing. Those slides ship blank with a note on them, so a drawing there lands on a page the teacher has already been told to check. Every other slide is judged exactly as it would be on a clean deck, because a fault that blanked two slides is not a reason to leave the other sixteen bare (21 September 2026: a Year 4 PSHE deck delivered sixteen good slides with no drawing on any of them).
+The check performs the real specification check and a real scratch build in a unique private directory, and prints `SLIDE_DESIGN_PREVIEW_DIR:` (`[PREVIEW_DIR]` below) and `SLIDE_DESIGN_PREVIEW:` (`[PREVIEW_PPTX]`) before `SLIDE_DESIGN_CHECK_OK: [N] slides`. Leave that directory where it is when you finish: it sits inside the run's working directory, which is kept, so deleting it tidies nothing, and the deletion is refused outright by some approval policies - which cost a friction line and a note in the teacher's report on every run for no gain. A settled deck passes. `--settled` prints a wording, title or layout fault the designer's round left as a note, never a failure: it is not yours to mend, and it never costs the deck its drawings. If the check still fails, the command stops there, the composition was not settled and the fault is not yours: return `SLIDE_DECORATION_FAILED` with every `BUILD_DIAGNOSTIC:` line verbatim and stop.
 
-Then render the preview pages exactly as the designer did:
+**Unless the orchestrator launched you on a flagged deck.** A deck whose repair round did not clear still ships, its bad slides flagged for the teacher, and then it is settled: nothing further will change it. The orchestrator says so by giving you `FLAGGED_SLIDES:` with the numbers the build could not lay out. Run the pass over it as normal, with two differences: add `--flagged-slides "[FLAGGED_SLIDES]"` to the command above and to every `--preview --settled` check you run, so the deck renders at all (a fault on a flagged slide then prints as a note, and a fault anywhere else still fails), and answer each flagged slide `slide-flagged`, which takes no drawing. Those slides ship blank with a note on them, so a drawing there lands on a page the teacher has already been told to check. Every other slide is judged exactly as it would be on a clean deck, because a fault that blanked two slides is not a reason to leave the other sixteen bare (21 September 2026: a Year 4 PSHE deck delivered sixteen good slides with no drawing on any of them).
 
-```bash
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/render-pages.py" \
-  --probe-route "[PREVIEW_DIR]/render-route.json"
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/render-pages.py" \
-  "[PREVIEW_PPTX]" \
-  "[PREVIEW_DIR]/render" \
-  --route-file "[PREVIEW_DIR]/render-route.json" \
-  --manifest "[PREVIEW_DIR]/render-manifest.json"
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/build-visual-consistency-overview.py" build \
-  --output-dir "[PREVIEW_DIR]/overview" \
-  --output-manifest "[PREVIEW_DIR]/overview-manifest.json" \
-  --manifest "Deck=[PREVIEW_DIR]/render-manifest.json"
-```
+Inspect the overview sheets, opening an individual page only where the overview cannot settle a slide; where the last line says the overview failed, open the page PNGs from `[PREVIEW_DIR]/render-manifest.json` in order. The pages are drawn when the render prints `RENDER_PAGES_OK`. Nothing could be drawn only when the finished render itself prints `VISUAL_ROUTE_UNVERIFIED` (the last line then says no pages could be drawn): record `Visual self-read: unavailable` in the completion report and run the pass on the specification and `slide-room.json` alone, because a missing render never stops the deck. A PowerPoint line from the probe is not that (LibreOffice draws the deck where PowerPoint cannot be reached), and nor is output that stops at `RENDER_PAGES_RUNNING`: drawing takes ten to twenty seconds and is still going, so wait for it to finish. A deck has reached the teacher unseen with every page already drawn beside it. A probe that stops the command with `RENDER_PROBE_BLOCKED` is not an answer either: run the command again with permission to start a child process.
 
-Inspect the overview sheets, opening an individual page only where the overview cannot settle a slide. The pages are drawn when the render prints `RENDER_PAGES_OK`. Nothing could be drawn only when the finished render itself prints `VISUAL_ROUTE_UNVERIFIED`: then record `Visual self-read: unavailable` in the completion report and run the pass on the specification and `slide-room.json` alone, because a missing render never stops the deck. A PowerPoint line from the probe is not that (LibreOffice draws the deck where PowerPoint cannot be reached), and nor is output that stops at `RENDER_PAGES_RUNNING`: drawing takes ten to twenty seconds and is still going, so wait for it to finish. A deck has reached the teacher unseen with every page already drawn beside it.
-
-**Measure the pages you have just rendered, on every run.** A `slide-room.json` normally arrives from the Slide Designer, and it describes the deck as it stood when the designer finished. A slide repaired after that leaves it describing pages that are no longer in the deck: on 7 October 2026 a Year 3 science deck had two slides repaired for a photograph that never arrived, the decorator placed its drawings against the older measurement, and the check at the end refused all of them as placed against space that had moved. The pages you have just drawn are the deck as it stands, so measure those and let the result replace the file that arrived. Where none arrived, this is the measurement: an unmeasured pass is where a whole geography deck came back with `full` on twelve slides and not one library search run.
-
-```bash
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/measure-slide-room.py" \n  --render-manifest "[PREVIEW_DIR]/render-manifest.json" \n  --lesson "[WORKING_DIR]/lesson.json" \n  --output "[WORKING_DIR]/slide-room.json"
-```
+**The pages you have just rendered are measured on every run.** A `slide-room.json` normally arrives from the Slide Designer, and it describes the deck as it stood when the designer finished. A slide repaired after that leaves it describing pages that are no longer in the deck: on 7 October 2026 a Year 3 science deck had two slides repaired for a photograph that never arrived, the decorator placed its drawings against the older measurement, and the check at the end refused all of them as placed against space that had moved. The pages you have just drawn are the deck as it stands, so the command's last step measures those with `measure-slide-room.py --render-manifest "[PREVIEW_DIR]/render-manifest.json"` and lets the result replace the file that arrived. Where none arrived, this is the measurement: an unmeasured pass is where a whole geography deck came back with `full` on twelve slides and not one library search run. Never skip the command to reuse what arrived. If the last line says the room measurement failed, say so in your report.
 
 Only a run with no render route at all works from the file it was handed, or, where there is none, answers `full` or `competes` from the specification, and it says so in its report.
 
@@ -129,24 +112,24 @@ Follow the exact local-library search, preview, choice, publication and failure 
 
 ## Confirm the layer landed where you put it
 
-Rerun the complete `--preview` check on the candidate. The scratch build now draws the optional layer, so this render is the first and only sight anybody gets of a drawing in position, and it is the reason this step is not optional.
-
-The check prints `SLIDE_DESIGN_OPTIONAL_PICTURES: [D] educational-svg, [E] emoji` before its marker. That is the optional visual layer as it actually stands in the candidate, by route. An all-emoji result is valid after the prescribed search and fallback route; report the library result below.
-
-Then check the pass record against the deck and the measurement:
+Rerun the complete `--preview` check on the candidate, check the pass record against the deck and the measurement, and draw the pages, with one command (adding `--flagged-slides "[FLAGGED_SLIDES]"` on a flagged deck):
 
 ```bash
-"[PYTHON]" "[PLUGIN_ROOT]/scripts/check-optional-pictures.py" \
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/preview-deck.py" --settled \
+  --candidate "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]" \
+  --photo-requirements "[PHOTO_REQUIREMENTS_PATH]" \
   --pass-record "[WORKING_DIR]/optional-picture-pass.json" \
-  --lesson "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]" \
   --room "[WORKING_DIR]/slide-room.json" \
-  --pptx "[PREVIEW_PPTX]" \
   --library-root "[EDUCATIONAL_SVG_ROOT]"
 ```
 
-`[PREVIEW_PPTX]` is the deck the confirming `--preview` check just built, so this check sees what hides each drawing even when nothing could render. Require `OPTIONAL_PICTURE_PASS_OK`, and read the `OPTIONAL_PICTURE_VARIETY` line it prints beside it: that is the deck counted by what the drawings are, and a deck placing twenty drawings out of three different ones is the cycle described above, with the pool still open to mend it. Drop `--library-root` only when the resolver returned `EDUCATIONAL_SVG_UNAVAILABLE`, and `--room` only when no measurement exists. On a flagged deck add `--flagged-slides "[FLAGGED_SLIDES]"`: without it the check refuses `slide-flagged`, because nothing else can tell a slide that would not draw from a slide somebody declined. A failure names the slide and what is wrong with its line: a slide declined as full or competing that the render says has clear space is the common one, and the repair is to use that space, not to reword the record.
+It runs, in this order, the settled preview check, `check-optional-pictures.py` on the candidate and the deck that check just built (`--pptx "[PREVIEW_PPTX]"`), and then the probe, the render and the overview, and stops at the first that fails, so a refused record is never drawn. Leave out `--copy-from`, which would put the settled deck back over your drawings, and `--room-output`: the drawings are on the page by now, and room measured round them would read the deck's own decoration as content. Wait for the last line exactly as before. The check prints a fresh `SLIDE_DESIGN_PREVIEW_DIR:` and `SLIDE_DESIGN_PREVIEW:`, and those are the `[PREVIEW_DIR]` and `[PREVIEW_PPTX]` for everything after it. The scratch build now draws the optional layer, so this render is the first and only sight anybody gets of a drawing in position, and it is the reason this step is not optional.
 
-Render the new preview with the same three commands as before and look at every slide carrying a drawing. Judge one thing: did anything land on something a child reads.
+The check prints `SLIDE_DESIGN_OPTIONAL_PICTURES: [D] educational-svg, [E] emoji` before its marker. That is the optional visual layer as it actually stands in the candidate, by route. An all-emoji result is valid after the prescribed search and fallback route; report the library result below.
+
+The optional-picture check reads `[PREVIEW_PPTX]`, so it sees what hides each drawing even when nothing could render. Require `OPTIONAL_PICTURE_PASS_OK`, and read the `OPTIONAL_PICTURE_VARIETY` line it prints beside it: that is the deck counted by what the drawings are, and a deck placing twenty drawings out of three different ones is the cycle described above, with the pool still open to mend it. Drop `--library-root` only when the resolver returned `EDUCATIONAL_SVG_UNAVAILABLE`, and `--room` only when no measurement exists. On a flagged deck add `--flagged-slides "[FLAGGED_SLIDES]"`: without it the check refuses `slide-flagged`, because nothing else can tell a slide that would not draw from a slide somebody declined. A failure names the slide and what is wrong with its line: a slide declined as full or competing that the render says has clear space is the common one, and the repair is to use that space, not to reword the record.
+
+The same command drew the new preview's pages; look at every slide carrying a drawing. Judge one thing: did anything land on something a child reads.
 
 **Overlap by itself is never the fault.** A drawing deliberately overlapping a card is the layer working as designed; the fault is only ever that something covers a word, a number, a table cell or part of a figure a child reads.
 
@@ -156,7 +139,7 @@ Judge legibility rather than taste. Relevance, the choice of drawing itself, cos
 
 When a drawing does cover something, make the smallest P3-only repair: move it, make it smaller, fade it further, or remove it. Removal is always valid, because the layer carries no teaching. Do not reach past the decoration into the composition beneath it for a fault the decoration caused, and do not reopen a composition the designer settled because you are looking at it a second time.
 
-You may make no more than two such repair passes, each rerunning the complete `--preview` check and the optional-picture check. A drawing still covering a word after the second is removed.
+You may make no more than two such repair passes, each rerunning the command above, which runs the check, the optional-picture check and the render. A drawing still covering a word after the second is removed.
 
 When the deterministic check, the optional-picture check and the visual look all pass:
 

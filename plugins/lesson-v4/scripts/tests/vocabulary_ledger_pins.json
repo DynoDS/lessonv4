@@ -4914,7 +4914,7 @@
    "present": [
     {
      "file": "references/teacher-slide-visual-profile.md",
-     "text": "Vocabulary green marks every occurrence of a taught term wherever a child reads it, so the term wins and the line loses: choose a different line for the orange, and if every line carries a term, leave them all black and let layout do it.",
+     "text": "Inside a key-line span, a taught vocabulary word still prints green and bold",
      "section": {
       "heading": "## Semantic colour",
       "occurrence": 0,
