@@ -25,3 +25,10 @@ __pycache__/
 /add_lesson_numbers.py
 /fix_lesson_number_column.py
 /inspect_docx.py
+
+# The 7 October 2026 stress test's lessons and picture downloads (2.5 GB) are
+# evidence for this computer, not part of the plugin. Its ledger and report
+# stay saved; release 4.2.319 swept the rest in and GitHub refused it.
+/stress-test-2026-10-07/*
+!/stress-test-2026-10-07/ledger.md
+!/stress-test-2026-10-07/report.html
