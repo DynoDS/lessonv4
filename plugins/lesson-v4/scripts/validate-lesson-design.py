@@ -249,7 +249,17 @@ UNIT_FIELDS = {
 # `use` and still reads; it is asked for one only on a beat whose expected
 # answer the teaching just before it had mostly said already
 # (`validate_each_do_says_what_it_brings`).
-UNIT_OPTIONAL_FIELDS = {"taskStructure", "minutes", "levels", "use"}
+UNIT_OPTIONAL_FIELDS = {"taskStructure", "minutes", "levels", "use", "seesHappening"}
+
+# What a beat that explains how something happens shows the class happening
+# (Daniel, 18 October 2026: children look at the picture first while the words
+# are read, so the picture has to show what the words explain). The rule was
+# read by every designer in five test runs and landed unaided once in three,
+# because the choice was never written down where anything could check it.
+# Optional so a saved design from before that day still reads; the scaffold
+# writes `[]` on every beat.
+SEES_HAPPENING_FIELDS = {"see", "photoRef", "representationRef", "standInPhotoRef"}
+SHOWS_HAPPENING_PREFIX = "Shows it happening:"
 
 # Every beat where children do something is planned at the levels it sensibly
 # has (Daniel, 1 October 2026: "all do beats. There should be a decision"):
@@ -1813,6 +1823,106 @@ def validate_representation_refs(
     return refs
 
 
+def validate_sees_happening_shape(
+    raw: Any,
+    path: str,
+    *,
+    unit_photo_refs: set[str],
+    unit_representation_refs: list[dict[str, Any]],
+    photo_ids: set[str],
+) -> None:
+    """One beat's `seesHappening` lines: what the class sees happening, and
+    which of this beat's own pictures shows it."""
+    entries = expect_list(raw, path)
+    unit_reps = {(ref["ref"], ref["configuration"]) for ref in unit_representation_refs}
+    for index, raw_entry in enumerate(entries):
+        entry_path = f"{path}[{index}]"
+        entry = expect_dict(raw_entry, entry_path)
+        expect_exact_keys(entry, SEES_HAPPENING_FIELDS, SEES_HAPPENING_FIELDS, entry_path)
+        expect_string(entry["see"], f"{entry_path}.see")
+        photo_ref = entry["photoRef"]
+        rep_ref = entry["representationRef"]
+        expect(
+            (photo_ref is None) != (rep_ref is None),
+            f"{entry_path} names exactly one picture: a photoRef or a representationRef, "
+            "the one that shows this happening",
+        )
+        if photo_ref is not None:
+            expect_string(photo_ref, f"{entry_path}.photoRef")
+            expect(
+                photo_ref in unit_photo_refs,
+                f"{entry_path}.photoRef must also appear in this beat's photoRefs: {photo_ref}",
+            )
+        else:
+            rep = expect_dict(rep_ref, f"{entry_path}.representationRef")
+            expect_exact_keys(rep, {"ref", "configuration"}, {"ref", "configuration"}, f"{entry_path}.representationRef")
+            expect(
+                (rep["ref"], rep["configuration"]) in unit_reps,
+                f"{entry_path}.representationRef must be one of this beat's representationRefs: "
+                f"{rep['ref']}/{rep['configuration']}",
+            )
+        stand_in = entry["standInPhotoRef"]
+        if stand_in is not None:
+            expect_string(stand_in, f"{entry_path}.standInPhotoRef")
+            expect(
+                photo_ref is not None,
+                f"{entry_path}.standInPhotoRef is only for a made or searched picture; "
+                "a drawn helper always arrives, so it needs no stand-in",
+            )
+            expect(stand_in in photo_ids, f"{entry_path}.standInPhotoRef names no photo requirement: {stand_in}")
+            expect(stand_in != photo_ref, f"{entry_path}.standInPhotoRef must be a different picture from photoRef")
+
+
+def validate_sees_happening_has_its_own_picture(
+    sequence: list[dict[str, Any]],
+    photo_by_id: dict[str, dict[str, Any]],
+) -> None:
+    """A beat that explains how something happens gets its own picture of it.
+
+    The second Year 4 digestion run (18 October 2026) put one labelled diagram
+    on every Teach board, "gaining a label each time", and the slides that said
+    the oesophagus squeezes food down and the stomach churns it showed a
+    diagram of where those parts are. The first food chains run put the sunlit
+    grass photograph from the slide before on the slide explaining how grass
+    makes its food. Both pictures had already been used for something else.
+    """
+    earlier_photos: set[str] = set()
+    earlier_reps: set[str] = set()
+    for index, unit in enumerate(sequence):
+        path = f"teachingSequence[{index}].seesHappening"
+        for entry_index, entry in enumerate(unit.get("seesHappening") or []):
+            entry_path = f"{path}[{entry_index}]"
+            photo_ref = entry["photoRef"]
+            if photo_ref is not None:
+                expect(
+                    photo_ref not in earlier_photos,
+                    f"{entry_path}.photoRef {photo_ref} is already on an earlier beat, so it was "
+                    "chosen for something else. A beat that explains how something happens gets "
+                    "its own picture of it happening",
+                )
+                photo = photo_by_id.get(photo_ref) or {}
+                constraint = photo.get("pedagogical_constraint")
+                expect(
+                    isinstance(constraint, str) and constraint.startswith(SHOWS_HAPPENING_PREFIX),
+                    f"{photo_ref}.pedagogical_constraint must begin '{SHOWS_HAPPENING_PREFIX}' and "
+                    f"say what the class sees happening, because {entry_path} names it: the picture "
+                    "search and the picture maker see only this object",
+                )
+            else:
+                # Judged by the whole drawing, not one configuration of it:
+                # digestion's diagram gained a label per slide, so each slide
+                # used a different configuration of the same picture.
+                rep_id = entry["representationRef"]["ref"]
+                expect(
+                    rep_id not in earlier_reps,
+                    f"{entry_path}.representationRef {rep_id} is already on an earlier beat (in any "
+                    "configuration), so it was chosen for something else. A beat that explains how "
+                    "something happens gets its own picture of it happening",
+                )
+        earlier_photos |= set(unit.get("photoRefs") or [])
+        earlier_reps |= {ref["ref"] for ref in unit.get("representationRefs") or []}
+
+
 def validate_takeaway(raw: Any, path: str, sticky_ids: set[str]) -> None:
     # Null is the usual Teach case: the headline is the landed sentence, and a
     # slide lands its sentence once (`validate_teach_says_it_once`).
@@ -2996,6 +3106,14 @@ def validate_source_unit(
             "here and the one move that answers it, at the moment it shows",
         )
     photo_refs = validate_ref_list(unit["photoRefs"], f"{path}.photoRefs", photo_ids)
+    if "seesHappening" in unit:
+        validate_sees_happening_shape(
+            unit["seesHappening"],
+            f"{path}.seesHappening",
+            unit_photo_refs=set(photo_refs),
+            unit_representation_refs=representation_refs,
+            photo_ids=photo_ids,
+        )
 
     # A launch that shows a picture, diagram or helper names one this beat
     # already carries, so the slide designer resolves it the way it resolves
@@ -3894,6 +4012,16 @@ def validate_photo_contract_v2(
             expect(type(photo["essential"]) is bool, f"{path}.essential must be boolean")
             filename = photo["filename"]
             expect(_photo_filename_safe(filename), f"{path}.filename is unsafe")
+            # Every picture name is folder/name, the form every slide, sheet and
+            # wall example uses. A Year 3 shadows design (18 October 2026) wrote
+            # six bare names; the slide designer, which had only ever seen
+            # `unsplash/...`, put that folder in front of each, and the first
+            # build drew six grey boxes. One form means nothing has to guess.
+            expect(
+                isinstance(filename, str) and filename.count("/") == 1 and not filename.startswith("/"),
+                f"{path}.filename must be one folder and a name, such as `unsplash/torch-beam.jpg`: "
+                f"every resource reads it in that form, so a bare `{filename}` is guessed at downstream",
+            )
             expect(filename not in by_filename, f"duplicate photo filename: {filename}")
             by_filename[filename] = photo
             acquisition = photo["acquisition_mode"]
@@ -4512,6 +4640,8 @@ def run_design_checks(
         "a sequence where every beat unlocks nothing has no dependency in it",
     )
 
+    with faults.section():
+        validate_sees_happening_has_its_own_picture(sequence, photo_by_id)
     with faults.section():
         validate_route_sequence(structure, sequence, concept_items)
     with faults.section():

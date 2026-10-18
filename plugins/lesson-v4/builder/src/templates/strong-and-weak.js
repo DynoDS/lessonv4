@@ -4,6 +4,7 @@ const { FONT, FIT, CARD, COLOURS } = require('../styles');
 const { bodyZone } = require('../layout');
 const { drawHeader } = require('../headers');
 const { drawContent, measureContentExtent } = require('../content');
+const { snugCriteriaWidth } = require('../criteria-width');
 
 // The launch's good instance beside the weak one.
 //
@@ -143,9 +144,49 @@ function drawVerdictCard(pptx, slide, card, opts, ctx) {
   }
 }
 
+// The unit's success criteria, when the slide carries them in `criteria`.
+//
+// The model is the first worked example of the task, so the criteria are on the
+// board from here (slide-success-criteria.md). Every sound deck of 17 October
+// 2026 showed this pair with no criteria and drew them only on the writing
+// slide, because this template had nowhere to put them. They stand down the
+// right, where the panel stands on every task slide, as wide as their words
+// need, and the pair takes the rest. The teacher, shown the ruler and triangle
+// slides both ways, chose this ("the after way you did it is fine", 17 October
+// 2026), knowing the pair's words come out smaller. The pair stays side by
+// side: stacked one above the other beside the panel was tried and fitted
+// less. A model too long for its half of what is left is refused by the text
+// fit like any other overload, for whoever owns its wording.
+const CRITERIA_W   = 4.60;
+const CRITERIA_GAP = 0.30;
+
+function criteriaPanel(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  if (value.type === 'sc-panel') return value;
+  if (value.type === 'steps' || value.type === 'table') return { type: 'sc-panel', content: value };
+  throw new Error(
+    `strong-and-weak: "criteria" takes an "sc-panel", or its "steps" or "table"; got "${value.type}".`
+  );
+}
+
+function placeCriteria(pptx, slide, bz, panel, ctx) {
+  const zone = { x: bz.x + bz.w - CRITERIA_W, y: bz.y, w: CRITERIA_W, h: bz.h };
+  const content = panel.content || panel.criteria;
+  if (content && content.type === 'steps') {
+    const draw = (p, s, z) => drawContent(p, s, z, panel, ctx);
+    const w = snugCriteriaWidth(zone, panel, draw);
+    zone.x += zone.w - w;
+    zone.w = w;
+  }
+  drawContent(pptx, slide, zone, panel, ctx);
+  return Object.assign({}, bz, { w: zone.x - CRITERIA_GAP - bz.x });
+}
+
 function drawStrongAndWeak(pptx, slide, data, ctx) {
   drawHeader(slide, data, ctx);
-  const bz = bodyZone(data.headerStyle, data);
+  const body = bodyZone(data.headerStyle, data);
+  const panel = criteriaPanel(data.criteria);
+  const bz = panel ? placeCriteria(pptx, slide, body, panel, ctx) : body;
 
   const hasEstablished = Boolean(data.established);
   const hasDifference = Boolean(data.difference);
@@ -185,10 +226,10 @@ function drawStrongAndWeak(pptx, slide, data, ctx) {
   // A pair that does not fill its band sits centred in it rather than pinned to
   // the top with the rest of the slide empty underneath.
   const cardsTop = cardsY + Math.max(0, (cardsH - cardsDrawnH) / 2);
+  const strongBox = { x: bz.x, y: cardsTop, w: cardW, h: cardsDrawnH };
+  const weakBox = { x: bz.x + cardW + CARD_GAP, y: cardsTop, w: cardW, h: cardsDrawnH };
 
-  drawVerdictCard(pptx, slide, {
-    x: bz.x, y: cardsTop, w: cardW, h: cardsDrawnH
-  }, {
+  drawVerdictCard(pptx, slide, strongBox, {
     heading: data.strongHeading,
     content: strongContent,
     // The card's edge is green and its words stay black, so the taught words
@@ -199,9 +240,7 @@ function drawStrongAndWeak(pptx, slide, data, ctx) {
     strokes: TICK_STROKES
   }, ctx);
 
-  drawVerdictCard(pptx, slide, {
-    x: bz.x + cardW + CARD_GAP, y: cardsTop, w: cardW, h: cardsDrawnH
-  }, {
+  drawVerdictCard(pptx, slide, weakBox, {
     heading: data.weakHeading,
     content: weakContent,
     seam: COLOURS.problem,

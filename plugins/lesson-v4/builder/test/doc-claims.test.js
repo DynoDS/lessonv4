@@ -861,10 +861,16 @@ test("photograph fit is decided before build and checked again on final resource
   );
   // The final resource review was retired too (13 September 2026).
   assert.ok(!ORCHESTRATOR_MD.includes("FINAL RESOURCE REVIEW"), "the final resource review is back");
+  // S1 (17 Oct 2026): photograph fit is written once, in the playbook the
+  // designer reads in full (and the focused repair reads by trigger).
   for (const token of [
     "Under `contain`, the whole photograph stays visible at its natural proportions",
     "a centred crop fills the frame",
-    "The fit decision belongs here, since nothing reviews the delivered pictures afterwards",
+    "The fit decision belongs here, since nothing reviews the delivered pictures afterwards"
+  ]) {
+    assert.ok(PLAYBOOK_MD.includes(token), `slide-composition-playbook.md is missing: ${token}`);
+  }
+  for (const token of [
     "Never place several photographs above one combined answer strip"
   ]) {
     assert.ok(

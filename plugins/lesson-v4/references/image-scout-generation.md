@@ -25,10 +25,10 @@ Use the host's built-in OpenAI image generation route. Do not use an API key, Po
 On Claude Code, which has no image tool of its own, the built-in route is Codex's, reached through the bridge. The assignment is only marked able to generate there when the compiler found a signed-in Codex. Make each call, after its reservation, as:
 
 ```
-"[PYTHON]" "<PLUGIN_ROOT>/scripts/codex-imagegen.py" generate --prompt-file <the reserved prompt file> --run-dir <WORK_ROOT>/codex/<entry>-a<attempt> [--base-image <staged picture to edit>]
+"[PYTHON]" "<PLUGIN_ROOT>/scripts/codex-imagegen.py" generate --prompt-file <the reserved prompt file> --run-dir <WORK_ROOT>/codex [--base-image <staged picture to edit>]
 ```
 
-It takes about a minute. On success its answer names `host_file`: pass exactly that to `record-generated --host-file`. A failed answer generated nothing usable, so it is a call that returned no image (below). Do not run Codex any other way, and on a host with its own image tool never use the bridge.
+It takes about a minute, and each call makes its own folder inside `--run-dir`, so calls made together keep separate records. On success its answer names `host_file`: pass exactly that to `record-generated --host-file`. A failed answer generated nothing usable, so it is a call that returned no image (below). Do not run Codex any other way, and on a host with its own image tool never use the bridge.
 
 The per-filename lifetime is at most two ImageGen calls. An interrupted call or returned-without-output call remains consumed. Never reset the ledger.
 
@@ -88,6 +88,8 @@ Prefer an edit when the first image is a good base. Otherwise write one correcti
 Review authorised correction outputs together when there is more than one. There is never a third call.
 
 Do not spend a second call after a fundamental miss merely because one remains.
+
+**A picture of something happening gets its second call as the plainest version.** When the entry's pedagogical constraint begins `Shows it happening:` and the first call returned nothing or was refused (the recovery call), or came back a near miss or misdirected, the second call is a fresh prompt for a simple flat drawing on a plain white background: only the things in MUST SHOW, drawn plainly, with clear arrows for what moves, and no scenery, texture or people beyond what MUST SHOW names. Keep every MUST SHOW item and the text rule. A teacher can explain from a plain drawing with arrows; without it the slide falls back to the lesson's plain picture of the thing (the teacher, 18 October 2026). A fundamental miss still ends the picture, as above.
 
 ## Capability unavailable
 

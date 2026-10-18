@@ -174,6 +174,25 @@ Asked how long was left after two days, he agreed ("y") to finish sooner this wa
 | 9 | Slide, worksheet, wall and adaptation designers | Waiting: listed after topic 8 changes, since 6 to 8 move text out of these files | Carried from topic 8 (24 Sept): speaker pictures may be made smaller wherever a slide needs the room. Carried from 7A's first check (26 Sept): the wall preferences' reason "the wall stops being a wall and becomes a poster" (PF-B77) clashes with the wall visual language's L31, which makes the display poster the wall's model; kept word for word until he decides. Parked from vocabulary: the wall's two-sheet arithmetic (decision 14), retire word-grid chip cards (15), split a vocabulary slide whose pictures do not fit (17), one list of when a definition may run to two sentences (18). |
 | 10 | The make-lesson playbook | List built and checked 24 Sept (`2026-09-23-playbook-ledger.md`, 452 rows); all answered 24 Sept (his words in the ledger): full designer for a repair needing new words, the template editor asks before pushing, no watching line, log for engine faults only, wall and stick-ins ship flagged, feedback edits in place, four run faults as their own release | At its byte cap, blocking Part D of `2026-09-22-six-run-mechanical-repairs.md`. Carried from 7A (26 Sept) to 10B: the decorator is told to preview with `--deliver-flagged`, but the slide check rejects that flag, so a flagged deck gets no drawings. Carried from the reviewer release (26 Sept) to 10B: the run report check passes COMPLETE while the last design review still says REDESIGN REQUIRED, when its findings were not carried into the report; a run whose last review still wants a redesign must say so at the top of his report and not end complete. |
 
+## Restart on 4.2.325 (17 October 2026)
+
+He asked to finish the streamline from today's files (his brief:
+`2026-10-17-finish-streamline-prompt.md`). The table above describes 26
+September; its ledgers are only a check that nothing they found is missed, never
+the list a fold is built from, because his rulings since then are in none of
+them. Measurements: `2026-10-17-streamline-measure.md`. Each piece gets its list
+from today's files, one fresh check of the list, all its decisions in one
+message, the change, two fresh old-against-new checks and every suite.
+
+| Piece | What | State |
+|---|---|---|
+| S1 | Slide designer's own file, its composition playbook and visual profile | He said go (17 Oct). List built: `2026-10-17-s1-ledger.md` (667 rows, 137 with a fate, quotes checked), from `streamline-tools/s1-change/` (`s1_skeleton.py`, `s1_annotations.py`, `s1_render.py`). Fresh list check done (`streamline-tools/s1-list-check.md`, 25 findings, verified and folded in by `s1_revisions.py`). Fourteen decisions; he answered "Yes to all" (17 Oct, recorded in `2026-10-17-s1-decisions.md` with what each said). Built uncommitted, not installed: `s1_apply.py` (from `s1-change/before/`), `s1_repin.py` (37 earlier pins), `s1_tests.py` (11 test expectations), `s1_mapping.py` (new pins `scripts/tests/s1_slide_designer_ledger_pins.json`, new test `test_s1_slide_designer_ledger_is_kept.py`, mapping `2026-10-17-s1-mapping.md`). Files 191,068 to 179,964 bytes (11.1 KB less). All suites green (Python 3,036). Two old-against-new checks running (`s1-change-check-a.md`, `-b.md`). No version bump or build-log entry yet: ask him before a release |
+| S2 | Template rulebook: start-up sections, then stories and retired text in the helper entries | Proposed |
+| S3 | The slide parts of preferences and the slide designer's conditional references | Proposed; includes the routing question on Slide Philosophy |
+| S4 | Lesson designer | Proposed |
+| S5 | Worksheet and adaptation designers | Proposed |
+| S6 | Reviewer, wall designer, voice editor, decorator, orchestrator | Proposed |
+
 ## What the rounds have taught
 
 - From the success-criteria and fit releases (4.2.288, 4.2.289), ten checks in all:
@@ -241,4 +260,23 @@ Asked how long was left after two days, he agreed ("y") to finish sooner this wa
   project folder: installing a new version (`codex plugin add
   lesson-v4@lessonv4`) switches all his Codex lessons to it, and a rerun
   overwrites the delivered deck on his drive, so copy it first and ask him.
+- Measure repeats per reader, not per file: the helper catalogue repeats its
+  boilerplate in every entry, but a worker reads one entry at a time, so those
+  are not repeats to the reader and folding them can leave an entry incomplete
+  (17 October). Word-for-word repeats were 2.3% of the slide designer's reading;
+  the true repeats are the same rule in different words.
+- Choose a fold's home by who else reads it, not only by topic: the focused
+  slide repair reads the playbook and profile by trigger and the role only as a
+  last resort, so a rule folded into the role leaves the repair's reach. And
+  several tests name an earlier deliberate placement ("the core keeps its
+  execution cue", "the profile is the only copy left", "the playbook keeps the
+  cue"): a fold against one is his decision, not a pin to move quietly (S1 list
+  check, 17 October).
+- The slide designer's three files use plain LF line endings, not Windows ones;
+  `grep -c $'\r$'` in this Bash miscounts. Read raw bytes and keep whatever a file
+  has. Write a change script as edits keyed to ledger rows, each finding its
+  paragraph by its exact words from a snapshot, so it can be replayed from the
+  snapshot after every fix (S1, `s1-change/s1_apply.py`).
+- Rebuild the list of broken pins from the restored pin files before every pin
+  move; a list built after a half-run is short and the move leaves pins behind.
 - `run-all-suites.sh` prints a summary for each suite but does not stop or aggregate failures; its final `echo` can return success even after a suite fails. Confirm each suite's final result, and let the long Python suite finish in the foreground before accepting the run.

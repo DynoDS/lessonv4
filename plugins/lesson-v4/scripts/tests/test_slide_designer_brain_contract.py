@@ -165,7 +165,13 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
             "You make no pedagogical decisions",
             "Do not read the teacher's original brief",
             "when `pupilInstruction` is null",
-            "must not add a new task, concept, phase or pedagogical decision",
+        )
+        # S1 (17 Oct 2026): the narrow wording exception is written once, in the
+        # playbook's section 3, with the role's stricter words carried into it.
+        self.assert_tokens(
+            self.playbook,
+            "only when it is necessary to operate a source-defined surface",
+            "add a new task, concept, phase or pedagogical decision",
         )
 
     def test_core_preserves_execution_cues_without_second_ownership(self) -> None:
@@ -177,8 +183,11 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
             "Preserve card boundaries",
             "row-versus-stack judgement",
             "PUPIL_INSTRUCTION_AMBIGUOUS",
-            "Sparse physical-demonstration slides remain intentionally sparse",
+            "**Sparse can be correct.**",
         )
+        # S1 (17 Oct 2026): the pre-write checklist went (D3); the sparse
+        # demonstration slide is the playbook's, beside working space.
+        self.assertIn("A physical-demonstration slide stays intentionally sparse", self.playbook)
         self.assertNotIn("## Starter slide", self.agent)
         self.assertNotIn("## Vocabulary slides", self.agent)
         self.assertNotIn("## Skill-based lesson rhythm", self.agent)
@@ -204,8 +213,6 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
             "### Starter",
             "### Vocabulary",
             "### Teaching and pupil action",
-            "### Worked examples and physical demonstrations",
-            "### Comparison, sequence, and fan-in",
             "### Maps, charts, diagrams, and photographs",
             "### Lesson rhythm",
             "### Colour",
@@ -282,8 +289,10 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
         # The reviewer checks the pass; it does not run one. Until the pass wrote
         # a record there was nothing to check it against, so the profile now
         # names the record rather than asking for a verification it could not do.
-        self.assertIn("optional-picture-pass.json", self.profile)
-        self.assertIn("check the earlier optional P2/P3 pass", self.profile)
+        # S1 (17 Oct 2026): the record and its check are the decorator's own
+        # (asserted in the next tests); the profile only hands the layer over.
+        self.assertIn("leave the optional P2/P3 layer alone", self.profile)
+        self.assertIn("checks its own record against them", self.profile)
         self.assertNotIn("perform the optional P2/P3 opportunity pass", self.profile)
 
     def test_optional_pass_preserves_priority_and_no_delegation(self) -> None:

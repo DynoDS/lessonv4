@@ -135,7 +135,11 @@ PREFERENCE_REVIEW_ROUTES = (
         "a Teach beat taught is not used again by the independent practice or "
         "the ending. That one is countable from the view: list what each Teach "
         "taught, then read the practice and the ending and mark off the ideas "
-        "they actually need.",
+        "they actually need. Read it too when the child's-seat view counts "
+        "three or more chunks of teaching before the main work, when a case, "
+        "lesson question or final task needs an idea the objective does not "
+        "name, and when a beat's only reason is another beat: each `needed by` "
+        "has to end at what the objective needs.",
     ),
     (
         "Starters",
@@ -935,6 +939,19 @@ def append_review_unit(
                     for ref in unit[key]
                 )
             )
+    # The reviewer judges whether the named picture shows what the class is
+    # meant to see happening (design-reviewer.md), so it has to see the line.
+    for happening in unit.get("seesHappening") or []:
+        picture = happening.get("photoRef") or (
+            f"{happening['representationRef']['ref']}/{happening['representationRef']['configuration']}"
+            if happening.get("representationRef") else "none"
+        )
+        stand_in = happening.get("standInPhotoRef")
+        lines.append(
+            f"- They see happening: {happening.get('see')} (picture `{picture}`"
+            + (f", stand-in `{stand_in}`" if stand_in else "")
+            + ")"
+        )
     lines.append("")
 
     append_review_json(lines, "Content", review_content(unit))

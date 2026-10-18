@@ -357,6 +357,31 @@ def publish_one(script_dir: Path, working: Path, source: Path, filename: str, re
             pass
 
 
+def happening_stand_ins(working: Path) -> dict[str, tuple[str, str]]:
+    """Lost-picture filename -> (stand-in filename, what the class sees happening).
+
+    A beat that explains how something happens names its picture of it and, where
+    the lesson holds one, a plain picture of the thing to show instead (the
+    `seesHappening` line). The teacher ruled on 18 October 2026 that a happening
+    picture which cannot be made leaves the slide that plain picture and tells
+    him, rather than a slide of words or a redesign of the lesson. Read from the
+    working folder's own design; a folder without one names no stand-ins.
+    """
+    try:
+        design = json.loads((working / "lesson-design.json").read_text(encoding="utf-8"))
+        photos = json.loads((working / "photo-requirements.json").read_text(encoding="utf-8"))["photos"]
+        filename_of = {photo["id"]: photo["filename"] for photo in photos}
+        found: dict[str, tuple[str, str]] = {}
+        for unit in design.get("teachingSequence") or []:
+            for entry in unit.get("seesHappening") or []:
+                lost, stand_in = entry.get("photoRef"), entry.get("standInPhotoRef")
+                if lost in filename_of and stand_in in filename_of:
+                    found[filename_of[lost]] = (filename_of[stand_in], str(entry.get("see") or "").strip())
+        return found
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return {}
+
+
 def assignment_command(args) -> int:
     assignment_path = Path(args.assignment).resolve(); result_path = Path(args.result).resolve(); working = Path(args.working_dir).resolve(); work_root = Path(args.work_root).resolve()
     assignment = read_json(assignment_path, "assignment")
@@ -380,6 +405,7 @@ def assignment_command(args) -> int:
         "errors": [],
     }
     lost_essential: list[str] = []
+    stand_ins = happening_stand_ins(working)
     lost_to_allowance: list[str] = []
     live = live_filenames(working, assignment)
     for row in rows:
@@ -412,7 +438,12 @@ def assignment_command(args) -> int:
                 # A second pass over a receipt written earlier says the same
                 # thing the first did. Silence on a re-run would be the signal
                 # going quiet exactly when somebody is looking again.
-                if old.get("terminalState") in {"unsatisfied", "omitted"} and entry.get("essential"):
+                if old.get("terminalState") in {"unsatisfied", "omitted"} and filename in stand_ins:
+                    print(
+                        f"PICTURE_HAPPENING_STAND_IN: {filename} - already finalised without a picture; "
+                        f"the slide shows {stand_ins[filename][0]} instead, as reported on the first pass."
+                    )
+                elif old.get("terminalState") in {"unsatisfied", "omitted"} and entry.get("essential"):
                     lost_essential.append(filename)
                 continue
             if matches_current and old.get("terminalState") == "picture_publish_failed":
@@ -496,7 +527,17 @@ def assignment_command(args) -> int:
             entry_summary["allowanceSpent"] = True
             lost_to_allowance.append(filename)
         summary["entries"].append(entry_summary)
-        if terminal_state in {"unsatisfied", "omitted"} and entry.get("essential"):
+        if terminal_state in {"unsatisfied", "omitted"} and filename in stand_ins:
+            plain, seen = stand_ins[filename]
+            entry_summary["happeningStandIn"] = plain
+            print(
+                f"PICTURE_HAPPENING_STAND_IN: {filename} - the picture of {seen or 'it happening'} could not "
+                f"be made, so the slide shows {plain} instead. This is a reconcile, not the content-gap "
+                "wave: re-point the slide's reference to that picture, and say this to the teacher in the "
+                "run report's picture results, in plain words, naming the slide, so he can draw the "
+                "happening on the board."
+            )
+        elif terminal_state in {"unsatisfied", "omitted"} and entry.get("essential"):
             lost_essential.append(filename)
     # Said here because here is where it becomes true, and the rule that acts on
     # it is a hundred files away. An essential picture that never arrives is a

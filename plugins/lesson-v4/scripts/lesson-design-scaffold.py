@@ -477,6 +477,9 @@ def source_unit(
         "stickyKnowledgeRefs": [PLACEHOLDER],
         "misconceptionRefs": [PLACEHOLDER],
         "photoRefs": [PLACEHOLDER],
+        # Empty by design: filled only on a beat that explains how something
+        # happens, naming what the class sees happening and its own picture.
+        "seesHappening": [],
         "speakerNotes": notes_scaffold(kind),
         "answer": answer_scaffold(task_structure),
     }

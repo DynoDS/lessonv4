@@ -97,8 +97,16 @@ class TheTeachersDecisionsAreWritten(unittest.TestCase):
         self.assertIn("An investigation or observation before the teaching is not this challenge", self.RHYTHM)
 
     def test_a_question_as_the_do_writes_how_every_child_commits(self) -> None:
-        """Decision 8: the commitment is part of the task; gathering is the teacher's."""
-        self.assertIn("How every child commits is written into the task itself", self.RHYTHM)
+        """Decision 8: the commitment is part of the task; gathering is the teacher's.
+        The teacher's ruling of 18 October 2026 keeps that and settles the form:
+        one yes-or-no on its own carries its reason, and the board asks the
+        question with the pencil sign rather than a line saying `Write yes or no.`
+        (a rice prediction read just that, and he called it silly)."""
+        self.assertIn("How every child commits is part of the task itself", self.RHYTHM)
+        self.assertIn("how the answers are then gathered stays the teacher's", self.RHYTHM)
+        self.assertIn("One yes-or-no decision on its own carries its reason", self.RHYTHM)
+        self.assertIn("never a line that only says `Write yes or no.`", self.RHYTHM)
+        self.assertNotIn("(`Write yes or no, then one reason`)", self.RHYTHM)
 
 
 if __name__ == "__main__":

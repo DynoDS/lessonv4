@@ -196,6 +196,37 @@ def test_cost_shares_add_up_and_settings_are_compared():
         assert "medium" in designer_row and "(DIFFERENT)" in designer_row
 
 
+def test_a_refused_draft_reads_as_turned_down_with_its_reason():
+    # 17 October 2026: the slide check refused a blue line that told before it
+    # asked, and the record called it "the preview check exited 1; the steps
+    # after it did not run", which read as a breakdown in the stress test.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("run_record", SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    output = ("SLIDE_DESIGN_CHECK_FAILED: SLIDE_DESIGN_PRESENTATION\n"
+              "BUILD_DIAGNOSTIC: {\"signal\":\"TASK_BLUE_NOT_A_SHORT_TASK\"}\n\n"
+              "1 slide-design presentation problem(s):\n"
+              "  x slide 2 text: TASK_BLUE_NOT_A_SHORT_TASK: \"Now stop humming. What happens?\" tells before it asks\n"
+              "The scratch build ran as well, so anything else it found is listed with these.\n"
+              "DECK_PREVIEW_STOPPED: the preview check exited 1; the steps after it did not run.")
+    match = module.CHECK_LINE.search(output)
+    reason = module.failure_reason(output, match.end(), match.group(3))
+    assert reason.startswith("slide 2 text: TASK_BLUE_NOT_A_SHORT_TASK"), reason
+    assert "DECK_PREVIEW_STOPPED" not in reason
+    assert module.OUTCOME_WORDS["FAILED"] == "turned down"
+    # With no problem line, the wrapper's own ending is still left out.
+    bare = "OPTIONAL_PICTURE_PASS_FAILED:\n- the `note` drawing is on 3 slides\nDECK_PREVIEW_STOPPED: x"
+    match = module.CHECK_LINE.search(bare)
+    assert module.failure_reason(bare, match.end(), match.group(3)) == "- the `note` drawing is on 3 slides"
+    with tempfile.TemporaryDirectory() as tmp:
+        attempts = Path(tmp) / "slide-attempts"
+        attempts.mkdir()
+        (attempts / "attempt-01.check.txt").write_text(output, encoding="utf-8")
+        lines = module.slide_attempts(Path(tmp))
+        assert "First line after it: slide 2 text: TASK_BLUE_NOT_A_SHORT_TASK" in lines[0], lines
+
+
 def test_a_missing_folder_never_fails():
     done = subprocess.run([sys.executable, str(SCRIPT), "--working-dir", "Z:/no/such/folder"],
                           capture_output=True, text=True)

@@ -412,7 +412,7 @@ Then read the whole Below resource once more against the `Protected idea:` line.
 
 For every scenario, quantity, price, age, source or context the adaptation invents, picture it actually happening. Check that it is plausible for the subject, the year-group content and the working level of the resource. When something does not hold up, change the scenario rather than propping it up with extra teaching.
 
-No number you choose contains a 6 followed by a 7: not 67, and not 670, 267 or 6,742 either. The class has a playground joke about it that takes over the room, so every builder refuses a sheet holding one, and a refusal there costs the whole pack after the worksheet designer has finished. That covers questions, examples and answers alike (a search that lands on "64, 65, 66 and 67" needs different numbers, not a different wording). Pick a number that does the same mathematical job. A real date (1567, 1967) and a number inside a counting run the child reads (a hundred square) are left alone.
+No number you choose contains a 6 followed by a 7, answers and working included (`preferences.md` → Classroom Norms holds the rule and its two exceptions). It costs most here: every builder refuses a sheet holding one, and a refusal there costs the whole pack after the worksheet designer has finished. A search that lands on "64, 65, 66 and 67" needs different numbers, not a different wording.
 
 ### One last sweep — cross-document consistency with the class lesson
 

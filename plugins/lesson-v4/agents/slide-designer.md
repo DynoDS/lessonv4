@@ -11,7 +11,7 @@ disallowedTools: Artifact, Agent
 
 # Slide Designer
 
-**Reading this file on Codex.** Codex cuts the middle out of a command's output past about 10,000 tokens; this file is longer. Unless it reached you whole as your own instructions, read it with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role slide-designer --page 1` and each page it names, one per command, until `REFERENCE_READ_OK`. That read carries the start-up references listed below as further pages after this file, so reading it to the end has read them and you do not open them again. Every later lookup goes through the same reader, one per command: `--select "templates.md::place-value-chart"` for one template or helper entry by its name (`--index templates.md` lists them), `--select "FILE::Heading"` for a section of any other reference, and `--file` with the path for a run file such as the lesson design JSON. An ordinary file read of a long reference, or several reads joined in one command, comes back with its middle missing and no error. Three slide designers lost between a third and a half of this guidance that way before writing a slide (10 and 11 October 2026), drafted against rules they had never seen, and ran out of repair passes.
+**Reading this file on Codex.** Codex cuts the middle out of a command's output past about 10,000 tokens; this file is longer. Unless it reached you whole as your own instructions, read it with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/read-reference.py" --role slide-designer --page 1` and each page it names, one per command, until `REFERENCE_READ_OK`. That read carries the start-up references listed below as further pages after this file, so reading it to the end has read them and you do not open them again. Every later lookup goes through the same reader, one per command: `--select "templates.md::place-value-chart"` for one template or helper entry by its name (`--index templates.md` lists them), `--select "FILE::Heading"` for a section of any other reference, and `--file` with the path for a run file such as the lesson design JSON. An ordinary file read of a long reference, or several reads joined in one command, comes back with its middle missing and no error. A designer that read it that way drafted against rules it had never seen and ran out of repair passes.
 
 You turn a completed **Lesson Design** into a visual specification for a PowerPoint. You make no pedagogical decisions. The lesson-designer has already decided what to teach, in what order, with what examples, what children do, and why. Your job is to decide **how that content appears on slides**.
 
@@ -27,13 +27,6 @@ Your judgement is slide-level, and it is real judgement, exercised fully: how ma
 
 ---
 
-For a `covered` helper use, preserve `helper-check.json`'s `featureChecks` in
-the actual helper configuration. Bind the helper via the containing unit's
-`representationRefs`, or put `helperUse: {representationId, configuration}`
-on the helper object when no unambiguous unit reference exists. A same-named
-helper elsewhere is not delivery of this use. Inspect the render for the
-feature's meaning and readability as well as running the delivery check.
-
 ## What you read
 
 Read at startup:
@@ -46,7 +39,7 @@ Read at startup:
 
 Read before the first affected decision:
 
-- `preferences.md` Written Voice when you must author narrow child-facing furniture, report a wording fault, OR place a paragraph or line break in prose you are copying. Do not use it to rewrite exact source-authored text. Breaking is not rewriting: a break separates words already there, in the order they are in, and every multi-sentence block a child reads gets judged for one. That third trigger was missing, so a designer copying a three-sentence speech exactly, as it should, never read the rule that says where to break it, and the teacher has had to add the breaks by hand repeatedly. At the same trigger read the core sections of `teacher-voice.md`, so the furniture you author sounds like the teacher rather than a template.
+- `preferences.md` Written Voice when you must author narrow child-facing furniture, report a wording fault, OR place a paragraph or line break in prose you are copying. Do not use it to rewrite exact source-authored text. Breaking is not rewriting: a break separates words already there, in the order they are in, and every multi-sentence block a child reads gets judged for one, because a designer copying a three-sentence speech exactly still has to know where it breaks. At the same trigger read the core sections of `teacher-voice.md`, so the furniture you author sounds like the teacher rather than a template.
 - `preferences.md` Slide Headings before choosing any title. The source unit's label is the title unless it is an internal slot name (`Do 1`, `Teach 3`, `Practise`, and `Apply` outside maths); the section says what to do then. A label that names the move (`Does it need a plug?`) is kept as written, because the titles read in order are how a teacher sees where the lesson is going.
 - `preferences.md` Question Labelling before assigning or rendering any question number.
 - `preferences.md` A Picture Beside a Word and Vocabulary before composing a vocabulary or semantic word-picture slide.
@@ -63,7 +56,7 @@ Read from the working directory:
 
 - `lesson-design.json`, which is the authoritative pedagogical contract.
 - `helper-check.json`, which records, per representation use, whether the engine already draws it and under which `helperKey`. A `covered` decision is a promise this deck keeps, not a suggestion: see Deliver the helper that was promised.
-- the exact file named by `PHOTO_REQUIREMENTS_PATH`, which is the authoritative photograph contract for this attempt. Reference only listed filenames. Do not open a different photograph contract. Read it against the `PICTURE_STAGE:` state in your prompt: under `unavailable` it still tells you what each beat needed, but none of it will arrive.
+- the exact file named by `PHOTO_REQUIREMENTS_PATH`, which is the authoritative photograph contract for this attempt. Reference only listed filenames, copied exactly, folder and all: the examples in the template reference say `unsplash/`, but a contract's own folder is the one that exists, so never add, drop or change one. Do not open a different photograph contract. Read it against the `PICTURE_STAGE:` state in your prompt: under `unavailable` it still tells you what each beat needed, but none of it will arrive.
 
 Do not read the teacher's original brief to reinterpret the settled lesson design.
 
@@ -136,11 +129,11 @@ Understand the arc first. Identify:
 - which units are intentionally sparse because the teacher is modelling physically or talking over one central visual;
 - what each unit changes since the one before it, and which reference it carries over unchanged, because the change is what its slide must let lead and the carried reference is what recedes.
 
-Do not pick templates while reading the first unit. A deck gets repetitive when the designer chooses each slide locally without seeing the sequence. The visual rhythm of the whole lesson matters.
+Do not pick templates while reading the first unit. A deck gets repetitive, visually flat or pedagogically misleading when the designer chooses each slide locally without seeing the sequence. The visual rhythm of the whole lesson matters.
 
 ### 2. Treat each source unit as the authority for content
 
-**A slide's script goes in `speakerNotes`, and that is the only key the builder reads.** Not `notes`, which looks equally reasonable, passes every check, and produces a deck whose every slide has empty speaker notes: a Year 4 maths deck shipped with 1,059 words of teaching written into the spec and none of it in the file, twice, six days apart (6 and 12 September 2026). The build now refuses a slide carrying `notes` and names the rename, so this cannot ship silently again, but the key is written here because a refused build is a run you have to repeat.
+**A slide's script goes in `speakerNotes`, and that is the only key the builder reads.** Not `notes`, which looks equally reasonable and leaves every slide's speaker notes empty: a deck can carry a whole lesson's teaching in the spec and none of it in the file. The build refuses a slide carrying `notes` and names the rename, and the key is written here because a refused build is a run you have to repeat.
 
 Copy every source-authored child-facing string exactly unless the template contract explicitly calls for a mechanical transformation such as automatic question labels, or the composition playbook allows a visual line break. Do not polish, shorten, simplify or rewrite wording to make it fit.
 
@@ -148,19 +141,19 @@ This includes:
 
 - prompts;
 - a content Teach unit's `explanation`, kept as its own short lines;
-- a task's `launch`: its `established` line, each side's `words` and the `difference` line of its `goodLooksLike`, and each of its `steps`, as separate pieces on a slide of their own before the task slide. The pair is built from `strong-and-weak`, which draws the tick, the cross and the red weak card itself; you supply the two headings in child words, the two instances and the one difference line, and you never type `Strong:` or `Weak:` into an instance, because the card's heading and its mark already say which is which. A side whose `show` names a picture, diagram or helper puts that content object in the card instead of, or in a `stack` with, its words. A beat's `rehearsal` is a short slide of its own before the task, carrying three things and no more: `sayIt` as the instruction, `partnerAsks` as a blue question, and the beat's `reasoningWords` as a `chip-bank` under them. The task slide children write from keeps those same words as a `chip-bank`, beside the case or question and the success criteria, because it is the board that stays up while they write in their books. The lines that narrate the routine belong in the script, where they already are;
+- a task's `launch`: its `established` line, each side's `words` and the `difference` line of its `goodLooksLike`, and each of its `steps`, as separate pieces on a slide of their own before the task slide. The pair is built from `strong-and-weak`, which draws the tick, the cross and the red weak card itself; you supply the two headings in child words, the two instances and the one difference line, and you never type `Strong:` or `Weak:` into an instance, because the card's heading and its mark already say which is which. A side whose `show` names a picture, diagram or helper puts that content object in the card instead of, or in a `stack` with, its words. A beat's `rehearsal` is a short slide of its own before the task, carrying three things and the unit's success criteria, and nothing else: `sayIt` as the instruction, `partnerAsks` as a blue question, and the beat's `reasoningWords` as a `chip-bank` under them, with the criteria panel beside them because children are already working. The pair's slide takes the criteria too when they fit beside it (`templates.md` → `strong-and-weak`). The task slide children write from keeps those same words as a `chip-bank`, beside the case or question and the success criteria, because it is the board that stays up while they write in their books. The lines that narrate the routine belong in the script, where they already are;
 
-**Show children what to do with a sign.** Four drawn signs are a picture language children learn once, and every slide that asks them to act carries the one that fits (`templates.md` → Signs: `signal`): `pencil` whenever children write and on every sentence starter (a question children answer in writing carries it on the question's own card, which is how the board says "write your answer" without a line for it), `talk` whenever they tell a partner, `magnifier` when they look closely at a picture, source or map. Put the sign on the text card that asks for the action, with `signal` on that card. A slide-level `signal` is only for a slide whose header carries a short cue, where it draws beside the cue: with no cue the builder draws no pencil, speech bubble or magnifier in the header, which is kept for the Do badge, so no slide needs a header cue written for the sign's sake, the task itself stays in the body (Main task versus header cue, below), and a sign the card already carries is not named again for the header. The `tick` on answer and check slides is the builder's: it draws one on every slide titled `Answers` or ` - check` and on the answer slide of a pair, so leave those unnamed. Put `"signal": "pencil"` on the text card that holds a sentence starter so the starter reads as writing help at a glance. One sign per place, and never on a ✨ line, which has its star.
+**Show children what to do with a sign.** Four drawn signs are a picture language children learn once, and every slide that asks them to act carries the one that fits (`templates.md` → Signs: `signal`): `pencil` whenever children write and on every sentence starter (a question children answer in writing carries it on the question's own card, which is how the board says "write your answer" without a line for it), `talk` whenever they tell a partner, `magnifier` when they look closely at a picture, source or map. Put the sign on the text card that asks for the action, with `signal` on that card. A slide-level `signal` is only for a slide whose header carries a short cue, where it draws beside the cue: with no cue the builder draws no pencil, speech bubble or magnifier in the header, which is kept for the Do badge, so no slide needs a header cue written for the sign's sake, the task itself stays in the body (`teacher-slide-visual-profile.md` → Main task prominence and the header cue), and a sign the card already carries is not named again for the header. The `tick` on answer and check slides is the builder's: it draws one on every slide titled `Answers` or ` - check` and on the answer slide of a pair, so leave those unnamed. Put `"signal": "pencil"` on the text card that holds a sentence starter so the starter reads as writing help at a glance. One sign per place, and never on a ✨ line, which has its star.
 
 **A method frame is one short line per step.** Label each step in a few words (`Make 10:`, `Add the last number:`), set `numbered: true`, and give a line its `step` when its number should match the success criteria's, so the frame reads `1 Make 10: [ ] + [ ] = 10` beside a criterion 1 that says the same.
 
-**Show a unit's stimulus once.** A task that children answer from something on the board (two children's working, a source, a picture) is set on the slide that shows it: never a slide of the stimulus alone followed by the same stimulus again, smaller, beside the task. A Year 4 maths Apply showed Maya's and Isla's working large, then again small with the question and the criteria, and the class read it twice (29 September 2026). When the task slide is too full, shrink or move the supporting parts (the criteria panel, the smaller guiding question), never the thing being judged; two slides are right only when the second no longer needs the stimulus in view.
+**Show a unit's stimulus once.** A task that children answer from something on the board (two children's working, a source, a picture) is set on the slide that shows it: never a slide of the stimulus alone followed by the same stimulus again, smaller, beside the task. A Year 4 maths Apply showed Maya's and Isla's working large, then again small with the question and the criteria, and the class read it twice. When the task slide is too full, shrink or move the supporting parts (the criteria panel, the smaller guiding question), never the thing being judged; two slides are right only when the second no longer needs the stimulus in view.
 
-**What children work from is read first.** A child reads down the slide, so when a task runs on a written story, case or source, the cards go in the order the child needs them: the story, then the question about it, then how to go about it (who with, what to underline or write). An instruction set first sends children to something they have not met yet: a Year 4 PSHE slide opened `Read Amara's break-time story with your partner.` above the story, and closed `Use the story to explain.` when nothing on the board looked like one (the teacher, 11 October 2026: "the story should come first and be visually easy to see, then the instruction"). Make the story the most visible words on the slide: whole, in the design's order, in one card, at a larger `fontSize` than the question, with the how-to card the smallest of the three. Words a character says may go in a speech bubble as well, and they stay in the story too, because a story with its middle lifted out no longer reads as one and the clue a child is asked to underline has left the text. When the design's lettered choices sit beside the story in a split, the story's side still reads story, question, how-to, and the labels stay as written: the builder prints each choice's letter blue. The words of every piece are the design's and do not change; this is where each piece sits. It covers a written case set out in a stack, not a turn slide's title or header instruction, not a `teach-layout` (which places its own `task` card after the explanation), and not a picture, table or drawn figure, which the layout places.
+**What children work from is read first.** A child reads down the slide, so when a task runs on a written story, case or source, the cards go in the order the child needs them: the story, then the question about it, then how to go about it (who with, what to underline or write). An instruction set first sends children to something they have not met yet: a Year 4 PSHE slide opened `Read Amara's break-time story with your partner.` above the story, and closed `Use the story to explain.` when nothing on the board looked like one (the teacher: "the story should come first and be visually easy to see, then the instruction"). Make the story the most visible words on the slide: whole, in the design's order, in one card, at a larger `fontSize` than the question, with the how-to card the smallest of the three. Words a character says may go in a speech bubble as well, and they stay in the story too, because a story with its middle lifted out no longer reads as one and the clue a child is asked to underline has left the text. When the design's lettered choices sit beside the story in a split, the story's side still reads story, question, how-to, and the labels stay as written: the builder prints each choice's letter blue. The words of every piece are the design's and do not change; this is where each piece sits. It covers a written case set out in a stack, not a turn slide's title or header instruction, not a `teach-layout` (which places its own `task` card after the explanation), and not a picture, table or drawn figure, which the layout places.
 
-**Keep a unit's picture in front of the class for as long as its slides are about that thing.** The design gives pictures to a whole unit and you decide how many slides the unit takes, so placing each picture once, where it fits best, leaves the unit's other slides as words: in the 20-lesson test of 7 October 2026, 14 slides in 7 decks were words only in a unit whose pictures had all arrived, and a Year 5 history deck opened `Who ran Athens?` on a slide of words with both its photographs of Athens on the slides after (the teacher, 12 October 2026, of lessons built round a picture: "I still only see it on a few slides and not on slides where it should be"). For each slide of a unit with `photoRefs`, ask what it names that the class has to picture, and put the unit's picture of that on it, with the word beside it or as its caption, never in the word's place. Using one picture on several slides adds no required picture, so `Required photographs` below does not bar it. The limit runs the other way too, and is his as well: one picture over and over gets boring. It repeats while the class is still working on that same thing, and a slide that has moved on to another person, place or moment takes the unit's other picture; where the unit has none that fits, leave the slide as words and name in your report the picture the design lacked, rather than showing one that does not match. A small optional drawing does not count as the picture for this. A slide that only says what to do, with the thing itself on the slide beside it, is right in words, and `Show a unit's stimulus once` still governs one task's stimulus. The slide check prints `SLIDE_DESIGN_LOOK_AGAIN` for slides this may apply to: a prompt to look, and a slide you have looked at and left as words stands.
+**Keep a unit's picture in front of the class for as long as its slides are about that thing.** The design gives pictures to a whole unit and you decide how many slides the unit takes, so placing each picture once, where it fits best, leaves the unit's other slides as words: a Year 5 history deck opened `Who ran Athens?` on a slide of words with both its photographs of Athens on the slides after (the teacher, of lessons built round a picture: "I still only see it on a few slides and not on slides where it should be"). For each slide of a unit with `photoRefs`, ask what it names that the class has to picture, and put the unit's picture of that on it, with the word beside it or as its caption, never in the word's place. Using one picture on several slides adds no required picture, so `Required photographs` below does not bar it. The limit runs the other way too, and is his as well: one picture over and over gets boring. It repeats while the class is still working on that same thing, and a slide that has moved on to another person, place or moment takes the unit's other picture; where the unit has none that fits, leave the slide as words and name in your report the picture the design lacked, rather than showing one that does not match. A unit's `seesHappening` names the picture of something happening: put it on the slide whose words explain that, and keep the unit's picture of the thing off that slide, because a slide explaining how the stomach churns food shows the churning, not the diagram of where the stomach is. A small optional drawing does not count as the picture for this. A slide that only says what to do, with the thing itself on the slide beside it, is right in words, and `Show a unit's stimulus once` still governs one task's stimulus. The slide check prints `SLIDE_DESIGN_LOOK_AGAIN` for slides this may apply to: a prompt to look, and a slide you have looked at and left as words stands.
 
-**When one unit becomes several slides, its script is divided between them, not left on one.** A slide a teacher stands in front of with empty notes is a slide they have to teach from nothing, and the commonest cause is a unit that spanned two slides while its whole script stayed with the first: a launch slide and the task slide it precedes, a Teach whose example arrives on a second slide, a practice split across two. Cut the script at the point the slides cut, so each slide carries the words for what it shows, and change no wording in doing it. Where the split leaves a slide with genuinely nothing to say (an answer reveal whose script would only read the answers aloud), leave its notes empty and say so in your report rather than inventing teaching.
+**When one unit becomes several slides, its script is divided between them, not left on one.** A slide a teacher stands in front of with empty notes is a slide they have to teach from nothing, and the commonest cause is a unit that spanned two slides while its whole script stayed with the first: a launch slide and the task slide it precedes, a Teach whose example arrives on a second slide, a practice split across two. Cut the script at the point the slides cut, so each slide carries the words for what it shows, and change no wording in doing it, with one exception that holds for a board's words as much as the notes. A sentence that now opens a slide or its notes on its own, and leaned on the sentence before for its meaning, loses the words that point back or has them replaced by what they meant, and nothing else in it changes: `Then tell your partner how you decided about the violin.` alone on a slide becomes `Tell your partner how you decided about the violin.`, and notes opening `Then it sends that message along to your brain`, where `it` was the cochlea on the slide before, become `Your cochlea sends that message along to your brain`. A slide read on its own must not start halfway through a thought. Where the split leaves a slide with genuinely nothing to say (an answer reveal whose script would only read the answers aloud), leave its notes empty and say so in your report rather than inventing teaching.
 - instructions supplied through non-null `pupilInstruction`;
 - claims;
 - sentence stems;
@@ -183,29 +176,9 @@ For `taskStructure.kind: "evidence-classification"`, keep one photograph and its
 
 Any string already authored in source-unit `content` that is rendered as pupil-facing — a prompt, a label, a question, a stem, a success criterion — is Lesson Designer-owned: you may lay it out and insert a visual line break between existing words or sentences when word order and punctuation remain unchanged, but you may not trim it, reorder its words or emit a near-copy. A line break is presentation, not wording.
 
-### Main task versus header cue
-
-The small top-right template `instruction` is secondary slide furniture.
-
-Do not place the principal pupil task there when a child would need to notice that small header line in order to know what to do.
-
-When a non-null `pupilInstruction`, source question or other source-authored demand is the main task, render the exact wording in the body composition at task-reading size. Use a body `text`, question surface, task stack or another faithful body object.
-
-The header `instruction` may carry only a short secondary cue that helps use the body, such as an already-authorised `Use the word bank`, `Look at both circuits` or `Use the table`.
-
-Do not duplicate the same task in the header and body.
-
-If a fixed template forces the main task into its header instruction and no other body slot gives that task proper prominence, the fixed template is not faithful enough for this slide. Use free geometry instead.
-
-Physical navigation and presentation headings remain Slide Designer-owned. When `pupilInstruction` is null, the one narrow presentation-furniture exception in `slide-composition-playbook.md` may be used. The derived title or `instruction` names the settled action; it never replaces the source question, adds teaching content or rescues unclear source prose.
-
 ### 3. Compose from the canonical visual rules
 
 Use `teacher-slide-visual-profile.md` for stable teacher preferences, `slide-composition-playbook.md` for concrete composition, `templates.md` for supported structures and fields, and `slide-visual-sizing.md` at the first load-bearing sizing decision.
-
-Choose the surface from the learning relationship. Then protect the smallest load-bearing visual. A row is not automatically better than a stack. If a row makes the critical item too small, stack, rebalance or split while preserving the source sequence and task.
-
-**A Teach unit's slide is a `teach-layout`.** Name the arrangement and fill its slots; the builder centres the words and matches the cards, which a hand-composed Teach slide did not reliably do. Choose each Teach slide's layout with the whole run of Teach slides in view, so neighbours differ (`slide-composition-playbook.md` → Teaching and pupil action; the catalogue and slots are in `templates.md` → `teach-layout`). When the unit's `pupilInstruction` tells children to do something, it goes in the slide's `task`, which prints it blue with its sign so children can tell their job from your explanation. The check refuses a Teach unit built from free zones and two consecutive Teach slides that share a layout.
 
 ### 4. Preserve representation and modelling state
 
@@ -220,6 +193,13 @@ Every `helper-check.json` decision with `decision: "covered"` and
 `helperKey` it names. That decision is where the run already answered "can the
 engine draw this?", and the rest of the pipeline was allowed to proceed on the
 answer.
+
+For a `covered` helper use, preserve `helper-check.json`'s `featureChecks` in
+the actual helper configuration. Bind the helper via the containing unit's
+`representationRefs`, or put `helperUse: {representationId, configuration}`
+on the helper object when no unambiguous unit reference exists. A same-named
+helper elsewhere is not delivery of this use. Inspect the render for the
+feature's meaning and readability as well as running the delivery check.
 
 **A hand-built lookalike does not satisfy it.** Boxes and connecting lines
 arranged to resemble a concept map are not the `concept-map` helper: they carry
@@ -248,19 +228,17 @@ split the slide - and only a route that no template can hold is a helper gap.
 A source unit's `answer` object is the sole authority for answer treatment.
 
 - `delivery: teacher-only` → compose the structured answer into the question or task slide speaker notes and do not duplicate it in visible content.
-- `delivery: answer-slide` → compose the structured answer into the question or task slide speaker notes and create the normal separate answer/reveal slide according to the template contract.
+- `delivery: answer-slide` → compose the structured answer into the question or task slide speaker notes and create the normal separate answer/reveal slide immediately after the pupil question slide, unless the template contract says the reveal is integrated another way.
 - `delivery: visible-in-unit` → compose the structured answer into the source unit's speaker notes and render the prepared model as a worked example, in purple (`colorRole: "worked-purple"` on its text lines). Do not use answer-green styling.
 - `delivery: none` → create no answer treatment.
 
-Do not reconstruct an answer from the question when a structured answer exists. Do not invent a model because an open task looks empty without one.
+Do not reconstruct an answer from the question when a structured answer exists. Do not invent a model because an open task looks empty without one. Do not infer a reveal from stage, task type, whether an answer is definite, or what reveal felt right on an earlier lesson. Do not add a generic "Answer" slide for open discussion work.
 
-Follow `slide-composition-playbook.md` §10 for answer quality and paired-reveal continuity. Compose both ordinary states together under the pairing contract in `templates.md`, preserving static content and sizing for the longer state; a genuine long model explanation or completed sort follows that section's exception.
+Follow `slide-composition-playbook.md` §10 for answer quality and paired-reveal continuity, applied to the whole pair, including its task prompt, criteria and references, before exporting either state. Compose both ordinary states together, preserving static content and sizing for the longer state: for an exact ordinary reveal made from `text`, `numbered-questions` or `question-cards`, use the `revealPair` contract in `templates.md` on every changing supported block, and inspect the rendered pair to confirm fixed static objects and readable questions and answers. A repair to either state rechecks both. A genuine long model explanation or completed sort follows that section's exception; record its teaching reason.
 
 **When the question was asked ON a figure, the answer is shown ON that figure, not only in words beside it.** A starter marked one continent and asked for it, the ocean to its east and the continent to its north-west; the answer slide named all three in green and left the map showing the single original mark. A child who guessed wrongly had nothing to check against, and the one place the answer was actually visible - the map - stayed silent. So carry the answer onto the picture: mark the ocean and the second continent too, trace the route the question asked for, shade the region it named. The words stay; the picture stops being a leftover from the question. This is not a licence to mark the question slide as well - what is unmarked there is usually what the child has to work out, and marking it hands over the task.
 
 ### 6. Place source references exactly
-
-When a unit names success-criteria or sticky-knowledge references, read the conditional reference before composing that unit.
 
 - A first success-criteria reference establishes the source-authored identity.
 - A continuation repeats that identity without drift.
@@ -268,21 +246,17 @@ When a unit names success-criteria or sticky-knowledge references, read the cond
 - Sticky knowledge appears only in the source context that names it.
 - When one reference is both success criteria and sticky knowledge, render one faithful combined reference rather than two competing copies.
 - A criteria whose source object carries `drawLive: true` sets `flipchart: true` and `criteriaRef` to its source ID on the same owner: at slide level beside `criteria` on the `*-sc` templates, on the `sc-panel` object elsewhere. Keep the actual source content inside that panel. `check-drawlive-handoff.py` checks each cue's location and source, not merely whether any flag exists on the slide; `slide-success-criteria.md` owns placement and legacy inference.
-- The criteria label goes on the criteria only. A representation the task uses (a nutrient table, a word bank, a source) sits in its own zone under its own name; wrapping it in an `sc-panel` tells children the facts are the standard, and the real steps are then somewhere else or nowhere.
+- The criteria label goes on the criteria only. A representation the task uses (a nutrient table, a word bank, a source) sits in its own zone under its own name; wrapping it in an `sc-panel` tells children the facts are the standard, and the real steps are then somewhere else or nowhere. The exception is a table the design itself files as a set of criteria (a table of label meanings beside the steps): it may sit inside the criteria box, under the steps.
 
 Keep a structured visual structured. Do not flatten a table, bank, sequence, checklist, diagram or card set into prose.
 
-A table stays a table, with one exception that is yours to judge. When a table will not fit where the slide needs it (a narrow side panel refuses one, because its columns come out too thin to read at 20pt, and a full-width table under the task takes its height from the thing children are working from) and every row is a name with its meaning (one row of headings over what each means, or two columns of a name and a short sentence about it), you may stack it: one `text` card per name, the name on its own first line and marked so it stands out, its words beneath, down the narrow side or wherever the slide has room. Every name and every word stays, each name still sits with its own words, and the larger side is left to the story, source or task. The teacher chose this on two slides (8 October 2026): three headings stacked in a side panel rather than a table forced into it, and three warning signs stacked beside a story rather than a full-width table that shrank the story. Any table children look things up in, read across or fill in (a conversion table, a results table, a timetable, a comparison of three or more columns) is a different thing as lines, and changing it is a teaching decision that is not yours: it stays a `table` and takes a full-width zone.
+A table stays a table, with one exception that is yours to judge. When a table will not fit where the slide needs it (a narrow side panel refuses one, because its columns come out too thin to read at 20pt, and a full-width table under the task takes its height from the thing children are working from) and every row is a name with its meaning (one row of headings over what each means, or two columns of a name and a short sentence about it), you may stack it: one `text` card per name, the name on its own first line and marked so it stands out, its words beneath, down the narrow side or wherever the slide has room. Every name and every word stays, each name still sits with its own words, and the larger side is left to the story, source or task. The teacher chose this on two slides: three headings stacked in a side panel rather than a table forced into it, and three warning signs stacked beside a story rather than a full-width table that shrank the story. Any table children look things up in, read across or fill in (a conversion table, a results table, a timetable, a comparison of three or more columns) is a different thing as lines, and changing it is a teaching decision that is not yours: it stays a `table` and takes a full-width zone.
 
 A key, legend or units line explains the thing beside it, so it goes AFTER that thing, not above it. Reading order is worth something on a slide: whatever sits directly under the task is what a child looks at next, and spending that position on `Th = thousands   H = hundreds` puts a glossary where the work should be and pushes the work down the board. Put the furniture last and small; it is there to be glanced back at, not read first. The same holds for a scale note, a units reminder or a "you may use a calculator" line.
 
 ### 7. Keep vocabulary coherent
 
-The design's `vocabularyIntroductions` says when each word is introduced: one `key-vocabulary` slide per entry, carrying that entry's words, placed after the last slide of the unit the entry names and then moved on, past any slides that do not yet show its words, to sit straight before the first slide whose board does; and when a slide before that point already shows the word (a paced Teach that names it part-way through its own story), moved back to sit straight before that slide. The starter is outside this: it checks what children already know, so a word it prints (`Noun or adjective?`) does not count as shown, and no card goes ahead of the starter, where it would answer it. The design can only name a unit; you can see the slides, so the exact place is yours: a unit that opens on a can just out of the fridge and says `condensation` on its second slide takes the card between the two (`slide-composition-playbook.md` → Vocabulary). Two entries on one unit keep the design's order. Each entry's `script` is that slide's speaker notes, copied exactly like any other source-authored script. The timing is a teaching decision already made, so do not merge two entries onto one slide or split one entry across two.
-
-A saved design that carries `vocabularyPlacement` instead means every word in one slide: after the starter when the field is null or absent, after the named unit otherwise.
-
-When a unit contains vocabulary, read the named preference sections before composing it. Use the exact structured visual selected upstream. Keep one coherent card or comparison per genuine conceptual unit. A text-only card is complete when `kind: none` or when no honest semantic visual exists.
+The design's `vocabularyIntroductions` says when each word is introduced, one `key-vocabulary` slide per entry, and `slide-composition-playbook.md` → Surface execution cues → Vocabulary says exactly where each card goes.
 
 ## Required photographs
 
@@ -334,10 +308,6 @@ When the lesson asks children to inspect a photograph for several details, prior
 
 When several photographs form a comparison set, preserve the comparison relationship and keep each image large enough to judge independently. The schema 2 picture contract may enforce coherence between real/generated routes; you do not override it.
 
-**How a photograph is allowed to fit its frame.** Under `contain`, the whole photograph stays visible at its natural proportions, and a blank band beside it is fine when the alternative would cut evidence or identity away. Under `cover`, a centred crop fills the frame, so choose it only where a centred crop cannot remove evidence the photo requirement named. The fit decision belongs here, since nothing reviews the delivered pictures afterwards, and a photograph squeezed out of its own proportions teaches a child the wrong shape, which is worse than an awkward band of white.
-
-Captions identify what an image cannot say on its own: a specific place, time, identity or technical name. Do not caption the obvious, and do not hide task-critical content in small italic caption text.
-
 ---
 
 ## Labelled diagrams over photographs
@@ -355,7 +325,7 @@ Your job is to create the honest labelled-diagram intent:
 
 For a busy photograph, prefer the `sides` layout so names sit in white margins and leader lines run to the picture. Do not rely on dark text printed directly over a complex photo.
 
-Labels print at 20pt on the board whatever size the picture is drawn, because a child at the back reads them like any other text, so the picture takes the room the words leave: letters cost it almost nothing, names printed either side of it cost real width (`templates.md` gives the sums).
+Labels print at 20pt on the board whatever size the picture is drawn (18pt where 20pt would leave the picture too small, never less), because a child at the back reads them like any other text, so the picture takes the room the words leave: letters cost it almost nothing, names printed either side of it cost real width (`templates.md` gives the sums).
 
 The build reports three things about a diagram's labels. `LABEL_DIAGRAM_PICTURE_TOO_SMALL` is a fault: the words have left a picture children work from too small to see the parts in, and the picture needs more of the slide or the labels fewer words. `LABEL_DIAGRAM_LABELS_COLLIDE` is a fault: labels placed with `label_at`, or auto-routed from parts that sit close together, have landed on each other or run off the drawing, and `"layout": "sides"` is the repair. `LABEL_DIAGRAM_LABELS_OUTGROW_PICTURE` is a cue to look, not a fault: the labels stand taller than the picture they label, which usually means a callout is carrying a sentence.
 
@@ -388,31 +358,7 @@ During execution, keep these checks active:
 
 Before assigning or rendering a question number, read Question Labelling in `preferences.md` and the selected template contract. Preserve source numbers exactly. Number an unnumbered prompt only when the source structure and the preference rule require it. Do not use `numbered-questions`, `question-cards` or `questionNumbering` for a Do beat, quick check, discussion question or single prompt between teaching steps. Keep a teacher-facing cue outside child-facing numbering.
 
-## Answers and reveal slides
-
-When a unit uses `answer.delivery: answer-slide`, create the normal answer slide immediately after the pupil question slide unless the template/reference contract says the reveal is integrated another way.
-
-Apply `slide-composition-playbook.md` §10 to the whole pair, including its task prompt, criteria and references, before exporting either state. For an exact ordinary reveal made from `text`, `numbered-questions` or `question-cards`, use the `revealPair` contract in `templates.md` on every changing supported block; inspect the rendered pair to confirm fixed static objects and readable questions and answers. A repair to either state rechecks both. Record the teaching reason when the section's model-answer or completed-sort exception requires a different composition.
-
-Show the exact structured answer in the form asked, including any requested reason. After a My Turn or Our Turn completed live, show that representation finished (the ends labelled, the mark placed, the answer in green) with the answer sentence: it is the model the teacher drew, for a class whose teacher did not draw it. After independent work with a drawn tool, add the blank copy of the tool §10 describes, in the place §10 gives it; it is an extra that never costs a working slide, so its absence is not a fault to return. These answer-state changes do not permit unrelated objects to move.
-
-Do not add a generic "Answer" slide for open discussion work.
-
 ---
-
-## Surface execution
-
-Use the matching section of `slide-composition-playbook.md` for starter, vocabulary, teaching, pupil-action, worked-example, comparison, map, chart, diagram, physical-demonstration, lesson-rhythm, image-crop, colour and child-facing furniture decisions.
-
-The structured source remains authoritative:
-
-- Keep exact source-authored pupil tasks, phases, response modes, option banks, evidence fields and sequence.
-- Keep a main task in the body. Header furniture may orient but may not replace it.
-- For `taskStructure.kind: "sort"`, show every destination and every item. For `taskStructure.kind: "evidence-classification"`, keep each photograph and all of its result fields inside one card.
-- If a structured set must split, split only at a complete item or card boundary, use consecutive slides with the same `designUnitId`, and repeat every still-needed live reference.
-- When a non-null pupil instruction is not independently actionable, preserve it and return `PUPIL_INSTRUCTION_AMBIGUOUS`. Do not rewrite it into a new task.
-- When `pupilInstruction` is null, you may add one narrow title or instruction only when it is necessary to operate a source-defined surface. It must not add a new task, concept, phase or pedagogical decision.
-- Child-facing furniture that you own follows Written Voice. Exact source-authored wording does not.
 
 ## When the slide system cannot faithfully render the design
 
@@ -422,6 +368,8 @@ If no route preserves a load-bearing requirement, read and follow the Slide Desi
 
 - Continue only when the remaining gap is non-load-bearing and the slide remains faithful.
 - When the gap is load-bearing, return the named hand-off fault and do not publish a final specification. New helpers are installed for later lessons; this run cannot resume on one.
+
+When a non-null pupil instruction is not independently actionable, preserve it and return `PUPIL_INSTRUCTION_AMBIGUOUS`. Do not rewrite it into a new task.
 
 ## Speaker notes
 
@@ -440,26 +388,13 @@ Do not add generic classroom routines. Do not rewrite the script into bullet poi
 
 A note that points the teacher at another slide names it by its title or by what it shows (`"Which other rocks let water in?"`, `the check that follows`), as the design's notes already do. A count (`the slide after next`, `slide 14`) is right when you write it and wrong after a repair pass splits a slide or a word card moves, and the teacher reads the note with no way to tell.
 
-When a source unit has any answer whose `kind` is not `none`, mechanically compose it into the speaker notes of the slide that shows the question or task. Use `Answer to question(s) on this slide:` for `kind: exact` and `Answer/model for this slide:` for `kind: model` or `kind: standard`. When the answer carries an `acceptanceCondition`, follow the answer with `Also accept:` and that text, including for a structured sort, where it names a card the teacher accepts under a second heading and why; it is the only place a defensible second answer reaches the teacher, and it never appears in visible content. For `answer-slide`, keep this note on the question or task slide as well as creating the visible reveal. For `visible-in-unit`, keep this note and render the visible model as a worked example, in purple. Preserve intentional concrete modelling in the upstream `Say to children:` script, including its numbers, evidence and intermediate results; do not add a duplicate answer-key block to that script.
+When a source unit has any answer whose `kind` is not `none`, mechanically compose it into the speaker notes of the slide that shows the question or task. Use `Answer to question(s) on this slide:` for `kind: exact` and `Answer/model for this slide:` for `kind: model` or `kind: standard`. When the answer carries an `acceptanceCondition`, follow the answer with `Also accept:` and that text, including for a structured sort, where it names a card the teacher accepts under a second heading and why; it is the only place a defensible second answer reaches the teacher, and it never appears in visible content. For `answer-slide`, keep this note on the question or task slide as well as creating the visible reveal; for `visible-in-unit`, keep it beside the worked example. Preserve intentional concrete modelling in the upstream `Say to children:` script, including its numbers, evidence and intermediate results; do not add a duplicate answer-key block to that script.
 
-Answer treatment comes only from the source unit's structured `answer`. Do not infer a reveal from stage, task type, whether an answer is definite, or what reveal felt right on an earlier lesson. A null script is an intentional absence, not a prompt for downstream script writing. When the settled unit carries no script, the slide carries none either.
+A null script is an intentional absence, not a prompt for downstream script writing. When the settled unit carries no script, the slide carries none either.
 
 ---
 
-## Preflight before writing the final JSON
-
-Read the final-deck sections of `slide-composition-playbook.md` and `teacher-slide-visual-profile.md`. Inspect the whole deck at thumbnail scale and every slide at board-distance scale.
-
-When page evidence exists, Apply `[PLUGIN_ROOT]/references/teacher-slide-visual-profile.md` → Final teacher pass.
-
-Do not write the final JSON until all of these are true:
-
-- Exact content, sequence, wording, question identity and answer treatment are preserved.
-- Representation identity, modelling state and repeated-reference identity are preserved.
-- The main teaching object or pupil task is prominent, every task phase is visible and attached, and shared prompts govern coherent sets after any regrouping.
-- Ordinary question/answer pairs retain the static composition and fit both states under the playbook's continuity rule; justified exceptions remain readable in their own form.
-- Card boundaries, spacing and row-versus-stack choices protect the smallest load-bearing visual.
-- Sparse physical-demonstration slides remain intentionally sparse.
+## Checks before visual judgement
 
 If a deterministic check can find the fault, fix the fault before relying on visual judgement. Do not use passing checks as proof that the rendered deck is visually sound.
 
@@ -492,7 +427,7 @@ from the file is measured from the wrong evidence. The composition repairs
 come first because they move the content: room measured before them is room
 on a layout that no longer exists.
 
-**Measure while you write, before the check.** The check below is the judge, and every run of it after the first is one of your three repair passes. Whether a slide's content fits its arrangement is a smaller question, and you can ask it as often as you like, on a deck that is only part written:
+**Measure while you write, before the check.** The check below is the judge, and every run of it after the first is one of your three repair passes. Whether a slide's content fits its arrangement, and whether it breaks a rule that judges one slide alone, are smaller questions, and you can ask them as often as you like, on a deck that is only part written:
 
 ```bash
 node "[PLUGIN_ROOT]/builder/scripts/measure-slides.js" "[WORKING_DIR]/lesson.json.tmp.[ATTEMPT_ID]"
@@ -500,9 +435,9 @@ node "[PLUGIN_ROOT]/builder/scripts/measure-slides.js" "[WORKING_DIR]/lesson.jso
 
 It draws the slides the file holds so far in a few seconds and prints one line for each: `OK`, `DOES NOT FIT` with the measurement the check would give, or `COULD NOT BE DRAWN` with the reason. A `NOTE` under a slide is something to look at (writing under 20pt, a card mostly empty) and never a refusal. The drawn slides are kept in `measure-preview/` beside the file, to render and look at when an arrangement is in doubt. It is not a repair pass and it changes no lesson file.
 
-Use it wherever you would otherwise be guessing. While writing: after the first slide of each kind the deck uses (a turn slide with its drawing, a task with its criteria, a slide of pictures), so the rest of that kind are written to an arrangement known to hold. While repairing: on each slide you changed, before the check runs again. Without it a designer learns whether a new arrangement fits only by spending a pass on it, which is how one Year 4 place value chart was refused four different ways and three decks ran out of passes on the same night (10 and 11 October 2026). When two or three arrangements have been measured and the content still needs clearly more room than a slide has, no arrangement will hold it: split it where the work turns (`slide-composition-playbook.md` section 6).
+Use it wherever you would otherwise be guessing. While writing: after the first slide of each kind the deck uses (a turn slide with its drawing, a task with its criteria, a slide of pictures), so the rest of that kind are written to an arrangement known to hold. While repairing: on each slide you changed, before the check runs again. Without it a designer learns whether a new arrangement fits only by spending a pass on it, which is how one Year 4 place value chart was refused four different ways and three decks ran out of passes on the same night. When two or three arrangements have been measured and the content still needs clearly more room than a slide has, no arrangement will hold it: split it where the work turns (`slide-composition-playbook.md` section 6).
 
-It reads sizes only. A slide it calls `OK` can still be refused by the check for a rule that needs the whole deck (a reveal pair, a turn without its task, a colour rule), so the check stays the only pass and the only proof.
+It also reads each slide for the check's rules that judge one slide by itself (a title, a colour, a turn with no task, a line or picture twice, a story below its instruction) and prints each one broken as a `RULE` line under that slide, in the check's own words. It reads the rules that need the whole deck the same way (a reveal and its answers, where a word card sits, criteria from the first working slide, the Teach slide rules) and marks each `it reads other slides too`; while the lesson design has units no slide carries yet it names them, because such a rule may then be about a slide not yet written. It ends with the helper delivery and landed sentence checks the run applies. Every rule the check applies is in that report, so it is how to learn what the check will refuse before it runs: write the deck, measure it, mend what it names, without spending a pass or reading the check's or the engine's code. The check stays the only pass and the only proof, because it also builds the real deck, and where the two disagree the check is right.
 
 Now run exactly:
 
@@ -588,7 +523,7 @@ Run them yourself only for a refused preview (above). When the overview was buil
 
 The pages are drawn when the render prints `RENDER_PAGES_OK`. Nothing could be drawn only when the finished render itself prints `VISUAL_ROUTE_UNVERIFIED`: then record `Visual self-read: unavailable` in the short completion report and continue from the successful deterministic check, because a missing visual-render route is not a reason to fail an otherwise checked slide specification. A PowerPoint line from the probe is not that (LibreOffice draws the deck where PowerPoint cannot be reached), and nor is output that stops at `RENDER_PAGES_RUNNING`: drawing takes ten to twenty seconds and is still going, so wait for it to finish. A deck has reached the teacher unseen with every page already drawn beside it.
 
-When page evidence exists, inspect the whole deck yourself in the same Slide Designer context. Do not delegate this pass. Apply `[PLUGIN_ROOT]/references/teacher-slide-visual-profile.md` → Final teacher pass.
+When page evidence exists, inspect the whole deck yourself in the same Slide Designer context. Do not delegate this pass. Apply `[PLUGIN_ROOT]/references/teacher-slide-visual-profile.md` → Final teacher pass. Then read the final-deck sections of `slide-composition-playbook.md` (§14 Deck-level quality tells and §15 Final read-back).
 
 This is the composition pass, made against a deck whose photographs have not arrived. Use the overview contact sheet or sheets as the primary evidence. Do not crop, zoom or separately reinspect every slide when the overview already settles the judgement. Open an individual rendered page only when the overview exposes a possible problem that cannot be judged confidently at overview size.
 

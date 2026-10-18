@@ -185,3 +185,48 @@ test('both cards are the same width and sit either side of one gap', () => {
   assert.equal(left.w, right.w);
   assert.ok(right.x > left.x + left.w, 'the cards overlap');
 });
+
+// The model is the first look at the task, so the unit's criteria may stand
+// beside it. Every sound deck of 17 October 2026 drew them only on the writing
+// slide, because this board had nowhere to put them.
+test('criteria stand down the right and the pair keeps to the room left of them', () => {
+  const PptxGenJS = require('pptxgenjs');
+  const pptx = new PptxGenJS();
+  pptx.layout = 'LAYOUT_WIDE';
+  const plain = pptx.addSlide();
+  const withCriteria = pptx.addSlide();
+  const steps = { type: 'steps', steps: ['Say what you do.', 'Say which part vibrates.', 'Say why it stops.'] };
+  drawStrongAndWeak(pptx, plain, slideWith(), ctx());
+  drawStrongAndWeak(pptx, withCriteria, slideWith({ criteria: steps }), ctx());
+
+  const shapesOf = (slide) => slide._slideObjects.filter((o) => o._type === 'text' || o._type === 'shape');
+  const roundCards = (slide) => slide._slideObjects
+    .filter((o) => o.options && o.options.line && [COLOURS.green, COLOURS.problem].includes(o.options.line.color) &&
+      o.options.rectRadius !== undefined);
+  const inches = (v) => (typeof v === 'number' && v > 100 ? v / 914400 : v);
+  // The good card is the leftmost green edge (the criteria panel is green too),
+  // the weak card the red one.
+  const pair = (slide) => {
+    const found = roundCards(slide).map((o) => o.options);
+    const greens = found.filter((o) => o.line.color === COLOURS.green)
+      .sort((a, b) => inches(a.x) - inches(b.x));
+    return [greens[0], found.find((o) => o.line.color === COLOURS.problem)];
+  };
+  const [plainStrong, plainWeak] = pair(plain);
+  const [strong, weak] = pair(withCriteria);
+
+  assert.ok(inches(strong.w) < inches(plainStrong.w), 'the pair narrows to make room for the criteria');
+  assert.equal(inches(strong.w), inches(weak.w), 'the pair stays a matched pair');
+  const words = shapesOf(withCriteria).map((o) => o.text).flat().map((t) => (t && t.text) || t).join(' ');
+  assert.match(String(words), /Say which part vibrates/);
+  assert.ok(shapesOf(withCriteria).length > shapesOf(plain).length);
+  assert.ok(inches(weak.x) + inches(weak.w) < inches(plainWeak.x) + inches(plainWeak.w),
+    'the weak card ends left of where the panel stands');
+});
+
+test('criteria that are not success criteria are refused by name', () => {
+  assert.throws(
+    () => drawStrongAndWeak(fakePptx(), fakeSlide(), slideWith({ criteria: { type: 'text', value: 'x' } }), ctx()),
+    /"criteria" takes an "sc-panel"/
+  );
+});

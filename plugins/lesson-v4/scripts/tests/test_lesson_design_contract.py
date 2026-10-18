@@ -2144,7 +2144,9 @@ def test_photo_id_is_not_added_to_compiled_filename_identity():
 def test_slide_designer_protects_child_facing_content_beyond_pupil_instruction():
     text = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
     assert "Any string already authored in source-unit `content` that is rendered as pupil-facing" in text
-    assert "Physical navigation and presentation headings remain Slide Designer-owned" in text
+    # S1 (17 Oct 2026): the role says it once, in its list of what the Slide
+    # Designer may choose.
+    assert "- physical navigation and presentation headings;" in text
 
 
 def test_adaptation_photo_merge_happens_before_worksheet_snapshot_and_spawn():
@@ -2220,7 +2222,7 @@ def test_stick_in_pedagogy_walks_json_not_markdown_headings():
 
 def test_slide_designer_has_no_second_answer_or_missing_script_authority():
     text = (ROOT / "agents" / "slide-designer.md").read_text(encoding="utf-8")
-    assert "Answer treatment comes only from the source unit's structured `answer`." in text
+    assert "A source unit's `answer` object is the sole authority for answer treatment." in text
     assert "Do not infer a reveal from stage, task type, whether an answer is definite" in text
     assert "A null script is an intentional absence, not a prompt for downstream script writing." in text
     assert "A definite-answer starter gets an answer slide next." not in text

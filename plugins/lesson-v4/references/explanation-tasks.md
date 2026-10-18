@@ -80,6 +80,20 @@ The most useful feedback move during and after the task is to find the **first p
 
 Put the one link most children skip, and the question to ask at it, in `speakerNotes.lookFor` on the task beat, inside its 25 words: `Look for: the acid named as something the germs make: if a child jumps from sugar to the hole, ask what the germs did with the sugar.` The other likely gaps and their questions go in the same beat's `speakerNotes.teacherInfo`, beside the likely mistakes. That is diagnostic in a way that asking for length is not.
 
+## How this teacher teaches an explanation
+
+Children told to "explain" the objective with nothing in front of them could not, so the teacher shows them how first, as the modelling and talk-before-writing evidence recommends (his rulings, 1 and 18 October 2026). The lesson's final explanation runs in this order:
+
+1. A relatable case the objective lives in, with a named child: `How does Simran's bike bell ring?`, `How does Simran hear Yusuf through the string telephone?`
+2. A good explanation of that very case beside a not-so-good one, with the class finding what the good one does that the other does not (`When the launch shows the model`, below).
+3. Both models come off the board. The task slide keeps the case, the question, the success criteria and the taught words.
+4. Each child tells a partner their explanation of the same case (`rehearsal`, above).
+5. They write it.
+
+Remembering the good one is part of the learning here. A Do beat or a quick check a child passes by remembering the slide is still a weak beat (`preferences.md` → What a Lesson Is For), because its point is to use an idea; this task's point is to learn how an explanation of the idea goes, and a child learns that by holding a good one in mind, saying it in their own words and writing it. So do not make the final case harder to copy by changing it, adding a step the model never showed, or modelling a different case to keep a decision back for the children. Which case is modelled, and the two places a different one is right, is `preferences.md` → Slide Philosophy, `Model this very task by default`.
+
+This is about the lesson's final explanation. An explanation asked mid-lesson as a Do beat is there to use the idea on a fresh case, and `task-contrasts.md` judges it.
+
 ## When the launch shows the model
 
 Two things the launch pair has to do, both owned by `preferences.md` → Slide Philosophy:

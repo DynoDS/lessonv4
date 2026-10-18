@@ -103,8 +103,7 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
     def test_content_based_do_and_the_catalogue_point_at_it(self) -> None:
         self.assertIn(
             "a question to the room is a key question, not this beat, unless it is chosen "
-            "so the answer needs the idea and every child commits, with how they commit "
-            "written into the task",
+            "so the answer needs the idea and every child commits, settled in the task itself",
             flat(CONTENT_BASED),
         )
         self.assertIn("A question put to the room is not one unless it is chosen", flat(DO_BEATS))
@@ -599,10 +598,13 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
             "`reasoningWords` go on that same slide as a `chip-bank` underneath",
             playbook,
         )
-        self.assertIn("Three things on it and no more", playbook)
+        # Three things and the unit's criteria, because children are already
+        # working when they say it (the teacher, 17 October 2026); nothing else.
+        self.assertIn("Three things on that slide, and the unit's success criteria beside them", playbook)
+        self.assertIn("Nothing else goes on it.", playbook)
         self.assertIn("The routine around them stays in the script", playbook)
         self.assertIn(
-            "carrying three things and no more",
+            "carrying three things and the unit's success criteria, and nothing else",
             flat(SLIDE_DESIGNER),
         )
 

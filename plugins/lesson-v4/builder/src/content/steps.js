@@ -326,7 +326,7 @@ function budgetSentence(widthIn, heightIn, text, floorPt = TEXT_FONT_MIN) {
 // a too-long reference is a sticky fact from the lesson design that nobody
 // downstream may reword. Saying which one refused is what points the repair at
 // the person who can actually make it.
-function overloadMessage(steps, index, budget, sourceAuthored, widestPracticePanel, floorPt = TEXT_FONT_MIN) {
+function overloadMessage(steps, index, budget, sourceAuthored, widestPracticePanel, floorPt = TEXT_FONT_MIN, headedList = false) {
   const reference = isReferenceStep(steps[index]);
   // A list marked too long is refused only below the least it may be drawn
   // at, which is not the readable minimum every other list keeps.
@@ -358,6 +358,16 @@ function overloadMessage(steps, index, budget, sourceAuthored, widestPracticePan
     : `Give the panel more room instead: a wider or taller \`sc-panel\` ` +
       `composition up to half the slide, never fewer criteria. See ` +
       `\`slide-success-criteria.md\`.`;
+  // One of a lesson's two headed lists ("How to subtract", "How to exchange")
+  // stacked beside a sum could not be held at 18pt however the weights were
+  // set, and a Year 4 designer found the arrangement that holds them by trial:
+  // one list either side of the work. The teacher passed it (17 October 2026),
+  // so the refusal names it.
+  const eitherSide = headedList
+    ? ` When the slide carries two headed lists that do not fit stacked, put ` +
+      `one either side of the work: \`thirds-h\` with one list's panel in ` +
+      `\`left\`, the work in \`middle\` and the other list's panel in \`right\`.`
+    : '';
 
   if (reference) {
     return `STEP_TEXT_OVERLOAD: the sticky-knowledge reference line does not ` +
@@ -370,7 +380,7 @@ function overloadMessage(steps, index, budget, sourceAuthored, widestPracticePan
   return sourceAuthored
     ? `STEP_TEXT_OVERLOAD: criterion ${stepNumber} does not fit its card at ` +
         `${floor}.${room} Its wording is the ` +
-        `lesson designer's and is not yours to shorten or merge. ${roomier} ` +
+        `lesson designer's and is not yours to shorten or merge. ${roomier}${eitherSide} ` +
         `Nothing was shrunk further or cut.`
     : `STEP_TEXT_OVERLOAD: step ${stepNumber} does not fit its card at ` +
         `${floor}.${room} Shorten the step to that, ` +
@@ -791,7 +801,8 @@ function drawSteps(pptx, slide, zone, data, ctx) {
           undefined,
           zone.sourceAuthoredText,
           zone.widestPracticePanel,
-          TEXT_FONT_MIN
+          TEXT_FONT_MIN,
+          zone.criteriaList && zone.class !== 'D'
         )
       );
     }
@@ -826,7 +837,8 @@ function drawSteps(pptx, slide, zone, data, ctx) {
           undefined,
           zone.sourceAuthoredText,
           zone.widestPracticePanel,
-          floorFor(steps[textNeed.indexOf(Math.max(...textNeed))])
+          floorFor(steps[textNeed.indexOf(Math.max(...textNeed))]),
+          zone.criteriaList && zone.class !== 'D'
         )
       );
     }
@@ -899,7 +911,8 @@ function drawSteps(pptx, slide, zone, data, ctx) {
         ),
         zone.sourceAuthoredText,
         zone.widestPracticePanel,
-        floorFor(steps[overloadedAt])
+        floorFor(steps[overloadedAt]),
+        zone.criteriaList && zone.class !== 'D'
       )
     );
   }
@@ -965,7 +978,8 @@ function drawSteps(pptx, slide, zone, data, ctx) {
           ),
           zone.sourceAuthoredText,
           zone.widestPracticePanel,
-          floorPt
+          floorPt,
+          zone.criteriaList && zone.class !== 'D'
         )
       );
     }

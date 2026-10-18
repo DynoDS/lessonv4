@@ -41,6 +41,24 @@ OPEN_WEB_SOURCE = "web"
 AI_PROMPT_FIELDS = {"physical_state", "must_avoid", "text_rule", "composition"}
 PROMPT_USES = {"slide", "worksheet", "both"}
 STYLE_RULE = "photorealistic, generic, classroom-suitable, no decorative extras"
+# A picture of something happening is a drawing a teacher explains from, and
+# asking for it photorealistic fought its own composition: on 18 October 2026 a
+# Year 3 shadows picture came back as a dark realistic scene with the torch
+# beams passing behind the hand and out again, and only its plainer second try
+# showed the light stopped. The teacher ruled that such pictures are asked for
+# as drawings from the start.
+HAPPENING_STYLE_RULE = (
+    "a clear, simple, flat-coloured drawing on a plain light background, like a good "
+    "science textbook diagram: generic, classroom-suitable, no decorative extras"
+)
+HAPPENING_PREFIX = "Shows it happening:"
+
+
+def style_rule(photo: dict) -> str:
+    constraint = photo.get("pedagogical_constraint")
+    if isinstance(constraint, str) and constraint.startswith(HAPPENING_PREFIX):
+        return HAPPENING_STYLE_RULE
+    return STYLE_RULE
 # Said to the generator on every picture, because no designer should have to
 # remember it. On 12 October 2026 six real things were made without these lines
 # and each came back convincing with small facts invented: a museum card and
@@ -169,7 +187,7 @@ def render_prompt(photo: dict) -> str:
         f"MUST AVOID:\n{avoid}\n\n"
         f"TEXT RULE:\n{prompt['text_rule']}\n\n"
         f"COMPOSITION:\n{prompt['composition']}\n\n"
-        f"STYLE:\n{STYLE_RULE}\n\n"
+        f"STYLE:\n{style_rule(photo)}\n\n"
         f"TRUTH:\n{TRUTH_RULE}"
     )
 

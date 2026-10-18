@@ -2266,3 +2266,82 @@ test('criteria that arrive after the class has started working are refused', () 
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+// A task in words is work too. Every sound deck of 17 October 2026, two made on
+// Claude and two on Codex, ran its explanation as case, strong-and-weak model,
+// partner talk, writing, and drew the criteria only on the writing slide; the
+// check read only figures, so all four passed. One Codex deck also named the
+// criteria on every slide in `successCriteriaRefs` while drawing them on none
+// before the writing, and the check took the names for the panel.
+function wordSlide(title, items, extra) {
+  return {
+    template: 'body-full',
+    title,
+    designUnitId: 'lesson-section/teaching-sequence/unit-006',
+    body: { type: 'stack', items },
+    ...(extra || {})
+  };
+}
+const CRITERIA_PANEL = { type: 'sc-panel', content: { type: 'steps', steps: ['Say what moves.', 'Say why it stops.'] } };
+const theCase = () => wordSlide('Explain the buzzing ruler', [{ type: 'text', value: 'The ruler buzzes, then stops.' }]);
+const theModel = (withCriteria) => ({
+  template: 'strong-and-weak',
+  title: 'Explain the buzzing ruler',
+  designUnitId: 'lesson-section/teaching-sequence/unit-006',
+  strongHeading: 'An explanation',
+  weakHeading: 'Not enough yet',
+  strong: { type: 'text', value: 'Its free end moves back and forth, so it buzzes.' },
+  weak: { type: 'text', value: 'The ruler moves.' },
+  ...(withCriteria ? { criteria: CRITERIA_PANEL } : {})
+});
+const theTalk = (withCriteria) => wordSlide('Explain the buzzing ruler', [
+  { type: 'text', value: 'Tell your partner how the ruler makes its sound.', signal: 'talk' },
+  ...(withCriteria ? [CRITERIA_PANEL] : [])
+]);
+const theWriting = () => wordSlide('Explain the buzzing ruler', [
+  { type: 'text', value: 'Explain how the ruler makes a sound.', signal: 'pencil' },
+  CRITERIA_PANEL
+]);
+
+test('criteria that arrive after a task in words has started are refused', () => {
+  const root = makeRoot();
+  try {
+    const fakeBuilder = writeFakeBuilder(root, `'use strict';
+`);
+    const run = (slides) => runSlideDesignCheck(
+      writeLesson(root, { ...ordinaryLesson(), slides }),
+      { buildPath: fakeBuilder }
+    );
+    const refused = (slides, why) => {
+      const result = run(slides);
+      assert.equal(result.ok, false, why);
+      assert.match(result.stdout, /"signal":"CRITERIA_AFTER_THE_WORK_STARTS"/, why);
+    };
+    // The sound decks' shape: talk before the criteria.
+    refused([theCase(), theModel(false), theTalk(false), theWriting()], 'partner talk before the criteria');
+    // A slide that names its criteria but draws none has not shown them.
+    refused([theCase(), { ...theTalk(false), successCriteriaRefs: ['sc-001'] }, theWriting()],
+      'criteria named in successCriteriaRefs but not drawn');
+    // A Do sign, a tick to mark, and a My Turn are working slides too.
+    refused([{ ...theCase(), doSign: 'quick' }, theWriting()], 'a Do beat before the criteria');
+    refused([wordSlide('Mark it', [{ type: 'text', value: 'Tick each part it has.', signal: 'tick' }]), theWriting()],
+      'marking before the criteria');
+    refused([wordSlide('My Turn', [{ type: 'text', value: 'Watch me explain the bell.' }]), theWriting()],
+      'a modelled turn before the criteria');
+
+    // Passing shapes: criteria from the talk on; criteria beside the model;
+    // a long model that goes without, with the talk carrying them; the case
+    // and a look-closely slide before the work; a unit with no criteria.
+    for (const [slides, why] of [
+      [[theCase(), theModel(false), theTalk(true), theWriting()], 'criteria from the partner talk'],
+      [[theCase(), theModel(true), theTalk(true), theWriting()], 'criteria beside the model as well'],
+      [[theCase(), wordSlide('Look closely', [{ type: 'text', value: 'Look at the ruler.', signal: 'magnifier' }]), theWriting()],
+        'a look-closely slide before the work'],
+      [[theCase(), theModel(false), theTalk(false)], 'a unit that draws no criteria anywhere']
+    ]) {
+      assert.doesNotMatch(run(slides).stdout, /CRITERIA_AFTER_THE_WORK_STARTS/, why);
+    }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

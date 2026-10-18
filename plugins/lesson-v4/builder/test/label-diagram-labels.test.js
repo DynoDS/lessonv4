@@ -79,7 +79,10 @@ async function lessonWith(diagram) {
 
 test('the fault names the two labels and the one field that repairs them', () => {
   const diagram = { imagePath: 'route.png', callouts: CLOSE };
-  const found = labelFaultsFor(diagram, measure(diagram));
+  const all = labelFaultsFor(diagram, measure(diagram));
+  // Two dots this close also put one's line over the other's dot: a cue.
+  assert.deepEqual(all.filter((f) => f.cue).map((f) => f.signal), ['LABEL_DIAGRAM_LINE_OVER_PART']);
+  const found = all.filter((f) => !f.cue);
   assert.equal(found.length, 1);
   assert.equal(found[0].signal, 'LABEL_DIAGRAM_LABELS_COLLIDE');
   assert.ok(!found[0].cue);
@@ -257,4 +260,14 @@ test('the same picture in the same slot of two slides stands still when a label 
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('a line the drawing could not keep off another part is a cue naming both parts', () => {
+  const diagram = { imagePath: 'ear.png', layout: 'sides', callouts: [] };
+  const found = labelFaultsFor(diagram, { leaderFaults: { overDots: [['eardrum', 'cochlea']], crossings: [] } });
+  assert.equal(found.length, 1);
+  assert.equal(found[0].signal, 'LABEL_DIAGRAM_LINE_OVER_PART');
+  assert.equal(found[0].cue, true);
+  assert.match(found[0].message, /the line to "eardrum" runs over the dot for "cochlea"/);
+  assert.deepEqual(labelFaultsFor(diagram, { leaderFaults: { overDots: [], crossings: [] } }), []);
 });

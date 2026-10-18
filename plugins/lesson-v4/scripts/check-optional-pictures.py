@@ -1180,8 +1180,12 @@ def _only_grows(before: object, after: object) -> bool | None:
     return False
 
 
-# The title of an answers slide, as `check-slide-design.js` reads it.
-ANSWER_TITLE = re.compile(r"\banswers?\b", re.IGNORECASE)
+# The title of an answers slide in either house form (preferences.md, Slide
+# Headings): maths says `Answers`, every other subject gives the task's own
+# title with ` - check`. Reading only the maths form left every science and
+# history question-and-check pair counted as two slides, so a drawing kept still
+# across one was refused as a repeat (Year 4 Sound, 17 October 2026).
+ANSWER_TITLE = re.compile(r"\banswers?\b|-\s*check\s*$", re.IGNORECASE)
 
 
 def _answers_its_question(before: dict, after: dict) -> bool:

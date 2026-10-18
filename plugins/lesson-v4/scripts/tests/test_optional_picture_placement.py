@@ -268,6 +268,30 @@ class OptionalPicturePlacementTests(unittest.TestCase):
             module.reveal_runs({"slides": [task("Your Turn", "split-h-60-40"), answers[0]]}),
             [],
         )
+        # Outside maths the answers slide is the task's title with ` - check`
+        # (preferences.md, Slide Headings). A Year 4 Sound deck kept its bike
+        # bell still across one such pair and was refused for three slides when
+        # it had two pages (17 October 2026).
+        def page(title, drawing, body):
+            return {"title": title, "template": "split-h-60-40",
+                    "designUnitId": "unit-006", "body": body,
+                    "decorations": [{"kind": "educational-svg", "concept": drawing,
+                                     "educationalSvgId": f"standard/{drawing}.svg"}]}
+
+        bell = {"slides": [
+            dict(page("How does Simran's bell ring?", "bike-bell", "Simran rings it."),
+                 designUnitId="unit-005"),
+            page("How does Simran's bell ring?", "bike-bell", "Explain how it rings."),
+            page("How does Simran's bell ring? - check", "bike-bell", "The bell vibrates."),
+        ]}
+        self.assertEqual(module.reveal_runs(bell), [[2, 3]])
+        self.assertEqual(module.repeated_decorations(bell), [])
+        # Two separate pages of the same unit, neither a check, stay two slides.
+        bell["slides"][2]["title"] = "How does Simran stop the bell?"
+        self.assertEqual(module.reveal_runs(bell), [])
+        self.assertEqual(len(module.repeated_decorations(bell)), 1)
+        # A question that merely ends in the word is not a check slide.
+        self.assertIsNone(module.ANSWER_TITLE.search("Can you check?"))
         self.assertIn("A page clicked through keeps its drawings still", self.decorator)
         self.assertIn("What the drawing is decides how close it may come", self.decorator)
 

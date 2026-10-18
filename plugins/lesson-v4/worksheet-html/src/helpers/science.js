@@ -132,10 +132,14 @@ function keyMinWidthMm(spec) {
 }
 
 // A box a child writes a word into, plus room for the arrow after it. Five
-// boxes in a chain need more than three, and a constant cannot know.
+// boxes in a chain need more than three, and a constant cannot know. A chain
+// longer than a portrait page holds in one row turns onto a second row by
+// itself (process-chain-svg.js), so it needs the width of its top row and the
+// turn beside it, not a landscape page (18 October 2026).
 function chainMinWidthMm(spec) {
   const n = Array.isArray(spec.boxes) ? spec.boxes.length : 1;
-  return Math.min(267, Math.max(60, n * 34));
+  const oneRow = n * 34;
+  return Math.min(267, Math.max(60, oneRow <= 174 ? oneRow : Math.ceil(n / 2) * 34 + 20));
 }
 
 // A cycle is two rows of stages, so it needs half as many across as a chain

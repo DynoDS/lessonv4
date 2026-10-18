@@ -146,7 +146,7 @@ class TheGuidanceMatchesTheCheckTests(unittest.TestCase):
         self.assertIn("from a different source unit", playbook)
         self.assertIn("two My Turn slides carrying the same unit are one modelling moment", playbook)
         # And the permission is bounded, or every crowded My Turn takes it.
-        self.assertIn("for a representation that cannot be used shared, and for nothing else", playbook)
+        self.assertIn("for a representation that cannot be used shared, and for two examples that would otherwise share one annotated figure (§8), and for nothing else", playbook)
         # BOTH build signals, because the first version of this guidance named
         # only the counter one and a chart with an empty row - the chart a
         # teacher writes in, which draws no counters at all - shipped too narrow

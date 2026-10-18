@@ -138,7 +138,7 @@ function splitReveal(label) {
 // labels ("Equator", "the source") and numbers that carry their own meaning (a
 // date, a measurement) are left untouched, and only the leading number is
 // rewritten, so whatever the label says after it travels with its own dot.
-function renumberByReadingOrder(callouts, onLeft = (c) => c.anchor[0] < 50) {
+function renumberByReadingOrder(callouts, onLeft = (c) => c.anchor[0] < 50, readingIdx = null) {
   const given = callouts.filter((c) => c.given && c.label != null);
   if (given.length < 2) return callouts;
 
@@ -151,10 +151,14 @@ function renumberByReadingOrder(callouts, onLeft = (c) => c.anchor[0] < 50) {
 
   const byY = (a, b) => a.c.anchor[1] - b.c.anchor[1];
   const withIndex = given.map((c, k) => ({ c, k }));
-  const readingOrder = [
-    ...withIndex.filter((o) => onLeft(o.c)).sort(byY),
-    ...withIndex.filter((o) => !onLeft(o.c)).sort(byY),
-  ];
+  // A drawing that rearranged its names to keep a line off another part
+  // (buildLabelDiagram below) passes the order it settled on.
+  const readingOrder = readingIdx
+    ? readingIdx.map((i) => callouts[i]).filter((c) => c.given && c.label != null).map((c) => ({ c }))
+    : [
+      ...withIndex.filter((o) => onLeft(o.c)).sort(byY),
+      ...withIndex.filter((o) => !onLeft(o.c)).sort(byY),
+    ];
 
   const renumbered = new Map();
   readingOrder.forEach((o, position) => {
@@ -206,7 +210,7 @@ function frameBox(W0, H0, frame) {
   return { W, H, dx: (W - W0) / 2, dy: (H - H0) / 2 };
 }
 
-function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN, frame = null, fontSize = null, reserve = null, rule = null, sides = 'both', snug = false }) {
+function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN, frame = null, fontSize = null, reserve = null, rule = null, sides = 'both', snug = false, route = null }) {
   // W and H are the box everything is laid out around; W0 and H0 the picture
   // inside it. With no frame they are the same, and the drawing is unchanged.
   const W0 = width, H0 = height;
@@ -243,7 +247,12 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   // a sheet whose write-on lines are long can keep them all in one band and
   // leave the picture the rest of the page.
   const onLeft = (c) => (sides === 'left' ? true : sides === 'right' ? false : c.anchor[0] < 50);
-  const placed = layout === 'sides' ? renumberByReadingOrder(callouts || [], onLeft) : (callouts || []);
+  // `route` is buildLabelDiagram's: which side each label goes to, and in
+  // what order down it, by callout index. Without it, the side its dot is on
+  // and the order the dots sit down the picture.
+  const placed = layout === 'sides'
+    ? renumberByReadingOrder(callouts || [], onLeft, route ? [...route.left, ...route.right] : null)
+    : (callouts || []);
 
   // Each printed label becomes rows of coloured segments. A plain label is one
   // segment per row exactly as before; a label carrying a `||` reveal keeps its
@@ -280,8 +289,9 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
     return Math.max(lineLen, Math.round(needed), Math.round(byHand));
   };
 
-  const list = placed.map((c) => ({
+  const list = placed.map((c, k) => ({
     c,
+    k,
     rows: rowsFor(c),
     ax: null, ay: null, side: null, lx: null, ly: null,
   }));
@@ -368,8 +378,11 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
     return { centres, restacked: true, top, bottom: top + total, rows };
   };
   const byAnchorY = (a, b) => a.c.anchor[1] - b.c.anchor[1];
-  const leftGroup = layout === 'sides' ? list.filter((o) => onLeft(o.c)).sort(byAnchorY) : [];
-  const rightGroup = layout === 'sides' ? list.filter((o) => !onLeft(o.c)).sort(byAnchorY) : [];
+  const leftGroup = layout !== 'sides' ? []
+    : route ? route.left.map((k) => list[k]) : list.filter((o) => onLeft(o.c)).sort(byAnchorY);
+  const rightGroup = layout !== 'sides' ? []
+    : route ? route.right.map((k) => list[k]) : list.filter((o) => !onLeft(o.c)).sort(byAnchorY);
+  const leftSet = new Set(leftGroup);
   const leftPlan = stackPlan(leftGroup);
   const rightPlan = stackPlan(rightGroup);
   if (layout === 'sides') {
@@ -401,8 +414,8 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
       return w;
     };
     const kept = (em) => (reserve && em > 0 ? em * fsize : 0);
-    const leftW = Math.max(widestOn((o) => onLeft(o.c)), kept(reserve && reserve.leftEm));
-    const rightW = Math.max(widestOn((o) => !onLeft(o.c)), kept(reserve && reserve.rightEm));
+    const leftW = Math.max(widestOn((o) => leftSet.has(o)), kept(reserve && reserve.leftEm));
+    const rightW = Math.max(widestOn((o) => !leftSet.has(o)), kept(reserve && reserve.rightEm));
     bandsEm = { leftEm: leftW / fsize, rightEm: rightW / fsize, rows: maxLines };
     const bandFor = (w) =>
       w > 0 ? Math.max(Math.round(w + fsize * 0.5 + leaderRun), floorMX) : floorMX;
@@ -507,6 +520,8 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
       // of the line rather than floating just above it.
       endY = c.given ? ly : ly + fsize * 0.5;
     }
+    o.ex = endX;
+    o.ey = endY;
     // Over a photograph a plain dark leader disappears into dark foliage or a
     // shadowed roof, so it carries a white casing: the same line drawn thicker in
     // white underneath. On a plain diagram the casing sits on white and is
@@ -581,6 +596,45 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   const clipped = boxes
     .filter((b) => b.x0 < -slack || b.y0 < -slack || b.x1 > CW + slack || b.y1 > CH + slack)
     .map((b) => b.name);
+  // Where the leader lines went. A child finds a part by following its line
+  // from the name to the dot, so a line that runs over another part's dot
+  // reads as pointing at that part, and two lines that cross can be followed
+  // to the wrong name. The 'sides' stacking orders the names by how high
+  // their dots sit and never looked at the lines: on the Year 4 ear (17
+  // October 2026) "eardrum" and "cochlea" sat at one height, and the
+  // eardrum's line ran straight through the cochlea's dot on the slides that
+  // taught both words. A dot counts as passed over when the line, with its
+  // white casing, comes within half a dot of touching it.
+  const leaderFaults = { overDots: [], crossings: [] };
+  const nameOf = (o) => splitReveal(o.c.label || '').head.trim() || `callout ${o.k + 1}`;
+  const near = dotR * 1.5 + strokeW * 1.3;
+  const toSegment = (px, py, o) => {
+    const vx = o.ex - o.ax, vy = o.ey - o.ay;
+    const len2 = vx * vx + vy * vy || 1;
+    const t = Math.max(0, Math.min(1, ((px - o.ax) * vx + (py - o.ay) * vy) / len2));
+    return Math.hypot(px - (o.ax + t * vx), py - (o.ay + t * vy));
+  };
+  const turn = (x1, y1, x2, y2, x3, y3) => (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1);
+  const cross = (a, b) =>
+    turn(a.ax, a.ay, a.ex, a.ey, b.ax, b.ay) * turn(a.ax, a.ay, a.ex, a.ey, b.ex, b.ey) < 0 &&
+    turn(b.ax, b.ay, b.ex, b.ey, a.ax, a.ay) * turn(b.ax, b.ay, b.ex, b.ey, a.ex, a.ey) < 0;
+  let leaderLength = 0;
+  for (const o of list) {
+    leaderLength += Math.hypot(o.ex - o.ax, o.ey - o.ay);
+    for (const p of list) {
+      if (p === o || Math.hypot(p.ax - o.ax, p.ay - o.ay) <= dotR * 2) continue;
+      if (toSegment(p.ax, p.ay, o) < near) leaderFaults.overDots.push([nameOf(o), nameOf(p)]);
+    }
+  }
+  for (let i = 0; i < list.length; i++) {
+    for (let j = i + 1; j < list.length; j++) {
+      const a = list[i], b = list[j];
+      if (Math.hypot(a.ax - b.ax, a.ay - b.ay) <= dotR * 2) continue;
+      if (cross(a, b)) leaderFaults.crossings.push([nameOf(a), nameOf(b)]);
+    }
+  }
+  const routeTaken = { left: leftGroup.map((o) => o.k), right: rightGroup.map((o) => o.k) };
+
   const restacked = [leftPlan.restacked && 'left', rightPlan.restacked && 'right'].filter(Boolean);
   const outgrown = [['left', leftPlan], ['right', rightPlan]]
     .filter(([, plan]) => plan.restacked && plan.bottom - plan.top > H)
@@ -588,7 +642,67 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${CW}" height="${CH}" viewBox="0 0 ${CW} ${CH}"><rect width="${CW}" height="${CH}" fill="#FFFFFF"/>${parts.join('')}</svg>`;
   const picture = { x: ox + picDX, y: oy + picDY, w: W0, h: H0 };
-  return { svg, w: CW, h: CH, aspect: CW / CH, fontSize: fsize, bands: bandsEm, box: { w: W, h: H }, picture, restacked, outgrown, labelFaults: { overlaps, clipped } };
+  return { svg, w: CW, h: CH, aspect: CW / CH, fontSize: fsize, bands: bandsEm, box: { w: W, h: H }, picture, restacked, outgrown, labelFaults: { overlaps, clipped }, leaderFaults, leaderLength, route: routeTaken };
+}
+
+// The poster layout with its lines kept clear. The names go down the sides in
+// the order their dots sit, which is right almost always, and a drawing whose
+// lines touch nothing else comes out exactly as it always has. When a line
+// runs over another part's dot or crosses another line, the names are
+// rearranged: two names on one side swap places, or a name whose dot sits
+// near the middle of the picture moves to the other side. Each step keeps the
+// arrangement with the fewest clashes, then the shortest lines, until nothing
+// improves it. Whatever clash is left is returned in `leaderFaults` for the
+// surface to report.
+const MIDDLE = [35, 65];
+
+function clashes(built) {
+  return built.leaderFaults.overDots.length + built.leaderFaults.crossings.length;
+}
+
+function better(a, b) {
+  const ca = clashes(a), cb = clashes(b);
+  return ca !== cb ? ca < cb : a.leaderLength < b.leaderLength - 1e-6;
+}
+
+function buildLabelDiagram(args) {
+  const first = buildLabelDiagramSvg(args);
+  if (args.layout !== 'sides' || args.route || !clashes(first)) return first;
+  // The search draws without the picture: only the geometry is compared.
+  const trial = (route) => buildLabelDiagramSvg({ ...args, href: '', route });
+  const callouts = args.callouts || [];
+  const canMove = args.sides !== 'left' && args.sides !== 'right';
+  let best = first;
+  for (let round = 0; round < 40 && clashes(best); round++) {
+    const { left, right } = best.route;
+    const options = [];
+    for (const [side, other, name] of [[left, right, 'left'], [right, left, 'right']]) {
+      for (let i = 0; i < side.length; i++) {
+        for (let j = i + 1; j < side.length; j++) {
+          const swapped = side.slice();
+          [swapped[i], swapped[j]] = [swapped[j], swapped[i]];
+          options.push(name === 'left' ? { left: swapped, right } : { left, right: swapped });
+        }
+        const k = side[i];
+        const x = callouts[k].anchor[0];
+        if (!canMove || x < MIDDLE[0] || x > MIDDLE[1]) continue;
+        const kept = side.filter((n) => n !== k);
+        for (let at = 0; at <= other.length; at++) {
+          const moved = [...other.slice(0, at), k, ...other.slice(at)];
+          options.push(name === 'left' ? { left: kept, right: moved } : { left: moved, right: kept });
+        }
+      }
+    }
+    let next = null;
+    for (const route of options) {
+      const tried = trial(route);
+      if (better(tried, next || best)) next = tried;
+    }
+    if (!next) break;
+    best = next;
+  }
+  if (best === first) return first;
+  return buildLabelDiagramSvg({ ...args, route: best.route });
 }
 
 // The labelled picture for paper a child writes on (worksheets, printed
@@ -611,7 +725,7 @@ function buildForPaper(args, { widthMm, perLetterMm, minMm, minFontMm = PAPER_MI
     let built = null;
     let fontSize = args.fontSize || null;
     for (let pass = 0; pass < 25; pass++) {
-      built = buildLabelDiagramSvg({ ...args, sides, fontSize, rule: { perLetter: perLetterMm * unitsPerMm, min: minMm * unitsPerMm } });
+      built = buildLabelDiagram({ ...args, sides, fontSize, rule: { perLetter: perLetterMm * unitsPerMm, min: minMm * unitsPerMm } });
       if (!args.fontSize && (fontSize || built.fontSize < minFontMm * (built.w / widthMm))) fontSize = minFontMm * (built.w / widthMm);
       const next = built.w / widthMm;
       const settled = Math.abs(next - unitsPerMm) / unitsPerMm < 0.002;
@@ -662,7 +776,7 @@ function tightSvg(spec = {}) {
     );
   }
   const isSides = spec.layout === 'sides';
-  return buildLabelDiagramSvg({
+  return buildLabelDiagram({
     href,
     width,
     height,
@@ -705,4 +819,4 @@ function leaderCueSvg() {
   return { svg, aspect: w / h, w, h };
 }
 
-module.exports = { buildLabelDiagramSvg, buildForPaper, tightSvg, cacheKey, leaderCueSvg };
+module.exports = { buildLabelDiagramSvg: buildLabelDiagram, buildForPaper, tightSvg, cacheKey, leaderCueSvg };

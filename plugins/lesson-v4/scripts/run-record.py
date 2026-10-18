@@ -75,6 +75,25 @@ SIGNAL_LINE = re.compile(r"^([A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+):\s*(.*)$")
 RUNS_A_PROGRAM = re.compile(r"(?:^|[\s\"'/\\&;|(])(?:python[0-9.]*|py|node|bash|sh|pwsh|powershell)(?:\.exe)?[\"']?(?:\s|$)", re.I)
 READING_TOOLS = {"Read", "Grep", "Glob"}
 VERDICT = re.compile(r"-\s*run\s+(unharmed|changed|harmed)\b[:\s]*(.*)$", re.I)
+# A check that refuses a draft lists each problem on a line of its own
+# ("  x slide 2 text: TASK_BLUE_NOT_A_SHORT_TASK: ..."). That line is the reason.
+# The lines right after the failure marker are often only the wrapper's own
+# ending: on 17 October 2026 a refused blue line was recorded as "the preview
+# check exited 1; the steps after it did not run", which read as a breakdown.
+PROBLEM_LINE = re.compile(r"^\s*x\s+(slide\b.*)$", re.M)
+WRAPPER_LINE = re.compile(r"^(?:DECK_PREVIEW_[A-Z_]+:|The scratch build ran as well|Repair what every line names)")
+# How a refusal reads in the record: a check turning a draft down is the check
+# doing its job, not something breaking.
+OUTCOME_WORDS = {"FAILED": "turned down", "REFUSED": "turned down"}
+
+
+def failure_reason(output: str, after: int, marker_rest: str) -> str:
+    named = PROBLEM_LINE.search(output)
+    if named:
+        return one_line(named.group(1), 300)
+    tail = [line for line in output[after:].strip().splitlines()
+            if line.strip() and not WRAPPER_LINE.match(line.strip())][:2]
+    return one_line(" ".join([marker_rest.strip(": ")] + tail), 300)
 
 
 def load_worker_launch():
@@ -278,8 +297,7 @@ def read_worker(worker: dict) -> dict:
                                 continue
                             reason = ""
                             if outcome != "OK":
-                                tail = output[match.end():].strip().splitlines()[:2]
-                                reason = one_line(" ".join([rest.strip(": ")] + tail), 300)
+                                reason = failure_reason(output, match.end(), rest)
                             checks.append((when, family, outcome, reason))
         if kind in ("assistant", "user"):
             last_kind = kind
@@ -396,8 +414,10 @@ def slide_attempts(working_dir: Path) -> list[str]:
             continue
         markers = [m.group(1) + "_" + m.group(2) for m in CHECK_LINE.finditer(text)]
         failed = [m for m in markers if not m.endswith("_OK")]
-        first_reason = next((line for line in text.splitlines()
-                             if line.strip() and not line.startswith(("SLIDE_DESIGN_CHECK_OK",))), "")
+        named = PROBLEM_LINE.search(text) if failed else None
+        first_reason = named.group(1) if named else next(
+            (line for line in text.splitlines()
+             if line.strip() and not line.startswith(("SLIDE_DESIGN_CHECK_OK",))), "")
         verdict = ", ".join(sorted(set(failed))) if failed else ", ".join(sorted(set(markers))) or "no marker"
         lines.append(f"- {check.name[:-len('.check.txt')]}: {verdict}. First line after it: {one_line(first_reason, 300)}")
     return lines
@@ -501,7 +521,8 @@ def claude_record(working_dir: Path, claude_home: Path) -> tuple[list[str], list
                     checks.append(f"  - {family}: {tail}")
                     for when, _family, outcome, reason in order:
                         if outcome != "OK":
-                            checks.append(f"    - {clock(when)} {outcome}: {reason or '(no reason printed)'}")
+                            checks.append(f"    - {clock(when)} {OUTCOME_WORDS.get(outcome, outcome)}: "
+                                          f"{reason or '(no reason printed)'}")
             elif worker["checks"]:
                 checks.append(f"- {worker['role']} (session {number}): {len(worker['checks'])} check runs, none failed")
 

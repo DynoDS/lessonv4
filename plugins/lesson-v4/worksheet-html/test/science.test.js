@@ -181,6 +181,15 @@ test("a longer chain needs a wider zone", () => {
   );
 });
 
+test("a chain too long for one row fits a portrait page, on two rows", () => {
+  // The Year 4 bell-to-brain chain of seven links (18 October 2026). It turns
+  // onto a second row by itself, so it does not ask for a landscape page.
+  const seven = { helper: "process-chain", boxes: ["school bell", null, null, null, null, null, "brain"] };
+  const width = REGISTRY["process-chain"].needs(seven).minWidthMm;
+  assert.ok(width <= FULL_MM, `asks for ${width}mm`);
+  assert.match(renderHelper(seven, width), /chain-turn/);
+});
+
 // ─── all three ───────────────────────────────────────────────────────────
 
 test("the circuit hard-codes no colour outside the token system", () => {

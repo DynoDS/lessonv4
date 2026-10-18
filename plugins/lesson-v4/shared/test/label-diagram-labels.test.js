@@ -306,3 +306,74 @@ test('long lines go down one side when a band each side would leave the picture 
   const names = { ...PLANT, callouts: PLANT.callouts.map((c) => ({ ...c, given: true })) };
   assert.equal(buildForPaper(names, { widthMm: 134, perLetterMm: 6.5, minMm: 30 }).svg, buildLabelDiagramSvg(names).svg);
 });
+
+// A child finds a part by following its line from the name to the dot. On the
+// Year 4 ear of 17 October 2026 "eardrum" and "cochlea" sat at one height, the
+// names went down the right in the order of their dots, and the eardrum's line
+// ran straight through the cochlea's dot on the slides that taught both words.
+// The lines are read back out of the drawing, not from its own report.
+const EAR = [
+  { anchor: [10, 38], label: 'outer ear', given: true },
+  { anchor: [33, 47], label: 'ear canal', given: true },
+  { anchor: [50, 49], label: 'eardrum', given: true },
+  { anchor: [56, 38], label: 'ear bones', given: true },
+  { anchor: [81, 50], label: 'cochlea', given: true },
+];
+
+// The poster as tightSvg draws it, with the names in an order the test sets.
+const posterInOrder = (callouts, route) => buildLabelDiagramSvg({
+  href: 'route.jpg', width: 1536, height: 1024, layout: 'sides',
+  marginXRatio: 0.22, marginYRatio: 0.02, labelMaxChars: 16, callouts, route,
+});
+
+function linesOverOtherDots(svg) {
+  const dots = [...svg.matchAll(/<circle cx="([-\d.]+)" cy="([-\d.]+)" r="([\d.]+)"/g)]
+    .map((m) => ({ x: Number(m[1]), y: Number(m[2]), r: Number(m[3]) }));
+  const lines = [...svg.matchAll(/<line x1="([-\d.]+)" y1="([-\d.]+)" x2="([-\d.]+)" y2="([-\d.]+)" stroke="#1A1A1A"/g)]
+    .map((m) => m.slice(1, 5).map(Number));
+  let hits = 0;
+  for (const [x1, y1, x2, y2] of lines) {
+    for (const d of dots) {
+      if (Math.hypot(d.x - x1, d.y - y1) <= d.r) continue; // its own dot
+      const vx = x2 - x1, vy = y2 - y1;
+      const t = Math.max(0, Math.min(1, ((d.x - x1) * vx + (d.y - y1) * vy) / (vx * vx + vy * vy)));
+      if (Math.hypot(d.x - (x1 + t * vx), d.y - (y1 + t * vy)) < d.r * 1.5) hits += 1;
+    }
+  }
+  return hits;
+}
+
+test('a line never runs over another part\'s dot when the names can be arranged to avoid it', () => {
+  for (const fontSize of [null, 69, 40]) {
+    const out = poster(EAR, fontSize ? { fontSize } : {});
+    assert.equal(linesOverOtherDots(out.svg), 0, `fontSize ${fontSize}: a line runs over another dot`);
+    assert.deepEqual(out.leaderFaults, { overDots: [], crossings: [] });
+    assert.equal((out.svg.match(/<circle /g) || []).length, 5, 'every part keeps its dot');
+  }
+  // The arrangement the names were given first is the one that clashed.
+  const asFirstPlaced = posterInOrder(EAR, { left: [0, 1], right: [3, 2, 4] });
+  assert.ok(linesOverOtherDots(asFirstPlaced.svg) > 0, 'the old order is still detected');
+  assert.deepEqual(asFirstPlaced.leaderFaults.overDots, [['eardrum', 'cochlea']]);
+});
+
+test('a diagram whose lines are already clear is drawn in the order of its dots, unchanged', () => {
+  for (const callouts of [DIGESTION, EAR.filter((c) => c.label !== 'cochlea')]) {
+    const out = poster(callouts);
+    assert.equal(out.svg, posterInOrder(callouts, out.route).svg);
+    const byY = (side) => side.map((k) => callouts[k].anchor[1]);
+    for (const side of [out.route.left, out.route.right]) {
+      assert.deepEqual(byY(side), byY(side).slice().sort((a, b) => a - b), 'names follow their dots down the side');
+    }
+  }
+});
+
+test('numbered names still read 1, 2, 3 down the page after the names are rearranged', () => {
+  const numbered = EAR.map((c, k) => ({ ...c, label: String(k + 1) }));
+  const out = poster(numbered);
+  assert.equal(linesOverOtherDots(out.svg), 0);
+  const read = [...out.svg.matchAll(/<text x="([-\d.]+)" y="([-\d.]+)"[^>]*>(\d+)<\/text>/g)]
+    .map((m) => ({ x: Number(m[1]), y: Number(m[2]), n: Number(m[3]) }));
+  const mid = out.w / 2;
+  const column = (left) => read.filter((r) => (r.x < mid) === left).sort((a, b) => a.y - b.y).map((r) => r.n);
+  assert.deepEqual([...column(true), ...column(false)], [1, 2, 3, 4, 5]);
+});

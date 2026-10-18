@@ -16,7 +16,10 @@ Commands:
 
 `--base-image` turns the call into an edit of that picture (the second-call
 edit in image-scout-generation.md). `--run-dir` is a folder the bridge may
-write its own records into; give each call its own.
+write its own records into. Each call makes a fresh folder of its own inside
+it, so calls made together never share one: on 17 October 2026 four calls given
+one mistyped folder overwrote each other's record of which Codex session they
+were, and all four reported the same picture as theirs.
 
 Which Codex: the newest copy bundled with the Codex desktop app, then a
 `codex` on PATH. The app's copy updates itself; a separately installed one
@@ -39,6 +42,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 
 GENERATION_TIMEOUT_SECONDS = 600
@@ -161,8 +165,9 @@ def cmd_generate(args) -> int:
     if exe is None:
         return emit({"ok": False, "error": "no signed-in Codex found; nothing was generated"}, 3)
 
-    run_dir = os.path.abspath(args.run_dir)
-    os.makedirs(run_dir, exist_ok=True)
+    parent = os.path.abspath(args.run_dir)
+    os.makedirs(parent, exist_ok=True)
+    run_dir = tempfile.mkdtemp(prefix="call-", dir=parent)
     events_path = os.path.join(run_dir, "codex-events.jsonl")
     last_path = os.path.join(run_dir, "codex-last-message.txt")
     message = INSTRUCTION.format(edit_line=EDIT_LINE if base else "", prompt=prompt)
@@ -207,12 +212,12 @@ def cmd_generate(args) -> int:
         # look, as image-scout-generation.md says for any host.
         return emit({
             "ok": False, "codex_exit": code, "seconds": seconds, "thread_id": thread,
-            "host_files": files, "events": events_path,
+            "host_files": files, "events": events_path, "run_dir": run_dir,
             "error": ("no picture came back" if not files
                       else "more than one picture came back; open each and name yours with --host-file"),
         }, 4)
     return emit({"ok": True, "host_file": files[0], "seconds": seconds,
-                 "thread_id": thread, "codex": exe})
+                 "thread_id": thread, "codex": exe, "run_dir": run_dir})
 
 
 def main(argv=None) -> int:

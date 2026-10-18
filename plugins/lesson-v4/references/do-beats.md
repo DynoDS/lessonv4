@@ -611,7 +611,7 @@ Children look hard at an object, artefact, rock, material or old photograph to f
 ### 11.5 A quick test
 Every child predicts, then the test settles it: does it float, will the magnet pick it up, does the rice jump when the tray is banged.
 **Best for:** a science idea a one-minute test shows directly.
-**Board:** every child writes a prediction, then the teacher does the test at the front. The Year 4 sound lesson's rice on cling film is this.
+**Board:** every child writes a prediction and why, then the teacher does the test at the front. The Year 4 sound lesson's rice on cling film is this.
 **Printed:** a write-on prediction and result strip, when children record several tests.
 **Prepared day:** the equipment on each table.
 **The limit:** not when setting up takes longer than the thinking, or when the test can fail in a way that teaches the wrong idea.

@@ -399,14 +399,25 @@ def surface_of(item: dict) -> str:
 def run_inventory(root: Path, design_path: Path) -> int:
     uses = load_uses(design_path)
     print(f"REQUIRED USES {len(uses)}")
+    # Each use is judged against its purpose as well as its must-show list. A
+    # Year 4 sound lesson (18 October 2026) asked for a chain to show "the
+    # vibration being passed from one thing to the next", listed only boxes
+    # and arrows as its features, and a box-and-arrow helper covered it: the
+    # route was drawn and the push passing along was left to the words.
+    print("Judge each use against its purpose as well as what it must show: a helper that draws "
+          "only the parts or the route of something the purpose shows happening is a lookalike "
+          "of that purpose, so record `substitute` and the picture route makes it; a purpose that "
+          "is the route itself (a food chain, the order food travels) is still a route.")
     for item in uses:
         bearing = "load-bearing" if item["loadBearing"] else "supporting"
         features = ", ".join(item["requiredFeatures"]) or "none stated"
+        purpose = item.get("representationPurpose")
         print(
             f"- {item['representationId']}/{item['configuration']} "
             f"[{item['requiredSurface']}] {bearing}: "
             f"{item.get('representationName')} - {item.get('description')} "
             f"(must show: {features})"
+            + (f" (purpose: {purpose})" if purpose else "")
         )
     for surface in ("slides", "worksheets", "wall", "stick-in"):
         keys = sorted(registry_keys(root, surface))

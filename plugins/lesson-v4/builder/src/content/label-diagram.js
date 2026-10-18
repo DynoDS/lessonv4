@@ -114,6 +114,31 @@ function labelFaultsFor(data, measured) {
     });
   }
 
+  // A line left running over another part's dot, or across another line,
+  // after the drawing has tried every arrangement of the names it knows. The
+  // child follows a line to find the part, so this one may be followed to the
+  // wrong part. A cue to look: the slide is drawn.
+  const overDots = (measured.leaderFaults && measured.leaderFaults.overDots) || [];
+  const crossings = (measured.leaderFaults && measured.leaderFaults.crossings) || [];
+  if (overDots.length || crossings.length) {
+    const parts = [];
+    if (overDots.length) {
+      parts.push(overDots.slice(0, 3).map(([line, dot]) => `the line to ${quoted(line)} runs over the dot for ${quoted(dot)}`).join(', '));
+    }
+    if (crossings.length) {
+      parts.push(crossings.slice(0, 3).map(([a, b]) => `the lines to ${quoted(a)} and ${quoted(b)} cross`).join(', '));
+    }
+    out.push({
+      signal: 'LABEL_DIAGRAM_LINE_OVER_PART',
+      cue: true,
+      message:
+        `${which}: ${parts.join(', and ')}, so a child following that line may land on the ` +
+        'wrong part. No arrangement of the names down the sides kept every line clear. ' +
+        'Labelling fewer parts on this slide, so the crowded ones are shown on a slide of ' +
+        'their own, usually clears it.',
+    });
+  }
+
   const tall = measured.outgrown || [];
   if (tall.length) {
     const worst = tall.reduce((x, y) => (y.need / y.room > x.need / x.room ? y : x));
@@ -328,7 +353,7 @@ function solve(data, entry, reserve, w, h, pt) {
     aspect: built.aspect,
     pictureShort: Math.min(built.picture.w, built.picture.h) * fit,
     picture: { x: built.picture.x * fit, y: built.picture.y * fit, w: built.picture.w * fit, h: built.picture.h * fit },
-    measured: { outgrown: built.outgrown, labelFaults: built.labelFaults },
+    measured: { outgrown: built.outgrown, labelFaults: built.labelFaults, leaderFaults: built.leaderFaults },
   };
 }
 
@@ -345,7 +370,7 @@ function asOnPaper(data, entry, w, h) {
     aspect: built.aspect,
     pictureShort: Math.min(built.picture.w, built.picture.h) * fit,
     picture: { x: built.picture.x * fit, y: built.picture.y * fit, w: built.picture.w * fit, h: built.picture.h * fit },
-    measured: { outgrown: built.outgrown, labelFaults: built.labelFaults },
+    measured: { outgrown: built.outgrown, labelFaults: built.labelFaults, leaderFaults: built.leaderFaults },
   };
 }
 

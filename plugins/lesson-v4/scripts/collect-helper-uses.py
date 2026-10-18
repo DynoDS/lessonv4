@@ -44,6 +44,7 @@ def registry(design: dict) -> dict[tuple[str, str], dict]:
             result[(rep["id"], config["id"])] = {
                 "representationId": rep["id"],
                 "representationName": rep.get("name"),
+                "representationPurpose": rep.get("purpose"),
                 "configuration": config["id"],
                 "description": config.get("description"),
                 "loadBearing": config.get("loadBearing") is True,

@@ -44,8 +44,32 @@
 //   bank        named pictures in a row above the chain, in the order given,
 //               joined by nothing: the things to be put into the empty boxes.
 //               Give it mixed up; the drawing keeps the order it is handed.
+//
+// The answers. A chain with empty boxes has a check slide that fills them in,
+// and the words that fill them are the answer, so they are drawn in answer
+// green, as the cycle's are: mark each one where it is written,
+//   { text: "eardrum", answer: true }
+// and keep the stages the question gave (the bell the chain starts from) as
+// they were, so the class sees which were the answers. A Year 4 science check
+// slide had no way to say it: its answers sat black in the boxes and a green
+// line under the chain wrote the whole order out again (17 October 2026).
+// Green on the board and the wall. A pupil sheet and the stick-in pack are the
+// child's to fill in, so there an answer box prints empty (a pictured link
+// keeps its picture and loses its name); the teacher's answer sheet asks for
+// them (`answers: "show"` on the profile) and prints them green.
+//
+// A chain too long for one row turns onto a second, as a line of a book does:
+// the first half of the links on top, the rest underneath starting under the
+// first, both read left to right, and one arrow leaving the last link of the
+// top row, running back under it and coming into the first link of the second.
+// Before this the drawing refused the chain, and slide designers split a Year 4
+// bell-to-brain chain of seven links into two separate chains in two cards,
+// which the class read as two journeys: nothing joined the fourth link to the
+// fifth (stress test, 17 and 18 October 2026). A chain that fits one row at any
+// readable size is drawn on one row, exactly as before.
 
 const T = require('./figure-text');
+const { PALETTES } = require('./surface-profiles');
 
 // ─── CONSTANTS (in ems of the settled font size) ─────────────────────────────
 const BOX_PAD_X = 0.5; // words to the box edge, each side
@@ -92,6 +116,10 @@ const BANK_MAX_W = 16;
 const BANK_GAP_X = 1.2;
 const BANK_GAP_Y = 1.1;
 const BANK_SHAPE = 0.75; // a bank picture's frame, height over width
+// A chain on two rows: the band between the rows that the turning arrow runs
+// back along, and the room it takes beside the rows to turn down and come in.
+const ROW_GAP = 1.5;
+const TURN_W = 2;
 // ────────────────────────────────────────────────────────────────────────────
 
 function filled(v) {
@@ -120,8 +148,38 @@ function link(raw) {
   return filled(raw) ? { text: String(raw), label: null, pic: null, imagePath: null } : null;
 }
 
+// A box as a link, keeping whether its words are the answer.
+function box(raw) {
+  const out = link(raw);
+  if (out && raw && typeof raw === 'object' && !Array.isArray(raw) && raw.answer === true && out.text) out.answer = true;
+  return out;
+}
+
+// Whether the answers are drawn on this surface: on the board and the wall,
+// and on paper only where the surface asks (the teacher's answer sheet).
+function answersShown(profile) {
+  if (profile && profile.answers === 'show') return true;
+  if (profile && profile.answers === 'hide') return false;
+  return !(profile && (profile.palette === 'sheet' || profile.palette === 'ink'));
+}
+
+// The question the chain asks: every answer taken off. An answer box becomes
+// an empty box; a pictured one keeps its picture and loses its name.
+function withoutAnswers(spec) {
+  if (!Array.isArray(spec.boxes)) return spec;
+  return {
+    ...spec,
+    boxes: spec.boxes.map((raw) => {
+      if (!(raw && typeof raw === 'object' && !Array.isArray(raw) && raw.answer === true)) return raw;
+      const kept = { ...raw, text: null };
+      delete kept.answer;
+      return link(kept) ? kept : null;
+    }),
+  };
+}
+
 function normalise(spec = {}) {
-  const boxes = Array.isArray(spec.boxes) ? spec.boxes.map(link) : [];
+  const boxes = Array.isArray(spec.boxes) ? spec.boxes.map(box) : [];
   if (boxes.length < 1) {
     throw new Error('PROCESS_CHAIN_INVALID: a process chain needs `boxes`, one entry per stage (null for a box the child fills).');
   }
@@ -184,18 +242,23 @@ function bankAt(n, profile, pt, W, widest = Infinity) {
   return { h: picH + nameH + BANK_GAP_Y * pt, cells, cellW, picH, gap, rowW: m * cellW + (m - 1) * gap };
 }
 
-function layoutAt(n, profile, pt) {
+function layoutAt(n, profile, pt, rows = 1) {
   const bold = profile.bold;
   const W = profile.widthPt;
   const count = n.boxes.length;
+  // The links on each row; on two rows the top one holds the extra link.
+  const perRow = Math.ceil(count / rows);
+  const turn = rows > 1 ? TURN_W * pt : 0;
   const arrowRun = (n.arrowHeads ? ARROW_W : JOIN_W) + 2 * ARROW_GAP;
   const anyPic = n.boxes.some((b) => b && b.pic);
-  const across = (W - 2 * PAD * pt - (count - 1) * arrowRun * pt) / count;
+  const across = (W - 2 * PAD * pt - 2 * turn - (perRow - 1) * arrowRun * pt) / perRow;
   let boxW = Math.min((anyPic ? PIC_MAX_W : BOX_MAX_W) * pt, across);
   if (boxW < BOX_MIN_W * pt) {
+    const mm = (((BOX_MIN_W + arrowRun) * perRow - arrowRun + 2 * PAD + (rows > 1 ? 2 * TURN_W : 0)) * profile.minFontPt / 72) * 25.4;
     return new Error(
-      `PROCESS_CHAIN_TOO_NARROW: ${count} boxes and their arrows need ${(((BOX_MIN_W + arrowRun) * count - arrowRun + 2 * PAD) * profile.minFontPt / 72 * 25.4).toFixed(0)}mm ` +
-        `across at the ${profile.minFontPt}pt readable size and this space is ${(W / 72 * 25.4).toFixed(0)}mm. Give the chain more width, or split it into two chains.`
+      `PROCESS_CHAIN_TOO_NARROW: ${count} boxes and their arrows need ${mm.toFixed(0)}mm across${rows > 1 ? ' even on two rows' : ''} ` +
+        `at the ${profile.minFontPt}pt readable size and this space is ${(W / 72 * 25.4).toFixed(0)}mm. ` +
+        (rows > 1 ? 'Give the chain more width, or drop the stages this question does not ask about.' : 'Give the chain more width.')
     );
   }
   const stemLines = n.text ? T.wrap(n.text, pt, W - 2 * PAD * pt, bold) : [];
@@ -240,7 +303,8 @@ function layoutAt(n, profile, pt) {
     const shape = Math.min(1, Math.max(...n.boxes.filter((b) => b && b.pic).map((b) => b.pic.h / b.pic.w)));
     picH = boxW * shape;
     if (profile.heightPt) {
-      const room = profile.heightPt - (stemH + bank.h + words.nameH + words.labelH + 2 * PAD * pt);
+      // Each row has its own pictures, names and labels; the rows share what is left.
+      const room = (profile.heightPt - (stemH + bank.h + rows * (words.nameH + words.labelH) + (rows - 1) * ROW_GAP * pt + 2 * PAD * pt)) / rows;
       if (room < PIC_MIN_H * pt) {
         return new Error(
           `PROCESS_CHAIN_ZONE_TOO_SHALLOW: the chain's pictures are left ${(Math.max(0, room) / 72).toFixed(2)}in of height at the ${profile.minFontPt}pt readable size, and a picture needs ${(PIC_MIN_H * profile.minFontPt / 72).toFixed(2)}in to be seen. ` +
@@ -258,27 +322,48 @@ function layoutAt(n, profile, pt) {
     }
   }
   const mainH = Math.max(picH, n.boxes.some((b) => !b || !b.pic) ? words.boxH : 0);
+  const rowH = mainH + words.nameH + words.labelH;
+  const chainH = rows * rowH + (rows - 1) * ROW_GAP * pt;
   // A bank too tall for a shallow space gives up picture size before the chain
   // is refused: its pictures shrink towards the width of a box.
   if (profile.heightPt && bank.picH) {
-    const over = stemH + bank.h + mainH + words.nameH + words.labelH + 2 * PAD * pt - profile.heightPt;
+    const over = stemH + bank.h + chainH + 2 * PAD * pt - profile.heightPt;
     if (over > 0.5) {
       bank = bankAt(n, profile, pt, W, Math.max(BOX_MIN_W * pt, (bank.picH - over) / BANK_SHAPE));
       if (bank instanceof Error) return bank;
     }
   }
   const baseJoin = (n.arrowHeads ? ARROW_W : JOIN_W) * pt;
-  const spare = count > 1 ? (W - 2 * PAD * pt - count * boxW) / (count - 1) - 2 * ARROW_GAP * pt : baseJoin;
+  const spare = perRow > 1 ? (W - 2 * PAD * pt - 2 * turn - perRow * boxW) / (perRow - 1) - 2 * ARROW_GAP * pt : baseJoin;
   const joinW = anyPic ? Math.max(baseJoin, Math.min(ARROW_MAX_W * pt, spare)) : baseJoin;
-  const contentW = Math.max(count * boxW + (count - 1) * (joinW + 2 * ARROW_GAP * pt) + 2 * PAD * pt, bank.cells.length ? bank.rowW + 2 * PAD * pt : 0);
-  const h = stemH + bank.h + mainH + words.nameH + words.labelH + 2 * PAD * pt;
+  const contentW = Math.max(perRow * boxW + (perRow - 1) * (joinW + 2 * ARROW_GAP * pt) + 2 * PAD * pt + 2 * turn, bank.cells.length ? bank.rowW + 2 * PAD * pt : 0);
+  const h = stemH + bank.h + chainH + 2 * PAD * pt;
   if (profile.heightPt && h > profile.heightPt + 0.5) {
     return new Error(
       `PROCESS_CHAIN_ZONE_TOO_SHALLOW: the chain needs ${(h / 72).toFixed(2)}in of height at the ${profile.minFontPt}pt readable size and the space is ${(profile.heightPt / 72).toFixed(2)}in. ` +
         'Give it more height, or shorten the stages.'
     );
   }
-  return { pt, labelPt, joinW, boxW, boxH: words.boxH, picH, mainH, nameH: words.nameH, labelH: words.labelH, writeLine: words.writeLine, lines: words.lines, labels: words.labels, stemLines, stemH, bank, contentW, h };
+  return { pt, labelPt, joinW, boxW, boxH: words.boxH, picH, mainH, nameH: words.nameH, labelH: words.labelH, writeLine: words.writeLine, lines: words.lines, labels: words.labels, stemLines, stemH, bank, contentW, h, rows, perRow, rowH, rowGap: rows > 1 ? ROW_GAP * pt : 0, turn };
+}
+
+// One row when the chain fits one at any readable size; otherwise two. The
+// choice is made with the answers written in, so a pupil sheet whose empty
+// boxes would squeeze onto one row still has the shape of its answer sheet.
+// A shallow space is not helped by a second row, so its refusal stands.
+function rowsFor(full, profile) {
+  if (full.boxes.length < 3) return 1;
+  try {
+    T.settle(profile, (pt) => layoutAt(full, profile, pt, 1));
+    return 1;
+  } catch (err) {
+    return /ZONE_TOO_SHALLOW/.test(err.message) ? 1 : 2;
+  }
+}
+
+function settleRows(n, profile, full) {
+  const rows = rowsFor(full, profile);
+  return T.settle(profile, (pt) => layoutAt(n, profile, pt, rows));
 }
 
 // A picture placed whole inside its frame, centred, never cropped or stretched.
@@ -291,22 +376,30 @@ function fit(pic, x, y, w, h) {
 
 function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
   const profile = T.resolveProfile(profileOrSurface, box);
-  const n = normalise(spec);
-  const L = T.settle(profile, (pt) => layoutAt(n, profile, pt));
+  const full = normalise(spec);
+  const n = answersShown(profile) ? full : normalise(withoutAnswers(spec));
+  const L = settleRows(n, profile, full);
   const { W, dx } = T.frameWidth(profile, L.contentW);
   const arrowRun = L.joinW + 2 * ARROW_GAP * L.pt;
-  const chainW = n.boxes.length * L.boxW + (n.boxes.length - 1) * arrowRun;
+  const chainW = L.perRow * L.boxW + (L.perRow - 1) * arrowRun;
   const x0 = dx + (W - chainW) / 2;
   const top = PAD * L.pt + L.stemH + L.bank.h;
   const boxes = n.boxes.map((b, i) => {
-    const x = x0 + i * (L.boxW + arrowRun);
-    const pic = b && b.pic ? fit(b.pic, x, top, L.boxW, L.mainH) : null;
+    // The second row starts under the first link, as a line of a book does.
+    const row = Math.floor(i / L.perRow);
+    const rowTop = top + row * (L.rowH + L.rowGap);
+    const x = x0 + (i % L.perRow) * (L.boxW + arrowRun);
+    const pic = b && b.pic ? fit(b.pic, x, rowTop, L.boxW, L.mainH) : null;
     return {
       text: b ? b.text : null,
       label: b ? b.label : null,
+      answer: Boolean(b && b.answer),
       x,
+      row,
+      rowTop,
+      arrowY: rowTop + L.mainH / 2,
       // A box of words, or an empty box, sits on the arrows' own line.
-      y: pic ? top : top + (L.mainH - L.boxH) / 2,
+      y: pic ? rowTop : rowTop + (L.mainH - L.boxH) / 2,
       w: L.boxW,
       h: pic ? L.mainH : L.boxH,
       pic,
@@ -334,6 +427,10 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const { pt, profile } = L;
   const c = profile.colours;
   const font = profile.font;
+  // An answer is green wherever it is drawn: the board's own answer colour on
+  // a surface that shows answers in colour, and the same green on the
+  // teacher's answer sheet, whose sheet colours otherwise print it as ink.
+  const answer = profile.answers === 'show' && profile.palette === 'sheet' ? PALETTES.colour.answer : c.answer;
   const parts = [];
   if (L.stemLines.length) {
     parts.push(T.textLines(L.stemLines, L.stemX, PAD * pt, pt, { fill: c.ink, font, bold: profile.bold, anchor: 'start' }));
@@ -342,19 +439,20 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
     if (b.pic) parts.push(imageTag(b.pic));
     if (b.lines.length) parts.push(T.textLines(b.lines, b.x + b.w / 2, b.y + b.h + (b.h ? PIC_NAME_GAP * pt : 0), pt, { fill: c.ink, font, bold: true }));
   });
-  const underTop = L.top + L.mainH + L.nameH;
   const hair = Math.max(0.5, (BOX_STROKE * pt) / 2);
+  const head = (tip, y) => `<polygon points="${T.f2(tip)},${T.f2(y)} ${T.f2(tip - ARROW_HEAD_W * pt)},${T.f2(y - (ARROW_HEAD_H * pt) / 2)} ${T.f2(tip - ARROW_HEAD_W * pt)},${T.f2(y + (ARROW_HEAD_H * pt) / 2)}" fill="${c.ink}"/>`;
   L.boxes.forEach((b, i) => {
+    const underTop = b.rowTop + L.mainH + L.nameH;
     if (b.pic) {
       parts.push(imageTag(b.pic));
-      if (b.lines.length) parts.push(T.textLines(b.lines, b.x + b.w / 2, L.top + L.mainH + PIC_NAME_GAP * pt, pt, { fill: c.ink, font, bold: true }));
+      if (b.lines.length) parts.push(T.textLines(b.lines, b.x + b.w / 2, b.rowTop + L.mainH + PIC_NAME_GAP * pt, pt, { fill: b.answer ? answer : c.ink, font, bold: true }));
     } else {
       parts.push(
         `<rect x="${T.f2(b.x)}" y="${T.f2(b.y)}" width="${T.f2(b.w)}" height="${T.f2(b.h)}" rx="${T.f2(BOX_RADIUS * pt)}" fill="${c.paper}" stroke="${c.ink}" stroke-width="${T.f2(Math.max(1, BOX_STROKE * pt))}"/>`
       );
       if (b.lines.length) {
         const top = b.y + (b.h - T.blockHeight(b.lines.length, pt)) / 2;
-        parts.push(T.textLines(b.lines, b.x + b.w / 2, top, pt, { fill: c.ink, font, bold: true }));
+        parts.push(T.textLines(b.lines, b.x + b.w / 2, top, pt, { fill: b.answer ? answer : c.ink, font, bold: true }));
       }
     }
     if (b.labelLines.length) {
@@ -363,8 +461,23 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
       const lw = b.w * LABEL_LINE_SHARE;
       parts.push(`<rect class="chain-label-line" x="${T.f2(b.x + (b.w - lw) / 2)}" y="${T.f2(underTop + LABEL_LINE_H * pt - hair)}" width="${T.f2(lw)}" height="${T.f2(hair)}" fill="${c.ink}"/>`);
     }
-    if (i < L.boxes.length - 1) {
-      const y = L.arrowY;
+    const next = L.boxes[i + 1];
+    if (next && next.row !== b.row) {
+      // The turn: out of the last link of the top row, down past everything
+      // under that row, back along the gap between the rows, down beside the
+      // first link of the next row and into it, as the eye goes to the next
+      // line of a book. Plain to its end when the child draws the heads.
+      const out = TURN_W * pt - ARROW_GAP * pt;
+      const xR = b.x + b.w + out;
+      const xL = next.x - out;
+      const yMid = b.rowTop + L.rowH + L.rowGap / 2;
+      const tip = next.x - ARROW_GAP * pt;
+      const end = L.n.arrowHeads ? tip - ARROW_HEAD_W * pt + 0.5 : tip;
+      const d = `M ${T.f2(b.x + b.w + ARROW_GAP * pt)} ${T.f2(b.arrowY)} H ${T.f2(xR)} V ${T.f2(yMid)} H ${T.f2(xL)} V ${T.f2(next.arrowY)} H ${T.f2(end)}`;
+      const line = `<path d="${d}" fill="none" stroke="${c.ink}" stroke-width="${T.f2(ARROW_STROKE * pt)}" stroke-linejoin="miter"/>`;
+      parts.push(L.n.arrowHeads ? `<g class="chain-arrow chain-turn">${line}${head(tip, next.arrowY)}</g>` : `<g class="chain-join chain-turn">${line}</g>`);
+    } else if (next) {
+      const y = b.arrowY;
       const x1 = b.x + b.w + ARROW_GAP * pt;
       const tip = x1 + L.joinW;
       const headL = tip - ARROW_HEAD_W * pt;
@@ -385,8 +498,8 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
 // would make a key of megabytes.
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = T.resolveProfile(profileOrSurface, box);
-  const n = normalise(spec);
-  const slim = (b) => (b ? { text: b.text, label: b.label, pic: b.pic ? [b.imagePath || (b.pic.href || '').length, Boolean(b.pic.href), b.pic.w, b.pic.h] : null } : null);
+  const n = normalise(answersShown(p) ? spec : withoutAnswers(spec));
+  const slim = (b) => (b ? { text: b.text, label: b.label, answer: Boolean(b.answer), pic: b.pic ? [b.imagePath || (b.pic.href || '').length, Boolean(b.pic.href), b.pic.w, b.pic.h] : null } : null);
   return `process-chain:${T.profileKey(p)}:${JSON.stringify({ ...n, boxes: n.boxes.map(slim), bank: n.bank.map(slim) })}`;
 }
 

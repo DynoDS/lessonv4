@@ -177,7 +177,18 @@ function checkZoneFill(ctx, zone, drawn, label) {
   });
 }
 
+// A chain that turns onto a second row only because it was given part of the
+// slide. A Year 4 food chains deck (18 October 2026) drew every chain on one
+// row, then put the chain children build in half a slide beside the criteria,
+// where it bent onto two rows: the same idea in a new shape, which the teacher
+// said would confuse children. Called with the message the drawer composed.
+function checkChainTurn(ctx, message) {
+  if (!ctx || typeof ctx.slideIndex !== 'number') return;
+  if (!recording()) return;
+  findings.push({ signal: 'PROCESS_CHAIN_TURNED_FOR_ROOM', slide: ctx.slideIndex + 1, field: 'process chain', message });
+}
+
 module.exports = {
-  checkZoneFill, zoneFillWarnings, clearZoneFill,
+  checkZoneFill, zoneFillWarnings, clearZoneFill, checkChainTurn,
   COVERAGE_FLOOR, WASTED_INCHES, nearestSlot, slotShapes
 };

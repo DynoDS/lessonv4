@@ -248,6 +248,21 @@ function drawerFor(type) {
     if (FIGURES[type].zoneFill) {
       require('./_zone-fill').checkZoneFill(ctx, zone, { w, h }, FIGURES[type].zoneFill(data));
     }
+    if (type === 'process-chain' && built.layout && built.layout.rows > 1) {
+      // Would it have kept one row across the slide's full width? Then it bent
+      // for want of room, not because it is long.
+      try {
+        const { CONTENT_W } = require('../layout');
+        const wide = profileFor('slides', { widthPt: CONTENT_W * 72, heightPt: box.h * 72 });
+        if (FIGURES[type].module.describeLayout(data, wide).rows === 1) {
+          require('./_zone-fill').checkChainTurn(ctx,
+            `this chain turns onto two rows because its space is ${box.w.toFixed(1)}in wide, though it would sit on one row ` +
+            `across the full width of the slide. When the class has met this chain on one row, a two-row version reads to a ` +
+            `child as a different thing: give it the full width (the case and the criteria above it, below it or on the slide before) ` +
+            `so it keeps the shape they know (templates.md -> process-chain, "One look for one chain").`);
+        }
+      } catch (err) { /* a measurement that cannot be made adds no note */ }
+    }
     const store = ctx && ctx.sharedFigures;
     const entry = store && store.get(key);
     if (entry) {

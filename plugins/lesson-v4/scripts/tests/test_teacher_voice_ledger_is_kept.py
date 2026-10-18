@@ -147,8 +147,8 @@ class HisDecisionsAreBuilt(unittest.TestCase):
         self.assertIn("- `slide-speech-and-characters.md` when a unit contains " + SPEECH_LIST + ".",
                       text(SLIDE_DESIGNER))
         self.assertIn("- " + SPEECH_LIST + ": `slide-speech-and-characters.md`;", text(SLIDE_REPAIR))
-        self.assertIn("Whenever a source unit contains " + SPEECH_LIST + ", read `slide-speech-and-characters.md`",
-                      text(PLAYBOOK))
+        # S1 (17 Oct 2026, D5): the playbook's copy of this reading reminder went;
+        # the slide designer's reading list holds his three triggers, as above.
         for path in (SLIDE_DESIGNER, SLIDE_REPAIR, PLAYBOOK):
             self.assertNotIn("voiced claim, misconception, disagreement or advice-to-a-character", text(path))
 

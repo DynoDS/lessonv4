@@ -98,7 +98,9 @@ class EverySlideTheTeacherTeachesFromHasWords(unittest.TestCase):
     def test_every_vocabulary_slide_carries_its_script(self) -> None:
         self.assertIn("`script` is the words the teacher says while that slide is up", flat(OUTPUT_TEMPLATE))
         self.assertIn("It is required on every entry", flat(OUTPUT_TEMPLATE))
-        self.assertIn("Each entry's `script` is that slide's speaker notes", flat(SLIDE_DESIGNER))
+        # S1 (17 Oct 2026, D7): the word-card rule is written once, in the playbook.
+        self.assertIn("Each entry's `script` is that slide's speaker notes",
+                      flat(ROOT / "references" / "slide-composition-playbook.md"))
         self.assertIn("Each entry carries its own `script`", flat(DESIGNER))
 
     def test_a_split_unit_divides_its_script(self) -> None:

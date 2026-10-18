@@ -110,6 +110,8 @@ def first_words(text: str, count: int = 8) -> str:
 LISTEN_KINDS = {"prepare", "my-turn", "grounding-input", "stimulus", "set-task",
                 "teach", "teach-why", "teach-needed"}
 MAIN_KINDS = {"practise", "do-task", "use-learning", "synthesise", "finish"}
+# The kinds that teach a new chunk, as against setting a task or a scene.
+CHUNK_TEACH_KINDS = {"teach", "teach-why", "teach-needed", "my-turn"}
 # A steady classroom reading pace. What the teacher says aloud, before any
 # question is asked or answered, so the real stretch is longer.
 WORDS_A_MINUTE = 120
@@ -215,6 +217,13 @@ def child_seat(design: dict) -> list[str]:
     stretch: list[tuple[str, int]] = []
     stretches: list[list[tuple[str, int]]] = []
     before_main = {"do": 0, "cards": 0, "together": 0, "quick": 0}
+    # Chunks of teaching before the main work: a listening stretch holding a
+    # Teach, ended by whatever children do next, quick check or task. A Year 4
+    # sound lesson (18 October 2026) taught three chunks, the middle one
+    # checked only by a quick check, then its explanation task, and passed
+    # the task count; the teacher found it "so much".
+    chunks_before_main = 0
+    taught_in_stretch = False
     after_main = 0
     quick_after_main = 0
     for i, (what, item) in enumerate(order):
@@ -233,7 +242,12 @@ def child_seat(design: dict) -> list[str]:
             lines.append(f"  listen  {name} ({count} words, {time_to_say(count)})")
             listened += count
             stretch.append((name, count))
+            taught_in_stretch = taught_in_stretch or item.get("kind") in CHUNK_TEACH_KINDS
             continue
+        if (taught_in_stretch and main_at is not None and i < main_at
+                and item.get("kind") != "starter"):
+            chunks_before_main += 1
+        taught_in_stretch = False
         if stretch:
             stretches.append(stretch)
             stretch = []
@@ -314,6 +328,12 @@ def child_seat(design: dict) -> list[str]:
                      f"after it included, quick checks not): {counted}.")
         lines.append("  A written piece children start once a sort or an order is done is a task of its own "
                      "and adds one to that count, which this list cannot see.")
+        lines.append(f"  Chunks of teaching before the main work, each ended by a quick check or a task: "
+                     f"{chunks_before_main}. Usually two, then a short lead-in and the final task "
+                     f"(`preferences.md` -> `A lesson holds two or three Dos, then its final task`); "
+                     f"a third is the sign to look again at what the objective needs, never a cap. Read it by "
+                     f"ideas: parts of one idea checked one by one are one chunk, and new things are never packed "
+                     f"into one telling to lower this number. A skill lesson's My Turn cycles keep their own shape.")
     lines.extend(clock(design, order))
     return lines
 
@@ -430,6 +450,10 @@ def clock(design: dict, order: list[tuple[str, dict]]) -> list[str]:
 
 
 def main(argv: list[str]) -> int:
+    # A Windows console rejects the arrow in a food chain answer; a designer
+    # run of 18 October 2026 lost the list to it until it re-ran with -X utf8.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     if len(argv) != 1:
         print("usage: do-beats-in-a-row.py <lesson-design.json>", file=sys.stderr)
         return 2

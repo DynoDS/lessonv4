@@ -473,18 +473,50 @@ function inBooksWarnings(lesson) {
 // fault is only ever where they first arrive. A slide before the work (a
 // story, a recap, a case) may go without; a working slide is one the class
 // works from: a figure the teacher completes, children use, or children write
-// on. A task in words alone is not read here.
+// on, and equally a task in words. Every sound deck of 17 October 2026, two
+// made on Claude and two on Codex, ran its final explanation the same way:
+// the case, then the strong-and-weak model, then partner talk, and only then
+// the criteria, on the slide where children write. Nothing on the model or the
+// talk slide is a figure, so they were not read as working slides and all four
+// passed. A slide is working, too, when it is a My Turn or Our Turn, when it
+// carries a Do sign, or when it asks children to write, talk or mark (the
+// pencil, talk and tick signs). The magnifier, look closely, is left out: it is
+// as often the case to read before the work as the work itself. So is the
+// strong-and-weak model: it takes the criteria when the pair still fits beside
+// them, but of 31 saved model slides only 7 did, so a longer model goes without
+// and the criteria start on the slide after it (the teacher, 17 October 2026).
 const WORKING_INTERACTIONS = new Set(['teacher-completes', 'pupil-uses', 'pupil-writes-on']);
+const WORKING_SIGNALS = new Set(['pencil', 'talk', 'tick']);
 
+// The criteria a slide draws. `successCriteriaRefs` is not one of them: it
+// says which criteria the slide belongs to and the builder draws nothing from
+// it (UNRENDERED_SLIDE_KEYS), so a Codex deck that named its criteria on the
+// model and talk slides and drew them only on the writing slide passed while
+// the board showed none.
 function slideShowsCriteria(slideData) {
-  if (Array.isArray(slideData.successCriteriaRefs) && slideData.successCriteriaRefs.length) return true;
   if (typeof slideData.template === 'string' && /-sc$/.test(slideData.template)) return true;
+  if (slideData.criteria || (Array.isArray(slideData.successCriteria) && slideData.successCriteria.length)) {
+    return true;
+  }
   let found = false;
   const walk = (value) => {
     if (found || !value || typeof value !== 'object') return;
     if (Array.isArray(value)) { value.forEach(walk); return; }
     if (value.type === 'sc-panel') { found = true; return; }
-    Object.keys(value).forEach((key) => { if (key !== 'decorations') walk(value[key]); });
+    Object.keys(value).forEach((key) => { if (!UNRENDERED_SLIDE_KEYS.has(key)) walk(value[key]); });
+  };
+  walk(slideData);
+  return found;
+}
+
+function asksForWork(slideData) {
+  if (slideData.doSign) return true;
+  let found = false;
+  const walk = (value) => {
+    if (found || !value || typeof value !== 'object') return;
+    if (Array.isArray(value)) { value.forEach(walk); return; }
+    if (WORKING_SIGNALS.has(value.signal)) { found = true; return; }
+    Object.keys(value).forEach((key) => { if (!UNRENDERED_SLIDE_KEYS.has(key)) walk(value[key]); });
   };
   walk(slideData);
   return found;
@@ -494,7 +526,9 @@ function isWorkingSlide(slideData) {
   const title = typeof slideData.title === 'string' ? slideData.title.trim() : '';
   if (ANSWER_TITLE.test(title)) return false;
   const refs = Array.isArray(slideData.representationRefs) ? slideData.representationRefs : [];
-  return refs.some((ref) => ref && WORKING_INTERACTIONS.has(ref.interaction));
+  if (refs.some((ref) => ref && WORKING_INTERACTIONS.has(ref.interaction))) return true;
+  if (MODELLING_TITLE.test(title)) return true;
+  return asksForWork(slideData);
 }
 
 function lateCriteriaWarnings(lesson) {
@@ -519,13 +553,14 @@ function lateCriteriaWarnings(lesson) {
       slide: early + 1,
       field: 'successCriteriaRefs',
       message:
-        `"${title}" is where the class first works from this unit's figure, but its ` +
-        `success criteria first appear on slide ${firstCriteria + 1}. Put the criteria ` +
-        'on this slide too, and keep them on the slides after it. If they do not fit, ' +
-        'change the arrangement or let the picture shrink (a counters pair beside a ' +
-        'sum drops its cue box and untouched columns on its own); the criteria are ' +
-        'not what gives way. A tip on how to check shares the slide with the criteria ' +
-        'rather than taking their place.',
+        `"${title}" is where the class first works on this unit (a modelled turn, a ` +
+        'figure, or a task to write, talk or mark), but its success criteria are first drawn ' +
+        `on slide ${firstCriteria + 1}. Naming them in successCriteriaRefs does not ` +
+        'draw them. Put the criteria on this slide too, and keep them on the slides ' +
+        'after it. If they do not fit, change the arrangement or let the picture ' +
+        'shrink (a counters pair beside a sum drops its cue box and untouched columns ' +
+        'on its own); the criteria are not what gives way. A tip on how to check shares the slide with ' +
+        'the criteria rather than taking their place.',
     });
   });
   return warnings;
@@ -1468,9 +1503,10 @@ function starterColourWarnings(lesson) {
       message:
         `every question on this starter is house blue, which marks nothing a ` +
         'child cannot already see on a slide that is questions all the way ' +
-        'down. Leave a single starter question black; with several, alternate ' +
-        'them black, blue, black, blue so the colour separates one numbered ' +
-        'question from the next.'
+        'down. A starter that is a list of questions keeps them black. Alternating ' +
+        'whole questions black and blue is optional, only where it helps a child ' +
+        'tell one independent question from the next ' +
+        '(teacher-slide-visual-profile.md -> Semantic colour).'
     });
   });
   return warnings;
@@ -2011,6 +2047,155 @@ function teachLayoutPlaceholder(slide) {
   return placeholder;
 }
 
+// The rules that judge one slide by itself, with no other slide in view.
+//
+// measure-slides.js reports these on a deck that is only part written, so a
+// designer meets a colour, title or repeat refusal while writing instead of
+// spending a repair pass on it. Without that, the only way to know before the
+// check what it would refuse was to read this file, and a Year 4 slide
+// designer spent about a quarter of an hour doing exactly that before its
+// first check (17 October 2026).
+//
+// A rule belongs here only if it never looks at another slide. The rest wait
+// for the full check, because on a part deck the slide they look for may not
+// be written yet: a reveal's answer slide, the first slide that shows a card's
+// word, the criteria slide, a launch pair's other half, the My Turn before.
+// A new rule that reads one slide at a time goes in this list as well as in
+// the check's own list in runSlideDesignCheck.
+const SLIDE_BY_SLIDE_RULES = [
+  presentationWarnings,
+  turnWarnings,
+  sharedModelWarnings,
+  inBooksWarnings,
+  mixedBlockWarnings,
+  blueStatementWarnings,
+  taskBlueWarnings,
+  caseAfterItsInstructionWarnings,
+  starterColourWarnings,
+  starterAskWarnings,
+  stickyEmphasisWarnings,
+  pictureWarnings,
+  repeatedLineWarnings,
+];
+
+// What the full check would refuse on these slides, read one slide at a time.
+// `jsonPath` is where the slides were read from, so the lesson design beside
+// it can say which lines are sticky facts, answers and stories. A teach layout
+// that cannot be expanded is left out here: drawing the slides reports it.
+function slideBySlideWarnings(lesson, jsonPath) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  if (!slides.length) return [];
+  const expanded = expandTeachLayoutsEach(lesson);
+  const refused = new Set(expanded.errors.map((item) => item.slide));
+  const view = {
+    ...expanded.lesson,
+    slides: expanded.lesson.slides.map((slide, index) =>
+      slide === null || refused.has(index + 1) ? teachLayoutPlaceholder(slides[index]) : slide
+    ),
+  };
+  return SLIDE_BY_SLIDE_RULES
+    .flatMap((rule) => rule(view, jsonPath) || [])
+    .filter((warning) => warning && !refused.has(warning.slide))
+    .sort((a, b) => a.slide - b.slide);
+}
+
+// The rules that need more than one slide in view, read the same way the full
+// check reads them: a reveal and its answer slide, where a word card sits, the
+// criteria from the first working slide, two My Turns in a row, a launch pair's
+// template, the Teach slide rules that read the lesson design, an essential
+// picture used only as a background. measure-slides.js reports these too, with
+// the helper delivery and landed sentence checks, so every rule the check
+// applies can be tried before it runs, at no cost to a repair pass.
+//
+// The full check was the only way to try them, and after its first run each
+// run is one of three repair passes, so both Year 4 science slide designers of
+// 17 October 2026 listed every refusal it can make and read its code before
+// writing a slide (about 9 and 13 minutes). A rule added to the check's own
+// list in runSlideDesignCheck goes in SLIDE_BY_SLIDE_RULES or here.
+const WHOLE_DECK_RULES = [
+  ordinaryRevealWarnings,
+  consecutiveModellingWarnings,
+  lateCriteriaWarnings,
+  vocabCardBeforeItsWord,
+  backgroundOnlyPictureWarnings,
+];
+
+// Every top-level unit the lesson design holds, in order, so a report can say
+// which have no slide yet. Null when no lesson design sits beside the file.
+function designUnitIds(jsonPath) {
+  const designPath = path.join(path.dirname(jsonPath), 'lesson-design.json');
+  if (!fs.existsSync(designPath)) return null;
+  let design;
+  try {
+    design = JSON.parse(fs.readFileSync(designPath, 'utf8'));
+  } catch {
+    return null;
+  }
+  const ids = [];
+  Object.values(design || {}).forEach((section) => {
+    (Array.isArray(section) ? section : [section]).forEach((unit) => {
+      if (unit && typeof unit === 'object' && typeof unit.sourceUnitId === 'string' &&
+          !ids.includes(unit.sourceUnitId)) ids.push(unit.sourceUnitId);
+    });
+  });
+  return ids;
+}
+
+function landedSentence(jsonPath, options) {
+  if (options.landedSentence === false) return null;
+  const designPath = path.join(path.dirname(jsonPath), 'lesson-design.json');
+  if (!fs.existsSync(designPath)) return null;
+  const said = runPlanScript(
+    'check-landed-sentence.py',
+    ['--lesson-design', designPath, '--spec', jsonPath],
+    options,
+    (status, out, err) => status === 0 || (status === 1 && /\S/.test(`${out}${err}`))
+  );
+  if (!said || said.unavailable) return said;
+  if (said.status === 0) return { ok: true };
+  return {
+    ok: false,
+    failures: `${said.out}\n${said.err}`.split(/\r?\n/).map((line) => line.trim()).filter(Boolean),
+  };
+}
+
+// What the full check would refuse that needs the whole deck in view, plus the
+// two checks that run beside it. `missingUnits` names the lesson design's units
+// no slide carries yet: until it is empty, a whole-deck rule may be about a
+// slide that is simply not written.
+function wholeDeckWarnings(lesson, jsonPath, options = {}) {
+  const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
+  const units = designUnitIds(jsonPath);
+  const carried = new Set(slides.flatMap(slideUnitIds));
+  const missingUnits = units ? units.filter((id) => !carried.has(id)) : [];
+  if (!slides.length) return { warnings: [], missingUnits, helper: null, landed: null };
+  const teachLayout = teachLayoutWarnings(lesson, jsonPath);
+  const launchPair = launchPairWarnings(lesson, jsonPath);
+  const expanded = expandTeachLayoutsEach(lesson);
+  const refused = new Set(expanded.errors.map((item) => item.slide));
+  const view = {
+    ...expanded.lesson,
+    slides: expanded.lesson.slides.map((slide, index) =>
+      slide === null || refused.has(index + 1) ? teachLayoutPlaceholder(slides[index]) : slide
+    ),
+  };
+  const nearRefused = (warning) => refused.has(warning.slide) ||
+    (/^VOCAB_CARD_/.test(warning.signal || '') &&
+      (refused.has(warning.slide + 1) || refused.has(warning.slide - 1)));
+  const warnings = teachLayout
+    .concat(launchPair)
+    .concat(WHOLE_DECK_RULES
+      .flatMap((rule) => rule(view, jsonPath, options) || [])
+      .filter((warning) => warning && !nearRefused(warning)))
+    .sort((a, b) => a.slide - b.slide);
+  return {
+    warnings,
+    missingUnits,
+    helper: helperDelivery(jsonPath, options),
+    landed: landedSentence(jsonPath, options),
+  };
+}
+
 // Slides worth a second look for their pictures. Notes, never refusals.
 //
 // The lesson design gives its pictures to a whole beat; a beat becomes several
@@ -2248,11 +2433,13 @@ function orderReport(stdout, stderr) {
 // October 2026). When the run's `helper-check.json` sits beside the candidate
 // the delivery check now runs here, and what it finds is part of this report
 // and this verdict. Its own command and marker are unchanged.
-function helperDelivery(jsonPath, options) {
-  if (options.helperVerdictPath === false) return null;
-  const verdictPath = options.helperVerdictPath || path.join(path.dirname(jsonPath), 'helper-check.json');
-  const script = path.join(__dirname, '..', '..', 'scripts', 'check-helper-coverage.py');
-  if (!fs.existsSync(verdictPath) || !fs.existsSync(script)) return null;
+// Runs one of the plugin's Python checks with the first interpreter that will
+// start, and returns what it printed. `understood` says whether an output is
+// the script's own answer; anything else is an interpreter that would not run
+// it here, and the next one is tried.
+function runPlanScript(scriptName, args, options, understood) {
+  const script = path.join(__dirname, '..', '..', 'scripts', scriptName);
+  if (!fs.existsSync(script)) return null;
   const env = { ...process.env, ...(options.env || {}) };
   const queue = env.LESSON_RESOURCES_PYTHON
     ? [env.LESSON_RESOURCES_PYTHON]
@@ -2275,21 +2462,33 @@ function helperDelivery(jsonPath, options) {
     }
     const child = run(
       bin,
-      [script, 'delivery', '--verdict', verdictPath, '--spec', jsonPath, '--surface', 'slides'],
+      [script, ...args],
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 10 * 1024 * 1024, env }
     );
     const out = String((child && child.stdout) || '');
     const err = String((child && child.stderr) || '');
-    const ok = /^HELPER_DELIVERY_OK (\d+)\s*$/m.exec(out);
-    if (child && child.status === 0 && ok) return { ok: true, count: Number(ok[1]) };
-    if (child && child.status === 1 && /^HELPER_DELIVERY_FAILED\s*$/m.test(err)) {
-      return {
-        ok: false,
-        failures: err.split(/\r?\n/).filter((line) => line.startsWith('- ')).map((line) => line.slice(2)),
-      };
-    }
-    // Anything else is an interpreter that would not start or run it here.
+    if (child && understood(child.status, out, err)) return { status: child.status, out, err };
   }
+}
+
+function helperDelivery(jsonPath, options) {
+  if (options.helperVerdictPath === false) return null;
+  const verdictPath = options.helperVerdictPath || path.join(path.dirname(jsonPath), 'helper-check.json');
+  if (!fs.existsSync(verdictPath)) return null;
+  const said = runPlanScript(
+    'check-helper-coverage.py',
+    ['delivery', '--verdict', verdictPath, '--spec', jsonPath, '--surface', 'slides'],
+    options,
+    (status, out, err) => (status === 0 && /^HELPER_DELIVERY_OK (\d+)\s*$/m.test(out)) ||
+      (status === 1 && /^HELPER_DELIVERY_FAILED\s*$/m.test(err))
+  );
+  if (!said || said.unavailable) return said;
+  const ok = /^HELPER_DELIVERY_OK (\d+)\s*$/m.exec(said.out);
+  if (said.status === 0 && ok) return { ok: true, count: Number(ok[1]) };
+  return {
+    ok: false,
+    failures: said.err.split(/\r?\n/).filter((line) => line.startsWith('- ')).map((line) => line.slice(2)),
+  };
 }
 
 function withHelperDelivery(outcome, helper) {
@@ -2499,6 +2698,9 @@ function runSlideDesignCheck(inputPath, options = {}) {
     .filter((warning) => warning.cue)
     .map((warning) => `  note: slide ${warning.slide} ${warning.field}: ${warning.signal}: ${warning.message}`);
   const pictures = pictureWarnings(lesson);
+  // A rule added here that reads one slide at a time also goes in
+  // SLIDE_BY_SLIDE_RULES, so the measure tool reports it while the deck is
+  // still being written.
   const presentationAll = teachLayout
     .concat(launchPair)
     .concat(ordinaryRevealWarnings(lesson, jsonPath))
@@ -3038,7 +3240,8 @@ function main(argv = process.argv.slice(2)) {
     console.error(
       'Before this check runs again, try each slide you change with: node "' +
       `${path.join(__dirname, 'measure-slides.js')}" <this file>. It draws the slides in seconds, ` +
-      'says for each whether its content fits, and is not a repair pass.'
+      'says for each whether its content fits and which rules it breaks that the check reads one ' +
+      'slide at a time, and is not a repair pass.'
     );
   }
   console.error(`SLIDE_DESIGN_CHECK_FAILED: ${result.reason}`);
@@ -3098,6 +3301,8 @@ module.exports = {
   pathIsInside,
   repeatedLineWarnings,
   vocabCardBeforeItsWord,
+  slideBySlideWarnings,
+  wholeDeckWarnings,
   runSlideDesignCheck,
   stripScratchWroteLine,
 };
