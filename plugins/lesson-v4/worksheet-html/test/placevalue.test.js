@@ -35,6 +35,7 @@ const texts = (layout, role) => layout.texts.filter((t) => t.role === role).map(
 test("every place value helper signs the whole contract", () => {
   const expected = [
     "base-ten-blocks",
+    "exchange-happening",
     "place-value-counter-chart",
     "counter-group",
     "place-value-chart",

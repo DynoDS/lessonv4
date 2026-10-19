@@ -66,7 +66,7 @@ const FAMILIES = [
       "long-multiplication-grid", "bus-stop-grid", "long-division-grid",
       "method-frame", "number-pyramid", "times-table-grid",
       "place-value-chart", "place-value-counter-chart", "place-value-mini", "counter-group",
-      "ten-frame", "base-ten-blocks", "digit-cards", "number-network",
+      "ten-frame", "base-ten-blocks", "exchange-happening", "digit-cards", "number-network",
     ],
   ],
   [

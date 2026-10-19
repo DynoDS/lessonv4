@@ -314,6 +314,19 @@ TASK_VISUALS = {"task-sheet"}
 NOT_FIGURES = {"card-set", *SOURCE_VISUALS, *TASK_VISUALS}
 
 
+def is_figure(item: dict) -> bool:
+    """A piece a child marks. A printed copy of a real picture is one when it
+    carries a task, as the pedagogy reference says: John Snow's 1854 map, pairs
+    circle the pump. Counting every `source-copy` as a source left a figure
+    design only an unlabelled label-diagram, which printed the map at a third
+    of the page (Year 4 cholera lesson, 18 October 2026)."""
+    if item.get("visual") == "source-copy":
+        spec = item.get("spec") if isinstance(item.get("spec"), dict) else {}
+        task = item.get("task") or spec.get("task")
+        return isinstance(task, str) and bool(task.strip())
+    return item.get("visual") not in NOT_FIGURES
+
+
 def item_unit(item: dict) -> str | None:
     spec = item.get("spec") if isinstance(item.get("spec"), dict) else {}
     unit_id = item.get("sourceUnitId") or spec.get("sourceUnitId")
@@ -398,7 +411,7 @@ def level_faults(design: dict, items: list) -> list[str]:
         elif form == "task":
             ok = bool(visuals & TASK_VISUALS)
         else:
-            ok = bool(visuals - NOT_FIGURES)
+            ok = any(is_figure(item) for item in by_unit.get(unit_id, []))
         if not ok:
             faults.append(
                 f"{unit_id}: the design prints this beat as a {form} sheet ({printed.get('what')}) and the "
@@ -473,4 +486,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
     raise SystemExit(main())

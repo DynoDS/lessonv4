@@ -61,6 +61,11 @@ function slideNumbers(text) {
   return String(text).split(',').map((n) => Number(n.trim())).filter((n) => Number.isInteger(n) && n > 0);
 }
 
+// The build's notes are for the run report and are left out here, except the
+// ones that answer a question the designer would otherwise hunt for: a counters
+// pair drawn smaller says what room it needed whole.
+const NOTES_FOR_THE_DESIGNER = new Set(['PLACE_VALUE_PAIR_DRAWN_SMALLER']);
+
 // What the build said, sorted into what the full check would refuse and what
 // it would only remark on.
 function readBuild(output) {
@@ -89,7 +94,7 @@ function readBuild(output) {
         continue;
       }
       const slide = d && d.location && d.location.slide;
-      if (!Number.isFinite(slide) || d.faultClass === 'note') continue;
+      if (!Number.isFinite(slide) || (d.faultClass === 'note' && !NOTES_FOR_THE_DESIGNER.has(d.signal))) continue;
       const text = `${d.signal}: ${d.message}`;
       const blocks = /_OVERLOAD$/.test(d.signal) || BLOCKING_CAPACITY_SIGNALS.has(d.signal) ||
         laidOut.has(`${slide}|${d.signal}`);

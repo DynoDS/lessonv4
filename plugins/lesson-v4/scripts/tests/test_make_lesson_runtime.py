@@ -21,7 +21,7 @@ FOCUSED_REPAIR_ENTRYPOINTS: dict[str, tuple[str, str, str, str, str]] = {
         "sol61",
         "medium",
         "opus",
-        "xhigh",
+        "high",
     ),
     "worksheet-designer": (
         "worksheet-designer-focused-repair.md",
@@ -34,7 +34,7 @@ FOCUSED_REPAIR_ENTRYPOINTS: dict[str, tuple[str, str, str, str, str]] = {
         "working-wall-designer-focused-repair.md",
         "sol61",
         "medium",
-        "opus",
+        "sonnet",
         "high",
     ),
     "stick-in-sheets-designer": (
@@ -42,7 +42,7 @@ FOCUSED_REPAIR_ENTRYPOINTS: dict[str, tuple[str, str, str, str, str]] = {
         "luna6",
         "xhigh",
         "sonnet",
-        "xhigh",
+        "medium",
     ),
 }
 

@@ -44,6 +44,7 @@ Every piece of slide content is one of a fixed set of content-object types. The 
 | `fraction-wall` | Stacked rows of equal-width fraction pieces |
 | `part-whole-model` | One whole circle (left) branching to 2 or 3 part circles (right), with text labels in each. Nodes may also be blank circles to write in, carry a quiet caption underneath, real coins, and a `+` between parts |
 | `base-ten-blocks` | Dienes blocks in Th / H / T / O columns: thousand cubes, hundred flats, ten rods and unit cubes. Use when the blocks themselves are the representation |
+| `exchange-happening` | A column subtraction or addition with its exchange shown happening: one place value chart of counters or blocks beside the written sum, which becomes one slide per move with the pieces moving between clicks. Use for a modelled exchange; it carries its own sum |
 | `counter-group` | Place-value counters on their own, grouped by value with an operator between groups, under the claim they are evidence for ("5,009 = 5,000 + 9"). Use when two claims sit side by side and a whole chart each would not fit |
 | `ten-frame` | A ten frame: two rows of five boxes with a round counter in each full box, filled along the top row first. One colour shows a number; two colours show a number bond (6 red and 4 yellow); the empty boxes show how many more make ten; a pair of frames shows a teen number or adding by making ten; an empty frame is for children to fill. Use for number bonds to 10 and 20, teen numbers as ten and some more, and adding or taking away within 20 in Year 1 and Year 2 |
 | `triangle-square` | The "two triangles add up to the square" part-whole puzzle in SATs-paper notation: two stacked triangles (left) with arrows pointing into a square (right). Leave one shape blank for the unknown. Use when the lesson recreates this exact paper question type — not the circle-and-line `part-whole-model` |
@@ -1207,6 +1208,23 @@ The builder draws empty circles connected by lines — a ready-to-fill diagram, 
 ```
 
 **Minimum useful size:** 1.4″ × 1.4″ per single model (empirically tested). Smaller than this and the part-circle labels stop reading clearly. When two models sit side-by-side as a `row`, each gets half the zone width — so the parent zone needs ~3.0″ wide × 1.4″ tall minimum to host a pair. Stacking two PWMs vertically halves the height available to each, which crushes the circles — use a `row` instead.
+
+### `exchange-happening`
+
+A column calculation with its exchange shown happening: one chart of counters or base-ten blocks and the written sum beside it, drawn as one item.
+
+```json
+{ "type": "exchange-happening", "operator": "-", "numbers": ["52", "28"] }
+```
+
+- **It becomes a run of slides.** Write ONE slide; the build makes one slide per move, worked out from the numbers (for 52 - 28: here is 52, a ten moves into the ones, it breaks into 10 ones, 12 - 8, 4 - 2), with PowerPoint's Morph transition between them, so each click moves the pieces. Everything else on the slide (title, criteria, task line) is copied unchanged onto every click. The slide's speaker notes go on the first click; each later click's notes say what it shows.
+- **It carries its own written sum**, so the slide needs no second `place-value-chart` calculation beside it. The sum fills in as the pieces move: the crossing-out and the digit above on the move, the small 1 on the break, each answer digit as its column is taken away (or added). The exchanged piece and its marks share one colour; a second exchange takes a second colour.
+- **Blocks or counters** are the drawing's choice (blocks for a sum of tens and ones, counters for bigger numbers). Give `"pieces": "blocks"` or `"pieces": "counters"` only when the teacher asked for one.
+- **Only the columns an exchange moves between** carry pieces; the columns no exchange reaches are written into the sum on the run's last click.
+- **Room:** it is wide. Give it the slide's main zone beside the criteria (split-h-70-30's wide side or wider); a zone too small refuses with `EXCHANGE_HAPPENING_DOES_NOT_FIT` and the size it needs. Four columns of counters (an addition exchanging in every column) needs the full width.
+- **A question/answer reveal pair is not needed:** the run ends on the answer. A `revealPair` on the slide is kept on its last click only.
+- `"steps": [3, 6]` runs part of the method, from moment 3 to moment 6 (counted from 0, as the build lists them): for a lesson whose earlier slide finished the ones and whose model now works the tens.
+- `"step": "end"` draws the finished state on one slide (an answers slide elsewhere); `"step": "exchange"` draws the one-picture still the worksheet and wall use.
 
 ### `base-ten-blocks`
 
@@ -3423,6 +3441,7 @@ Which content types fit which zone class.
 | `place-value-chart` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `place-value-mini`  | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `base-ten-blocks`   | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |
+| `exchange-happening` | ✓ | ✓ | ✓ |   | ✓ |   |   |   |
 | `counter-group`     | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `ten-frame`         | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   | ✓ |
 | `fraction-wall`     | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |

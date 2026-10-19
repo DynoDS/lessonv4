@@ -1267,14 +1267,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--after", required=True, help="The specification the repair produced")
     args = parser.parse_args(argv)
 
-    # A refusal quotes the page, and a page can hold a character the console
-    # cannot print. On Windows that ended the report in a traceback part-way
-    # through its list (Year 4 Science, 10 October 2026), so the repairer saw
-    # one missing line and not the rest.
-    for stream in (sys.stdout, sys.stderr):
-        if hasattr(stream, "reconfigure"):
-            stream.reconfigure(errors="backslashreplace")
-
     # Only the picture stage's own receipts prove a picture will never arrive.
     # A file merely missing from disk is not proof: a published picture a
     # worker deleted by mistake (2 October 2026) is restored, not dropped.
@@ -1456,4 +1448,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
     sys.exit(main())

@@ -51,6 +51,7 @@ const comparison = require("../../shared/visuals/comparison-svg");
 const placeValueChart = require("../../shared/visuals/place-value-chart-svg");
 const placeValueMini = require("../../shared/visuals/place-value-mini-svg");
 const baseTenBlocks = require("../../shared/visuals/base-ten-blocks-svg");
+const exchangeHappening = require("../../shared/visuals/exchange-happening-svg");
 const counterGroup = require("../../shared/visuals/counter-group-svg");
 const tenFrame = require("../../shared/visuals/ten-frame-svg");
 const partWholeModel = require("../../shared/visuals/part-whole-model-svg");
@@ -414,6 +415,7 @@ const VISUALS = {
   "place-value-mini": sharedPiece(placeValueMini, 70),
   // 150mm: four columns of blocks a child reads the number from.
   "base-ten-blocks": sharedPiece(baseTenBlocks, 150),
+  "exchange-happening": sharedPiece(exchangeHappening, 170),
   // 120mm: the counters stay big enough to read the value on each.
   "counter-group": sharedPiece(counterGroup, 120),
   // 80mm: one frame with boxes a child can draw a counter in. A whole page
@@ -514,6 +516,7 @@ function missingQuestionContent(item) {
     case "place-value-chart":
     case "place-value-mini":
     case "base-ten-blocks":
+    case "exchange-happening":
     case "counter-group":
     case "ten-frame":
     case "part-whole-model":

@@ -168,6 +168,8 @@ module.exports = {
   // ─── place value ───
   "place-value-counter-chart":
     "Counters with their values on them in place-value columns: what number is shown, or left empty for the child to draw counters. The place value chart's counter form, the same drawing the slides use.",
+  "exchange-happening":
+    "A column subtraction or addition with its exchange shown happening: one chart of counters or blocks, the moved piece and what it became, beside the written sum marked in the same colour.",
   "base-ten-blocks":
     "Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.",
   "ten-frame":

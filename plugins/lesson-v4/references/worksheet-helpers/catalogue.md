@@ -2,7 +2,7 @@
 
 # What you can put in a zone
 
-The 94 helpers, what each is for, and a working example of each.
+The 95 helpers, what each is for, and a working example of each.
 
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
@@ -121,6 +121,7 @@ emailed. Never write `imageHref` yourself.
 - `counter-group` - The same counters without the chart: one compact group per denomination, under the claim they are evidence for.
 - `ten-frame` - A ten frame: two rows of five boxes with a counter in each full one, in up to two colours for a number bond (`count`, `second`), a pair for numbers to 20 (`frames: 2`), or empty for a child to draw counters in.
 - `base-ten-blocks` - Native SVG Dienes blocks for thousands, hundreds, tens and ones, used when the blocks themselves are the place-value representation.
+- `exchange-happening` - A column subtraction or addition with its exchange shown happening: one chart of counters or blocks, the moved piece and what it became, beside the written sum marked in the same colour.
 - `digit-cards` - A number as large digit cards with a digit check's working marked on its digits, or loose `digits` cards to make numbers from; copy the slide's object.
 - `number-network` - Circles joined by lines where each joined pair adds to `target`; a circle with no value is a blank the child fills.
 
@@ -1993,6 +1994,23 @@ Smallest usable: **123mm wide x 48mm tall**. Spare height: never takes spare hei
     "tens": 3,
     "ones": 6
   }
+}
+```
+
+#### `exchange-happening`
+
+A column subtraction or addition with its exchange shown happening: one chart of counters or blocks, the moved piece and what it became, beside the written sum marked in the same colour.
+
+Smallest usable: **160mm wide x 64mm tall**. Spare height: never takes spare height.
+
+```json
+{
+  "helper": "exchange-happening",
+  "operator": "-",
+  "numbers": [
+    "52",
+    "28"
+  ]
 }
 ```
 

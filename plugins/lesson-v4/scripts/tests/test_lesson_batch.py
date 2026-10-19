@@ -386,7 +386,7 @@ def load_batch_module():
 
 
 def thread_entry(key, steps=("Line up the digits.",)):
-    return {"key": key, "methodSteps": list(steps), "newToday": "", "representation": "",
+    return {"key": key, "methodSteps": list(steps), "newToday": "", "representation": "", "wallExample": "",
             "wordCards": [{"term": "exchange", "definition": "Swap 1 ten for 10 ones."}]}
 
 

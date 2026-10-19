@@ -111,7 +111,7 @@
 const { textWidthEm } = require('../text/comic-glyph-width');
 const { profileFor, answerColour } = require('./surface-profiles');
 const { insetProfile } = require('./fit-unit');
-const { clearlyUnder } = require('./hair-under');
+const { clearlyUnder, hairUnderSlide } = require('./hair-under');
 
 // ─── CONSTANTS ──────────────────────────────────────────────────────────────
 // Sizes are in D, the digit's font size, so the whole chart grows and shrinks
@@ -664,7 +664,14 @@ function splitNumber(value, what) {
 // then gives has its small 1 crossed out with it and a 9 above.
 function normaliseCalcExchanges(c, columns, operator, top) {
   const raw = asList(c.exchanges != null ? c.exchanges : c.exchange);
-  if (raw.length === 0) return null;
+  // A sum shown one move at a time (exchange-happening-svg.js) keeps the band
+  // from its first step, so the sum does not jump down when the first mark is
+  // written in it.
+  if (raw.length === 0) {
+    return c.exchangeBand === true && operator === '−'
+      ? { count: 0, marks: columns.map(() => ({ crossed: null, above: null, one: null })), colours: [] }
+      : null;
+  }
   const refuse = (why) => {
     throw new Error(`PLACE_VALUE_CALCULATION_INVALID: ${why}`);
   };
@@ -690,7 +697,9 @@ function normaliseCalcExchanges(c, columns, operator, top) {
     }
     value[from] -= 1;
     value[to] += 10;
-    marks[to].one = { level: marks[to].above ? 1 : 0, k };
+    // `receives: false` is an exchange half made: the digit crossed out and one
+    // fewer written, the small 1 not yet (the move before the break).
+    if (!(isObj(e) && e.receives === false)) marks[to].one = { level: marks[to].above ? 1 : 0, k };
     marks[from].crossed = k;
     marks[from].above = { text: String(value[from]), k };
   });
@@ -1029,6 +1038,7 @@ function normaliseCalculation(spec) {
       // could explain (the teacher, 14 October 2026).
       carryRow: operator !== '−' && c.carry !== false && !(long && !long.addCarries),
       worked: c.worked === true,
+      ...(isObj(c.carryColours) ? { carryColours: Object.fromEntries(Object.entries(c.carryColours).map(([k, v]) => [canonicalColumn(k), hexColour(v)]).filter(([, v]) => v)) } : {}),
       exchange: normaliseCalcExchanges(c, columns, operator, cellsOf(numbers[0], 'number 1')),
       ring: ringColumn(c, columns),
       ringColour: hexColour(c.ringColour),
@@ -1451,7 +1461,7 @@ function describeStacked(chart, profile) {
   }));
   if (smallest !== null && clearlyUnder(smallest.raw, smallest.floor, { surface: profile.surface, what: "a place value chart's counters" })) {
     throw new Error(
-      `PLACE_VALUE_COUNTERS_TOO_SMALL: this chart's counters come out ${(smallest.raw / 72).toFixed(2)}in across, below the ` +
+      `PLACE_VALUE_COUNTERS_TOO_SMALL: this chart's counters come out ${(smallest.raw / 72).toFixed(3)}in across, below the ` +
         `${(smallest.floor / 72).toFixed(3)}in a child can count from the carpet${smallest.floor > COUNTER_READABLE_PT ? ' when they stand close together' : ''}, because each column is only ${(colW / 72).toFixed(2)}in wide. ` +
         'The counter band already has the height it needs, so a taller zone will not move it: give the chart more WIDTH - a wider zone, ' +
         'one chart on this slide instead of two, or a template that does not spend 40% of the board on a side panel. ' +
@@ -1972,7 +1982,10 @@ function describeCalculation(chart, profile) {
   const totalLabel = long && !long.side ? { label: calc.total.label, pt: long.labelPt(D), ink: long.totalInk } : {};
   marks.answer = row('answer', calc.answer, rowH(D), D, totalInk, '', 'answer', 0, totalLabel);
   if (!partials.length || calc.closingRule) rules.push(y);
-  if (calc.carryRow) marks.carry = row('carry', calc.carry, carryH(D), CALC_CARRY_FONT * D, totalInk, '', 'carry');
+  // A carried digit may wear its exchange's colour, so a sum shown one move at
+  // a time ties the digit to the pieces that made it (exchange-happening-svg.js).
+  const carryInk = calc.carryColours ? (i) => calc.carryColours[cols[i]] || totalInk : totalInk;
+  if (calc.carryRow) marks.carry = row('carry', calc.carry, carryH(D), CALC_CARRY_FONT * D, carryInk, '', 'carry');
   // The two thick rules, across the whole calculation: the big equals sign.
   rules.forEach((ry) => lines.push({ role: 'heavy-rule', x1: 0, y1: ry, x2: chartW, y2: ry, sw: heavy, stroke: pal.text }));
 
@@ -2131,12 +2144,65 @@ function describePair(chart, profile) {
     );
   }
 
-  const gap = gapAt(D);
   // On the board a counter pair takes the width its zone has spare, up to the
   // widest a counter column is useful, so its counters are as big as they can be.
-  const colW = hasCounters && (profile.heightPt || narrowArrow)
-    ? Math.max(colFactor * D, Math.min((narrowArrow ? PAIR_COUNTER_COL_MAX_NARROW : PAIR_COUNTER_COL_MAX) * D, (profile.widthPt - gap) / (2 * units)))
-    : colFactor * D;
+  const colWAt = (d) => (hasCounters && (profile.heightPt || narrowArrow)
+    ? Math.max(colFactor * d, Math.min((narrowArrow ? PAIR_COUNTER_COL_MAX_NARROW : PAIR_COUNTER_COL_MAX) * d, (profile.widthPt - gapAt(d)) / (2 * units)))
+    : colFactor * d);
+  // The two cells of a clean exchange keep room for its rings whether or not
+  // the marks are asked for, so a marked pair and an unmarked one set their
+  // counters in the same places.
+  const closePair = CLOSE_COUNTERS.has(profile.surface);
+  const exchanged = exchangeBetween(pair, cols);
+  const ringIn = (pops, column, d) => {
+    const which = pops === pair.fromCounters ? 'from' : 'to';
+    const kind = exchanged && ['group', 'one'].find((k) => exchanged[k].chart === which && exchanged[k].column === column);
+    return kind ? { kind, margin: EXCHANGE_MARK_MARGIN, line: Math.max(3.5, EXCHANGE_MARK_W * d) } : null;
+  };
+  const counterLayoutAt = (d, pops, c, w) => counterLayout(w, COUNTER_H * d, countIn(pops, c), c, false, d, { close: closePair, ring: ringIn(pops, c, d) });
+  // How near the smallest counters come to their floor at a digit size, as a
+  // share of it: 1 or more reads from the carpet.
+  const counterShareAt = (d) => {
+    const w = colWAt(d);
+    let share = Infinity;
+    [pair.fromCounters, pair.toCounters].forEach((pops) => cols.forEach((c) => {
+      if (c === '.' || countIn(pops, c) === 0) return;
+      const lay = counterLayoutAt(d, pops, c, w);
+      share = Math.min(share, lay.raw / lay.floor);
+    }));
+    return share;
+  };
+  // The counters do not grow with the digits all the way. Past a point the gap
+  // between the charts, which widens with the digits, takes width from the
+  // columns and the counters shrink again, so a taller space refused a pair a
+  // shorter one drew (Tuesday's 52 at 6in wide: drawn at 3.4in tall, refused
+  // at 3.5in to 3.7in, 18 October 2026). Where the biggest digits that fit
+  // leave the counters under their floor, the digits step down, never under
+  // their own floor, to the biggest size whose counters read; and where none
+  // does, to the size whose counters come nearest, which is the size the
+  // refusal then names. Every smaller digit size fits the space, so a space
+  // that draws a pair at some size draws it in any bigger space too.
+  if (hasCounters && counterShareAt(D) < 1) {
+    let best = D;
+    let bestShare = counterShareAt(D);
+    const STEP = 0.1;
+    for (let k = 1; D - k * STEP > lo - STEP; k += 1) {
+      const d = Math.max(lo, D - k * STEP);
+      const share = counterShareAt(d);
+      if (share >= 1) {
+        best = d;
+        break;
+      }
+      if (share > bestShare) {
+        best = d;
+        bestShare = share;
+      }
+    }
+    D = best;
+  }
+
+  const gap = gapAt(D);
+  const colW = colWAt(D);
   const colWs = cols.map((c) => (c === '.' ? colW * POINT_W : colW));
   const chartW = colWs.reduce((a, b) => a + b, 0);
   const totalW = 2 * chartW + gap;
@@ -2203,16 +2269,6 @@ function describePair(chart, profile) {
   }
 
   const chartY = y;
-  // The two cells of a clean exchange keep room for its rings whether or not
-  // the marks are asked for, so a marked pair and an unmarked one set their
-  // counters in the same places.
-  const closePair = CLOSE_COUNTERS.has(profile.surface);
-  const exchanged = exchangeBetween(pair, cols);
-  const ringIn = (pops, column) => {
-    const which = pops === pair.fromCounters ? 'from' : 'to';
-    const kind = exchanged && ['group', 'one'].find((k) => exchanged[k].chart === which && exchanged[k].column === column);
-    return kind ? { kind, margin: EXCHANGE_MARK_MARGIN, line: markW } : null;
-  };
   const drawChart = (ox, cells_, pops, picked, which) => {
     const headerH = HEADER_H * D;
     let x = ox;
@@ -2230,10 +2286,10 @@ function describePair(chart, profile) {
         const count = countIn(pops, c);
         if (count > 0 && c !== '.') {
           const mark = exchange && [exchange.group, exchange.one].find((m) => m.chart === which && m.column === c);
-          const lay = counterLayout(colWs[i], band, count, c, false, D, { close: closePair, ring: ringIn(pops, c) });
+          const lay = counterLayoutAt(D, pops, c, colWs[i]);
           if (clearlyUnder(lay.raw, lay.floor, { surface: profile.surface, what: "a before-and-after chart's counters" })) {
             const refusal = new Error(
-              `PLACE_VALUE_COUNTERS_TOO_SMALL: this pair's counters come out ${(lay.raw / 72).toFixed(2)}in across, below the ` +
+              `PLACE_VALUE_COUNTERS_TOO_SMALL: this pair's counters come out ${(lay.raw / 72).toFixed(3)}in across, below the ` +
                 `${(lay.floor / 72).toFixed(3)}in a child can count from the carpet${lay.floor > COUNTER_READABLE_PT ? ' when they stand close together' : ''}. ${pairCounterLever(chart, profile, lay.raw)}`
             );
             refusal.counterRaw = lay.raw;
@@ -2362,20 +2418,100 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
 // columns are what it teaches. The counters' own floor is never lowered.
 function describePairOrSmaller(spec, chart, profile) {
   try {
-    return describePair(chart, profile);
+    const whole = describePair(chart, profile);
+    keepDrawnSmaller(chart, profile, null);
+    return whole;
   } catch (error) {
     const sizeFault = /^PLACE_VALUE_(CHART_DOES_NOT_FIT|COUNTERS_TOO_SMALL)/.test(error.message);
     if (!sizeFault || profile.surface !== 'slides' || !profile.pairExchangeMarks || profile.leverProbe) throw error;
     if (!exchangeBetween(chart.pair, chart.columns)) throw error;
     for (const smaller of smallerPairs(spec, chart)) {
       try {
-        return describePair(normalise(smaller), profile);
+        const drawn = describePair(normalise(smaller), profile);
+        keepDrawnSmaller(chart, profile, smaller);
+        return drawn;
       } catch (retry) {
         if (!/^PLACE_VALUE_(CHART_DOES_NOT_FIT|COUNTERS_TOO_SMALL)/.test(retry.message)) throw retry;
       }
     }
     throw error;
   }
+}
+
+// A pair drawn smaller is said, with the room it needed whole. Drawn smaller
+// in silence, the designer could only find the room by trying sizes: the Year 4
+// Lesson 29 designer drew the pair at fourteen sizes in a scratch script to see
+// where its exchange cue box came back, and four of five subtraction designers
+// read this file's code for the same answer (17 October 2026). The layout
+// draws a slide more than once on its way to the size it keeps, so the last
+// draw of a pair on a slide is the one kept.
+const drawnSmaller = new Map();
+
+function keepDrawnSmaller(chart, profile, smaller) {
+  const slide = hairUnderSlide();
+  if (slide === null || profile.surface !== 'slides') return;
+  const key = `${slide}|${JSON.stringify([chart.columns, chart.pair.from, chart.pair.to])}`;
+  if (!smaller) {
+    drawnSmaller.delete(key);
+    return;
+  }
+  drawnSmaller.set(key, { slide, chart, profile, smaller });
+}
+
+function clearPairDrawnSmaller() {
+  drawnSmaller.clear();
+}
+
+// The room the whole pair needs, found the way the designer would: wider at
+// the height it was given, or taller at the width. Worked out only when the
+// notes are read, once a slide.
+function roomForWholePair(chart, profile) {
+  const STEP = 0.05 * 72;
+  const fits = (widthPt, heightPt) => {
+    try {
+      describePair(chart, { ...profile, widthPt, heightPt, leverProbe: true });
+      return true;
+    } catch (error) {
+      if (!/^PLACE_VALUE_(CHART_DOES_NOT_FIT|COUNTERS_TOO_SMALL)/.test(error.message)) throw error;
+      return false;
+    }
+  };
+  const first = (from, to, at) => {
+    for (let v = from + STEP; v <= to; v += STEP) if (at(v)) return v;
+    return null;
+  };
+  // A slide is 13.33in by 7.5in; nothing past that is a size worth naming.
+  return {
+    wider: first(profile.widthPt, 13 * 72, (w) => fits(w, profile.heightPt)),
+    taller: first(profile.heightPt, 7 * 72, (h) => fits(profile.widthPt, h)),
+  };
+}
+
+function pairDrawnSmallerFindings() {
+  // The drawing was laid out inside its box less 1.5pt of bleed a side, so the
+  // sizes named are put back to the box the designer gives it.
+  const inches = (pt) => `${((pt + 3) / 72).toFixed(2)}in`;
+  return [...drawnSmaller.values()].map(({ slide, chart, profile, smaller }) => {
+    const lostCue = chart.pair.exchanges.length > 0;
+    const lostColumns = (smaller.columns || chart.columns).length < chart.columns.length;
+    const lost = [lostCue && 'its exchange cue box', lostColumns && 'the columns the exchange does not touch'].filter(Boolean).join(' and ');
+    const { wider, taller } = roomForWholePair(chart, profile);
+    const ways = [
+      wider && `${inches(wider)} wide at the ${inches(profile.heightPt)} height it has`,
+      taller && `${inches(taller)} tall at the ${inches(profile.widthPt)} width it has`,
+    ].filter(Boolean);
+    const room = ways.length
+      ? `Drawn whole it needs ${ways.join(', or ')}.`
+      : 'Drawn whole it needs more room in both directions than this slide can give one picture at this shape.';
+    return {
+      signal: 'PLACE_VALUE_PAIR_DRAWN_SMALLER',
+      slide,
+      message:
+        `the before-and-after pair of counters was drawn without ${lost}, because the whole pair did not fit its ` +
+        `${inches(profile.widthPt)} x ${inches(profile.heightPt)} space. ${room} ` +
+        'Drawn smaller is allowed, since the rings and arrow still show the swap, so this is a note and not a refusal.',
+    };
+  });
 }
 
 function smallerPairs(spec, chart) {
@@ -2514,6 +2650,8 @@ module.exports = {
   cacheKey,
   normalise,
   describeLayout,
+  pairDrawnSmallerFindings,
+  clearPairDrawnSmaller,
   minWidthPt,
   onePerColumnCueSvg,
   COLUMN_COLOURS,

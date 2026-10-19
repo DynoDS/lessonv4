@@ -441,6 +441,12 @@ module.exports = {
   "base-ten-blocks": {
     counts: { thousands: 2, hundreds: 4, tens: 3, ones: 6 },
   },
+  // 52 - 28 with its exchange shown happening: on paper, the one picture of
+  // the ten moving into the ones and breaking into ten ones, beside the sum.
+  "exchange-happening": {
+    operator: "-",
+    numbers: ["52", "28"],
+  },
   // A number bond to 10 in two colours: 6 and 4. Leave both counts off for
   // the empty frame a child fills.
   "ten-frame": {

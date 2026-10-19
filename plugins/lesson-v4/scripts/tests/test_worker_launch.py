@@ -50,6 +50,7 @@ def run_with_made_up_role(role: str, frontmatter: list[str], *args: str) -> subp
         copy = Path(tmp) / "scripts" / SCRIPT.name
         copy.parent.mkdir()
         shutil.copy2(SCRIPT, copy)
+        shutil.copy2(SCRIPT.parent / "utf8_output.py", copy.parent / "utf8_output.py")
         agents = Path(tmp) / "agents"
         agents.mkdir()
         (agents / f"{role}.md").write_text(
@@ -183,7 +184,7 @@ class SpecTests(unittest.TestCase):
         result = run("spec", "--host", "claude", "--role", "lesson-designer")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn(
-            "WORKER_LAUNCH_HOST_NATIVE: lesson-designer model=opus effort=xhigh",
+            "WORKER_LAUNCH_HOST_NATIVE: lesson-designer model=opus effort=high",
             result.stdout,
         )
 
@@ -208,19 +209,25 @@ class SpecTests(unittest.TestCase):
         evidence rather than a guess, and they are pinned here for the reason the
         Codex matrix above is pinned: an edit that quietly lowers the lesson
         designer costs a lesson nobody can see the difference in.
+
+        On 18 October 2026 the teacher chose these levels on purpose: high,
+        not extra high, for the lesson designer, reviewer and slide designer
+        (Anthropic keeps extra high for gains a test has shown), Sonnet for the
+        wall designer, and medium for the stick-in designer and the dot placer.
+        A change from here is his decision too.
         """
         expected = {
-            "lesson-designer": ("opus", "xhigh"),
-            "design-reviewer": ("opus", "xhigh"),
+            "lesson-designer": ("opus", "high"),
+            "design-reviewer": ("opus", "high"),
             "lesson-voice-editor": ("opus", "medium"),
-            "slide-designer": ("opus", "xhigh"),
-            "working-wall-designer": ("opus", "high"),
+            "slide-designer": ("opus", "high"),
+            "working-wall-designer": ("sonnet", "high"),
             "adaptation-designer": ("opus", "high"),
-            "diagram-anchor": ("opus", "high"),
+            "diagram-anchor": ("opus", "medium"),
             "helper-builder": ("opus", "high"),
             "image-scout": ("sonnet", "high"),
             "worksheet-designer": ("sonnet", "high"),
-            "stick-in-sheets-designer": ("sonnet", "xhigh"),
+            "stick-in-sheets-designer": ("sonnet", "medium"),
             "slide-decorator": ("sonnet", "medium"),
             "slide-builder": ("haiku", "low"),
             "worksheet-builder": ("haiku", "low"),

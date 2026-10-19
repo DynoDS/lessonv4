@@ -115,6 +115,16 @@ class ThePackPrintsWhatTheBeatChoseTests(unittest.TestCase):
                 self.assertEqual(self.module.level_faults(self.design(form), [{"visual": visual, "sourceUnitId": unit}]), [])
         self.assertTrue(self.module.level_faults(self.design("task"), [{"visual": "venn", "sourceUnitId": unit}]))
 
+    def test_a_real_picture_children_mark_is_a_figure_and_one_they_only_read_is_not(self):
+        # John Snow's map, pairs circle the pump (Year 4 cholera, 18 October 2026).
+        unit = "lesson-section/teaching-sequence/unit-002"
+        copy = {"visual": "source-copy", "sourceUnitId": unit,
+                "spec": {"imagePath": "map.jpg", "caption": "John Snow's map"}}
+        marked = {**copy, "task": "Circle the pump that was making people ill.", "write": "on the figure"}
+        self.assertEqual(self.module.level_faults(self.design("figure"), [marked]), [])
+        self.assertTrue(self.module.level_faults(self.design("figure"), [copy]))
+        self.assertEqual(self.module.level_faults(self.design("source"), [marked]), [])
+
 
     def test_the_scaffold_asks_every_doing_beat_for_its_levels_and_no_other(self):
         self.assertIn("levels", SCAFFOLD.source_unit("lesson-section/teaching-sequence/unit-001", "do", None))

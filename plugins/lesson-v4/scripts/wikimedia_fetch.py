@@ -367,4 +367,7 @@ def main():
     if not complete: raise SystemExit(1)
 
 
-if __name__ == "__main__": main()
+if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
+    main()

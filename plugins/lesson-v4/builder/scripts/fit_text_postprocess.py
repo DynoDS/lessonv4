@@ -1357,4 +1357,10 @@ def main():
 
 
 if __name__ == "__main__":
+    # The same switch as scripts/utf8_output.py, written out because the
+    # builder runs this file from its own folder: a note quoting "52 − 28"
+    # would otherwise stop the fit on a Windows pipe.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     main()

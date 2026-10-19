@@ -73,6 +73,7 @@ const balancedPatternPlateShared = require('../../shared/visuals/balanced-patter
 const placeValueChartShared = require('../../shared/visuals/place-value-chart-svg');
 const placeValueMiniShared = require('../../shared/visuals/place-value-mini-svg');
 const baseTenBlocksShared = require('../../shared/visuals/base-ten-blocks-svg');
+const exchangeHappeningShared = require('../../shared/visuals/exchange-happening-svg');
 const counterGroupShared = require('../../shared/visuals/counter-group-svg');
 const tenFrameShared = require('../../shared/visuals/ten-frame-svg');
 const partWholeModelShared = require('../../shared/visuals/part-whole-model-svg');
@@ -278,6 +279,7 @@ const isExplainedSum = (spec) => Boolean(spec && spec.calculation && /^explain|^
 const placeValueChartWall = sharedAtWidth(placeValueChartShared, (spec) => (isCounterPair(spec) ? COUNTER_PAIR_BOX : { widthMm: isExplainedSum(spec) ? WALL_CHART_WIDTH_MM : WALL_VISUAL_WIDTH_MM }));
 const placeValueMiniWall = sharedAtWidth(placeValueMiniShared);
 const baseTenBlocksWall = sharedAtWidth(baseTenBlocksShared);
+const exchangeHappeningWall = sharedAtWidth(exchangeHappeningShared);
 const counterGroupWall = sharedAtWidth(counterGroupShared);
 const tenFrameWall = sharedAtWidth(tenFrameShared);
 const partWholeModelWall = sharedAtWidth(partWholeModelShared);
@@ -827,6 +829,7 @@ async function preRenderSvgs(spec, specDir, widths = {}, earlier = {}) {
     'place-value-chart': { ...placeValueChartWall, collected: {} },
     'place-value-mini': { ...placeValueMiniWall, collected: {} },
     'base-ten-blocks': { ...baseTenBlocksWall, collected: {} },
+    'exchange-happening': { ...exchangeHappeningWall, collected: {} },
     'counter-group': { ...counterGroupWall, collected: {} },
     'ten-frame': { ...tenFrameWall, collected: {} },
     'part-whole-model': { ...partWholeModelWall, collected: {} },
@@ -1211,6 +1214,7 @@ module.exports = {
   placeValueChartKey: placeValueChartWall.keyFn,
   placeValueMiniKey: placeValueMiniWall.keyFn,
   baseTenBlocksKey: baseTenBlocksWall.keyFn,
+  exchangeHappeningKey: exchangeHappeningWall.keyFn,
   counterGroupKey: counterGroupWall.keyFn,
   tenFrameKey: tenFrameWall.keyFn,
   partWholeModelKey: partWholeModelWall.keyFn,

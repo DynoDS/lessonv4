@@ -88,12 +88,14 @@ FIGURE_HELPERS: dict[str, dict[str, tuple[str, ...]]] = {
     "venn": {s: ("venn",) for s in ("slides", "worksheets", "wall", "stick-in")},
     "carroll": {s: ("carroll",) for s in ("slides", "worksheets", "wall", "stick-in")},
     "bar model": {s: ("bar-model",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    # An exchange is drawn on a place value chart, and since 18 October 2026 also
+    # as a sum shown happening, whose pieces stand in place value columns.
     "place value": {
-        s: ("place-value-chart", "place-value-counter-chart")
+        s: ("place-value-chart", "place-value-counter-chart", "exchange-happening")
         for s in ("slides", "worksheets", "wall", "stick-in")
     },
     "place-value": {
-        s: ("place-value-chart", "place-value-counter-chart")
+        s: ("place-value-chart", "place-value-counter-chart", "exchange-happening")
         for s in ("slides", "worksheets", "wall", "stick-in")
     },
     # The worksheet draws clocks as `clock-row`, and the stick-in pack takes
@@ -816,6 +818,8 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
     try:
         raise SystemExit(main())
     except CoverageError as exc:

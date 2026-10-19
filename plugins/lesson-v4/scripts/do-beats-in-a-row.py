@@ -223,6 +223,8 @@ def child_seat(design: dict) -> list[str]:
     # checked only by a quick check, then its explanation task, and passed
     # the task count; the teacher found it "so much".
     chunks_before_main = 0
+    lead_in: list[str] = []
+    lead_in_new_word = False
     taught_in_stretch = False
     after_main = 0
     quick_after_main = 0
@@ -247,6 +249,18 @@ def child_seat(design: dict) -> list[str]:
         if (taught_in_stretch and main_at is not None and i < main_at
                 and item.get("kind") != "starter"):
             chunks_before_main += 1
+        # Teaching that runs straight into the main work, with nothing for
+        # children to do, hid a fourth chunk in a Year 4 cholera lesson
+        # (18 October 2026): the leaking well, a new word card and the sewers
+        # came after the last task, so the count above said three. A new word
+        # there is usually new teaching, but the word the final task itself
+        # asks about (Shaftesbury's "significant") can be the lead-in readying
+        # it, so the stretch is named for the reader to judge, not counted.
+        if i == main_at and stretch:
+            names = [name for name, _count in stretch]
+            lead_in_new_word = any(name.startswith("word card:") for name in names)
+            if taught_in_stretch or lead_in_new_word:
+                lead_in = names
         taught_in_stretch = False
         if stretch:
             stretches.append(stretch)
@@ -331,9 +345,19 @@ def child_seat(design: dict) -> list[str]:
         lines.append(f"  Chunks of teaching before the main work, each ended by a quick check or a task: "
                      f"{chunks_before_main}. Usually two, then a short lead-in and the final task "
                      f"(`preferences.md` -> `A lesson holds two or three Dos, then its final task`); "
-                     f"a third is the sign to look again at what the objective needs, never a cap. Read it by "
-                     f"ideas: parts of one idea checked one by one are one chunk, and new things are never packed "
-                     f"into one telling to lower this number. A skill lesson's My Turn cycles keep their own shape.")
+                     f"a third is the sign to look again at what the objective needs, never a cap. This number "
+                     f"is not argued down: teaching closed by a task of its own is its own chunk whatever the "
+                     f"design calls it, and only a set of names checked by quick checks as it arrives stays one. "
+                     f"At three, go back to fewer things or say in the closing decisions' Amount line why this "
+                     f"objective needs the third. A skill lesson's My Turn cycles keep their own shape.")
+        if lead_in:
+            judged = ("If it only ties together what was taught, it is the lead-in; if it teaches the next "
+                      "part of the story, it is a chunk of its own and adds one to that count.")
+            if lead_in_new_word:
+                judged += (" It brings in a new word, which is new teaching unless the final task itself "
+                           "asks children to use that word.")
+            lines.append(f"  Teaching that runs straight into the main work with nothing for children to do: "
+                         + "; ".join(lead_in) + f". {judged}")
     lines.extend(clock(design, order))
     return lines
 
@@ -561,4 +585,6 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
     sys.exit(main(sys.argv[1:]))

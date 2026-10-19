@@ -50,6 +50,8 @@ When `taskStructure` is present, its group labels, item labels and non-null item
 
 When `pupilInstruction` is null on a pupil-action source unit, the Slide Designer may author **one short piece of slide furniture** - normally a title or `instruction` - that names the already-settled action in child-facing form, and only when it is necessary to operate a source-defined surface. This is the only presentation-wording exception.
 
+A starter whose questions already say what to do needs none. Its sums and gaps are the task, the script says how to go about them, and a line above them takes the height the questions grow into: a `Use column subtraction.` strip over two sums held them at 79pt in three-quarters of the board, where without it they reach about 100pt and fill it (Year 4, 18 October 2026). The line earns its place on a starter only when a child could not begin without it, as `Round each number to the nearest 10.` above bare numbers is.
+
 The derived line may:
 
 - name the action already present in the source unit, such as `Match each pair`, `Sort the examples`, `Write one reason`, or `Choose and explain`;

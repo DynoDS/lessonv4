@@ -735,6 +735,8 @@ Five things decide whether a Do or a quick check is worth asking, and they are s
 
 The starter is one source unit. Its `content.activity` is the exact question or task children read, not a description of the learning purpose. Put the purpose in `content.connection` and delivery method in `content.format`. If `pupilInstruction` is needed, it adds a short action rather than duplicating the questions. A line about what children will retrieve, demonstrate or practise belongs in planning, unless it is itself an intelligible instruction addressed to them.
 
+A starter's questions usually say what to do on their own (`5,481 − 2,236 =`, `1 hundred = ___ tens`), and how to go about them (`Set each one out in columns`) is said in the script, so `pupilInstruction` is normally `null`. Every non-null instruction prints as a line above the questions, and on a starter the questions are the whole slide: a `Use column subtraction.` line over three sums cost them a quarter of their height and left them at 43pt in the left half of the board, where without it they print at 59pt (Year 4, 18 October 2026; the teacher agreed the starter loses the line). Give one only when a child could not start the questions without it: `Round each number to the nearest 10.` above `346`, `1,278`, `95` is the job itself.
+
 ```json
 {
   "sourceUnitId": "lesson-section/starter/unit-001",

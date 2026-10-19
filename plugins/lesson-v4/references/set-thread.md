@@ -43,6 +43,7 @@ its `key`:
    "methodSteps": ["Line up the digits.", "Write the symbol.", "Start with the ((ones)). Then ((tens)), then ((hundreds)), then ((thousands)).\nNot enough to take away? {{Exchange}}.\nCrossed out? Use the <<new digit>>.\nNothing to take away? Write the top digit."],
    "sometimesLists": [{"heading": "How to exchange", "steps": ["Cross out the digit in <<the next column to the left>>.", "Write 1 less above it.", "Write a 1 in front of the digit that wasn't enough."]}],
    "newToday": "The exchange: its own list, named under step 3.",
+   "wallExample": "",
    "wordCards": [{"term": "exchange", "definition": "When you exchange, you swap something for something else that's worth the same, like 1 ten for 10 ones."}],
    "representation": "The written column method, Th H T O, with place-value counters beside the first exchange."}
 ]}
@@ -73,6 +74,19 @@ its `key`:
   for these lists too. Leave both out when the method has no such part.
 - **`newToday`**: what that day adds to the list, in a sentence, so its
   designer knows which line its teaching is for. `""` when it adds nothing.
+- **`wallExample`**: the working wall. A day whose lists match the day
+  before's copies that day's wall sheet; a day whose lists change gets that
+  sheet with its new step added. Some days keep the steps but teach a kind of
+  sum the earlier sheet's example does not show, and a child stuck on it looks
+  up at the wall for one that does: in the subtraction week (18 October 2026)
+  Wednesday taught a column that gives an exchange and then needs one itself,
+  with nothing new on the list, and the teacher wanted the sheet's
+  one-exchange example swapped for one showing that. On such a day, say in a
+  few words what the example must now show (`"an exchange in two columns, one
+  straight after the other"`), never the numbers, which stay the wall's own
+  choice. `""` when the earlier example still shows the day's work: a
+  practise day, a day with a new step (its sheet already changes), the first
+  day of the set.
 - **`wordCards`**: a word that more than one day puts on a card, with the one
   definition every day uses. Leave out words only one day uses: that day
   chooses its own.

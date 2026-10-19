@@ -440,6 +440,8 @@ def copy_packet_plugin_root(
         # The count the validator reads beside each Do (6 October 2026).
         ROOT / "scripts" / "beside_teaching.py",
         ROOT / "scripts" / "check-photo-cap.py",
+        # Every script switches its own output to UTF-8 (19 October 2026).
+        ROOT / "scripts" / "utf8_output.py",
     ):
         shutil.copy2(
             source,

@@ -41,6 +41,11 @@ function setHairUnderSlide(n) {
   slideNumber = Number.isFinite(n) ? n : null;
 }
 
+// The slide the build is drawing, for other drawings that keep a note about it.
+function hairUnderSlide() {
+  return slideNumber;
+}
+
 function clearHairUnder() {
   found.length = 0;
 }
@@ -72,4 +77,4 @@ function clearlyUnder(got, floor, { surface, what, unit = 'in', perUnit = 72 } =
   return false;
 }
 
-module.exports = { HAIR, clearlyUnder, allowHairUnder, setHairUnderSlide, clearHairUnder, hairUnderFindings };
+module.exports = { HAIR, clearlyUnder, allowHairUnder, setHairUnderSlide, hairUnderSlide, clearHairUnder, hairUnderFindings };

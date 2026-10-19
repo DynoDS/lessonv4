@@ -130,6 +130,7 @@ const SAMPLES = {
   "place-value-chart": [{ columns: ["Th", "H", "T", "O"], rows: [{ label: "3,462", cells: ["3", "4", "6", "2"] }, { label: "10 more", cells: ["3", "4", "7", "2"], highlight: ["T"] }] }],
   "place-value-mini": [{ mode: "placeholder", number: "4050" }],
   "base-ten-blocks": [{ counts: { Th: 2, H: 4, T: 3, O: 6 } }],
+  "exchange-happening": [{ operator: "-", numbers: ["52", "28"] }],
   "ten-frame": [{ count: 6, second: 4 }, { count: 13, look: "boxes", crossedOut: 2 }, { count: 7, highlight: "empty" }],
   "counter-group": [{ statement: "5,009 = 5,000 + 9", joiner: "+", groups: [{ value: "1000", count: 5 }, { value: "1", count: 9 }] }],
   "part-whole-model": [{ whole: "45", parts: ["27", "18"] }],

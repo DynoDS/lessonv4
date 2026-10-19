@@ -889,4 +889,7 @@ def main(argv=None):
     except FinalizeError as exc: print(f"PICTURE_FINALIZE_ERROR: {exc}", file=sys.stderr); return 1
 
 
-if __name__ == "__main__": raise SystemExit(main())
+if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
+    raise SystemExit(main())

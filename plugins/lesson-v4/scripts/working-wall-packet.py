@@ -951,6 +951,16 @@ def prepare(args: argparse.Namespace) -> int:
 # and no designer runs (if the earlier lesson decided no sheet, neither does
 # this one). Different steps: the designer runs with the earlier sheet in its
 # view, to add to it. No steps list on either side: the designer runs as before.
+#
+# Lessons 29 to 33 (18 October 2026) copied Monday's sheet all week. The check
+# compared only the main list, and Friday's new step ("A 0? Exchange into the
+# 0 first.") sat in How to exchange, a list of its own since 16 October; so
+# every list a lesson shows is compared now. The teacher's rulings that day: a
+# day whose steps match but whose teaching needs an example the earlier sheet
+# does not show (several exchanges on Wednesday) gets that sheet with only the
+# example swapped, which the set's thread says in `wallExample`; a later day
+# copies that newer sheet, not Monday's; and a sheet that adds a step replaces
+# the earlier one on the wall, so it keeps its title.
 
 WALL_RECORD = "wall-earlier.json"
 WAIT_LIMIT_SECONDS = 60 * 60
@@ -978,20 +988,31 @@ def filing_values(working_dir: Path) -> dict[str, str]:
     return {key.strip(): value.strip() for key, value in (line.split("=", 1) for line in lines if "=" in line)}
 
 
-def method_list(design: dict | None, plain) -> tuple[str, ...]:
-    """The lesson's full method list in plain words: its longest steps list, () when it has none."""
-    best: tuple[str, ...] = ()
+def method_list(design: dict | None, plain) -> tuple[tuple[str, ...], ...]:
+    """Every steps list the lesson shows, in order and in plain words; () when it has none.
+
+    "How to exchange" beside "How to subtract" is a list of its own, and a step
+    added to it changes the method as much as one added to the main list.
+    """
+    lists = []
     for item in (design or {}).get("successCriteria") or []:
         if isinstance(item, dict) and item.get("type") == "steps" and isinstance(item.get("content"), dict):
             steps = tuple(plain(step) for step in item["content"].get("steps") or [])
-            if len(steps) >= len(best):
-                best = steps
-    return best
+            if steps:
+                lists.append(steps)
+    return tuple(lists)
 
 
-def related(one: tuple[str, ...], other: tuple[str, ...]) -> bool:
-    """Two method lists teach one method when both exist and they share a step."""
-    return bool(one and other and set(one) & set(other))
+def thread_lists(entry: dict, plain) -> tuple[tuple[str, ...], ...]:
+    """A thread day's lists as method_list gives a design's: the main list, then each sometimes list."""
+    lists = [entry.get("methodSteps") or []]
+    lists += [extra.get("steps") or [] for extra in entry.get("sometimesLists") or [] if isinstance(extra, dict)]
+    return tuple(steps for steps in (tuple(plain(s) for s in raw) for raw in lists) if steps)
+
+
+def related(one: tuple[tuple[str, ...], ...], other: tuple[tuple[str, ...], ...]) -> bool:
+    """Two lessons teach one method when both show steps and they share a step."""
+    return bool(set().union(*one) & set().union(*other)) if one and other else False
 
 
 def wall_state(folder: Path | None, since: float = 0.0) -> dict | None:
@@ -1035,7 +1056,9 @@ def wall_state(folder: Path | None, since: float = 0.0) -> dict | None:
 def earlier_lessons(working_dir: Path, design: dict, plain) -> tuple[tuple[str, ...], list[dict]]:
     """This lesson's method list and the lessons before it, nearest first.
 
-    Each is {"name", "steps", "folder", "sibling", "status", "since"}. A lesson
+    Each is {"name", "steps", "example", "folder", "sibling", "status", "since"}.
+    `example` is the thread's `wallExample` for that day: what its wall's
+    example must show that the earlier sheet's does not, "" when nothing. A lesson
     in a set built side by side takes every list from the set's thread, which
     every design in the set is held to word for word, because a sibling may
     not have a design yet; a lesson on its own reads the designs.
@@ -1054,6 +1077,7 @@ def earlier_lessons(working_dir: Path, design: dict, plain) -> tuple[tuple[str, 
 
     found: list[dict] = []
     own = method_list(design, plain)
+    own_example = ""
     if thread_path and key:
         thread_file = Path(thread_path)
         try:
@@ -1063,9 +1087,11 @@ def earlier_lessons(working_dir: Path, design: dict, plain) -> tuple[tuple[str, 
             entries, batch = [], {}
         keys = [entry.get("key") for entry in entries if isinstance(entry, dict)]
         if key in keys:
-            steps = {entry.get("key"): tuple(plain(s) for s in entry.get("methodSteps") or [])
-                     for entry in entries if isinstance(entry, dict)}
+            steps = {entry.get("key"): thread_lists(entry, plain) for entry in entries if isinstance(entry, dict)}
+            examples = {entry.get("key"): str(entry.get("wallExample") or "").strip()
+                        for entry in entries if isinstance(entry, dict)}
             own = steps[key] or own
+            own_example = examples[key]
             members = {lesson.get("key"): lesson for lesson in batch.get("lessons") or []}
             output = thread_file.parent.parent.parent
             finder = _script_module("lesson-batch.py", "lesson_batch_for_wall")
@@ -1077,29 +1103,38 @@ def earlier_lessons(working_dir: Path, design: dict, plain) -> tuple[tuple[str, 
                     since = datetime.fromisoformat(started).timestamp() if started else 0.0
                 except ValueError:
                     since = 0.0
-                found.append({"name": sibling, "steps": steps.get(sibling, ()), "folder": folder,
+                found.append({"name": sibling, "steps": steps.get(sibling, ()), "example": examples.get(sibling, ""),
+                              "folder": folder,
                               "sibling": True, "status": lesson.get("status", ""), "since": since})
             previous = (members.get(key) or {}).get("setPrevious") or previous
     if previous not in no_lesson and Path(previous).is_dir():
         folder = Path(previous)
-        found.append({"name": folder.name, "steps": design_steps(folder), "folder": folder,
+        found.append({"name": folder.name, "steps": design_steps(folder), "example": "", "folder": folder,
                       "sibling": False, "status": "finished", "since": 0.0})
-    return own, found
+    return own, own_example, found
 
 
 def settle_earlier(working_dir: Path, design: dict, plain) -> dict:
     """One look: {"decision": reuse|none|wait|design, ...}."""
-    own, before = earlier_lessons(working_dir, design, plain)
+    own, example, before = earlier_lessons(working_dir, design, plain)
     if not before:
         return {"decision": "design", "why": "no earlier lesson was found"}
     owner = None
     for lesson in before:
         if own and lesson["steps"] == own:
             owner = lesson
+            if lesson["example"]:
+                # That day swapped the example: its sheet is the newest, so go no further back.
+                break
         else:
             break
     nearest = before[0]
-    target = owner or (nearest if related(own, nearest["steps"]) else None)
+    swap = bool(example and owner is not None)
+    if swap:
+        # Same steps, but today's teaching needs an example the earlier sheet does not show.
+        target, owner = nearest, None
+    else:
+        target = owner or (nearest if related(own, nearest["steps"]) else None)
     if target is None:
         state = wall_state(nearest["folder"], nearest["since"]) if not nearest["sibling"] else None
         return {"decision": "design", "earlier": nearest["name"], "related": False, "state": state,
@@ -1115,9 +1150,14 @@ def settle_earlier(working_dir: Path, design: dict, plain) -> dict:
         if state.get("pdf"):
             return {"decision": "reuse", "earlier": owner["name"], "state": state,
                     "why": f"{owner['name']} has the same method steps"}
+    if swap:
+        why = f"{target['name']} has the same steps, but this lesson's example must show {example}"
+    elif owner is None:
+        why = f"{target['name']} adds to the method"
+    else:
+        why = f"{target['name']} has the same steps but its wall could not be found"
     return {"decision": "design", "earlier": target["name"], "related": True, "state": state,
-            "why": (f"{target['name']} adds to the method" if owner is None
-                    else f"{target['name']} has the same steps but its wall could not be found")}
+            "why": why, "example": example if swap else ""}
 
 
 def copy_earlier_wall(plugin_root: Path, working_dir: Path, output_dir: Path, lesson_name: str, settled: dict) -> Path:
@@ -1186,6 +1226,7 @@ def earlier(args: argparse.Namespace) -> int:
         "earlierLesson": settled.get("earlier", ""),
         "why": settled["why"],
         "buildsOn": bool(settled["decision"] == "design" and settled.get("related") and state.get("spec")),
+        "newExample": settled.get("example", ""),
         "earlierWall": str(Path(state["folder"]) / "working-wall.json") if state.get("folder") else "",
         "firstWaited": first_wait,
     }
@@ -1216,12 +1257,18 @@ def earlier_wall_section(working_dir: Path) -> list[str]:
     except (OSError, ValueError, AttributeError):
         return []
     lines = [f"## The wall before this one ({record.get('earlierLesson', '')})", ""]
-    if record.get("buildsOn"):
+    if record.get("buildsOn") and record.get("newExample"):
         lines.append(
-            "That lesson teaches the same method, and this lesson's steps change it. The teacher hangs a week's "
-            "sheets side by side, so this wall is that sheet with this lesson's new step added: "
+            "That lesson has the same steps, but its example does not show what this lesson teaches. "
+            "This wall replaces that sheet on the wall, so it is that sheet with only the example swapped "
+            f"for one that shows {record['newExample']}: keep its title, card type, colours, steps and wording."
+        )
+    elif record.get("buildsOn"):
+        lines.append(
+            "That lesson teaches the same method, and this lesson's steps change it. This wall replaces "
+            "that sheet on the wall, so it is that sheet with this lesson's new step added: "
             "keep its title, card type, colours and wording, change only what this lesson's "
-            "steps change, and swap the example only if the new step needs one that shows it."
+            "steps change, and swap the example for one that shows the new step when the old one does not."
         )
     else:
         lines.append(
@@ -1468,4 +1515,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
     sys.exit(main())

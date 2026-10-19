@@ -479,7 +479,7 @@ print('STATUS=COPIED')
         from unittest import mock
 
         scripts = SCRIPT.parent
-        for name in ("deliver_files.py", "plugin_settings.py"):
+        for name in ("deliver_files.py", "plugin_settings.py", "utf8_output.py"):
             target = self.plugin / "scripts" / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy(scripts / name, target)

@@ -6,6 +6,11 @@ teacher's rulings: a repeated sheet is fine but making it again is wasted
 work; a new sheet only when the method steps change; a day that changes them
 adds to the earlier sheet, and in a set built side by side waits for it, never
 for a lesson that has stopped. `working-wall-packet.py earlier` carries them.
+
+Lessons 29 to 33 (18 October 2026) then copied Monday's sheet all week: the
+check read only the main list, and Friday's new step sat in How to exchange.
+Every list counts now; a day the thread marks with `wallExample` swaps only
+the example; and a later day copies that newer sheet.
 """
 from __future__ import annotations
 
@@ -26,8 +31,10 @@ MONDAY = ["Line up the digits.", "Write the symbol.", "Start with the ((ones))."
 WALL_CARD = {"type": "workedExample", "title": "Column subtraction", "items": []}
 
 
-def design(steps: list[str] | None) -> dict:
-    criteria = [{"id": "sc-001", "type": "steps", "content": {"steps": steps}}] if steps else []
+def design(steps) -> dict:
+    """steps: one list of steps, a list of such lists (How to subtract, then How to exchange), or None."""
+    lists = steps if steps and isinstance(steps[0], list) else ([steps] if steps else [])
+    criteria = [{"id": f"sc-{n:03}", "type": "steps", "content": {"steps": one}} for n, one in enumerate(lists, 1)]
     return {"lesson": {"subject": "Maths"}, "successCriteria": criteria}
 
 
@@ -64,11 +71,11 @@ def follows(folder: Path, previous: Path) -> None:
     (folder / "filing.txt").write_text(f"PREVIOUS_LESSON={previous}\n", encoding="utf-8")
 
 
-def earlier(folder: Path, out: Path, *extra: str) -> tuple[str, dict]:
+def earlier(folder: Path, out: Path, *extra: str, name: str = "Today") -> tuple[str, dict]:
     env = {k: v for k, v in os.environ.items() if not k.startswith("LESSON_SET_")}
     done = subprocess.run(
         [sys.executable, "-X", "utf8", str(SCRIPT), "earlier", "--plugin-root", str(ROOT),
-         "--working-dir", str(folder), "--output-dir", str(out), "--lesson-name", "Today", *extra],
+         "--working-dir", str(folder), "--output-dir", str(out), "--lesson-name", name, *extra],
         capture_output=True, text=True, encoding="utf-8", env=env)
     assert done.returncode == 0, done.stdout + done.stderr
     return done.stdout.strip(), json.loads((folder / "wall-earlier.json").read_text(encoding="utf-8"))
@@ -142,6 +149,29 @@ def test_one_extra_smaller_point_is_a_change_of_steps(tmp_path):
     assert earlier(today, out)[0].startswith("WALL_DESIGN")
 
 
+EXCHANGE = ["Cross out the digit in <<the next column to the left>>.", "Write 1 less above it.",
+            "Write a 1 in front of the digit that wasn't enough."]
+ZEROS = [EXCHANGE[0] + "\nA 0? {{Exchange}} into the 0 first."] + EXCHANGE[1:]
+
+
+def test_a_new_step_in_the_exchange_list_is_a_change_of_steps(tmp_path):
+    # Friday, 18 October 2026: How to subtract unchanged, the zero step added to How to exchange.
+    out = tmp_path / "out"
+    before = lesson_folder(tmp_path, "thursday", [STEPS, EXCHANGE], "pdf", out)
+    today = lesson_folder(tmp_path, "friday", [STEPS, ZEROS])
+    follows(today, before)
+    line, record = earlier(today, out)
+    assert line.startswith("WALL_DESIGN") and record["buildsOn"]
+
+
+def test_both_lists_the_same_still_copies(tmp_path):
+    out = tmp_path / "out"
+    before = lesson_folder(tmp_path, "monday", [STEPS, EXCHANGE], "pdf", out)
+    today = lesson_folder(tmp_path, "tuesday", [STEPS, EXCHANGE])
+    follows(today, before)
+    assert earlier(today, out)[0].startswith("WALL_REUSED")
+
+
 def test_a_lesson_without_steps_is_designed_as_before(tmp_path):
     out = tmp_path / "out"
     before = lesson_folder(tmp_path, "vikings-1", None, "pdf", out)
@@ -159,19 +189,23 @@ def test_no_lesson_before_designs(tmp_path):
 
 # ── a set built side by side: the earlier day may still be working ───────
 
-def make_set(tmp_path, days: dict[str, list[str]], status: dict[str, str] | None = None):
+def make_set(tmp_path, days: dict, status: dict[str, str] | None = None):
+    """days: key -> steps, or key -> a thread entry (methodSteps, sometimesLists, wallExample)."""
     output = tmp_path / "output"
     batch_dir = output / "working" / "lesson-batch"
     batch_dir.mkdir(parents=True)
     started = (datetime.now() - timedelta(minutes=30)).isoformat(timespec="seconds")
     lessons, folders = [], {}
-    for key, steps in days.items():
+    entries = {key: (dict(day) if isinstance(day, dict) else {"methodSteps": day}) for key, day in days.items()}
+    for key, entry in entries.items():
         brief = f"Year 4 maths {key} column subtraction"
+        lists = [entry["methodSteps"]] + [extra["steps"] for extra in entry.get("sometimesLists") or []]
+        steps = lists if len(lists) > 1 else entry["methodSteps"]
         folders[key] = lesson_folder(output / "working", f"y4-{key}", steps, brief=brief)
         lessons.append({"key": key, "tag": key, "brief": brief, "status": (status or {}).get(key, "building"),
                         "firstStarted": started})
     thread = batch_dir / "thread-y4-maths.json"
-    thread.write_text(json.dumps({"lessons": [{"key": k, "methodSteps": s} for k, s in days.items()]}), encoding="utf-8")
+    thread.write_text(json.dumps({"lessons": [{"key": k, **e} for k, e in entries.items()]}), encoding="utf-8")
     (batch_dir / "batch.json").write_text(json.dumps({"lessons": lessons}), encoding="utf-8")
     for key, folder in folders.items():
         (folder / "filing.txt").write_text(
@@ -227,3 +261,71 @@ def test_waiting_ends_as_soon_as_the_wall_arrives(tmp_path):
     started = time.time()
     assert earlier(days["wed"], output, "--wait-minutes", "5")[0].startswith("WALL_REUSED")
     assert time.time() - started < 60
+
+
+def test_the_subtraction_week_grows_its_wall(tmp_path):
+    """Lessons 29 to 33 as the thread wrote them, with Wednesday's example marked.
+
+    Monday makes the sheet; Tuesday copies it; Wednesday keeps its steps and
+    swaps the example for several exchanges; Thursday copies Wednesday's, not
+    Monday's; Friday adds the zero step to Wednesday's sheet.
+    """
+    def day(exchange, example=""):
+        return {"methodSteps": STEPS, "sometimesLists": [{"heading": "How to exchange", "steps": exchange}],
+                "wallExample": example}
+
+    several = "a column that gives an exchange and then needs one itself"
+    output, days = make_set(tmp_path, {"mon": day(EXCHANGE), "tue": day(EXCHANGE), "wed": day(EXCHANGE, several),
+                                       "thu": day(EXCHANGE), "fri": day(ZEROS)})
+    out = output / "out"
+    assert earlier(days["mon"], out, name="mon")[0].startswith("WALL_DESIGN")
+    make_wall(days["mon"], "pdf", out)
+
+    line, record = earlier(days["tue"], out, name="tue")
+    assert line.startswith("WALL_REUSED") and record["earlierLesson"] == "mon"
+
+    line, record = earlier(days["wed"], out, name="wed")
+    assert line.startswith("WALL_DESIGN") and record["buildsOn"] and record["earlierLesson"] == "tue"
+    assert record["newExample"] == several
+    view = subprocess.run(
+        [sys.executable, "-X", "utf8", str(SCRIPT), "prepare", "--plugin-root", str(ROOT),
+         "--working-dir", str(days["wed"]), "--lesson-design", str(days["wed"] / "lesson-design.json"),
+         "--view-output", str(days["wed"] / "v.md"), "--reference-output", str(days["wed"] / "r.md"),
+         "--receipt-output", str(days["wed"] / "c.json")], capture_output=True, text=True, encoding="utf-8")
+    assert "WORKING_WALL_PACKET_OK" in view.stdout, view.stdout + view.stderr
+    text = (days["wed"] / "v.md").read_text(encoding="utf-8")
+    assert "only the example swapped" in text and several in text
+    make_wall(days["wed"], "pdf", out)
+
+    line, record = earlier(days["thu"], out, name="thu")
+    assert line.startswith("WALL_REUSED") and record["earlierLesson"] == "wed"
+    assert (out / "Working Wall - thu.pdf").read_bytes() == (out / "Working Wall - y4-wed.pdf").read_bytes()
+
+    line, record = earlier(days["fri"], out, name="fri")
+    assert line.startswith("WALL_DESIGN") and record["buildsOn"] and record["earlierLesson"] == "thu"
+    assert record["newExample"] == "" and "adds to the method" in record["why"]
+
+
+def test_a_day_that_swaps_its_example_waits_for_the_sheet_before_it(tmp_path):
+    output, days = make_set(tmp_path, {"tue": STEPS, "wed": {"methodSteps": STEPS, "wallExample": "two exchanges"}})
+    assert earlier(days["wed"], output)[0].startswith("WALL_WAIT")
+
+
+def test_in_a_set_a_new_step_in_the_exchange_list_designs(tmp_path):
+    # The set reads its lists from the thread; Friday's change was in sometimesLists alone.
+    def day(exchange):
+        return {"methodSteps": STEPS, "sometimesLists": [{"heading": "How to exchange", "steps": exchange}]}
+
+    output, days = make_set(tmp_path, {"thu": day(EXCHANGE), "fri": day(ZEROS)})
+    make_wall(days["thu"], "pdf", output)
+    line, record = earlier(days["fri"], output)
+    assert line.startswith("WALL_DESIGN") and record["buildsOn"]
+
+
+def test_a_change_to_the_main_list_counts_when_the_exchange_list_is_the_same(tmp_path):
+    # Two lists of equal length: the main list must not be passed over for the other.
+    out = tmp_path / "out"
+    before = lesson_folder(tmp_path, "monday", [STEPS, EXCHANGE], "pdf", out)
+    today = lesson_folder(tmp_path, "tuesday", [STEPS[:2] + [STEPS[2] + "\nCrossed out? Use the new digit."], EXCHANGE])
+    follows(today, before)
+    assert earlier(today, out)[0].startswith("WALL_DESIGN")

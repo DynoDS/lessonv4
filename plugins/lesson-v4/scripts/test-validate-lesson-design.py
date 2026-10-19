@@ -66,4 +66,6 @@ class OptionBankValidationTests(unittest.TestCase):
 
 
 if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
     unittest.main()

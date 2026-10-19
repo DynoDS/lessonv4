@@ -41,6 +41,7 @@ const drawMap = drawerFor('map');
 const drawPlaceValueChart = drawerFor('place-value-chart');
 const drawPlaceValueMini = drawerFor('place-value-mini');
 const drawBaseTenBlocks = drawerFor('base-ten-blocks');
+const drawExchangeHappening = drawerFor('exchange-happening');
 const drawCounterGroup = drawerFor('counter-group');
 const drawTenFrame = drawerFor('ten-frame');
 const drawPartWholeModel = drawerFor('part-whole-model');
@@ -161,6 +162,9 @@ const ZONE_COMPAT = {
   // instead (5 September 2026). Registered like its sibling card visuals.
   'place-value-mini':  ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'base-ten-blocks':   ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow'],
+  // A sum with its exchange shown happening: the pieces and the written sum
+  // together, wide, so never a narrow side rail.
+  'exchange-happening': ['A', 'B', 'C', 'E-wide'],
   'counter-group':     ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'ten-frame':         ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
   'circuit-diagram':   ['A', 'B', 'C', 'D', 'E-wide', 'E-narrow', 'G'],
@@ -243,6 +247,7 @@ const HELPERS = {
   'line-pair':         drawLinePair,
   'place-value-mini':  drawPlaceValueMini,
   'base-ten-blocks':   drawBaseTenBlocks,
+  'exchange-happening': drawExchangeHappening,
   'counter-group':     drawCounterGroup,
   'ten-frame':         drawTenFrame,
   'circuit-diagram':   drawCircuitDiagram,
@@ -297,6 +302,7 @@ const TRANSPARENT = new Set(['stack', 'row']);
 // draw must not leave an empty white box behind).
 const MEASURE = {
   'place-value-chart': placedRectFor('place-value-chart'),
+  'exchange-happening': placedRectFor('exchange-happening'),
   // The cards and their working are laid out to the zone and may stop short of
   // it; the card hugs what is drawn. A zone they refuse draws no card.
   'digit-cards': (zone, data) => {

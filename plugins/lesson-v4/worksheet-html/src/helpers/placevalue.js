@@ -24,6 +24,7 @@ const { atPrintedWidth } = require("./at-printed-width");
 const placeValueChart = require("../../../shared/visuals/place-value-chart-svg");
 const placeValueMini = require("../../../shared/visuals/place-value-mini-svg");
 const baseTenBlocks = require("../../../shared/visuals/base-ten-blocks-svg");
+const exchangeHappening = require("../../../shared/visuals/exchange-happening-svg");
 const counterGroup = require("../../../shared/visuals/counter-group-svg");
 const tenFrame = require("../../../shared/visuals/ten-frame-svg");
 const multGrid = require("../../../shared/visuals/mult-grid-svg");
@@ -58,6 +59,7 @@ const tenFrameMinMm = (spec) => Math.ceil(tenFrame.minWidthPt(spec, "worksheets"
 const helpers = {
   "ten-frame": atPrintedWidth(tenFrame, { minWidthMm: tenFrameMinMm }),
   "base-ten-blocks": atPrintedWidth(baseTenBlocks, { minWidthMm: minMm(baseTenBlocks, 60) }),
+  "exchange-happening": atPrintedWidth(exchangeHappening, { minWidthMm: minMm(exchangeHappening, 160) }),
   // The counters on their own, under the claim they are evidence for: a counter
   // is a fixed object, so height above it is a hole and it never stretches.
   "counter-group": atPrintedWidth(counterGroup, { requires: ["groups"], minWidthMm: minMm(counterGroup, 20) }),

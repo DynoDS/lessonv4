@@ -338,7 +338,7 @@ def thread_faults(output: Path, batch: dict, key: str) -> list[str]:
                 isinstance(c, dict) and str(c.get("term") or "").strip() and str(c.get("definition") or "").strip()
                 for c in cards):
             faults.append(f"{name}: wordCards must be a list of {{term, definition}} ([] when none is shared)")
-        for field in ("newToday", "representation"):
+        for field in ("newToday", "representation", "wallExample"):
             if not isinstance(entry.get(field), str):
                 faults.append(f'{name}: {field} must be text ("" when there is nothing to say)')
     return faults
@@ -1083,4 +1083,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
     raise SystemExit(main())

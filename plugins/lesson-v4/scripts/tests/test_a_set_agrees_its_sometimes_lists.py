@@ -37,7 +37,7 @@ EXCHANGE = [
 ]
 ENTRY = {"key": "lesson-30", "methodHeading": "How to subtract", "methodSteps": SUBTRACT,
          "sometimesLists": [{"heading": "How to exchange", "steps": EXCHANGE}],
-         "newToday": "", "representation": "", "wordCards": []}
+         "newToday": "", "representation": "", "wallExample": "", "wordCards": []}
 
 
 def folder_with(tmp: str, entry: dict) -> Path:

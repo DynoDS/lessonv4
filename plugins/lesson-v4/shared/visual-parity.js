@@ -300,6 +300,11 @@ const PRIMITIVES = [
   //    2026, when every picture became one shared drawing on all four surfaces).
   { id: 'base-ten-blocks', depicts: 'data', slides: 'base-ten-blocks', worksheets: 'base-ten-blocks', wall: 'base-ten-blocks', stickin: 'base-ten-blocks',
     geometrySource: 'shared/visuals/base-ten-blocks-svg.js' },
+  // A sum's exchange shown happening (18 October 2026): one chart whose pieces
+  // move and change, the written sum beside it. A run of slides that Morph moves
+  // on the board; one still of the exchange on paper.
+  { id: 'exchange-happening', depicts: 'data', slides: 'exchange-happening', worksheets: 'exchange-happening', wall: 'exchange-happening', stickin: 'exchange-happening',
+    geometrySource: 'shared/visuals/exchange-happening-svg.js' },
   { id: 'counter-group', depicts: 'data', slides: 'counter-group', worksheets: 'counter-group', wall: 'counter-group', stickin: 'counter-group',
     geometrySource: 'shared/visuals/counter-group-svg.js' },
   { id: 'ten-frame', depicts: 'data', slides: 'ten-frame', worksheets: 'ten-frame', wall: 'ten-frame', stickin: 'ten-frame',
@@ -384,6 +389,7 @@ const SUCCESS_CRITERIA_AUDIT = Object.freeze({
   'part-whole-model': { classification: 'SC-inline', reason: 'The whole-to-parts structure survives without values.' },
   'draw-box-row': { classification: 'unsuitable', reason: 'A tiny blank write-on strip gives no actionable cue.' },
   'base-ten-blocks': { classification: 'full-size', reason: 'The number of each block is the value being read.' },
+  'exchange-happening': { classification: 'full-size', reason: 'The pieces, the sum and its marks are the working of one calculation.' },
   'counter-group': { classification: 'full-size', reason: 'The counters and their grouping are the value being read.' },
   'ten-frame': { classification: 'full-size', reason: 'How many boxes are full and how many are empty is the number being read, and it changes with every question.' },
   ruler: { classification: 'full-size', reason: 'The scale and the measured length must match the question.' },

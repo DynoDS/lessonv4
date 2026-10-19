@@ -537,6 +537,7 @@ class SettleKeepsWhatIsInTheLane(unittest.TestCase):
         alone = self.work / "alone"
         alone.mkdir()
         shutil.copyfile(SCRIPT, alone / SCRIPT.name)
+        shutil.copyfile(SCRIPT.parent / "utf8_output.py", alone / "utf8_output.py")
         result = self.run_in("check", script=alone / SCRIPT.name)
         self.assertEqual(result.returncode, 2)
         self.assertIn("VOICE_EDIT_CHECK_ERROR", result.stdout)

@@ -41,7 +41,7 @@ def folder_with_thread(tmp: str, filing: bool = True) -> Path:
     folder.mkdir()
     thread = Path(tmp) / "thread.json"
     thread.write_text(json.dumps({"lessons": [
-        {"key": "lesson-31", "methodSteps": WEEK, "newToday": "", "representation": "",
+        {"key": "lesson-31", "methodSteps": WEEK, "newToday": "", "representation": "", "wallExample": "",
          "wordCards": [{"term": "exchange", "definition": EXCHANGE}]},
     ]}), encoding="utf-8")
     lines = ["DELIVERY=none", "PREVIOUS_LESSON="]

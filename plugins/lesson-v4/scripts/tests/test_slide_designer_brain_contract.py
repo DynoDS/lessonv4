@@ -97,7 +97,7 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
         self.assertIn("codex_model: sol", self.agent)
         self.assertIn("codex_effort: medium", self.agent)
         self.assertIn("\nmodel: opus", self.agent)
-        self.assertIn("\neffort: xhigh", self.agent)
+        self.assertIn("\neffort: high", self.agent)
 
     def test_preferences_allow_exact_copy_agents_to_route_written_voice_conditionally(self) -> None:
         self.assertIn(

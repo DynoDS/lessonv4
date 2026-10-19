@@ -1150,8 +1150,6 @@ def main(argv: list[str] | None = None) -> int:
     ))
     parser.add_argument("--working-dir", type=Path, required=True)
     args = parser.parse_args(argv)
-    if hasattr(sys.stdout, "reconfigure"):
-        sys.stdout.reconfigure(encoding="utf-8")
     if args.command == "adaptation-snapshot":
         return adaptation_snapshot(args.working_dir)
     if args.command in ("adaptation-check", "adaptation-settle"):
@@ -1174,4 +1172,6 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
     raise SystemExit(main())

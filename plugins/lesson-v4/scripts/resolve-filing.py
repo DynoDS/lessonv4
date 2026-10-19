@@ -572,4 +572,6 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
     raise SystemExit(main())

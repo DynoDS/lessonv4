@@ -83,6 +83,8 @@ def main(argv=None) -> int:
 
 
 if __name__ == "__main__":
+    import utf8_output
+    utf8_output.enable()
     try:
         raise SystemExit(main())
     except Exception as exc:

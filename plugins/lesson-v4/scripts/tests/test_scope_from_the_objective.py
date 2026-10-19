@@ -188,9 +188,42 @@ class TheBuiltDecksOf18October(unittest.TestCase):
 
     def test_two_chunks_never_means_cramming(self) -> None:
         rhythm = section_by_heading(PREFS, "## The Teach → Do → Teach → Do Rhythm", 0)
-        self.assertIn("A chunk is counted in ideas, so two is never a reason to pack more new things into one", rhythm)
+        self.assertIn("so two is never a reason to pack the set into one telling", rhythm)
         self.assertIn("the answer is fewer things, never bigger chunks", rhythm)
         self.assertIn("more new things are never folded into one telling to keep the count low", DESIGNER)
+
+    def test_a_chunk_is_counted_as_the_class_lives_it(self) -> None:
+        # A Year 4 cholera lesson (18 October 2026) called three stretches of
+        # teaching, each ended by its own task, "one idea told in three parts",
+        # counted two, and the teacher found it "way too much". The grouping
+        # clause had been written for a set of names checked by quick checks.
+        rhythm = section_by_heading(PREFS, "## The Teach → Do → Teach → Do Rhythm", 0)
+        self.assertIn("Teaching closed by a task of its own is its own chunk whatever the design calls it", rhythm)
+        self.assertNotIn("parts of one idea checked one by one (each part of a journey, each member of a set) "
+                         "stay one chunk", rhythm)
+        self.assertIn("Teaching that runs straight into the final task with nothing for children to do is a "
+                      "chunk too when it brings in something new", rhythm)
+        # Justify or cut at three, never a cap, and never recounted down.
+        self.assertIn("The count is not argued down: at three, the lesson goes back to fewer things, or the "
+                      "design's closing decisions say plainly why this objective needs the third chunk", rhythm)
+        self.assertIn("The count is not argued down", DESIGNER)
+        self.assertNotIn("Read the count by ideas", DESIGNER)
+        self.assertIn("The design does not recount it", REVIEWER)
+        self.assertIn("a missing reason, or one that only says the final task asks for it, is REVISE on User-fit",
+                      REVIEWER)
+        view = (ROOT / "scripts" / "do-beats-in-a-row.py").read_text(encoding="utf-8")
+        self.assertNotIn("parts of one idea checked one by one are one chunk", view)
+        self.assertIn("Teaching that runs straight into the main work with nothing for children to do", view)
+
+    def test_a_broad_objective_is_met_by_its_core_story(self) -> None:
+        fits = section_by_heading(PREFS, "## How Much Fits in One Lesson", 0)
+        self.assertIn("for a broad objective write the shortest good answer a child of this age could give first",
+                      fits)
+        self.assertIn("not a summary of everything the lesson told", fits)
+        # The teacher's addition: the unit around the lesson decides too.
+        self.assertIn("a part a later lesson in the plan teaches is left to it", fits)
+        self.assertIn("what an earlier lesson taught comes back as a reminder rather than being taught again", fits)
+        self.assertIn("A final task whose criteria list every part the lesson told is the same growth", REVIEWER)
 
     def test_a_photograph_of_the_thing_is_not_the_thing_happening(self) -> None:
         boundary = section_by_heading(PREFS, "### Lesson Designer visual-need boundary", 0)

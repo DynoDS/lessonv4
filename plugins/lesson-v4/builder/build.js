@@ -33,6 +33,8 @@ const { verifyMarkers } = require('./src/verify-markers');
 const { verifyGeometry } = require('./src/verify-geometry');
 const { sanitizeHouseStyle } = require('../shared/text/house-style');
 const { expandTeachLayouts, TeachLayoutError } = require('./src/teach-layouts');
+const { expandHappenings } = require('./src/happening-runs');
+const { addMorphTransitions } = require('./src/morph-transitions');
 const { joinStackedCriteriaPanels } = require('./src/content/sc-panel');
 const { withoutDecorations } = require("../shared/decorations");
 const { withoutFigureMarks } = require('./src/figure-marks');
@@ -83,6 +85,7 @@ const { keepChartsStill } = require('./src/content/charts-stand-still');
 const { tellFramesWhatWasAsked } = require('./src/content/method-frame-answers');
 const { preRenderLabelDiagrams, rasteriseLabelDiagrams, labelDiagramFindings, clearLabelDiagramFindings } = require('./src/content/label-diagram');
 const { allowHairUnder, setHairUnderSlide, clearHairUnder, hairUnderFindings } = require('../shared/visuals/hair-under');
+const { pairDrawnSmallerFindings, clearPairDrawnSmaller } = require('../shared/visuals/place-value-chart-svg');
 const { preRenderGridMaps } = require('./src/content/grid-map');
 const { preRenderTranslationShapes } = require('./src/content/translation-shape');
 const { preRenderRainforestLayers } = require('./src/content/rainforest-layers');
@@ -117,6 +120,10 @@ function usage() {
 // Every diagnostic this build printed, so a flagged delivery can name the
 // slides that carry one without parsing its own output back.
 const recordedDiagnostics = [];
+// A slide that shows a sum happening is built as several (src/happening-runs.js).
+// Each built slide's lesson.json slide number, so every number reported means
+// the slide the designer wrote.
+let builtFrom = null;
 
 // The faults that would have withheld the deck. A delivered deck names every
 // slide that carries one of these; advisory notes (a figure with spare room, a
@@ -143,6 +150,10 @@ const FLAGGING_SIGNALS = new Set([
 ]);
 
 function diagnostic(signal, faultClass, location, message) {
+  if (builtFrom && location && Number.isInteger(location.slide) && builtFrom.sourceOf[location.slide - 1]) {
+    const k = builtFrom.stepOf[location.slide - 1];
+    location = { ...location, slide: builtFrom.sourceOf[location.slide - 1], ...(k != null ? { step: k } : {}) };
+  }
   const payload = {
     signal,
     artifact: 'slides',
@@ -267,6 +278,11 @@ async function main() {
     diagnostic('TEACH_LAYOUT_INVALID', 'composition', {}, err.message);
     process.exit(1);
   }
+  // A sum shown happening becomes one slide per moment, the clicks of its run.
+  const runs = expandHappenings(raw);
+  raw = runs.lesson;
+  if (runs.morph.length) builtFrom = runs;
+  runs.notes.forEach((line) => note(line));
   // Criteria panels one above the other become one box (src/content/sc-panel.js).
   raw = joinStackedCriteriaPanels(raw);
   // Each Do beat's badge (a sheet, or a lightning bolt for a quick check) comes
@@ -486,6 +502,7 @@ async function main() {
   clearCriteriaBelowFloor();
   clearLabelDiagramFindings();
   clearHairUnder();
+  clearPairDrawnSmaller();
 
   slides.forEach((slideData, i) => {
     const slide = pptx.addSlide();
@@ -572,6 +589,14 @@ async function main() {
   // A drawing a hair under its size floor, drawn as it stood
   // (shared/visuals/hair-under.js). A note for the report, never a fault.
   for (const finding of hairUnderFindings()) {
+    note(`slide ${finding.slide}: ${finding.message}`);
+    diagnostic(finding.signal, 'note', { slide: finding.slide }, finding.message);
+  }
+
+  // A counters pair drawn without its cue box or its unchanged columns, with
+  // the room it needed whole. A note: drawn smaller is the teacher's own
+  // choice (16 October 2026), and the measure tool shows it to the designer.
+  for (const finding of pairDrawnSmallerFindings()) {
     note(`slide ${finding.slide}: ${finding.message}`);
     diagnostic(finding.signal, 'note', { slide: finding.slide }, finding.message);
   }
@@ -677,6 +702,15 @@ async function main() {
   // picture that did not arrive is a blocking fault rather than a warning: the
   // slide that needed it cannot be taught from, and the fault is invisible until
   // someone opens the deck.
+  // The run's clicks move their pieces (src/morph-transitions.js). After every
+  // pass that resaves the package, before the checks read it.
+  if (runs.morph.length) {
+    try {
+      await addMorphTransitions(tempOutputPath, runs.morph);
+    } catch (error) {
+      note(`the movement between the clicks of a sum shown happening could not be added (${error.message}); each slide still shows its moment.`);
+    }
+  }
   const pictures = await runPictureCheck(tempOutputPath);
   if (!designPreview) pictures.faults.push(...missingPictureFindings());
   for (const fault of pictures.faults) {

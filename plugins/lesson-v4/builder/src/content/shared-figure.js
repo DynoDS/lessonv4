@@ -119,6 +119,10 @@ const FIGURES = {
   pyramid: { module: require('../../../shared/visuals/pyramid-svg'), name: 'pyramid' },
   'mult-grid': { module: require('../../../shared/visuals/mult-grid-svg'), name: 'multiplication grid' },
   'digit-cards': { module: require('../../../shared/visuals/digit-cards-svg'), name: 'digit cards' },
+  // A sum's exchange shown happening: placed as parts, not one picture, so each
+  // piece is a shape of its own that PowerPoint's Morph moves between the
+  // clicks of its run (src/happening-runs.js, src/morph-transitions.js).
+  'exchange-happening': { module: require('../../../shared/visuals/exchange-happening-svg'), name: 'sum shown happening', layered: true },
 };
 
 function captionFor(type, data) {
@@ -212,7 +216,7 @@ function build(type, zone, data) {
     box.y += (box.h - h) / 2;
     box.h = h;
   }
-  return { box, inner, band, cap, built, key: module.cacheKey(spec, profile) };
+  return { box, inner, band, cap, built, key: module.cacheKey(spec, profile), spec, profile };
 }
 
 function drawCaption(slide, laid) {
@@ -264,6 +268,10 @@ function drawerFor(type) {
       } catch (err) { /* a measurement that cannot be made adds no note */ }
     }
     const store = ctx && ctx.sharedFigures;
+    if (FIGURES[type].layered) {
+      drawLayered(pptx, slide, { x, y, w, h }, laid, store, ctx, type);
+      return;
+    }
     const entry = store && store.get(key);
     if (entry) {
       slide.addImage({ data: 'image/png;base64,' + entry.png.toString('base64'), x, y, w, h });
@@ -282,6 +290,59 @@ function drawerFor(type) {
   }
   draw.geometry = FIGURES[type].module;
   return draw;
+}
+
+// A layered drawing: its pictures (the frame, the written sum, an arrow) and its
+// shapes (every piece and outline), each named so the same piece on the next
+// slide of a run is the same object to PowerPoint. Positions are the drawing's
+// own points, placed at the box the whole drawing was given.
+function drawLayered(pptx, slide, at, laid, store, ctx, type) {
+  const { module } = FIGURES[type];
+  const L = module.slideLayers(laid.spec, laid.profile);
+  const k = at.w / (L.w / 72);
+  const inch = (pt) => (pt / 72) * k;
+  const hex = (c) => String(c || '').replace(/^#/, '').toUpperCase();
+  const fade = (opacity) => Math.round((1 - (opacity == null ? 1 : opacity)) * 100);
+  let missing = false;
+  const picture = (pic) => {
+    const key = `${laid.key}|${pic.name}`;
+    const entry = store && store.get(key);
+    if (entry) {
+      slide.addImage({ data: 'image/png;base64,' + entry.png.toString('base64'), x: at.x, y: at.y, w: at.w, h: at.h, objectName: pic.name });
+      return;
+    }
+    if (store && !store.rasterised) {
+      store.request(key, pic.svg, L.aspect);
+      return;
+    }
+    missing = true;
+  };
+  L.pictures.filter((p) => !p.front).forEach(picture);
+  L.shapes.forEach((d) => {
+    const box = { x: at.x + inch(d.x), y: at.y + inch(d.y), w: inch(d.w), h: inch(d.h) };
+    const line = d.line
+      ? { color: hex(d.line), width: Math.max(0.5, d.lineW * k), ...(d.dash ? { dashType: 'dash' } : {}), transparency: fade(d.opacity) }
+      : { type: 'none' };
+    const fill = d.fill ? { color: hex(d.fill), transparency: fade(d.opacity) } : { type: 'none' };
+    const shape = d.kind === 'ellipse' ? pptx.shapes.OVAL : pptx.shapes.RECTANGLE;
+    if (d.text) {
+      slide.addText(d.text, {
+        shape, ...box, fill, line, objectName: d.name,
+        fontFace: FONT, fontSize: Math.max(6, d.textPt * k), bold: true, color: '1A1A1A', transparency: fade(d.opacity),
+        // One line always: a counter's 100 must never break into 10 over 0.
+        align: 'center', valign: 'middle', margin: 0, wrap: false,
+      });
+    } else {
+      slide.addShape(shape, { ...box, fill, line, objectName: d.name });
+    }
+  });
+  L.pictures.filter((p) => p.front).forEach(picture);
+  if (store && !store.rasterised) {
+    // Hold the drawing's place for anything measuring the drawn extent.
+    slide.addShape(pptx.shapes.RECTANGLE, { ...at, fill: { color: 'FFFFFF', transparency: 100 }, line: { type: 'none' } });
+  } else if (missing) {
+    require('./figure-fallback').drawFigureFallback(pptx, slide, at, ctx, FIGURES[type].name);
+  }
 }
 
 // The box the drawing really occupies in a zone, so a card hugs the picture.
