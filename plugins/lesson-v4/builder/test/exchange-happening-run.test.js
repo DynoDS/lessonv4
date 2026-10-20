@@ -34,10 +34,18 @@ test('the happening slide becomes one slide per moment, the rest untouched', () 
   assert.match(r.lesson.slides[2].speakerNotes, /^Click: /);
 });
 
-test('a reveal pair stays on the last click only', () => {
-  const r = expandHappenings(lesson());
-  const pairs = r.lesson.slides.map((s) => Boolean(s.secondary && s.secondary.revealPair));
-  assert.deepEqual(pairs, [false, false, false, false, false, true, false]);
+// A run's question card only ever shows the question, so no click is half of a
+// pair and every click sizes it for the question alone: it keeps one size, and
+// no longer shrinks on the last click (the teacher, 19 October 2026: "the
+// question card doesn't need an answer"). The answers half is let go with it.
+test('no click of a run is half of a reveal pair, and its answers half is let go', () => {
+  const answers = { template: 'split-h-50-50', title: 'Answers',
+    secondary: { type: 'text', value: '52 - 28 = ||24', revealPair: { id: 'p1', state: 'answer' } } };
+  const l = lesson();
+  l.slides.push(answers);
+  const r = expandHappenings(l);
+  assert.ok(r.lesson.slides.every((s) => !JSON.stringify(s).includes('"revealPair"')));
+  assert.equal(l.slides[l.slides.length - 1].secondary.revealPair.id, 'p1', 'the lesson as written is untouched');
 });
 
 test('a deck with no happening slide is returned as it was', () => {

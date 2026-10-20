@@ -26,11 +26,10 @@
 //     something to look at before the full check.
 //
 // A slide that does not fit is also tried in the arrangements next to its own
-// (other widths of the same split, the two sides' shares swapped, and two
-// stacked criteria lists moved one either side of the work), and the ones that
-// hold it are named under it. The engine already knows the sizes, and a Year 4
-// designer spent most of an hour trying about a hundred arrangements by hand
-// before finding one the teacher then passed (17 October 2026). It only names
+// (other widths of the same split, and the two sides' shares swapped), and the
+// ones that hold it are named under it. The engine already knows the sizes, and
+// a Year 4 designer spent most of an hour trying about a hundred arrangements
+// by hand (17 October 2026). It only names
 // them: the designer still chooses, because an arrangement that fits is not
 // always one the teacher wants (12 October 2026).
 //
@@ -124,25 +123,9 @@ function readBuild(output) {
 }
 
 // The arrangements next to a slide's own. Only splits are tried: their two
-// zones carry over to another width without anything being re-sorted, and a
-// stack of two criteria panels splits cleanly into the two outer thirds.
+// zones carry over to another width without anything being re-sorted.
 const SPLIT_SHARES = ['50-50', '60-40', '70-30', '75-25'];
 const OTHER_SIDE = { left: 'right', right: 'left', top: 'bottom', bottom: 'top' };
-
-function isCriteriaPanel(item) {
-  return !!item && item.type === 'sc-panel';
-}
-
-function twoCriteriaLists(zone) {
-  return !!zone && zone.type === 'stack' && Array.isArray(zone.items) &&
-    zone.items.length === 2 && zone.items.every(isCriteriaPanel);
-}
-
-function withoutWeight(item) {
-  const copy = Object.assign({}, item);
-  delete copy.weight;
-  return copy;
-}
 
 function nearbyArrangements(slide) {
   const split = /^split-([hv])-(\d+)-(\d+)$/.exec(String((slide && slide.template) || ''));
@@ -169,26 +152,9 @@ function nearbyArrangements(slide) {
       });
     }
   }
-  if (dir === 'h') {
-    const lists = [slide.primary, slide.secondary].find(twoCriteriaLists);
-    const work = lists === slide.primary ? slide.secondary : slide.primary;
-    if (lists && !isCriteriaPanel(work) && !twoCriteriaLists(work)) {
-      const third = Object.assign({}, slide, {
-        template: 'thirds-h',
-        left: withoutWeight(lists.items[0]),
-        middle: work,
-        right: withoutWeight(lists.items[1])
-      });
-      delete third.primary;
-      delete third.secondary;
-      delete third.primarySide;
-      out.push({
-        description: '`thirds-h`, one criteria list either side of the work ' +
-          "(the first list's panel in `left`, the work in `middle`, the second in `right`)",
-        slide: third
-      });
-    }
-  }
+  // One criteria list either side of the work (`thirds-h`) used to be tried
+  // here too. The teacher turned it down on real decks (18 and 19 October
+  // 2026), so it is no longer offered: two lists stay down one side.
   return out;
 }
 

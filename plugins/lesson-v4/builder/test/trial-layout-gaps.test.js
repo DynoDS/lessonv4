@@ -171,6 +171,23 @@ test('a tall photograph on a vocabulary card is not reported as underfilling a p
   assert.doesNotMatch(log, /FIGURE_ZONE_UNDERFILLED/, log);
 });
 
+// The fitted panel cannot help a wide photograph on a lone card: the panel is
+// at its widest and still taller than the picture. The pale grey above and
+// below was judged fine, and no layout is the designer's to change, so nothing
+// is reported (the Anglo-Saxons "invade" card, 20 October 2026).
+test('a wide photograph on a vocabulary card is not reported either', (t) => {
+  const dir = tmpDir(t);
+  const { status, log } = build(dir, [{
+    template: 'key-vocabulary', headerStyle: 'title', title: 'Key Vocabulary',
+    speakerNotes: 'Say to children: invade.',
+    words: [{ word: 'invade',
+      definition: 'When people invade, they go into another country and fight to take its land.',
+      visual: wide() }]
+  }]);
+  assert.equal(status, 0, log);
+  assert.doesNotMatch(log, /FIGURE_ZONE_UNDERFILLED/, log);
+});
+
 // ─── 4. the last task slide and its check slide ────────────────────────────
 
 // F-pshe slides 15-16 on the slide designer's second pass: the case and the

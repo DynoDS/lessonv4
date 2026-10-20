@@ -60,7 +60,7 @@ module.exports = {
   triangle:
     "A classified triangle: filled body, tick marks, and an optional right-angle square or angle arcs.",
   "bar-model":
-    "The White Rose bar model: a part-whole bar or a two-bar comparison. Any whole split into named parts fits it.",
+    "The White Rose bar model: the whole bar over the parts bar (`whole-parts`, for a missing part or whole), a part-whole bar, or a two-bar comparison. Any whole split into named parts fits it.",
   "blank-surface":
     "A draw-your-own surface (bare number line, empty bars) the child constructs on. A full-width number line is 27mm tall; `work` puts its room where they write: `above` (jumps, the default), `below` or `both`.",
   "coordinate-grid":

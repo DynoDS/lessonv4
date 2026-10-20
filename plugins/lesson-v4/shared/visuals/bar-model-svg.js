@@ -24,6 +24,23 @@
 //                   end of the longer bar. Worked use: a £27.40 bar above a
 //                   £12.75 bar with the gap labelled "?" — "how much more…?".
 //
+//   "whole-parts" — the whole as one bar with the parts in a bar of the same
+//                   length directly underneath, the two touching. This is the
+//                   bar model children meet first for part-whole addition and
+//                   subtraction: the whole on top, the parts underneath, "the
+//                   bars together rather than a gap" (the teacher, 19 October
+//                   2026, after a lesson drew it with the comparison shape and
+//                   so printed a gap and a grey guide line between the bars).
+//                   Any box may be the unknown: a missing part under a known
+//                   whole, or a missing whole over known parts. `names: true`
+//                   prints "whole" and "parts" to the left (or give
+//                   { whole, parts } words). Parts are as long as their numbers
+//                   when every part's number is known or can be worked out
+//                   from the whole, and equal otherwise. `build` runs it one
+//                   box per click on a slide (builder/src/happening-runs.js):
+//                   "explain" brings each box in with its number, "teacher"
+//                   brings each box in empty for the teacher to write in.
+//
 // ANY region (a part, a bar, the difference gap) is the child's ANSWER SPACE
 // when its label is empty or "?": it is drawn white with a blue dashed outline
 // (write here), where a known region is drawn pale-house-blue with a solid black
@@ -69,13 +86,16 @@ const OPEN_STROKE   = '#1F4E79';   // answer-region outline (house blue, dashed)
 const BRACKET_COL   = '#000000';
 const GUIDE_COL     = '#9AA5B1';   // soft grey alignment guide
 const TEXT_COL      = '#000000';
+const QUESTION_COL  = '#0070C0';   // question blue: a ? standing for the missing number
+const ANSWER_COL    = '#00B050';   // answer green: a found number on its reveal
+const PART_NAME_FS  = 28;          // the "whole" / "parts" words left of a whole-parts model
 
 const { INK_TONES, FONT, printsInInk, inkGrey } = require('./surface-profiles');
 const { textWidthEm } = require('../text/comic-glyph-width');
 
 // The colours above, and what each becomes on the photocopied stick-in pack.
-const COLOURS = { BAR_FILL: BAR_FILL, OPEN_STROKE: OPEN_STROKE, SOLID_STROKE: SOLID_STROKE, TEXT_COL: TEXT_COL };
-const INK = { BAR_FILL: INK_TONES.pale, OPEN_STROKE: INK_TONES.ink, SOLID_STROKE: INK_TONES.ink, TEXT_COL: INK_TONES.ink };
+const COLOURS = { BAR_FILL: BAR_FILL, OPEN_STROKE: OPEN_STROKE, SOLID_STROKE: SOLID_STROKE, TEXT_COL: TEXT_COL, QUESTION_COL: QUESTION_COL, ANSWER_COL: ANSWER_COL };
+const INK = { BAR_FILL: INK_TONES.pale, OPEN_STROKE: INK_TONES.ink, SOLID_STROKE: INK_TONES.ink, TEXT_COL: INK_TONES.ink, QUESTION_COL: INK_TONES.ink, ANSWER_COL: INK_TONES.ink };
 // ─── END CONSTANTS ───────────────────────────────────────────────────────────
 
 function f(n) { return Number(n).toFixed(2); }
@@ -115,9 +135,13 @@ function num(x) {
 // and bracket lines take the grey their colour copies to.
 function tightSvg(data, profile) {
   const C = printsInInk(profile) ? INK : COLOURS;
-  const shape = data && data.shape === 'comparison' ? 'comparison' : 'part-whole';
+  const shape = shapeOf(data);
 
   const parts = [];
+  // Drawing a box `hidden` still counts its room, so every click of a run is
+  // cropped to the same frame and a box comes in where it will stay.
+  let hidden = false;
+  const push = (svg) => { if (!hidden) parts.push(svg); };
   const bb = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
   function ext(x0, y0, x1, y1) {
     if (x0 < bb.x0) bb.x0 = x0;
@@ -130,21 +154,24 @@ function tightSvg(data, profile) {
     const fill   = open ? OPEN_FILL : C.BAR_FILL;
     const stroke = open ? C.OPEN_STROKE : C.SOLID_STROKE;
     const dash   = open ? ` stroke-dasharray="${DASH}"` : '';
-    parts.push(`<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" fill="${fill}" stroke="${stroke}" stroke-width="${STROKE_W}"${dash}/>`);
+    push(`<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" fill="${fill}" stroke="${stroke}" stroke-width="${STROKE_W}"${dash}/>`);
     ext(x - STROKE_W / 2, y - STROKE_W / 2, x + w + STROKE_W / 2, y + h + STROKE_W / 2);
   }
 
   function drawLine(x1, y1, x2, y2, colour, width, dash) {
     if (C === INK) colour = inkGrey(colour);
     const d = dash ? ` stroke-dasharray="${dash}"` : '';
-    parts.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="${colour}" stroke-width="${width}" stroke-linecap="round"${d}/>`);
+    push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="${colour}" stroke-width="${width}" stroke-linecap="round"${d}/>`);
     ext(Math.min(x1, x2) - width / 2, Math.min(y1, y2) - width / 2, Math.max(x1, x2) + width / 2, Math.max(y1, y2) + width / 2);
   }
 
-  function drawText(cx, cy, s, fs, anchor) {
+  function drawText(cx, cy, s, fs, anchor, colour) {
     if (s == null || s === '') return;
     const a = anchor || 'middle';
-    parts.push(`<text x="${f(cx)}" y="${f(cy)}" text-anchor="${a}" dy="0.36em" font-family="${FONT}" font-size="${fs}" font-weight="bold" fill="${C.TEXT_COL}">${esc(s)}</text>`);
+    // A ? standing for the missing number prints in question blue, as it does
+    // in the sum beside it (shared/text/missing-number.js).
+    const fill = colour || (String(s).trim() === '?' ? C.QUESTION_COL : C.TEXT_COL);
+    push(`<text x="${f(cx)}" y="${f(cy)}" text-anchor="${a}" dy="0.36em" font-family="${FONT}" font-size="${fs}" font-weight="bold" fill="${fill}">${esc(s)}</text>`);
     const w = textWidth(s, fs);
     let lx, rx;
     if (a === 'end')       { lx = cx - w; rx = cx; }
@@ -153,7 +180,9 @@ function tightSvg(data, profile) {
     ext(lx, cy - fs * 0.62, rx, cy + fs * 0.62);
   }
 
-  if (shape === 'part-whole') {
+  if (shape === 'whole-parts') {
+    drawWholeParts(data, drawRect, drawText, (on) => { hidden = on; }, C);
+  } else if (shape === 'part-whole') {
     drawPartWhole(data, drawRect, drawLine, drawText);
   } else {
     drawComparison(data, drawRect, drawLine, drawText);
@@ -223,6 +252,131 @@ function drawPartWhole(data, drawRect, drawLine, drawText) {
     } else {
       drawText(-SIDE_GAP, BAR_H / 2, wholeLabel, WHOLE_FS, 'end');
     }
+  }
+}
+
+// ─── Whole-parts: the whole bar over the parts bar, touching ─────────────────
+function shapeOf(data) {
+  const shape = data && data.shape;
+  return shape === 'comparison' || shape === 'whole-parts' ? shape : 'part-whole';
+}
+
+function labelOf(region) {
+  return region && region.label != null ? String(region.label) : '';
+}
+
+// The model's boxes in the order a teacher builds it: the whole, then each part
+// from left to right.
+function wholePartsRegions(data) {
+  const whole = (data.whole && typeof data.whole === 'object') ? data.whole : {};
+  let segs = Array.isArray(data.parts) ? data.parts.filter((p) => p && typeof p === 'object') : [];
+  while (segs.length < 2) segs = segs.concat([{}]);
+  return { whole, segs };
+}
+
+function buildMode(data) {
+  const b = data && data.build;
+  if (b == null || b === '' || b === false) return null;
+  const mode = String(b).toLowerCase();
+  if (mode !== 'explain' && mode !== 'teacher') {
+    throw new Error(`BAR_MODEL_INVALID: "build" is "${b}"; use "explain" (each box comes in with its number) or "teacher" (each box comes in empty for the teacher to write in).`);
+  }
+  return mode;
+}
+
+// One moment per click: { show, answers, sentence }. `show` is how many boxes
+// are on the board (the whole counts as the first); `answers` whether the found
+// numbers are written in, which only the explain kind does, as a last click,
+// when a box carries an `answer`.
+function buildSteps(data) {
+  const { whole, segs } = wholePartsRegions(data);
+  const mode = buildMode(data) || 'explain';
+  const said = (region, what) => {
+    const lbl = labelOf(region).trim();
+    if (mode === 'teacher' || lbl === '') return `the ${what}`;
+    return `the ${what}: ${lbl}`;
+  };
+  const steps = [{ show: 1, answers: false, sentence: said(whole, isOpen(labelOf(whole)) ? 'missing whole on the top bar' : 'whole on the top bar') }];
+  segs.forEach((p, i) => {
+    steps.push({ show: i + 2, answers: false, sentence: said(p, isOpen(labelOf(p)) ? 'missing part' : 'part we know') });
+  });
+  const regions = [whole].concat(segs);
+  if (mode === 'explain' && regions.some((r) => r.answer != null && String(r.answer) !== '')) {
+    steps.push({ show: regions.length, answers: true, sentence: 'the missing number written in' });
+  }
+  return steps;
+}
+
+function drawWholeParts(data, drawRect, drawText, setHidden, C) {
+  const { whole, segs } = wholePartsRegions(data);
+  const n = segs.length;
+  const mode = buildMode(data);
+  const stepIndex = Number.isInteger(data.step) ? data.step : null;
+  const steps = mode && stepIndex != null ? buildSteps(data) : null;
+  const moment = steps ? steps[Math.max(0, Math.min(steps.length - 1, stepIndex))] : null;
+  const shown = moment ? moment.show : n + 1;
+  const answers = moment ? moment.answers : data.showAnswers === true;
+
+  // A part's length comes from its number. A missing part under a known whole
+  // has one too (the whole take away the others), so the bars stay true.
+  const vals = segs.map((p) => num(p.value != null ? p.value : p.answer));
+  const wholeVal = num(whole.value != null ? whole.value : whole.answer);
+  const missingAt = vals.map((v, i) => (v == null ? i : -1)).filter((i) => i >= 0);
+  if (missingAt.length === 1 && wholeVal != null) {
+    const rest = vals.reduce((a, v) => a + (v == null ? 0 : v), 0);
+    if (wholeVal - rest > 0) vals[missingAt[0]] = wholeVal - rest;
+  }
+  const proportional = vals.every((v) => v != null && v > 0);
+  const weights = vals.map((v) => (proportional ? v : 1));
+  const totW = weights.reduce((a, b) => a + b, 0);
+
+  const shownText = (region) => {
+    const lbl = labelOf(region);
+    if (answers && region.answer != null && String(region.answer) !== '' && isOpen(lbl)) {
+      return { text: String(region.answer), colour: C.ANSWER_COL, open: false };
+    }
+    return { text: lbl, colour: null, open: isOpen(lbl) };
+  };
+  const widest = (region) => {
+    const t = labelOf(region);
+    const a = region.answer != null ? String(region.answer) : '';
+    return textWidth(t.length > a.length ? t : a, FS) + 2 * SEG_PAD_X;
+  };
+
+  // Each part wide enough for its own number at its true length; the whole as
+  // long as the parts together, and never shorter than its own number needs.
+  const minWs = segs.map((p) => Math.max(MIN_SEG_W, widest(p)));
+  let barW = Math.max(FULL_W, MIN_SEG_W * n, widest(whole));
+  for (let i = 0; i < n; i++) barW = Math.max(barW, (minWs[i] * totW) / weights[i]);
+  const segWs = weights.map((w) => (barW * w) / totW);
+
+  // The teacher-written kind brings every box in empty.
+  const teacher = mode === 'teacher';
+  const box = (x, y, w, region, visible) => {
+    setHidden(!visible);
+    const t = teacher ? { text: '', colour: null, open: true } : shownText(region);
+    drawRect(x, y, w, BAR_H, t.open);
+    drawText(x + w / 2, y + BAR_H / 2, t.text, FS, 'middle', t.colour);
+    setHidden(false);
+  };
+
+  // The whole along y in [0, BAR_H], the parts directly under it: one shared
+  // edge, no gap, so the parts read as making the whole.
+  box(0, 0, barW, whole, shown >= 1);
+  let x = 0;
+  for (let i = 0; i < n; i++) {
+    box(x, BAR_H, segWs[i], segs[i], shown >= i + 2);
+    x += segWs[i];
+  }
+
+  const names = data.names === true ? { whole: 'whole', parts: 'parts' }
+    : (data.names && typeof data.names === 'object' ? data.names : null);
+  if (names) {
+    setHidden(shown < 1);
+    drawText(-NAME_GAP, BAR_H / 2, names.whole == null ? '' : String(names.whole), PART_NAME_FS, 'end');
+    setHidden(shown < 2);
+    drawText(-NAME_GAP, BAR_H * 1.5, names.parts == null ? '' : String(names.parts), PART_NAME_FS, 'end');
+    setHidden(false);
   }
 }
 
@@ -297,7 +451,13 @@ function drawComparison(data, drawRect, drawLine, drawText) {
 }
 
 function cacheKey(data) {
-  const shape = data && data.shape === 'comparison' ? 'comparison' : 'part-whole';
+  const shape = shapeOf(data);
+  if (shape === 'whole-parts') {
+    const r = (x) => `${labelOf(x)}:${x && x.value != null ? x.value : ''}:${x && x.answer != null ? x.answer : ''}`;
+    const ps = (Array.isArray(data.parts) ? data.parts : []).map(r).join('|');
+    const names = data.names === true ? 'names' : (data.names ? JSON.stringify(data.names) : '-');
+    return `bar-model:wp:${r(data.whole || {})}:${ps}:${names}:${data.build || '-'}:${data.step == null ? '-' : data.step}:${data.showAnswers === true ? 'ans' : '-'}`;
+  }
   if (shape === 'part-whole') {
     const w = (data.whole && typeof data.whole === 'object')
       ? `${data.whole.label == null ? '' : data.whole.label}/${data.whole.value == null ? '' : data.whole.value}`
@@ -326,4 +486,4 @@ function comparisonCueSvg() {
   return { svg, aspect: w / h, w, h };
 }
 
-module.exports = { tightSvg, comparisonCueSvg, cacheKey };
+module.exports = { tightSvg, comparisonCueSvg, cacheKey, buildSteps, buildMode, shapeOf };

@@ -359,14 +359,17 @@ function overloadMessage(steps, index, budget, sourceAuthored, widestPracticePan
       `composition up to half the slide, never fewer criteria. See ` +
       `\`slide-success-criteria.md\`.`;
   // One of a lesson's two headed lists ("How to subtract", "How to exchange")
-  // stacked beside a sum could not be held at 18pt however the weights were
-  // set, and a Year 4 designer found the arrangement that holds them by trial:
-  // one list either side of the work. The teacher passed it (17 October 2026),
-  // so the refusal names it.
+  // stacked beside a sum could not be held however the weights were set. One
+  // list either side of the work held them, and the teacher passed it on 17
+  // October 2026, then turned it down on real decks: "too overbearing ... the
+  // model is small, there's words everywhere" (18 and 19 October 2026). The
+  // pair stays down one side, and a pair too long for that names a list the
+  // class may already own, which is the lesson designer's to take off.
   const eitherSide = headedList
-    ? ` When the slide carries two headed lists that do not fit stacked, put ` +
-      `one either side of the work: \`thirds-h\` with one list's panel in ` +
-      `\`left\`, the work in \`middle\` and the other list's panel in \`right\`.`
+    ? ` When the slide carries two headed lists that do not fit stacked down ` +
+      `one side even at 16pt, do not put one either side of the work: report a ` +
+      `content fault for the lesson designer naming both lists, since one may ` +
+      `be a method the class already owns and need not be printed.`
     : '';
 
   if (reference) {

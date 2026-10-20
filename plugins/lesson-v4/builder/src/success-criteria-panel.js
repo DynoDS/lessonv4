@@ -229,10 +229,19 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
       // holds at 18pt: its mark is stale (left behind after the list was
       // tightened), and drawing it smaller, or telling the teacher it is too
       // long for every panel, would both be untrue.
+      //
+      // One of a lesson's headed lists ("How to exchange") goes down to 16pt the
+      // same way, unmarked and unflagged: two lists stacked down one side of the
+      // work, smaller, beat one either side of it with the sum squeezed into the
+      // middle (the teacher, 19 October 2026: stacked down the right, "16pt might
+      // be fine, if it has to").
+      const headedListMayShrink = !!listHeading && content.type === 'steps' && !ctx._holdCriteriaFloor;
       if (!Number.isFinite(zone.measureFloorPt) &&
-          content.type === 'steps' && isMarkedList(content.steps, ctx.markedCriteria) &&
-          (!zone.practicePanel || zone.widestPracticePanel) &&
-          !markedListHeldAt18(content.steps, ctx)) {
+          content.type === 'steps' &&
+          (headedListMayShrink ||
+            (isMarkedList(content.steps, ctx.markedCriteria) &&
+              (!zone.practicePanel || zone.widestPracticePanel) &&
+              !markedListHeldAt18(content.steps, ctx)))) {
         const PptxGenJS = requireGlobal('pptxgenjs');
         contentZone.floorPt = markedListFloor((floorPt) => {
           const dry = new PptxGenJS();

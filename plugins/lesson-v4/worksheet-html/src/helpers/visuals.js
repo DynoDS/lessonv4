@@ -223,14 +223,17 @@ const helpers = {
     { capMm: 60, minWidthMm: 32, minHeightMm: 32, greed: 0 }
   ),
 
-  // The White Rose / Singapore bar model: a part-whole bar or a two-bar
-  // comparison. Not maths-only: any whole split into named parts fits it.
+  // The White Rose / Singapore bar model: a part-whole bar, the whole bar over
+  // the parts bar (`whole-parts`), or a two-bar comparison. Not maths-only: any
+  // whole split into named parts fits it. A sheet never builds one up click by
+  // click, so `build` is not passed on and the sheet prints the whole model.
   "bar-model": fromShared(
     barModelSvg,
     (spec) => ({
       shape: spec.shape,
       whole: spec.whole,
       parts: spec.parts,
+      names: spec.names,
       wholeLabelPosition: spec.wholeLabelPosition,
       bars: spec.bars,
       difference: spec.difference,

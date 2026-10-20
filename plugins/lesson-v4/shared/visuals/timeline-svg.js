@@ -40,6 +40,8 @@ const T = require('./figure-text');
 const ERA_H_MAX = 2.4; // era band height at full size ...
 const ERA_H_MIN = 1.5; // ... and the shortest a band may be squeezed to
 const ERA_PAD_H = 0.28; // inset between a band edge and its label
+const ERA_PAD_V = 0.2; // least room above and below a band's label
+const ERA_LABEL_LINES = 2; // an era label grown past the surface's size may wrap to this many lines
 const ERA_GAP = 0.2; // between the bands and the line
 // One stroke for the line, its end caps and every tick. Three weights (0.28,
 // 0.24, 0.2) read on the board as intervals drawn at different thicknesses
@@ -158,10 +160,18 @@ function layoutAt(n, profile, pt) {
   const lineX0 = left + (END_CAP_W * pt) / 2;
   const lineW = inner - END_CAP_W * pt;
 
-  // Era labels share one size and stay on one line, so the bands read as peers.
+  // Era labels share one size, so the bands read as peers, and at the
+  // surface's own size each stays on one line. Grown past that size on the
+  // board, a label may take two lines: held to one, "The Anglo-Saxons keep
+  // arriving" in the last third of the line kept the whole timeline at 18pt
+  // with half the slide empty around it (20 October 2026).
+  const eraLineLimit = pt > profile.fontPt + 1e-9 ? ERA_LABEL_LINES : 1;
+  const eraLines = [];
   for (const era of n.eras) {
     const availW = (era.to - era.from) * lineW - 2 * ERA_PAD_H * pt;
-    if (era.label && T.widthPt(era.label, pt, true) > availW) {
+    const lines = era.label ? T.wrap(era.label, pt, availW, true) : [];
+    if (lines) eraLines.push(lines);
+    if (era.label && (!lines || lines.length > eraLineLimit)) {
       return new Error(
         `TIMELINE_ZONE_TOO_NARROW: the era "${era.label}" spans ${inches(availW)}in of line but needs ` +
           `${inches(T.widthPt(era.label, profile.minFontPt, true) + 2 * ERA_PAD_H * profile.minFontPt)}in to sit on one line even at the ${profile.minFontPt}pt ` +
@@ -230,9 +240,11 @@ function layoutAt(n, profile, pt) {
 
   // Natural height at full-size bands, then squeeze the bands (only) toward
   // their floor when the space is shorter than that.
-  let eraH = n.eras.length ? ERA_H_MAX * pt : 0;
+  // A band never squeezes below the lines its label takes.
+  const eraNeed = T.blockHeight(Math.max(1, ...eraLines.map((l) => l.length)), pt) + 2 * ERA_PAD_V * pt;
+  let eraH = n.eras.length ? Math.max(ERA_H_MAX * pt, eraNeed) : 0;
   if (n.eras.length && profile.heightPt && fixed + eraH > profile.heightPt) {
-    eraH = Math.max(ERA_H_MIN * pt, profile.heightPt - fixed);
+    eraH = Math.max(ERA_H_MIN * pt, eraNeed, profile.heightPt - fixed);
   }
   const h = fixed + eraH;
   if (profile.heightPt && h > profile.heightPt + 0.5) {
@@ -249,13 +261,21 @@ function layoutAt(n, profile, pt) {
   const eraY = stemY + stemBlock;
   const lineY = eraY + eraH + aboveFixed + (LINE_THICK / 2) * pt;
   const captionY = lineY + (LINE_THICK / 2) * pt + belowLine + CAPTION_GAP * pt;
-  return { pt, W, h, left, right, inner, lineX0, lineW, lineY, eraY, eraH, stem, stemY, caption, captionY, boxes, markLines, markRowH, rows };
+  return { pt, W, h, left, right, inner, lineX0, lineW, lineY, eraY, eraH, eraLines, stem, stemY, caption, captionY, boxes, markLines, markRowH, rows };
 }
 
 function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
   const profile = T.resolveProfile(profileOrSurface, box);
   const n = normalise(spec);
-  const L = T.settle(profile, (pt) => layoutAt(n, profile, pt));
+  // The board may grow a timeline into spare height, the way a cycle grows into
+  // its space. At one fixed size a timeline given most of a slide drew as a
+  // strip an inch and a half tall with empty green above and below it, and the
+  // dates the teacher points at stayed small (a Year 4 history deck, 20 October
+  // 2026; the teacher chose "bigger writing and taller bands" over closing the
+  // gap). The bands are measured in ems, so they grow with the writing. A
+  // surface placed by width alone has no spare height to grow into.
+  const grow = profile.heightPt ? Math.max(1, profile.grow || 1) : 1;
+  const L = T.settle(profile, (pt) => layoutAt(n, profile, pt), { maxPt: profile.fontPt * grow });
   return { ...L, n, profile };
 }
 
@@ -276,7 +296,8 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
     const x = L.lineX0 + era.from * L.lineW;
     const w = (era.to - era.from) * L.lineW;
     parts.push(rect(x, L.eraY, w, L.eraH, fills[i % fills.length], ` class="timeline-era" stroke="${ERA_LINE}" stroke-width="1"`));
-    if (era.label) parts.push(T.textLines([era.label], x + w / 2, L.eraY + (L.eraH - T.blockHeight(1, pt)) / 2, pt, { fill: c.ink, font, bold: true }));
+    const lines = L.eraLines[i];
+    if (lines.length) parts.push(T.textLines(lines, x + w / 2, L.eraY + (L.eraH - T.blockHeight(lines.length, pt)) / 2, pt, { fill: c.ink, font, bold: true }));
   });
 
   const capH = END_CAP_H * pt;

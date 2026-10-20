@@ -114,6 +114,7 @@ const PRIMITIVES = [
     geometrySource: 'shared/visuals/bar-model-svg.js',
     successCriteriaHelpers: [
       { key: 'bar-model-parts', mode: 'both', fullSize: { type: 'bar-model', shape: 'part-whole', whole: { label: 'Whole' }, parts: [{ label: 'Part' }, { label: 'Part' }] }, inline: { treatment: 'simplified', spec: { shape: 'part-whole', whole: { label: '' }, parts: [{ label: '', value: 1 }, { label: '', value: 1 }, { label: '', value: 1 }] } } },
+      { key: 'bar-model-whole-over-parts', mode: 'both', fullSize: { type: 'bar-model', shape: 'whole-parts', whole: { label: '100', value: 100 }, parts: [{ label: '30', value: 30 }, { label: '?' }], names: true }, inline: { treatment: 'simplified', spec: { shape: 'whole-parts', whole: { label: '' }, parts: [{ label: '' }, { label: '' }] } } },
       { key: 'bar-model-compare', mode: 'both', fullSize: { type: 'bar-model', shape: 'comparison', bars: [{ name: 'A', label: 'A', value: 3 }, { name: 'B', label: 'B', value: 2 }], difference: { label: '?', value: 1 } }, inline: { treatment: 'simplified', method: 'comparisonCueSvg', spec: {} } }
     ],
     note: 'All four surfaces draw from bar-model-svg.js; the stick-in pack joined on 13 September 2026, so a bar model with a part to fill can be glued in as well as drawn fresh on a blank-surface.' },

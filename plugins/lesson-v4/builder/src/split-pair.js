@@ -55,6 +55,11 @@ function fitsAt(zone, data, ctx) {
   const dry = new PptxGenJS();
   const barrier = ctx._cardBarrier;
   const container = ctx._containerType;
+  const held = ctx._holdCriteriaFloor;
+  // Measured at the ordinary 18pt floor: rising keeps the lists at full size,
+  // so it is tried before a headed list is let down to 16pt
+  // (success-criteria-panel.js), which is for when even the risen room is short.
+  ctx._holdCriteriaFloor = true;
   try {
     withoutRecording(() => drawContent(dry, dry.addSlide(), Object.assign({}, zone), data, ctx));
     return true;
@@ -63,6 +68,7 @@ function fitsAt(zone, data, ctx) {
   } finally {
     ctx._cardBarrier = barrier;
     ctx._containerType = container;
+    ctx._holdCriteriaFloor = held;
   }
 }
 

@@ -442,6 +442,8 @@ def copy_packet_plugin_root(
         ROOT / "scripts" / "check-photo-cap.py",
         # Every script switches its own output to UTF-8 (19 October 2026).
         ROOT / "scripts" / "utf8_output.py",
+        # How long the lesson takes to teach, from its slides (20 October 2026).
+        ROOT / "scripts" / "taught_time.py",
     ):
         shutil.copy2(
             source,

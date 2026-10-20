@@ -5,6 +5,7 @@
 
 const { WRITING_LINE_MM, WRITING_LINE_GROWN_RATIO, TYPE } = require("../tokens");
 const { textWidthEm } = require("../../../shared/text/comic-glyph-width");
+const { missingNumberPieces } = require("../../../shared/text/missing-number");
 
 const BODY_PT = 12; // must track TYPE.body in tokens.js
 const PT_MM = 0.3528;
@@ -178,10 +179,20 @@ function colourAsks(escaped) {
     .join("");
 }
 
+// A ? that stands for a missing number ("3,000 − ? = 1,200") prints in question
+// blue, as on the slides (shared/text/missing-number.js). The marks are found
+// on the raw text, where escaping cannot move them, and each piece is escaped
+// on its own.
+function escMissing(text) {
+  return missingNumberPieces(String(text ?? ""))
+    .map((piece) => (piece.missing ? '<span class=h-missing>?</span>' : esc(piece.text)))
+    .join("");
+}
+
 // Escaped text with its empty-box characters drawn, for a helper that prints
 // its words without the write-in blanks promptHtml adds.
 function escWithDigitBoxes(text) {
-  return colourAsks(esc(text ?? "")).replace(DIGIT_BOX, DIGIT_BOX_HTML);
+  return colourAsks(escMissing(text ?? "")).replace(DIGIT_BOX, DIGIT_BOX_HTML);
 }
 
 // A blank stays on the line with the word before it. Left to wrap, "I'm
@@ -194,7 +205,7 @@ const BEFORE_BLANK = / +(?=_{2,})/g;
 function promptHtml(text, widthMm) {
   const width = blankWidth(widthMm);
   const style = widthMm == null ? "" : ` style="width:${width}mm"`;
-  return colourAsks(esc(String(text ?? "").replace(BEFORE_BLANK, NBSP)))
+  return colourAsks(escMissing(String(text ?? "").replace(BEFORE_BLANK, NBSP)))
     .replace(BLANK_RUN, `<span class="h-blank"${style}></span>`)
     // A missing digit is typed upstream as an empty-box character ("2\u25A14 is
     // divisible by 6"), which the font draws smaller than a full stop is tall:

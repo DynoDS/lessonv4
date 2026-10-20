@@ -123,6 +123,13 @@ function checkZoneFill(ctx, zone, drawn, label) {
   if (!ctx || typeof ctx.slideIndex !== 'number') return;
   // A drawing nobody will see (a template trying a width) records nothing.
   if (!recording()) return;
+  // A slot the template shapes for itself, with no layout a designer could
+  // choose instead. A word card's picture panel is one: a wide photograph in it
+  // leaves pale grey above and below, the teacher judged that fine (8 October
+  // 2026), and the finding told the designer to change a layout that does not
+  // exist (the Anglo-Saxons "invade" card, 20 October 2026). A warning nobody
+  // can act on only teaches the designer to read past warnings.
+  if (ctx.slotSetByTemplate) return;
   if (!zone || !drawn) return;
   const zoneArea = zone.w * zone.h;
   const drawnArea = drawn.w * drawn.h;

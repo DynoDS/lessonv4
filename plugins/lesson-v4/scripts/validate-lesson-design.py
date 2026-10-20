@@ -13,6 +13,7 @@ from typing import Any, Iterator
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import beside_teaching  # noqa: E402 - the count the designer's tool and the reviewer's view also read
+import taught_time  # noqa: E402 - how long the slides take to teach by asking, also printed in the designer's view
 
 TOP_LEVEL_FIELDS = {
     "schemaVersion",
@@ -4259,6 +4260,26 @@ def validate_lesson_fits_the_slot(root: dict[str, Any]) -> None:
     # minutes and the class still learns something. What cannot be taught is the
     # lesson that will not fit, so that is the end with teeth.
     if total + LESSON_MINUTES_UNPLANNED <= LESSON_MINUTES_MAX:
+        # The planned minutes fit; now the time the teaching really takes. A
+        # beat runs at least as long as its slides take to teach by asking
+        # (`taught_time.py`: a 17-minute plan took a cover teacher 40), so a
+        # lesson can fit on paper and still not fit in the room.
+        honest, rows = taught_time.honest_minutes(root)
+        if honest + LESSON_MINUTES_UNPLANNED <= LESSON_MINUTES_MAX:
+            return
+        heavy = sorted((row for row in rows if row[2] > row[1]), key=lambda row: row[2] - row[1], reverse=True)[:3]
+        named = "; ".join(f"{label}: planned {planned}min, its slides take about {taught}min to teach"
+                          for label, planned, taught in heavy)
+        expect(
+            False,
+            f"taught by asking rather than read out, this lesson takes about {honest} minutes of beats "
+            f"(what its slides put in front of the class at about {taught_time.BOARD_WORDS_A_MINUTE} words a minute: "
+            "each slide read, asked about until it makes sense, and its task done), and with about "
+            f"{LESSON_MINUTES_UNPLANNED} that no beat plans that is {honest + LESSON_MINUTES_UNPLANNED}, over the "
+            f"{LESSON_MINUTES_MAX} a lesson can run to. Where the time goes: {named}. Teach fewer things: leave "
+            "out an idea, a case or a detail the objective can be met without, or keep it for another lesson. "
+            "Do not squeeze what stays onto fewer words or shrink the tasks",
+        )
         return
     longest = sorted(beats, key=lambda pair: pair[1], reverse=True)[:3]
     named = "; ".join(f"{label} {minutes}min" for label, minutes in longest)

@@ -99,6 +99,30 @@ test('a badge the slide names is kept, and a deck with no design beside it carri
   assert.strictEqual(bare.slides[0].doSign, undefined);
 });
 
+// 20 October 2026: the final task of a sound lesson ran over four slides (the
+// dog scene, the good and weak examples, the partner talk, the writing) and the
+// book sat on all four. The badge belongs on the slide where children work.
+test('a task told over several slides carries its badge only where children work', () => {
+  const design = {
+    teachingSequence: [
+      { sourceUnitId: 'u1', kind: 'do', minutes: 2, levels: BOARD },
+      { sourceUnitId: 'u5', kind: 'practise', minutes: 9, levels: PRINTED },
+    ],
+    worksheet: { use: 'required-task-resource', taskUnitId: 'u5' },
+  };
+  const task = (signal) => ({ type: 'text', value: 'Do it.', signal });
+  const lesson = { slides: [
+    { title: 'Is Yusuf right?', designUnitId: 'u1', statement: { type: 'stack', items: [task('talk')] } },
+    { title: 'How does Mateo hear the dog?', designUnitId: 'u5', secondary: { type: 'text', value: 'The scene.' } },
+    { title: 'How does Mateo hear the dog?', designUnitId: 'u5', strong: { type: 'text', value: 'A good one.' } },
+    { title: 'How does Mateo hear the dog?', designUnitId: 'u5', primary: { type: 'stack', items: [task('talk')] } },
+    { title: 'How does Mateo hear the dog?', designUnitId: 'u5', primary: { type: 'stack', items: [task('pencil')] } },
+    { title: 'How does Mateo hear the dog? - check', designUnitId: 'u5' },
+  ] };
+  applyDoSigns(lesson, folderWith(design));
+  assert.deepStrictEqual(lesson.slides.map((s) => s.doSign), ['quick', undefined, undefined, undefined, 'sheet', undefined]);
+});
+
 test('both badge drawings are in the deck\'s signs', () => {
   assert.ok(signalWidth('lightning', 0.5) > 0);
   assert.ok(signalWidth('sheet', 0.5) > 0);

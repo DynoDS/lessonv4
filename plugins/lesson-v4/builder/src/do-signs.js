@@ -65,6 +65,14 @@ function applyDoSigns(lesson, lessonDir) {
   } catch (err) {
     return lesson;
   }
+  // A task told over several slides (the scene, a good and a weak example,
+  // the partner talk, then the writing) carries its badge only where children
+  // do the work, never on the slides that set it up (Daniel, 20 October 2026:
+  // "the book should be on the bit that is the do beat, not the setting up
+  // for it"). The working slide is the one whose task line carries a sign:
+  // the pencil for a sheet, any task sign for a bolt. A beat with no task
+  // sign anywhere keeps the badge on every slide, as before.
+  const byUnit = new Map();
   for (const slide of lesson.slides) {
     if (!slide || typeof slide !== 'object' || slide.doSign !== undefined) continue;
     if (slide.headerStyle === 'starter') continue;
@@ -74,9 +82,31 @@ function applyDoSigns(lesson, lessonDir) {
       : Array.isArray(slide.designUnitIds) ? slide.designUnitIds : [];
     const unit = ids.map((id) => units.get(id)).find(Boolean);
     const badge = unit ? badgeFor(unit, worksheetTask) : null;
-    if (badge) slide.doSign = badge;
+    if (!badge) continue;
+    if (!byUnit.has(unit)) byUnit.set(unit, { badge, slides: [] });
+    byUnit.get(unit).slides.push(slide);
+  }
+  for (const { badge, slides } of byUnit.values()) {
+    const working = (wanted) => slides.filter((slide) => taskSigns(slide).some((sign) => wanted.has(sign)));
+    let marked = badge === 'sheet' ? working(new Set(['pencil'])) : [];
+    if (!marked.length) marked = working(TASK_SIGNS);
+    if (!marked.length) marked = slides;
+    marked.forEach((slide) => { slide.doSign = badge; });
   }
   return lesson;
+}
+
+const TASK_SIGNS = new Set(['pencil', 'talk', 'magnifier']);
+
+function taskSigns(node, found = []) {
+  if (Array.isArray(node)) node.forEach((item) => taskSigns(item, found));
+  else if (node && typeof node === 'object') {
+    Object.keys(node).forEach((key) => {
+      if (key === 'signal' && typeof node[key] === 'string') found.push(node[key]);
+      else taskSigns(node[key], found);
+    });
+  }
+  return found;
 }
 
 function revealsAnswers(node) {

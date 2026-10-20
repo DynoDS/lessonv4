@@ -40,7 +40,10 @@
 //
 // The spec:
 //   { operator: "-" | "+", numbers: ["52", "28"], pieces?: "blocks" | "counters",
-//     step?: 0..n-1 | "exchange" | "end" }
+//     sum?: "teacher", step?: 0..n-1 | "exchange" | "end" }
+// `sum: "teacher"` keeps the written sum as set (numbers only, no marks, no
+// answer) on every step, for the teacher to write on as the pieces move; left
+// out, the sum fills itself in step by step.
 // `pieces` left out, the drawing chooses (the teacher, 18 October 2026: "it
 // should just decide what it thinks" unless he asks for one): blocks while every
 // number in the sum has at most two digits, where a rod of ten cubes beside a
@@ -115,7 +118,9 @@ function normalise(spec = {}) {
   const pieces = spec.pieces == null || spec.pieces === '' ? (width <= 2 ? 'blocks' : 'counters') : String(spec.pieces).toLowerCase();
   if (pieces !== 'blocks' && pieces !== 'counters') refuse(`"pieces" is "${spec.pieces}"; use "blocks" or "counters", or leave it out and the drawing chooses.`);
   if (pieces === 'blocks' && width > 2) refuse('blocks are drawn for sums of tens and ones; a sum with hundreds or thousands is shown with counters. Leave "pieces" out and the drawing chooses.');
-  return { operator, top, bottom, answer, columns, pieces, step: spec.step == null || spec.step === '' ? null : spec.step };
+  const writes = spec.sum == null || spec.sum === '' ? 'shown' : String(spec.sum).toLowerCase();
+  if (writes !== 'shown' && writes !== 'teacher') refuse(`"sum" is "${spec.sum}"; use "teacher" when the teacher writes the sum as the pieces move, or leave it out and the sum fills itself.`);
+  return { operator, top, bottom, answer, columns, pieces, writes, step: spec.step == null || spec.step === '' ? null : spec.step };
 }
 
 function digitAt(number, columns, column) {
@@ -521,6 +526,17 @@ function arrowSvg(from, to, colour, U) {
 // The written sum at a step, in the place value chart's own drawing.
 function sumSpec(c, steps, index, still, pal) {
   const sub = c.operator === '−';
+  // `"sum": "teacher"`: the pieces move and the written sum stays as it was
+  // set, for the teacher to write on as each piece moves. A sum that filled
+  // itself left nothing to model: the teacher, 19 October 2026, after teaching
+  // from one, "I couldn't really write over it" while the counters moved. The
+  // band above the digits is kept, so the marks have room.
+  if (c.writes === 'teacher') {
+    return {
+      columns: c.columns,
+      calculation: { operator: sub ? '-' : '+', numbers: [c.top, c.bottom], answer: c.columns.map(() => ''), ...(sub ? { exchangeBand: true } : {}) },
+    };
+  }
   const answer = c.columns.map(() => '');
   const exchanges = [];
   const carry = {};
@@ -802,7 +818,7 @@ function slideLayers(spec = {}, profile) {
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = typeof profileOrSurface === 'string' ? profileFor(profileOrSurface, box || { widthPt: 500 }) : profileOrSurface;
   const c = normalise(spec);
-  return `exchange-happening:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${c.operator}${c.top}:${c.bottom}:${c.pieces}:${c.step == null ? '-' : c.step}`;
+  return `exchange-happening:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${c.operator}${c.top}:${c.bottom}:${c.pieces}:${c.writes}:${c.step == null ? '-' : c.step}`;
 }
 
 function minWidthPt(spec = {}, profileOrSurface = 'worksheets') {

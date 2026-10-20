@@ -2,6 +2,7 @@
 
 const { COLOURS } = require('./styles');
 const { pictureColour } = require('../../shared/text/criteria-marks');
+const { missingNumberMarks } = require('../../shared/text/missing-number');
 
 // Inline text formatting for rendered strings — questions, table cells, steps,
 // option lists, and grid/pyramid reveals all pass through here. Returns the
@@ -157,8 +158,71 @@ function taughtWordsInGreen(runs, baseColor, bold, keyLine) {
   return out;
 }
 
+// A ? that stands for a missing number ("3,000 − ? = 1,200") prints in question
+// blue wherever a child reads it (shared/text/missing-number.js says which ?s
+// those are). Only a ? still in its line's own black, purple or sticky colour
+// changes: inside an answer, an orange given or a coloured span it already
+// says what it is.
+const MISSING_GROUNDS = [COLOURS.body, COLOURS.sticky, COLOURS.worked];
+
+function missingNumbersInBlue(runs, baseColor, bold) {
+  const base = baseColor || COLOURS.body;
+  if (!MISSING_GROUNDS.some(function (ground) { return sameColour(ground, base); })) return runs;
+  let list = runs;
+  if (typeof runs === 'string') {
+    if (!missingNumberMarks(runs).length) return runs;
+    const plain = { color: base, bold: !!bold };
+    list = [];
+    runs.split('\n').forEach(function (line, index, lines) {
+      if (line !== '') list.push({ text: line, options: plain });
+      if (index < lines.length - 1) list.push({ text: '\n', options: plain });
+    });
+  } else if (!Array.isArray(runs)) {
+    return runs;
+  }
+  // The ?s are found in the whole line, never run by run: a run that starts
+  // "? 600" after an orange "3,682" is the end of a question, and read alone it
+  // looked like a missing number beside 600 (Year 4 starter, 19 October 2026).
+  const whole = list.map(function (run) { return run && typeof run.text === 'string' ? run.text : ''; }).join('');
+  const marks = new Set(missingNumberMarks(whole));
+  if (!marks.size) return runs;
+  let changed = false;
+  let at = 0;
+  const out = [];
+  list.forEach(function (run) {
+    const options = (run && run.options) || {};
+    const text = run && typeof run.text === 'string' ? run.text : '';
+    const start = at;
+    at += text.length;
+    const inside = [];
+    for (let i = 0; i < text.length; i += 1) if (marks.has(start + i)) inside.push(i);
+    if (!inside.length || !sameColour(options.color || base, base)) {
+      out.push(run);
+      return;
+    }
+    changed = true;
+    let cursor = 0;
+    const pieces = [];
+    inside.forEach(function (i) {
+      if (i > cursor) pieces.push({ text: text.slice(cursor, i), missing: false });
+      pieces.push({ text: '?', missing: true });
+      cursor = i + 1;
+    });
+    if (cursor < text.length) pieces.push({ text: text.slice(cursor), missing: false });
+    pieces.forEach(function (piece, index) {
+      const own = Object.assign({}, options);
+      if (index < pieces.length - 1) delete own.breakLine;
+      if (piece.missing) Object.assign(own, { color: FOCUS_BLUE, bold: true });
+      out.push({ text: piece.text, options: own });
+    });
+  });
+  return changed ? out : runs;
+}
+
 function splitAnswerRuns(text, bold, baseColor) {
-  return taughtWordsInGreen(splitMarkedRuns(text, bold, baseColor), baseColor, bold);
+  return missingNumbersInBlue(
+    taughtWordsInGreen(splitMarkedRuns(text, bold, baseColor), baseColor, bold),
+    baseColor, bold);
 }
 
 function splitMarkedRuns(text, bold, baseColor) {

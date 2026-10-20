@@ -2831,10 +2831,13 @@ def test_the_five_minutes_no_beat_plans_count_towards_the_fifty():
         return units
 
     def set_total(design, wanted):
+        # Each beat starts at the time its board takes to teach, and the word
+        # cards' time comes off the top, so the honest total is `wanted`.
         units = total(design)
+        taught = module.taught_time
         for unit in units:
-            unit["minutes"] = 1
-        spare = wanted - len(units)
+            unit["minutes"] = max(1, taught.taught_minutes(taught.board_words(unit, design)))
+        spare = wanted - sum(unit["minutes"] for unit in units) - taught.taught_minutes(taught.card_words(design))
         for unit in units:
             unit["minutes"] += min(spare, 15)
             spare -= min(spare, 15)

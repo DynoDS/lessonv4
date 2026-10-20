@@ -913,6 +913,8 @@ const css = `
      underscores. One uniform width everywhere: wide enough for a real written
      word, and never hinting by its length at which word it wants. */
   .h-ask { color: var(--colour-question); }
+  /* A ? standing for a missing number, in question blue as on the slides. */
+  .h-missing { color: var(--colour-question); font-weight: bold; }
   .h-hint { font-style: italic; color: var(--colour-ink); }
   .h-hint-lead { font-weight: bold; font-style: normal; }
   .h-digit-box {

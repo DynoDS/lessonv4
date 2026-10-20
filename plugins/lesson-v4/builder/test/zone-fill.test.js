@@ -58,6 +58,13 @@ test('the finding says what to do and what not to do', () => {
   assert.match(found.message, /2\.00:1.*3\.71:1/, 'both shapes are stated so the fix is obvious');
 });
 
+test('a slot the template shapes for itself is not reported', () => {
+  // A word card's picture panel: no layout exists for a designer to change.
+  clearZoneFill();
+  checkZoneFill({ slideIndex: 0, slotSetByTemplate: true }, { w: 4.0, h: 5.3 }, { w: 4.0, h: 2.0 }, 'x');
+  assert.deepEqual(zoneFillWarnings(), []);
+});
+
 test('nothing is recorded without a slide to attach it to', () => {
   clearZoneFill();
   checkZoneFill(null, { w: 10, h: 2 }, { w: 2, h: 2 }, 'x');

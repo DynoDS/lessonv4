@@ -129,7 +129,10 @@ test('criteria that need the room rise beside the title; criteria that fit, or a
   assert.ok(kept >= 0.55, `one list that fits keeps its place (top ${kept.toFixed(2)}in)`);
 });
 
-test('a header with a task line keeps its strip, so two lists that cannot fit are refused, not drawn over it', (t) => {
+// With a task line the lists cannot rise, so they go down to 16pt and stay in
+// their zone, under the strip (the teacher, 19 October 2026: stacked down the
+// right, "16pt might be fine, if it has to"). They used to be refused here.
+test('a header with a task line keeps its strip, so two lists that need it go smaller, not over it', async (t) => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'criteria-lists-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const specPath = path.join(dir, 'lesson.json');
@@ -137,6 +140,12 @@ test('a header with a task line keeps its strip, so two lists that cannot fit ar
   fs.writeFileSync(specPath, JSON.stringify({ lessonName: 'Column subtraction', yearGroup: 'Year 4', subject: 'Maths',
     lo: 'To subtract using columns', slides: [slide(two, { instruction: 'Watch the exchange.' })] }));
   const result = spawnSync(process.execPath, [path.join(ROOT, 'build.js'), specPath, dir], { encoding: 'utf8' });
-  assert.notEqual(result.status, 0);
-  assert.match((result.stdout || '') + (result.stderr || ''), /STEP_TEXT_OVERLOAD/);
+  assert.equal(result.status, 0, (result.stdout || '') + (result.stderr || ''));
+  const xml = await slideXml(dir, 1);
+  const boxes = greenBoxes(xml);
+  assert.equal(boxes.length, 2);
+  assert.ok(Math.min(...boxes.map((b) => b.y)) >= 0.55, 'the lists stay under the task line');
+  const sizes = shapes(xml).filter((s) => s.x > 6.5 && /Line up the digits|Write 1 less above it/.test(s.text))
+    .map((s) => Number((s.block.match(/sz="(\d+)"/) || [])[1]));
+  assert.ok(sizes.length && sizes.every((sz) => sz >= 1600), `no step under 16pt, got ${sizes.join(', ')}`);
 });

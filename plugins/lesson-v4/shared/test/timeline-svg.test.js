@@ -126,3 +126,27 @@ test('the same spec draws the same marks on every surface, sized for where it is
   const piece = timeline.tightSvg(VICTORIAN, profileFor('stickin', { widthMm: 260 }));
   assert.ok(!/#D6EEFF/.test(piece.svg), 'the photocopied pack draws its bands in grey, not colour');
 });
+
+// A timeline given most of a slide grows into it. At one fixed size the
+// Anglo-Saxons timeline drew as a strip an inch and a half tall in a space
+// three times that, held there by its last era label having to sit on one
+// line in the last third of the line (20 October 2026).
+const ARRIVALS = {
+  eras: [{ label: 'The Anglo-Saxons keep arriving', from: 0.659, to: 1 }],
+  marks: [{ label: 'The Romans arrive', at: 0 }, { label: 'The Roman soldiers leave', at: 0.659 }]
+};
+
+test('on the board a timeline grows into spare height, its era label taking two lines to do it', () => {
+  const L = timeline.describeLayout(ARRIVALS, BODY());
+  assert.ok(L.pt > PROFILES.slides.fontPt + 4, `the timeline stayed at ${L.pt}pt`);
+  assert.equal(L.eraLines[0].length, 2, 'the era label did not wrap to let the writing grow');
+  assert.ok(L.eraH >= 2 * L.pt * 1.1, 'the band does not hold its two lines');
+});
+
+test('at the surface\'s own size an era label still keeps to one line', () => {
+  // A worksheet places the timeline by width alone, so nothing grows there and
+  // the band reads as it always has.
+  const L = timeline.describeLayout(ARRIVALS, profileFor('worksheets', { widthPt: 500 }));
+  assert.ok(L.pt <= PROFILES.worksheets.fontPt);
+  assert.equal(L.eraLines[0].length, 1);
+});

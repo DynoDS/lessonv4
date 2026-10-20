@@ -117,7 +117,11 @@ function drawChipBank(pptx, slide, zone, data) {
 
   const variant = VARIANTS[data.variant] || VARIANTS[DEFAULT_VARIANT];
   const title = (data.title != null && String(data.title) !== '') ? String(data.title) : null;
-  const chipTextGroup = fitGroupId(zone, 'chip-labels');
+  // A bank in a stack with its task shares the task's size group, so the two
+  // settle on one size (stack.js, bankBesideItsTask).
+  const chipTextGroup = typeof data.sizeGroup === 'string' && data.sizeGroup.trim()
+    ? 'size-' + data.sizeGroup.trim()
+    : fitGroupId(zone, 'chip-labels');
 
   const innerX = zone.x + PAD;
   const innerW = Math.max(0.5, zone.w - 2 * PAD);
@@ -149,7 +153,12 @@ function drawChipBank(pptx, slide, zone, data) {
     ? data.maxRows
     : null;
   const fontFloor = Math.max(CHIP_FONT_MIN, MIN_FONT_PT);
-  let fontPt = CHIP_FONT_MAX;
+  // A stack whose task line is sized with something else lowers the ceiling to
+  // that line's size, so the bank never outshouts it (stack.js, bankBesideItsTask).
+  const fontMax = Number.isFinite(data.fontCeiling)
+    ? Math.max(fontFloor, Math.min(CHIP_FONT_MAX, data.fontCeiling))
+    : CHIP_FONT_MAX;
+  let fontPt = fontMax;
   let rows, chipH, blockH;
   for (;;) {
     rows = packRows(chips, fontPt, innerW);
@@ -197,7 +206,7 @@ function drawChipBank(pptx, slide, zone, data) {
   // Centre the whole block vertically in the available height.
   let rowY = innerY + Math.max(0, (innerH - blockH) / 2);
   const chipFont = Math.max(Math.max(CHIP_FONT_MIN, MIN_FONT_PT),
-                            Math.min(CHIP_FONT_MAX, Math.round(chipH * 72 * FONT_RATIO)));
+                            Math.min(fontMax, Math.round(chipH * 72 * FONT_RATIO)));
 
   rows.forEach(function (rowChips) {
     const rowW = rowChips.reduce(function (s, c) { return s + c.w; }, 0)
@@ -215,7 +224,7 @@ function drawChipBank(pptx, slide, zone, data) {
         fontFace: FONT, fontSize: chipFont, bold: true,
         color: c.taught ? COLOURS.textGreen : variant.text,
         align: 'center', valign: 'middle', margin: 0, fit: FIT,
-        objectName: growFitObjectName(chipTextGroup, CHIP_FONT_MAX, 'chip-' + c.label)
+        objectName: growFitObjectName(chipTextGroup, fontMax, 'chip-' + c.label)
       });
       chipX += c.w + CHIP_GAP_X;
     });

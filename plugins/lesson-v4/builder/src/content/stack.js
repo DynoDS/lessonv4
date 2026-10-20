@@ -9,8 +9,60 @@ const MIN_HEIGHT_RATIO = 0.35;
 const VERTICAL_ALIGNS = new Set(['top', 'center', 'bottom']);
 // ─── END CONSTANTS ────────────────────────────────────────────
 
+// A word bank and the task it serves grow together, to one size. On its own a
+// bank grows to fill its zone, and under a one-line task it did: a Year 4
+// history writing slide printed "flooding" and "new land" at 54pt under a 32pt
+// "Write your own explanation.", so the help outshouted the job (20 October
+// 2026). Holding the bank down to the task's size was tried and the teacher
+// preferred both large: "Let the task line grow big too, so both are large."
+// So a lone task line takes the room its share gives it, and its words and the
+// bank's join one fit group, which settles on the largest size every member
+// can hold (fit_text_postprocess.py).
+//
+// Only a lone line, and one short enough to sit on one line at its usual size.
+// A growing line is not measured for the height it needs, so a long task made
+// to grow lost the room it was owed under a heavy bank. Where several lines
+// share the stack (a task, a hint and a question over the bank), the room is
+// already spoken for: made to fill, their cards grew taller while the bank,
+// drawn small in what was left, held the group's size down, so the cards stood
+// half empty and the bank was pushed into the corner. There, and wherever a line is already sized with something
+// else - its reveal twin, its own size group, a size the designer named - the
+// lines keep their size and the bank takes it as its ceiling.
+function bankBesideItsTask(items, zone) {
+  if (!items.some(function (it) { return it && it.type === 'chip-bank'; })) return items;
+  const words = items.filter(function (it) { return it && it.type === 'text'; });
+  if (!words.length) return items;
+  const sizedElsewhere = function (it) {
+    return it.revealPair || it.fontSize || (typeof it.sizeGroup === 'string' && it.sizeGroup.trim());
+  };
+  const { TEXT_CEILINGS, FALLBACK_CEILING, fillGrowCeiling, estimateLines } = require('./text');
+  const oneLine = function (it) {
+    const ceiling = TEXT_CEILINGS[zone.class] || FALLBACK_CEILING;
+    return String(it.heightMode || '').toLowerCase() === 'fill' ||
+      estimateLines(String(it.value || it.text || ''), ceiling, zone.w) <= 1;
+  };
+  if (words.length > 1 || words.some(sizedElsewhere) || !oneLine(words[0])) {
+    const largest = words.reduce(function (most, it) {
+      const fills = String(it.heightMode || '').toLowerCase() === 'fill';
+      return Math.max(most, it.fontSize ||
+        (fills ? fillGrowCeiling(it.value) : TEXT_CEILINGS[zone.class] || FALLBACK_CEILING));
+    }, 0);
+    return items.map(function (it) {
+      return it && it.type === 'chip-bank' ? Object.assign({}, it, { fontCeiling: largest }) : it;
+    });
+  }
+  const { fitGroupId } = require('../text-fit');
+  const group = fitGroupId(zone, 'bank-and-task');
+  return items.map(function (it) {
+    if (!it) return it;
+    if (it.type === 'chip-bank') return Object.assign({}, it, { sizeGroup: group });
+    if (it.type !== 'text') return it;
+    return Object.assign({ heightMode: 'fill' }, it, { sizeGroup: group });
+  });
+}
+
 function stackLayout(zone, data, ctx) {
-  const items = Array.isArray(data.items) ? data.items : [];
+  const items = bankBesideItsTask(Array.isArray(data.items) ? data.items : [], zone);
   if (items.length === 0) return [];
 
   const weights = items.map(function (it) {
@@ -150,7 +202,7 @@ function canUseMoreHeight(item) {
 //
 // Same honesty rule as a row: if any item cannot be measured, say nothing.
 function measureStack(zone, data, ctx) {
-  const items = Array.isArray(data.items) ? data.items : [];
+  const items = bankBesideItsTask(Array.isArray(data.items) ? data.items : [], zone);
   if (items.length === 0) return null;
 
   const packed = packToContent(items, zone, data, ctx);

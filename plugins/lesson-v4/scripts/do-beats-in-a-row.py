@@ -47,6 +47,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import beside_teaching  # noqa: E402 - the count the reviewer's view also prints
+import taught_time  # noqa: E402 - the time the slides take to teach by asking
 
 # Words that make a shared run look meaningful when it is only grammar.
 LITTLE = {
@@ -317,6 +318,10 @@ def child_seat(design: dict) -> list[str]:
                  f"{time_to_say(listened)}.")
     lines.append(f"  Everything the teacher says, the talk on each task's own slides included: {said} words, "
                  f"{time_to_say(said)}. That is the lesson's listening; asking and answering add to it.")
+    honest, _rows = taught_time.honest_minutes(design)
+    lines.append(f"  Taught by asking rather than read out (what the slides show, at about {taught_time.BOARD_WORDS_A_MINUTE} "
+                 f"words a minute, a cover teacher's pace on 20 October 2026), the beats take about {honest} minutes, "
+                 f"{honest + 5} with books out and moving about. The design check refuses more than 50.")
     if stretches:
         longest = max(stretches, key=lambda run: sum(count for _name, count in run))
         words_in = sum(count for _name, count in longest)

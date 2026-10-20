@@ -103,7 +103,7 @@ emailed. Never write `imageHref` yourself.
 
 - `number-line` - A labelled number line with a `caption` beneath ("Each interval is worth 100."): `jumps` between marks and a `highlight`ed space, or instead `boxes` at ticks, `arrows`, a ruler's `unit` and `object`.
 - `blank-surface` - A draw-your-own surface (bare number line, empty bars) the child constructs on.
-- `bar-model` - The White Rose bar model: a part-whole bar or a two-bar comparison.
+- `bar-model` - The White Rose bar model: the whole bar over the parts bar (`whole-parts`, for a missing part or whole), a part-whole bar, or a two-bar comparison.
 - `part-whole` - A whole joined to its parts: partitioning, decomposition, a missing addend.
 - `part-whole-money` - A whole circle with parts beneath it, joined by lines.
 - `number-sentence` - A number sentence with its terms kept apart: supplied values on their own tiles, operators between them, a box or digit frame where the answer goes.
@@ -1575,7 +1575,7 @@ Smallest usable: **100mm wide x 15mm tall**. Spare height: never takes spare hei
 
 #### `bar-model`
 
-The White Rose bar model: a part-whole bar or a two-bar comparison. Any whole split into named parts fits it.
+The White Rose bar model: the whole bar over the parts bar (`whole-parts`, for a missing part or whole), a part-whole bar, or a two-bar comparison. Any whole split into named parts fits it.
 
 Smallest usable: **70mm wide x 48mm tall**. Spare height: never takes spare height.
 

@@ -544,7 +544,9 @@ function drawVisualPanel(pptx, slide, visual, panel, ctx) {
     noCard: true
   };
 
-  drawVisual(pptx, slide, inner, visual, ctx);
+  // The card sets this panel's shape, so the empty-space check has nothing to
+  // ask a designer to change here (_zone-fill.js).
+  drawVisual(pptx, slide, inner, visual, Object.assign({}, ctx, { slotSetByTemplate: true }));
 }
 
 module.exports = { drawKeyVocabulary };

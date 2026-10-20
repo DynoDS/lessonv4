@@ -57,6 +57,7 @@ const EXPECTED_MODES = {
   'square-corner': 'both',
   'line-of-symmetry': 'both',
   'bar-model-parts': 'both',
+  'bar-model-whole-over-parts': 'both',
   'bar-model-compare': 'both',
   'tally-five': 'SC-inline',
   'turn-clockwise': 'SC-inline',
@@ -75,8 +76,8 @@ const EXPECTED_MODES = {
 };
 
 test('shared catalogue marks all audited helpers by supported size', () => {
-  assert.equal(SUCCESS_CRITERIA_HELPERS.length, 27);
-  assert.equal(new Set(SUCCESS_CRITERIA_HELPER_KEYS).size, 27);
+  assert.equal(SUCCESS_CRITERIA_HELPERS.length, 28);
+  assert.equal(new Set(SUCCESS_CRITERIA_HELPER_KEYS).size, 28);
   assert.deepEqual(
     Object.fromEntries(SUCCESS_CRITERIA_HELPERS.map((entry) => [entry.key, entry.mode])),
     EXPECTED_MODES

@@ -141,8 +141,22 @@ function lineZones(lines, zone) {
 // September 2026). His model, 28 September 2026, was a place value chart
 // centred against the two cards beside it. Null when anything cannot be
 // measured, and the row then lays out as it always has.
+//
+// A single card that fits its words lines up the same way. "Use column
+// subtraction." beside three answer charts printed hard against the top of the
+// row while the charts sat centred below it (a Year 4 answers slide, 19 October
+// 2026: "it doesn't look very aligned"), because only a stack of cards was
+// looked for. A card asked to fill, and a row of nothing but cards, are left as
+// they were.
+function fitsItsWords(item) {
+  return item && item.type === 'text' && !item.picture &&
+    String(item.heightMode || '').toLowerCase() !== 'fill';
+}
+
 function alignedBands(items, widths, lefts, zone, ctx, isPackingStack) {
-  if (!ctx || items.length < 2 || !items.some(isPackingStack)) return null;
+  if (!ctx || items.length < 2) return null;
+  const loneCard = items.some(fitsItsWords) && !items.every(fitsItsWords);
+  if (!items.some(isPackingStack) && !loneCard) return null;
   const { measureCompositionExtent } = require('./index');
   const heights = [];
   for (let i = 0; i < items.length; i += 1) {

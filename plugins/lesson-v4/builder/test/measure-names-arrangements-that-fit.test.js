@@ -6,10 +6,11 @@
 // A Year 4 lesson's two criteria lists ("How to subtract", "How to exchange")
 // were stacked beside a column sum and could not be held at 18pt. The designer
 // spent most of an hour trying about a hundred arrangements by hand before
-// finding one list either side of the sum, which the teacher passed
-// (17 October 2026). The engine knew the sizes all along, so the measure now
-// tries the nearby arrangements itself and names what holds. It only names
-// them: the designer still chooses (12 October 2026).
+// finding one list either side of the sum (17 October 2026). The engine knew
+// the sizes all along, so the measure now tries the nearby arrangements itself
+// and names what holds. It only names them: the designer still chooses
+// (12 October 2026). One list either side of the work is no longer among them:
+// the teacher turned it down on real decks (18 and 19 October 2026).
 
 const assert = require('node:assert/strict');
 const test = require('node:test');
@@ -67,28 +68,20 @@ function measure(lesson) {
   }
 }
 
-test('two criteria lists stacked beside a sum: the refusal and the measure both name one either side', () => {
+test('two criteria lists stacked beside a sum: the refusal sends a pair too long back, never either side', () => {
   const result = measure({ lessonName: 'Column subtraction across zeros', subject: 'Maths', yearGroup: 'Year 4', lo: 'Column subtraction across zeros', slides: [STACKED] });
   assert.equal(result.status, 0, result.out);
   assert.match(result.out, /MEASURE slide 1 "My Turn": DOES NOT FIT/);
-  assert.match(result.out, /two headed lists that do not fit stacked, put one either side of the work: `thirds-h`/);
-  assert.match(result.out, /FITS AS \(measured, not chosen for you\): \d+ of the \d+ nearby arrangements/);
-  assert.match(result.out, /- `thirds-h`, one criteria list either side of the work/);
+  assert.match(result.out, /do not put one either side of the work: report a content fault for the lesson designer/);
+  assert.doesNotMatch(result.out, /- `thirds-h`/);
   // Trying the arrangements leaves nothing behind but the one kept preview.
   assert.deepEqual(result.left, ['measure-preview', 'part.json']);
 });
 
-test('the either-side arrangement takes the two lists out to the thirds and keeps the work in the middle', () => {
+test('the either-side arrangement is no longer offered', () => {
   const options = nearbyArrangements(STACKED);
-  const third = options.find((o) => o.slide.template === 'thirds-h');
-  assert.ok(third, options.map((o) => o.description).join('\n'));
-  assert.equal(third.slide.left.content.heading, 'How to subtract');
-  assert.equal(third.slide.middle, SUM);
-  assert.equal(third.slide.right.content.heading, 'How to exchange');
-  assert.equal('primary' in third.slide, false);
-  assert.equal('secondary' in third.slide, false);
-  // The slide's own words travel unchanged.
-  assert.equal(third.slide.title, 'My Turn');
+  assert.equal(options.some((o) => o.slide.template === 'thirds-h'), false,
+    options.map((o) => o.description).join(' | '));
 });
 
 test('other widths keep each side where it was; a swap gives the other side the larger share', () => {
