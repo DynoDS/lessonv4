@@ -8,11 +8,11 @@ The Slide Designer reads this reference whenever any source unit has `representa
 
 **Live-complete helper** presents the exact starting example in the useful blank or partly blank configuration selected upstream. The helper itself gets the room: use `maths-turn-sc` or `maths-turn-ref-sc` when their slots fit, with the generic working column disabled (`"workingSpace": false` or `"hideWorkingSpace": true`), or another compatible template when it fits better. Leave only the part being learned blank or constructable and pre-fill supporting parts. The teacher chooses how and where to complete or annotate it; the slide does not instruct direct writing on the screen or name another surface.
 
-**Question and reference** shows the exact question, useful criteria and reference while the teacher produces separate working. Follow the upstream hand-off about what will be written. If the model needs on-slide writing, use `maths-turn-ref-sc` with `hideWorkingSpace: false`, `maths-turn-sc` with `workingSpace: true`, or a free layout with enough clear space for that working. `writing-turn-ref-sc` remains suitable when no separate on-slide working is planned. Keep the dataset in `reference` and the criteria in `criteria` when using those template slots; do not let the reference or explanation occupy the promised writing area.
+**Question and reference** shows the exact question, useful criteria and reference while the teacher produces separate working. Follow `modelling-formats.md`: no generic blank working area. Use `maths-turn-ref-sc` with `hideWorkingSpace: true`, `maths-turn-sc` with `workingSpace: false`, or a suitable free layout. Keep the dataset in `reference` and the criteria in `criteria` when using those template slots. Annotation of the visible example or reference remains available.
 
 **Physical-demonstration support** shows only the useful support selected upstream: nothing extra, equipment identification, setup or safety information, a diagram, photograph, steps children will later follow, or a reference they will use afterwards. Give it a readable place without competing with the real action. A performative title is optional and is used only when it genuinely helps direct attention to the teacher.
 
-When the task lands on a **word, a choice, or a mark** with nothing to write out (circling a preposition, ticking the right option, naming a word class, matching prefixes to roots), use `body-full` or another free template so the sentence, options, `table` or `matching` fill the body and read from the back. These tasks do not need a separate annotation column unless the specified model includes additional written working. (`maths-turn`, `maths-mtotyt` and `maths-mtotyt-sc` predate the removable working column - see `templates.md` §2.2 - so leave them out of new builds.)
+When the task lands on a **word, a choice, or a mark** with nothing to write out (circling a preposition, ticking the right option, naming a word class, matching prefixes to roots), use `body-full` or another free template so the sentence, options, `table` or `matching` fill the body and read from the back. Do not add a separate annotation column; follow the Question and reference treatment when additional written working is modelled. (`maths-turn`, `maths-mtotyt` and `maths-mtotyt-sc` predate the removable working column - see `templates.md` §2.2 - so leave them out of new builds.)
 
 ## A live-complete helper's blank slots are the useful starting state
 
@@ -20,7 +20,7 @@ A `maths-turn-sc` or `maths-turn-ref-sc`, built with its working-space flag turn
 
 ## Working space follows the planned action
 
-Disable generic working space when annotation happens inside the helper or no separate working is planned: `workingSpace: false` on `maths-turn-sc`, `hideWorkingSpace: true` on `maths-turn-ref-sc`. Enable it when the upstream model needs separate on-slide working. Judge the actual writing, reference readability and question together, not the presence of a helper alone. Do not apply one layout reflexively across different modelled moves.
+Disable generic working space on both maths templates: `workingSpace: false` on `maths-turn-sc`, `hideWorkingSpace: true` on `maths-turn-ref-sc`. `modelling-formats.md` owns the distinction between generic blank space and useful annotation or completion within a model. Give the actual question and reference the available room.
 
 ## A read-off model still owes the class a visible example
 

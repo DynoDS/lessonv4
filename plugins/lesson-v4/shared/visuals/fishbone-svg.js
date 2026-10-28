@@ -25,8 +25,13 @@
 //   effect   the outcome, in the box at the arrow head
 //   causes   up to six causes, placed on ribs alternately above and below the
 //            spine, starting above
+//   highlight the effect ("effect" also finds it) or a cause, named by its own
+//            words, or a list of them: "look at this one" while the rest steps
+//            back (figure-highlight.js). A cause's rib is the cause's, and
+//            steps back with it; the spine stays.
 
 const T = require('./figure-text');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS (ems of the settled font size) ───────────────────────────────
 const RIB_ANGLE_DEG = 35;
@@ -50,6 +55,70 @@ const PAD = 0.15;
 const MAX_CAUSES = 6;
 const EFFECT_FILL = '#0070C0';
 const CAUSE_LINE = '#E46C0A';
+// ────────────────────────────────────────────────────────────────────────────
+
+// A fishbone's parts are its effect and its causes, each named by its own
+// words, so the mark follows the cause whichever rib it is placed on.
+const EFFECT_KEY = 'effect';
+function highlightParts(n) {
+  const out = [{ key: EFFECT_KEY, aliases: ['outcome', ...(n.effect.trim() ? [n.effect.trim()] : [])] }];
+  const seen = new Set();
+  n.causes.forEach((cause) => {
+    const key = cause.trim();
+    if (key && !seen.has(key) && key.toLowerCase() !== EFFECT_KEY) {
+      seen.add(key);
+      out.push(key);
+    }
+  });
+  return out;
+}
+
+// ─── Pointing at a part (figure-highlight.js) ───────────────────────────────
+// The rings round the highlighted parts, and the drawing grown by exactly as
+// much as the outermost ring reaches past its edge. A part laid out against
+// the edge would otherwise lose half its ring, and a ring pulled inward to fit
+// would sit on the words it is pointing at. With nothing highlighted the
+// drawing is exactly what it was.
+function ringsFor(marked, list, W, H, ink) {
+  const long = Math.max(W, H);
+  const reach = require('./figure-highlight').ringReach(long); // the ring's pad plus half its stroke
+  const out = { svg: '', l: 0, t: 0, r: 0, b: 0 };
+  list.forEach(({ key, box: tight, air = 0 }) => {
+    if (!marked.has(key)) return;
+    // Words have no border of their own, so the ring stands clear of them.
+    const box = { x: tight.x - air, y: tight.y - air, w: tight.w + 2 * air, h: tight.h + 2 * air };
+    out.svg += highlight.ringSvg(marked, key, box, long, ink);
+    out.l = Math.max(out.l, reach - box.x);
+    out.t = Math.max(out.t, reach - box.y);
+    out.r = Math.max(out.r, box.x + box.w + reach - W);
+    out.b = Math.max(out.b, box.y + box.h + reach - H);
+  });
+  return out;
+}
+
+function ringedDoc(W, H, parts, rings) {
+  const w = W + rings.l + rings.r;
+  const h = H + rings.t + rings.b;
+  if (w === W && h === H) return { svg: T.svgDoc(W, H, [...parts, rings.svg]), w, h };
+  const f = T.f2;
+  return {
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="${f(-rings.l)} ${f(-rings.t)} ${f(w)} ${f(h)}">${parts.join('')}${rings.svg}</svg>`,
+    w,
+    h,
+  };
+}
+
+function faded(opacity, svg) {
+  return opacity < 1 ? `<g opacity="${opacity}">${svg}</g>` : svg;
+}
+
+// A faded part that is a filled box keeps a solid paper box under it, so the
+// lines it used to cover do not show through it once it steps back.
+function backed(opacity, svg, box, paper, rx = 0) {
+  if (opacity >= 1) return svg;
+  const f = T.f2;
+  return `<rect x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" rx="${f(rx)}" fill="${paper}"/>` + faded(opacity, svg);
+}
 // ────────────────────────────────────────────────────────────────────────────
 
 function normalise(spec = {}) {
@@ -156,7 +225,10 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const font = profile.font;
   const f = T.f2;
   const ink = profile.palette === 'ink';
+  const marked = highlight.resolveHighlight(spec, highlightParts(L.n), 'fishbone');
+  const causeOp = (cause) => highlight.opacityFor(marked, cause.text.trim());
   const parts = [];
+  const ringList = [];
 
   const headX = L.effectX - 0.2 * pt - ARROW_HEAD_W * pt;
   parts.push(`<rect x="${f(L.spineStart)}" y="${f(spineY - (SPINE_THICK * pt) / 2)}" width="${f(headX - L.spineStart + 0.5)}" height="${f(SPINE_THICK * pt)}" fill="${c.ink}"/>`);
@@ -166,24 +238,33 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
     const b = cause.box;
     const endX = b.x + b.w / 2;
     const endY = b.y + b.h / 2;
-    parts.push(`<line class="fishbone-rib" x1="${f(cause.attachX)}" y1="${f(spineY)}" x2="${f(endX)}" y2="${f(endY)}" stroke="${c.ink}" stroke-width="${f(Math.max(1, RIB_THICK * pt))}"/>`);
+    parts.push(faded(causeOp(cause), `<line class="fishbone-rib" x1="${f(cause.attachX)}" y1="${f(spineY)}" x2="${f(endX)}" y2="${f(endY)}" stroke="${c.ink}" stroke-width="${f(Math.max(1, RIB_THICK * pt))}"/>`));
   });
   L.causes.forEach((cause) => {
     const b = cause.box;
-    parts.push(`<rect class="fishbone-cause" x="${f(b.x)}" y="${f(b.y)}" width="${f(b.w)}" height="${f(b.h)}" fill="${c.paper}" stroke="${ink ? c.ink : CAUSE_LINE}" stroke-width="${f(Math.max(1.25, BOX_STROKE * pt))}"/>`);
-    parts.push(T.textLines(cause.lines, b.x + b.w / 2, b.y + (b.h - T.blockHeight(cause.lines.length, pt)) / 2, pt, { fill: c.ink, font, bold: true }));
+    const svg = `<rect class="fishbone-cause" x="${f(b.x)}" y="${f(b.y)}" width="${f(b.w)}" height="${f(b.h)}" fill="${c.paper}" stroke="${ink ? c.ink : CAUSE_LINE}" stroke-width="${f(Math.max(1.25, BOX_STROKE * pt))}"/>` +
+      T.textLines(cause.lines, b.x + b.w / 2, b.y + (b.h - T.blockHeight(cause.lines.length, pt)) / 2, pt, { fill: c.ink, font, bold: true });
+    parts.push(backed(causeOp(cause), svg, b, c.paper));
+    ringList.push({ key: cause.text.trim(), box: b });
   });
 
   const ey = spineY - L.effectH / 2;
-  parts.push(`<rect class="fishbone-effect" x="${f(L.effectX)}" y="${f(ey)}" width="${f(L.effectW)}" height="${f(L.effectH)}" fill="${ink ? c.paper : EFFECT_FILL}"${ink ? ` stroke="${c.ink}" stroke-width="${f(Math.max(1.5, 0.16 * pt))}"` : ''}/>`);
-  parts.push(T.textLines(L.effectLines, L.effectX + L.effectW / 2, spineY - T.blockHeight(L.effectLines.length, pt) / 2, pt, { fill: ink ? c.ink : '#FFFFFF', font, bold: true }));
+  const effectBox = { x: L.effectX, y: ey, w: L.effectW, h: L.effectH };
+  parts.push(backed(highlight.opacityFor(marked, EFFECT_KEY),
+    `<rect class="fishbone-effect" x="${f(L.effectX)}" y="${f(ey)}" width="${f(L.effectW)}" height="${f(L.effectH)}" fill="${ink ? c.paper : EFFECT_FILL}"${ink ? ` stroke="${c.ink}" stroke-width="${f(Math.max(1.5, 0.16 * pt))}"` : ''}/>` +
+    T.textLines(L.effectLines, L.effectX + L.effectW / 2, spineY - T.blockHeight(L.effectLines.length, pt) / 2, pt, { fill: ink ? c.ink : '#FFFFFF', font, bold: true }),
+    effectBox, c.paper));
+  ringList.push({ key: EFFECT_KEY, box: effectBox });
 
-  return { svg: T.svgDoc(L.W, L.h, parts), w: L.W, h: L.h, aspect: L.W / L.h, layout: L };
+  const doc = ringedDoc(L.W, L.h, parts, ringsFor(marked, ringList, L.W, L.h, ink));
+  return { svg: doc.svg, w: doc.w, h: doc.h, aspect: doc.w / doc.h, layout: L };
 }
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = T.resolveProfile(profileOrSurface, box);
-  return `fishbone:${T.profileKey(p)}:${JSON.stringify(normalise(spec))}`;
+  const n = normalise(spec);
+  const hi = [...highlight.resolveHighlight(spec, highlightParts(n), 'fishbone')].sort().join(',');
+  return `fishbone:${T.profileKey(p)}:${JSON.stringify(n)}${hi ? `:hi:${hi}` : ''}`;
 }
 
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, MAX_CAUSES };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, highlightParts, MAX_CAUSES };

@@ -1443,14 +1443,45 @@ def build_class_view(design: dict) -> tuple[list[str], int]:
         ),
         "",
     ]
+    printed = printed_pieces(design)
     for label, strings in blocks:
         lines.append(f"### {label}")
+        # A beat's task and instruction also go onto the piece its pairs hold,
+        # where they are read at a table with no script beside them. Shown only
+        # beside the script, "Trace south to the question mark." passed the
+        # review and the voice edit, and went out on the sheet with no place to
+        # start from (21 October 2026).
+        if label in printed:
+            lines.extend([printed[label], ""])
         for text in strings:
             # Keep authored wording distinct from packet commentary.
             lines.extend("> " + line for line in text.split("\n"))
             lines.append("")
         lines.append("")
     return lines, count
+
+
+PRINTED_FOR = {"child": "one for each child", "pair": "one between two", "group": "one per group"}
+
+
+def printed_pieces(design: dict) -> dict[str, str]:
+    """The note each printed beat's block opens with, keyed by its label."""
+    beats = [design.get("starter"), *(design.get("teachingSequence") or [])]
+    ending = design.get("ending")
+    if isinstance(ending, dict) and ending.get("included"):
+        beats.append(ending.get("beat"))
+    notes: dict[str, str] = {}
+    for beat in beats:
+        levels = beat.get("levels") if isinstance(beat, dict) else None
+        sheet = levels.get("printed") if isinstance(levels, dict) else None
+        if isinstance(sheet, dict) and beat.get("label"):
+            notes[beat["label"]] = (
+                f"Printed for the children too ({PRINTED_FOR.get(sheet.get('per'), sheet.get('per'))}): "
+                f"{str(sheet.get('what') or '').strip()} This beat's task and instruction go onto that "
+                "sheet, where they are read at a table without the teacher's words. It prints in black "
+                "ink for the photocopier, so a colour the words name shows as grey there."
+            )
+    return notes
 
 
 TEACH_KINDS = {"teach", "teach-why", "teach-needed"}

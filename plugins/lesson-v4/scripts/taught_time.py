@@ -81,16 +81,21 @@ def lesson_beats(design: dict) -> list[tuple[str, dict]]:
 
 def honest_minutes(design: dict) -> tuple[int, list[tuple[str, int, int]]]:
     """Each beat as the longer of its planned minutes and its board taught,
-    plus the word cards: (total, [(label, planned, taught), ...])."""
+    plus the word cards: (total, [(label, planned, taught), ...]).
+
+    The lesson is rounded up once, at the end, never beat by beat: rounding each
+    beat up to a whole minute made five clearer words cost a full minute, and the
+    teacher's own clearer instruction was refused for it (21 October 2026). The
+    rows keep whole minutes, for saying where the time goes."""
     rows: list[tuple[str, int, int]] = []
-    total = 0
+    exact = 0.0
     for label, unit in lesson_beats(design):
         planned = unit.get("minutes") if isinstance(unit.get("minutes"), int) else 0
-        taught = taught_minutes(board_words(unit, design))
-        rows.append((label, planned, taught))
-        total += max(planned, taught)
-    cards = taught_minutes(card_words(design))
-    if cards:
-        rows.append(("the word cards", 0, cards))
-        total += cards
-    return total, rows
+        words = board_words(unit, design)
+        rows.append((label, planned, taught_minutes(words)))
+        exact += max(planned, words / BOARD_WORDS_A_MINUTE)
+    card = card_words(design)
+    if card:
+        rows.append(("the word cards", 0, taught_minutes(card)))
+        exact += card / BOARD_WORDS_A_MINUTE
+    return math.ceil(exact - 1e-9), rows

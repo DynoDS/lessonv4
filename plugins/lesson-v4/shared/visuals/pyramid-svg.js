@@ -26,10 +26,19 @@
 //
 // With no rows it draws the empty 1-2-3 ranking frame. The sheet's spelling,
 // `rows: [[""], ["14", "20"], ["", "8", "12"]]`, is read too.
+//
+//   highlight  a level or a brick, or a list of them, to point at while the
+//              teacher talks. A level is "row 1" (the top) down to the bottom
+//              row, also "level 1", "top" or "apex" and "bottom" or "base", or
+//              its own label ("Most important") when no other row shares it. A
+//              brick is "row 3 brick 1", counted from the left. The named parts
+//              are ringed and the rest fade back, a faded row's label with it
+//              (shared/visuals/figure-highlight.js).
 
 const { textWidthEm } = require('../text/comic-glyph-width');
 const { profileFor, answerColour } = require('./surface-profiles');
 const { fitUnit, insetProfile } = require('./fit-unit');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS (in U, the brick's width, unless named) ─────────────────────
 const BRICK_H = 0.72;            // a number brick is wider than tall, the sheet's brick
@@ -83,6 +92,32 @@ function normalise(spec = {}) {
   });
   const words = rows.some((r) => r.bricks.some((b) => /[A-Za-z]/.test(b.text) && !/^\?$/.test(b.text)));
   return { rows, maxCells: Math.max(...rows.map((r) => r.bricks.length)), words };
+}
+
+// The levels and bricks a teacher can point at, named the way a teacher says
+// them: rows counted from the top, bricks from the left.
+function highlightParts(P) {
+  const n = P.rows.length;
+  const parts = [];
+  P.rows.forEach((row, r) => {
+    const aliases = [`level ${r + 1}`];
+    if (r === 0) aliases.push('top', 'apex', 'top row', 'top level');
+    if (r === n - 1 && n > 1) aliases.push('bottom', 'base', 'bottom row', 'bottom level');
+    if (row.label && P.rows.filter((o) => o.label === row.label).length === 1) aliases.push(row.label);
+    parts.push({ key: `row ${r + 1}`, aliases });
+  });
+  P.rows.forEach((row, r) => row.bricks.forEach((_, i) => parts.push({ key: `row ${r + 1} brick ${i + 1}`, aliases: [`level ${r + 1} brick ${i + 1}`] })));
+  return parts;
+}
+
+function markedParts(spec, P) {
+  return highlight.resolveHighlight(spec, highlightParts(P), 'pyramid');
+}
+
+// How far the shared ring reaches past the box it is drawn round, so the
+// picture's edge leaves it room (figure-highlight: stroke plus its clearance).
+function ringReach(longSide) {
+  return require('./figure-highlight').ringReach(longSide);
 }
 
 function wrap(text, width, font) {
@@ -183,20 +218,36 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const fullW = L.maxCells * L.U + (L.maxCells - 1) * gap;
   const parts = [];
   const bricks = [];
+  const rings = [];
+  const marked = markedParts(spec, L);
+  const longSide = Math.max(L.labelCol + fullW, L.h);
+  const ink = profile.palette === 'ink';
+  const open = (fade) => (fade < 1 ? parts.push(`<g opacity="${fade}">`) : 0);
+  const close = (fade) => (fade < 1 ? parts.push('</g>') : 0);
   L.rows.forEach((row, r) => {
     const y = r * (L.brickH + gap);
     const rowW = row.bricks.length * L.U + (row.bricks.length - 1) * gap;
     const x0 = L.labelCol + (fullW - rowW) / 2;
+    const rowKey = `row ${r + 1}`;
+    const rowFade = highlight.opacityFor(marked, rowKey);
+    rings.push(highlight.ringSvg(marked, rowKey, { x: x0, y, w: rowW, h: L.brickH }, longSide, ink));
     if (row.label) {
+      open(rowFade);
       const lines = wrap(row.label, L.labelW, L.labelFont);
       const lh = L.labelFont * 1.2;
       const top = y + (L.brickH - lines.length * lh) / 2;
       lines.forEach((line, k) =>
         parts.push(`<text x="${f2(x0 - LABEL_GAP)}" y="${f2(top + k * lh + L.labelFont * 0.9)}" text-anchor="end" font-family="${font}" font-size="${f2(L.labelFont)}" font-weight="bold" fill="${pal.label}">${esc(line)}</text>`)
       );
+      close(rowFade);
     }
     row.bricks.forEach((b, i) => {
       const x = x0 + i * (L.U + gap);
+      const brickKey = `${rowKey} brick ${i + 1}`;
+      // A brick stays lit when its own name or its level's is highlighted.
+      const fade = Math.max(rowFade, highlight.opacityFor(marked, brickKey));
+      rings.push(highlight.ringSvg(marked, brickKey, { x, y, w: L.U, h: L.brickH }, longSide, ink));
+      open(fade);
       bricks.push({ row: r, index: i, x, y, w: L.U, h: L.brickH, text: b.text });
       parts.push(`<rect x="${f2(x)}" y="${f2(y)}" width="${f2(L.U)}" height="${f2(L.brickH)}" fill="${pal.fill}" stroke="${pal.line}" stroke-width="${LINE_W_PT}"/>`);
       if (b.text) {
@@ -207,9 +258,11 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
           parts.push(`<text x="${f2(x + L.U / 2)}" y="${f2(top + k * lh + L.font * 0.95)}" text-anchor="middle" font-family="${font}" font-size="${f2(L.font)}" font-weight="bold" fill="${b.answer ? answerColour(profile, pal.answer, pal.text) : pal.text}">${esc(line)}</text>`)
         );
       }
+      close(fade);
     });
   });
-  const bleed = LINE_W_PT;
+  parts.push(...rings);
+  const bleed = LINE_W_PT + (marked.size ? ringReach(longSide) : 0);
   const w = L.labelCol + fullW + 2 * bleed;
   const h = L.h + 2 * bleed;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${f2(w)}" height="${f2(h)}" viewBox="${f2(-bleed)} ${f2(-bleed)} ${f2(w)} ${f2(h)}">${parts.join('')}</svg>`;
@@ -218,7 +271,9 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = resolveProfile(profileOrSurface, box);
-  return `pyramid:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(normalise(spec))}`;
+  const P = normalise(spec);
+  const hi = [...markedParts(spec, P)].sort().join(',');
+  return `pyramid:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(P)}:${hi}`;
 }
 
 function minWidthPt(spec = {}) {
@@ -228,4 +283,4 @@ function minWidthPt(spec = {}) {
   return (hasLabels ? 30 * 72 / 25.4 + LABEL_GAP : 0) + P.maxCells * U + (P.maxCells - 1) * GAP * U + 2 * 2 + 1;
 }
 
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, minWidthPt };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, minWidthPt, highlightParts };

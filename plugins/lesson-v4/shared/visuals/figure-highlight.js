@@ -121,6 +121,17 @@ function resolveHighlight(data, parts, figureName) {
   return resolved;
 }
 
+// How thick a ring is, and how far it reaches out past the box it surrounds
+// (its clearance plus half its stroke). A figure that grows its picture so an
+// edge ring is not cut off asks here, rather than repeating the sum: the copies
+// would drift the day the ring's size changes (21 October 2026).
+function ringStroke(longSide) {
+  return Math.max(RING_MIN, longSide * RING_WIDTH);
+}
+function ringReach(longSide) {
+  return ringStroke(longSide) * (RING_PAD + 0.5);
+}
+
 // The opacity a part is drawn at. One call at the top of each part's draw.
 function opacityFor(highlighted, key) {
   if (!highlighted || !highlighted.size) return 1;
@@ -160,6 +171,8 @@ module.exports = {
   DIMMED,
   resolveHighlight,
   opacityFor,
+  ringStroke,
+  ringReach,
   ringSvg,
   ringCircleSvg
 };

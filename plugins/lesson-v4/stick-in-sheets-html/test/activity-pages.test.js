@@ -67,3 +67,25 @@ test("a task sheet with no task, or a picture that is not there, is refused by n
   const sheet = normaliseTaskSheet({ visual: "task-sheet", spec: { task: "Caption this.", material: { imagePath: "nowhere.png" } } });
   assert.match(taskSheetPages(sheet, PAGE).error, /was not found/);
 });
+
+// A tall South America laid out at a width alone left both sides of the page
+// empty while its country names crowded down to 9pt (21 October 2026). A map
+// is given the page's width and depth and arranges itself in them.
+test("a map on a page of its own is given the whole space and reads at 14pt", async () => {
+  const item = { visual: "map", task: "Which countries does the Amazon rainforest reach?", per: "pair",
+    spec: { map: "south-america", presentation: "regional-layers", regionLayers: ["Amazon rainforest"],
+      countryLabels: ["Brazil", "Colombia", "Peru", "Ecuador", "Bolivia", "Venezuela", "Guyana", "Suriname", "Argentina", "Chile", "Paraguay", "Uruguay"],
+      showEquator: true } };
+  const natural = await renderPieceHtml(item, {});
+  assert.ok(natural.fillsSpace);
+  let asked = null;
+  const laid = await figurePages(item, natural, (widthMm, zoom, heightMm) => {
+    asked = { widthMm, heightMm };
+    return renderPieceHtml({ ...item, widthMm }, { page: true, zoom, heightMm });
+  }, PAGE);
+  assert.strictEqual(asked.widthMm, PAGE.printableWMm);
+  assert.ok(asked.heightMm > 150 && asked.heightMm < PAGE.printableHMm);
+  assert.ok(laid.heightMm <= PAGE.printableHMm, "the map fits under its task");
+  const sizes = [...laid.pages[0].matchAll(/font-size="([\d.]+)"/g)].map((m) => +m[1]);
+  assert.ok(sizes.length && Math.min(...sizes.filter((s) => s > 5)) >= 14, "country names at 14pt: " + [...new Set(sizes)]);
+});

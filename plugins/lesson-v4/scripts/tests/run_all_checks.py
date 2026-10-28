@@ -146,10 +146,12 @@ def main() -> int:
                         help="skip the run when every check passed within the hour on exactly these files")
     args = parser.parse_args()
 
+    # Tests supply their own host fixtures; independent tests must not share the
+    # calling chat's read guard or select its backend accidentally.
     # Run from a git hook, the environment names the commit's own index and
     # repository; checks that run git in folders of their own must not see it.
     env = {key: value for key, value in os.environ.items()
-           if key not in GIT_LOCATORS}
+           if key not in GIT_LOCATORS | {"CODEX_THREAD_ID", "CODEX_SESSION_ID", "CLAUDECODE", "LESSON_BATCH_HOST"}}
     env["PYTHONUTF8"] = "1"
 
     note = pass_note()

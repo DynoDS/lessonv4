@@ -40,6 +40,8 @@ const REF_H_EXPANDED  = WORK_Y + WORK_H - REF_Y; // fills space when working are
 // ─── END COORDINATES ──────────────────────────────────────────
 
 function drawMathsTurnRefSc(pptx, slide, data, ctx) {
+  // Accept older specifications without restoring their generic blank area.
+  data = { ...data, hideWorkingSpace: true };
   const panelW   = scPanelWidth(data, ctx);
   const widening = panelWidening(panelW);
 

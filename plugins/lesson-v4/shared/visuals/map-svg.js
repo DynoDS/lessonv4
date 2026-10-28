@@ -49,6 +49,7 @@
 
 const fs = require('fs');
 const maps = require('./map-annotations');
+const highlight = require('./figure-highlight');
 const pixels = require('./map-pixels');
 const regional = require('./map-regional-layers');
 const { textWidthEm } = require('../text/comic-glyph-width');
@@ -379,6 +380,8 @@ function resolveWorld(d) {
     labels: { country: '', basin: '' },
     country: '', basin: '',
     caption: String(d.caption || '').trim(),
+    journey: isJourneyMap(d),
+    highlight: mapHighlight(d, isJourneyMap(d)),
   };
 }
 
@@ -406,6 +409,7 @@ function resolveMarked(d) {
     // this?" must not answer its own question.
     labels: labelsFor(d),
     caption: String(d.caption || '').trim(),
+    highlight: mapHighlight(d, false),
   };
 }
 
@@ -459,12 +463,60 @@ function resolveGlobe(d) {
 // names are what the child reads to answer ("which other country has some
 // Amazon rainforest?"), so removing them would remove the task. A lesson where
 // the child does the shading asks for worksheetMode 'regional-marking' itself.
+const SIDE_REACH = 0.3;           // a name this close to a side may go out beside the map
+const JOURNEY_PAPER_PT = 14;      // a journey map's stop names on a printed sheet
+
+function journeyNamePt(s, profile, T) {
+  const paper = profile.surface === 'stickin' || profile.surface === 'worksheets';
+  return s.journey && paper ? Math.max(T, JOURNEY_PAPER_PT) : null;
+}
+
+// What a map points at. A map's named things are its parts: the places and
+// regions the lesson marks, the continent, ocean and sea names, and the lines
+// of latitude it draws. Named in `highlight`, they stay bold and full strength
+// and every other name steps back to grey, the shared look the drawn figures
+// use (figure-highlight.js), so a class reads "look here" the same way on a map
+// as on a bar chart. A journey map does it without being asked: its marked
+// stops and the Equator are what the children's fingers travel between, and
+// with the continents just as loud the stops did not stand out on the board
+// and could not be told apart on the black-ink sheet (21 October 2026). The
+// land itself never fades: it is what the child traces across.
+const MAP_LINE_PARTS = { showEquator: 'Equator', showTropics: ['Tropic of Cancer', 'Tropic of Capricorn'] };
+
+function mapHighlight(d = {}, journey = false) {
+  const named = (list) => (Array.isArray(list) ? list : []).map((item) => String((item && item.text) || '').trim()).filter(Boolean);
+  const marked = (Array.isArray(d.annotations) ? d.annotations : []).map((a) => String((a && a.label) || '').trim()).filter(Boolean);
+  const lines = [];
+  if (d.showEquator === true || d.showTropics === true) lines.push(MAP_LINE_PARTS.showEquator);
+  if (d.showTropics === true) lines.push(...MAP_LINE_PARTS.showTropics);
+  const parts = [...new Set([...marked, ...named(d.continentLabels), ...named(d.oceanLabels), ...named(d.seaLabels), ...lines])];
+  if (d.highlight !== undefined && d.highlight !== null && d.highlight !== false) {
+    return [...highlight.resolveHighlight(d, parts, 'map')].sort();
+  }
+  if (!journey) return [];
+  const points = (d.annotations || []).filter((a) => a.kind === 'point' && String(a.label || '').trim()).map((a) => String(a.label).trim());
+  return [...new Set([...points, ...(lines.includes('Equator') ? ['Equator'] : [])])].sort();
+}
+
+function isJourneyMap(d = {}) {
+  return maps.normaliseMapKey(d.map) === WORLD_KEY && d.presentation === 'seven-continent-world'
+    && !d.worksheetMode && !(Array.isArray(d.clueMarkers) && d.clueMarkers.length)
+    && Array.isArray(d.annotations) && !d.annotations.some(a => a.kind === 'area')
+    && d.annotations.some(a => a.kind === 'point' && String(a.label || '').trim());
+}
+
 function stickInSpec(d = {}) {
   if (d.presentation === 'regional-layers' || d.worksheetMode === 'regional-marking') return { ...d };
   const sites = d.map === WORLD_KEY && d.presentation === 'seven-continent-world'
     && Array.isArray(d.annotations) && d.annotations.some(a => a.kind === 'area')
     && d.annotations.filter(a => a.kind === 'point').length >= 2;
   if (d.worksheetMode === 'world-sites' || sites) return { ...d, worksheetMode: 'world-sites' };
+  // A world map carrying the lesson's own named places and nothing shaded is a
+  // journey map children hold and trace on (the UK, then the Sahara, then a "?"
+  // on the Equator), so it prints as the board drew it. Its names are the stops
+  // the child travels between, not answers; a continent answer map has no
+  // named places and still becomes the write-on task below.
+  if (isJourneyMap(d)) return { ...d };
   return { ...d, map: WORLD_KEY, worksheetMode: 'continents-and-oceans' };
 }
 
@@ -479,7 +531,8 @@ function resolveWorldSites(d) {
     clueMarkers: [], caption: '', focus: null });
   if (!s.annotations.some(a => a.kind === 'area') || !s.showEquator || !s.mapKeyEntries.length)
     throw new Error('MAP_WORLD_SITES_INVALID: retain area evidence, labelled Equator and key.');
-  return { ...s, siteMarking: true };
+  // The child decides which site it is, so nothing on the map may point at one.
+  return { ...s, siteMarking: true, highlight: [] };
 }
 
 function resolve(spec) {
@@ -638,8 +691,10 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
       // The drawing stays tight to its own ink; a surface centres a drawing
       // narrower than its space, as the sheet always placed a map sized by
       // its height.
-      L.offsetX = 0;
-      L.canvasW = L.w;
+      // Names that went out into the space beside the map widen the drawing by
+      // exactly as far as they reach.
+      L.offsetX = L.sideLeft || 0;
+      L.canvasW = L.w + (L.sideLeft || 0) + (L.sideRight || 0);
       L.s = s;
       L.palette = palette;
       L.profile = profile;
@@ -754,7 +809,12 @@ function layoutMap(s, profile, T, ceiling, palette) {
   // it names, so it is as small as it can be while still being read: at the
   // board's 24pt, seven continent and five ocean names hid most of the world
   // they were naming.
-  const LT = profile.minFontPt;
+  // A journey map printed on paper is the exception: its names are the stops a
+  // child has to find and trace between ("The UK", "Sahara Desert", the "?" on
+  // the Equator), and at the paper floor they could not be seen (20 October
+  // 2026). The board keeps its floor, which is already large: bigger names there
+  // covered Africa and pushed the Sahara's name out to sea.
+  const LT = journeyNamePt(s, profile, T) || profile.minFontPt;
   const fx = (p) => m.x + p[0] * m.w;
   const fy = (p) => m.y + p[1] * m.h;
   const obstacles = [];
@@ -813,7 +873,7 @@ function layoutMap(s, profile, T, ceiling, palette) {
   // read "Manaus" and could not see where Manaus was.
   s.annotations.forEach((mark) => {
     if (mark.kind !== 'point') return;
-    const r = Math.max(Math.max(DOT_R_MIN_PT, DOT_R * T) * 1.6, s.siteMarking ? 2.5 * MM_TO_PT : 0);
+    const r = Math.max(Math.max(DOT_R_MIN_PT, DOT_R * (journeyNamePt(s, profile, T) || T)) * 1.6, s.siteMarking ? 2.5 * MM_TO_PT : 0);
     obstacles.push({ x: fx(mark.at) - r, y: fy(mark.at) - r, w: 2 * r, h: 2 * r });
   });
 
@@ -886,7 +946,16 @@ function layoutMap(s, profile, T, ceiling, palette) {
   worldLabel(s.seaLabels, 'sea', LT);
   // A mark's own label joins the same layout rather than being drawn where it
   // asked, so a shaded region's name cannot land on top of a continent name.
+  // A map kept to its own shape in a space wider than it leaves that width
+  // empty either side. Its names may use it rather than crowd onto the land; the
+  // drawing then grows only as far as the names that went there. A name whose
+  // place lies near the left or right edge goes out there first, on a short
+  // leader, which leaves the middle of the map to the names that have to sit
+  // there; a name in the middle sent to the side drew a leader across the whole
+  // world and through other names.
+  const sideRoom = !s.focus && L.w === m.w && W > L.w + 1 ? (W - L.w) / 2 / m.w : 0;
   s.annotations.forEach((mark) => push(mark.label, mark.anchor, mark.labelAt, LT, { stroke: palette.mark(mark.colour), fill: palette.white }));
+  if (sideRoom > 0) items.forEach((item) => { item.toSide = item.anchor[0] < SIDE_REACH || item.anchor[0] > 1 - SIDE_REACH; });
 
   let placed;
   try {
@@ -894,7 +963,7 @@ function layoutMap(s, profile, T, ceiling, palette) {
       maps.layoutLabels(items, (text, item) => {
         const size = pillSize(text, item.pt);
         return { w: size.w / m.w, h: size.h / m.h };
-      }, obstacles.map(asFraction)),
+      }, obstacles.map(asFraction), sideRoom),
       what + ' at ' + f2(m.w / 72) + 'in wide'
     ).map((p, i) => ({ ...items[i], ...p }));
   } catch (error) {
@@ -902,7 +971,8 @@ function layoutMap(s, profile, T, ceiling, palette) {
     // size nearer the readable floor is tried before the map is refused.
     throw crowding(error.message);
   }
-  return Object.assign(L, { markers, seaBoxes, compass, latitudes, labels: placed, what });
+  const reach = placed.reduce((r, p) => ({ left: Math.max(r.left, -p.box.x * m.w), right: Math.max(r.right, (p.box.x + p.box.w - 1) * m.w) }), { left: 0, right: 0 });
+  return Object.assign(L, { markers, seaBoxes, compass, latitudes, labels: placed, what, sideLeft: reach.left, sideRight: reach.right });
 }
 
 function overlaps(a, b) {
@@ -1036,9 +1106,20 @@ function textSvg(font, s, x, baseline, pt, fill, { anchor = 'middle', bold = tru
   return `<text x="${f2(x)}" y="${f2(baseline)}" text-anchor="${anchor}" font-family="${font}" font-size="${f2(pt)}"${weight}${style} fill="${fill}"${turn}>${esc(s)}</text>`;
 }
 
-function pillSvg(font, text, bx, pt, fill, stroke) {
-  return `<rect x="${f2(bx.x)}" y="${f2(bx.y)}" width="${f2(bx.w)}" height="${f2(bx.h)}" rx="${f2(bx.h * 0.3)}" fill="${fill}" fill-opacity="0.94" stroke="${stroke}" stroke-width="${f2(Math.max(0.8, 0.1 * pt))}"/>` +
-    textSvg(font, text, bx.x + bx.w / 2, bx.y + bx.h * 0.68, pt, HOUSE.text);
+function pillSvg(font, text, bx, pt, fill, stroke, { bold = true, strokeScale = 1 } = {}) {
+  return `<rect x="${f2(bx.x)}" y="${f2(bx.y)}" width="${f2(bx.w)}" height="${f2(bx.h)}" rx="${f2(bx.h * 0.3)}" fill="${fill}" fill-opacity="0.94" stroke="${stroke}" stroke-width="${f2(Math.max(0.8, 0.1 * pt) * strokeScale)}"/>` +
+    textSvg(font, text, bx.x + bx.w / 2, bx.y + bx.h * 0.68, pt, HOUSE.text, { bold });
+}
+
+// A map that points at some of its names draws those bold, with a heavier
+// outline, and steps every other name, dot and line back to grey. A map that
+// points at nothing draws as it always has.
+const STANDS_OUT = 2;
+const MAP_STEPS_BACK = 0.45;   // lighter than full, still read from the back row: the land is not faded
+const pointing = (s) => Array.isArray(s.highlight) && s.highlight.length > 0;
+const stands = (s, text) => pointing(s) && s.highlight.includes(String(text || '').trim());
+function faded(s, text, svg) {
+  return pointing(s) && !stands(s, text) ? `<g opacity="${MAP_STEPS_BACK}">${svg}</g>` : svg;
 }
 
 function drawMap(L, id) {
@@ -1100,7 +1181,7 @@ function drawMap(L, id) {
 
   const latStroke = Math.max(1, LATITUDE_STROKE * T);
   L.latitudes.forEach((line) => {
-    parts.push(`<line x1="${f2(m.x)}" y1="${f2(line.y)}" x2="${f2(m.x + m.w)}" y2="${f2(line.y)}" stroke="${c.orange}" stroke-width="${f2(latStroke)}" stroke-dasharray="${f2(0.7 * T)} ${f2(0.45 * T)}"/>`);
+    parts.push(faded(s, line.text, `<line x1="${f2(m.x)}" y1="${f2(line.y)}" x2="${f2(m.x + m.w)}" y2="${f2(line.y)}" stroke="${c.orange}" stroke-width="${f2(latStroke * (stands(s, line.text) ? STANDS_OUT : 1))}" stroke-dasharray="${f2(0.7 * T)} ${f2(0.45 * T)}"/>`));
   });
 
   if (s.joinedEdges && !s.focus) {
@@ -1114,13 +1195,15 @@ function drawMap(L, id) {
   s.annotations.forEach((mark) => {
     if (mark.kind !== 'point') return;
     const p = px(mark.at);
-    const r = Math.max(DOT_R_MIN_PT, DOT_R * T);
-    parts.push(`<circle cx="${f2(p.x)}" cy="${f2(p.y)}" r="${f2(r)}" fill="${c.mark(mark.colour)}" stroke="${HOUSE.white}" stroke-width="${f2(r * 0.45)}"/>`);
+    // A journey's stops are what the child's finger travels between, so they
+    // grow with their names.
+    const r = Math.max(DOT_R_MIN_PT, DOT_R * (journeyNamePt(s, profile, T) || T));
+    parts.push(faded(s, mark.label, `<circle cx="${f2(p.x)}" cy="${f2(p.y)}" r="${f2(r)}" fill="${c.mark(mark.colour)}" stroke="${HOUSE.white}" stroke-width="${f2(r * 0.45)}"/>`));
   });
 
   L.latitudes.forEach((line) => {
     parts.push(`<rect x="${f2(line.box.x)}" y="${f2(line.box.y)}" width="${f2(line.box.w)}" height="${f2(line.box.h)}" rx="${f2(line.box.h * 0.3)}" fill="${HOUSE.white}" fill-opacity="0.94"/>`);
-    parts.push(textSvg(font, line.text, line.box.x + line.box.w / 2, line.box.y + line.box.h * 0.68, line.pt, c.orange));
+    parts.push(faded(s, line.text, textSvg(font, line.text, line.box.x + line.box.w / 2, line.box.y + line.box.h * 0.68, line.pt, c.orange, { bold: !pointing(s) || stands(s, line.text) })));
   });
 
   // Labels last of the map's own marks, so no stroke is ever drawn across the
@@ -1130,9 +1213,16 @@ function drawMap(L, id) {
     if (!item.leader) return;
     const a = px(item.leader[0]);
     const b = px(item.leader[1]);
-    parts.push(`<line x1="${f2(a.x)}" y1="${f2(a.y)}" x2="${f2(b.x)}" y2="${f2(b.y)}" stroke="${item.stroke}" stroke-width="${f2(Math.max(0.8, 0.09 * item.pt))}"/>`);
+    parts.push(faded(s, item.text, `<line x1="${f2(a.x)}" y1="${f2(a.y)}" x2="${f2(b.x)}" y2="${f2(b.y)}" stroke="${item.stroke}" stroke-width="${f2(Math.max(0.8, 0.09 * item.pt))}"/>`));
   });
-  L.labels.forEach((item) => parts.push(pillSvg(font, item.text, toPt(item.box), item.pt, item.fill, item.stroke)));
+  L.labels.forEach((item) => {
+    const bx = toPt(item.box);
+    // A name that steps back keeps a solid white ground, or the coastline shows
+    // through its grey letters.
+    if (pointing(s) && !stands(s, item.text)) parts.push(`<rect x="${f2(bx.x)}" y="${f2(bx.y)}" width="${f2(bx.w)}" height="${f2(bx.h)}" rx="${f2(bx.h * 0.3)}" fill="${HOUSE.white}"/>`);
+    parts.push(faded(s, item.text, pillSvg(font, item.text, bx, item.pt, item.fill, item.stroke,
+      { bold: !pointing(s) || stands(s, item.text), strokeScale: stands(s, item.text) ? STANDS_OUT : 1 })));
+  });
 
   L.markers.forEach((mk) => {
     parts.push(`<circle cx="${f2(mk.cx)}" cy="${f2(mk.cy)}" r="${f2(mk.r)}" fill="${HOUSE.white}" stroke="${HOUSE.white}" stroke-width="${f2(0.35 * mk.pt)}"/>`);

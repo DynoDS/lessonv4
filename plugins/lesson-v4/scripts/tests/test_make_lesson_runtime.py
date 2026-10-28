@@ -580,7 +580,11 @@ class MakeLessonRuntimeTests(unittest.TestCase):
         # described (the review postflight, the picture result check and
         # finalise, the worksheet picture contract, the delivery): of 29 runs
         # reaching the review postflight, 25 looked its command up first.
-        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 81 * 1024 + 968 + 1450)
+        # Raised by 512 bytes on 21 October 2026, with the teacher's agreement
+        # to the temporary-fix route: one line every repair prompt carries
+        # (PLUGIN_GAP) and three pointers to `temporary-fix-route.md`, which
+        # holds the route itself and is read only when a gap happens.
+        self.assertLess(self.measured_bytes(PLAYBOOK.read_bytes()), 81 * 1024 + 968 + 1450 + 512)
 
     def test_no_single_runtime_slice_outgrows_a_worker_context(self) -> None:
         """The cost of the runtime is paid one slice at a time.

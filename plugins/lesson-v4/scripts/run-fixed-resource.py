@@ -693,6 +693,16 @@ def run(args) -> int:
     # quoted one was written and then reported as unreadable (11 October 2026).
     # A Python step is told to write UTF-8 too, so both ends agree.
     child_env = dict(os.environ, LESSON_RESOURCES_PYTHON=sys.executable, PYTHONIOENCODING="utf-8")
+    # A build from a temporary fix's copy of the plugin (`temporary-fix.py`)
+    # finds the plugin's installed libraries where they are, because the copy
+    # leaves them behind; the record says it was built from a fix.
+    fix_marker = Path(args.plugin_root) / "TEMPORARY_FIX.json"
+    if fix_marker.is_file():
+        original = Path(json.loads(fix_marker.read_text(encoding="utf-8"))["original"])
+        libraries = [str(original / name / "node_modules") for name in
+                     ("builder", "stick-in-sheets-html", "worksheet-html", "working-wall-html")
+                     if (original / name / "node_modules").is_dir()]
+        child_env["NODE_PATH"] = os.pathsep.join(libraries + ([os.environ["NODE_PATH"]] if os.environ.get("NODE_PATH") else []))
     completed = subprocess.run(
         command, capture_output=True, text=True, encoding="utf-8", errors="replace", env=child_env
     )
@@ -708,6 +718,7 @@ def run(args) -> int:
         "archived": archived,
         "degraded": False,
         "outputs": [],
+        **({"temporaryFix": True} if fix_marker.is_file() else {}),
     }
 
     if completed.returncode != 0:

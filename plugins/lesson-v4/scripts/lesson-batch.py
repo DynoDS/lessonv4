@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build several lessons at once, each in its own background Claude Code session.
+"""Build several lessons at once, each in its own background Claude Code or Codex session.
 
 A lesson run is conducted by the chat that runs it, and one run fills most of
 that chat's memory. Conducting several from one chat (the retired
@@ -36,6 +36,7 @@ exit 1 on a fault the asking chat must report.
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import json
 import os
 import re
@@ -139,6 +140,8 @@ def batch_lock(output: Path):
             except OSError:
                 pass
             time.sleep(0.2)
+    if not held:
+        raise TimeoutError(f"Could not acquire batch lock: {lock}")
     try:
         yield
     finally:
@@ -173,8 +176,59 @@ def claude_command() -> str:
     return shutil.which("claude") or ""
 
 
+def batch_host() -> str:
+    explicit = os.environ.get("LESSON_BATCH_HOST", "")
+    if explicit in ("claude", "codex"):
+        return explicit
+    if os.environ.get("CLAUDECODE") == "1":
+        return "claude"
+    return "codex" if os.environ.get("CODEX_THREAD_ID") or os.environ.get("CODEX_SESSION_ID") else ""
+
+
+def codex_command() -> list[str]:
+    # Invoke the npm entry point directly on Windows, never through cmd.exe:
+    # lesson prompts contain shell metacharacters and may be long.
+    command = shutil.which("codex")
+    if not command:
+        return []
+    if os.name == "nt" and Path(command).suffix.lower() in (".cmd", ".ps1", ".bat"):
+        entry = Path(command).parent / "node_modules/@openai/codex/bin/codex.js"
+        node = shutil.which("node")
+        return [node, str(entry)] if node and entry.is_file() else []
+    return [command]
+
+
+def codex_route(agree: bool = False) -> int:
+    command = codex_command()
+    if not command:
+        print("BATCH_ROUTE=in-chat\nBATCH_REASON=no runnable codex command on this computer")
+        return 0
+    settings = plugin_settings.read_settings().get("batch") or {}
+    if agree:
+        try:
+            probe = subprocess.run(command + ["exec", "--approve-for-me", "--skip-git-repo-check",
+                "--json", "Reply with the single word READY. Do not use tools."],
+                capture_output=True, text=True, timeout=180, stdin=subprocess.DEVNULL)
+            ready = probe.returncode == 0 and any(
+                json.loads(line).get("item", {}).get("text", "").strip() == "READY"
+                for line in probe.stdout.splitlines() if line.startswith("{"))
+        except (OSError, ValueError, subprocess.TimeoutExpired):
+            ready = False
+        if not ready:
+            print("BATCH_ROUTE=in-chat\nBATCH_REASON=Codex automatic approval mode did not pass its startup check")
+            return 0
+        plugin_settings.write_settings({"batch": {"codexAutoMode": "agreed"}})
+        print("BATCH_AGREED=yes")
+        return 0
+    print("BATCH_ROUTE=sessions\nBATCH_HOST=codex")
+    print("BATCH_AGREED=" + ("yes" if settings.get("codexAutoMode") == "agreed" else "no"))
+    return 0
+
+
 def route() -> int:
     """Separate sessions on Claude Code with auto mode agreed; otherwise in this chat."""
+    if batch_host() == "codex":
+        return codex_route()
     batch = plugin_settings.read_settings().get("batch") or {}
     if os.environ.get("CLAUDECODE") != "1":
         print("BATCH_ROUTE=in-chat")
@@ -195,6 +249,8 @@ def route() -> int:
 
 def agree() -> int:
     """Record the teacher's yes, after proving auto mode starts here at all."""
+    if batch_host() == "codex":
+        return codex_route(agree=True)
     claude = claude_command()
     if not claude:
         return fail("no claude command on this computer")
@@ -434,7 +490,7 @@ def plan(args: list[str]) -> int:
         # A thread left by an earlier set in the same subject is not this set's.
         thread_file(output, key).unlink(missing_ok=True)
     batch = {"made": datetime.now().isoformat(timespec="seconds"), "delivery": chosen["mode"],
-             "output": str(output), "lessons": lessons}
+             "output": str(output), "host": batch_host() or "claude", "lessons": lessons}
     write_batch(output, batch)
     print(f"DELIVERY={chosen['mode']}")
     for key, members in threads.items():
@@ -493,6 +549,9 @@ def next_log(folder: Path) -> str:
 
 
 def start_session(output: Path, lesson: dict, message: str, note: str, resume_session: str = "") -> None:
+    host = lesson.setdefault("host", read_batch(output).get("host", "claude"))
+    session_output = Path(lesson.setdefault("sessionOutput", str(output / "lessons" / lesson["key"]))) if host == "codex" else output
+    session_output.mkdir(parents=True, exist_ok=True)
     folder = batch_dir(output) / lesson["key"]
     folder.mkdir(parents=True, exist_ok=True)
     log_name = next_log(folder)
@@ -504,6 +563,22 @@ def start_session(output: Path, lesson: dict, message: str, note: str, resume_se
         # The same conversation, so the lesson's conductor remembers where it
         # was and which helpers it had running.
         command += ["--resume", resume_session]
+    if host == "codex":
+        teacher_file = folder / "teacher-brief.txt"
+        teacher_file.write_text(lesson["brief"], encoding="utf-8")
+        command = codex_command() + ["exec", "--approve-for-me", "--skip-git-repo-check", "--json"]
+        if resume_session:
+            command += ["resume", resume_session]
+        # Read the prompt from a file-backed stdin to avoid Windows command limits.
+        prompt = ("Follow the make-lesson skill at " + str(PLUGIN_ROOT / "skills/make-lesson/SKILL.md")
+                  + ". This assignment is one lesson only: " + lesson["tag"] + ".\nOUTPUT_DIR: " + str(session_output) + "\n"
+                  + ("LESSON_PLAN_INPUT: " + lesson["planInput"] + "\n" if lesson.get("planInput") else "") + note
+                  + "\nCopy the teacher's exact brief from " + str(teacher_file)
+                  + " into the lesson's teacher-brief.txt. This launch message is orchestration context, not teacher-authored text."
+                  + " Wait for all required specialist workers before ending.\n\n" + message)
+        prompt_file = folder / (log_name + ".prompt.txt")
+        prompt_file.write_text(prompt, encoding="utf-8")
+        command += ["-"]
     # Detached from the asking chat, so closing that chat does not stop a
     # lesson halfway through.
     extra = {}
@@ -534,15 +609,21 @@ def start_session(output: Path, lesson: dict, message: str, note: str, resume_se
     if "setPrevious" in lesson:
         extra["env"].update(LESSON_SET_PREVIOUS=lesson["setPrevious"] or resolve_filing.NO_LESSON,
                             LESSON_SET_EARLIER=" | ".join(lesson.get("setEarlier") or []))
+    prompt_input = open(prompt_file, "rb") if host == "codex" else subprocess.DEVNULL
     try:
-        process = subprocess.Popen(command, cwd=str(output), stdin=subprocess.DEVNULL,
+        process = subprocess.Popen(command, cwd=str(session_output), stdin=prompt_input,
                                    stdout=log, stderr=err, **extra)
     except PermissionError:
         # A job that forbids leaving it: the session still runs, but ends
         # with the chat.
         extra["creationflags"] &= ~0x01000000
-        process = subprocess.Popen(command, cwd=str(output), stdin=subprocess.DEVNULL,
+        process = subprocess.Popen(command, cwd=str(session_output), stdin=prompt_input,
                                    stdout=log, stderr=err, **extra)
+    finally:
+        if host == "codex":
+            prompt_input.close()
+        log.close()
+        err.close()
     now = datetime.now().isoformat(timespec="seconds")
     lesson.update(status="building", pid=process.pid, started=now, log=log_name, seen=0,
                   resumeKind="session" if resume_session else "new")
@@ -550,7 +631,7 @@ def start_session(output: Path, lesson: dict, message: str, note: str, resume_se
     lesson.pop("resumeAt", None)
 
 
-def launch(args: list[str]) -> int:
+def launch(args: list[str], already_started: int = 0) -> int:
     output = Path(option(args, "--output") or ".").resolve()
     only = option(args, "--tag")
     without_thread = "--without-thread" in args
@@ -558,11 +639,12 @@ def launch(args: list[str]) -> int:
         batch = read_batch(output)
         if not batch:
             return fail("no batch is planned in this folder")
-        if not claude_command():
-            return fail("no claude command on this computer")
+        host = batch.get("host", "claude")
+        if not (codex_command() if host == "codex" else claude_command()):
+            return fail(f"no {host} command on this computer")
         usable = {key: not thread_faults(output, batch, key)
                   for key in {l["thread"] for l in batch["lessons"] if l.get("thread")}}
-        started = 0
+        started = already_started
         before = {}
         for lesson in batch["lessons"]:
             if only and only not in (lesson["tag"], lesson["key"]):
@@ -675,6 +757,30 @@ def read_session(output: Path, lesson: dict) -> dict:
         except ValueError:
             continue
         kind = event.get("type")
+        if lesson.get("host", read_batch(output).get("host", "claude")) == "codex":
+            if kind == "thread.started":
+                info["session"] = event.get("thread_id", "")
+            elif kind == "item.completed":
+                item = event.get("item") or {}
+                if item.get("type") == "agent_message" and item.get("text", "").strip():
+                    text = item["text"].strip()
+                    info["texts"].append(text)
+                    info["report"] = text
+                    info["worked"] = True
+                elif item.get("type") in ("command_execution", "file_change", "mcp_tool_call"):
+                    info["worked"] = True
+            elif kind == "turn.completed":
+                info["limited"] = False
+                info["completed"] = True
+            elif kind in ("error", "turn.failed"):
+                info["completed"] = False
+                error = event.get("error") or event
+                text = str(error.get("message", ""))
+                info["report"] = text or info["report"]
+                if any(word in text.lower() for word in ("usage limit", "usage_limit", "rate limit", "rate_limit")):
+                    info["limited"] = True
+                    info["resets"] = error.get("resets_at") or reset_from_text(text)
+            continue
         if event.get("session_id") and not info["session"]:
             info["session"] = event["session_id"]
         if kind == "assistant":
@@ -801,8 +907,13 @@ def ensure_keeper(output: Path) -> None:
 def carry_on(output: Path, lesson: dict, why: str) -> str:
     """Start the lesson's next session and say how it carries on."""
     session = lesson.get("sessionId", "")
+    carry_message = CARRY_ON_MESSAGE.format(why=why)
+    if lesson.get("host", read_batch(output).get("host", "claude")) == "codex":
+        carry_message = (f"Continue this lesson after interruption ({why}). Resume from validated saved checkpoints. "
+                         "Use the available Codex worker tools; if a worker cannot be resumed, restart only its unfinished step. "
+                         "Wait for required workers before ending.")
     if session and not lesson.pop("freshNext", False):
-        start_session(output, lesson, CARRY_ON_MESSAGE.format(why=why), UNATTENDED_NOTE, resume_session=session)
+        start_session(output, lesson, carry_message, UNATTENDED_NOTE, resume_session=session)
         return "from where each helper stopped"
     folder = working_folder_for(output, lesson)
     if folder is None:
@@ -816,6 +927,30 @@ def carry_on(output: Path, lesson: dict, why: str) -> str:
 
 def clock(stamp: float) -> str:
     return datetime.fromtimestamp(stamp).strftime("%H:%M")
+
+
+def local_artifacts_checked(output: Path, lesson: dict) -> bool:
+    folder = working_folder_for(output, lesson)
+    if folder is None:
+        return False
+    files = []
+    for record in (folder / "build-results").glob("*.json"):
+        if record.name == "delivery.json":
+            continue
+        try:
+            if lesson.get("firstStarted") and record.stat().st_mtime < datetime.fromisoformat(lesson["firstStarted"]).timestamp():
+                continue
+            built = json.loads(record.read_text(encoding="utf-8"))
+            if not built.get("ok"):
+                return False
+            for row in built.get("outputs") or []:
+                path = Path(row["path"])
+                if hashlib.sha256(path.read_bytes()).hexdigest() != row["sha256"]:
+                    return False
+                files.append(path)
+        except (OSError, ValueError, KeyError, TypeError):
+            return False
+    return bool(files)
 
 
 def keep_lesson(output: Path, batch: dict, lesson: dict, now: float) -> list[str]:
@@ -859,7 +994,9 @@ def keep_lesson(output: Path, batch: dict, lesson: dict, now: float) -> list[str
     if running:
         return events
 
-    if state == "" and batch.get("delivery") == "none" and info["worked"] and info["report"]:
+    if (state == "" and batch.get("delivery") == "none" and info["worked"] and info["report"]
+            and (lesson.get("host", batch.get("host", "claude")) != "codex"
+                 or (info.get("completed") and local_artifacts_checked(output, lesson)))):
         # Nothing is saved anywhere else: the files stay where they were built.
         lesson.update(status="finished", ended=ended, savedTo=str(output))
         events.append(f"FINISHED {tag}: its files are in {output}")
@@ -924,7 +1061,7 @@ def write_run_record(output: Path, lesson: dict) -> None:
         return
     try:
         subprocess.run([sys.executable, str(Path(__file__).with_name("run-record.py")),
-                        "--working-dir", str(folder), "--host", "claude"],
+                        "--working-dir", str(folder), "--host", lesson.get("host", read_batch(output).get("host", "claude"))],
                        capture_output=True, timeout=120, check=False)
     except Exception:  # a missing record is a gap to report, never a stopped set
         pass
@@ -1020,7 +1157,8 @@ def working_folder_for(output: Path, lesson: dict) -> Path | None:
     """The lesson's working folder: the one whose saved brief holds this lesson's words."""
     probe = " ".join(lesson["brief"].split())[:120]
     best = None
-    for brief in (output / "working").glob("*/teacher-brief.txt"):
+    search_output = Path(lesson.get("sessionOutput", str(output)))
+    for brief in (search_output / "working").glob("*/teacher-brief.txt"):
         try:
             text = " ".join(brief.read_text(encoding="utf-8").split())
         except OSError:
@@ -1052,8 +1190,8 @@ def resume(args: list[str]) -> int:
                 print(f"WAITING {lesson['tag']}: carries on by itself at {clock(lesson['resumeAt'])}")
                 continue
             if state == "not started":
-                start_session(output, lesson, message_for(lesson), UNATTENDED_NOTE)
-                print(f"STARTED {lesson['tag']}")
+                # Launch owns destination/thread validation and neighbour binding.
+                continue
             else:
                 # The teacher's word is a fresh allowance of tries.
                 lesson["retries"] = 0
@@ -1063,6 +1201,8 @@ def resume(args: list[str]) -> int:
             started += 1
         write_batch(output, batch)
     ensure_keeper(output)
+    if any(l.get("status") == "not started" for l in batch["lessons"]):
+        return launch(["--output", str(output)], already_started=started)
     print(f"BATCH_STARTED={started}")
     return 0
 

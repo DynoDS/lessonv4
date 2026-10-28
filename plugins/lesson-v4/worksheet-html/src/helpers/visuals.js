@@ -183,6 +183,9 @@ const helpers = {
       label2: spec.label2,
       shapes: spec.items || [],
       showRegionHints: spec.showRegionHints !== false,
+      // The part the teacher points at (figure-highlight.js): left out here,
+      // a sheet Venn dropped the highlight the board drew (21 October 2026).
+      highlight: spec.highlight,
     }),
     {
       answerMarks: true,
@@ -237,6 +240,9 @@ const helpers = {
       wholeLabelPosition: spec.wholeLabelPosition,
       bars: spec.bars,
       difference: spec.difference,
+      // The part the teacher points at (figure-highlight.js), so the sheet
+      // shows the same lit box as the board.
+      highlight: spec.highlight,
     }),
     {
       capMm: 130,
@@ -292,6 +298,7 @@ const helpers = {
       colLabel: spec.colLabel,
       colNotLabel: spec.colNotLabel,
       shapes: spec.shapes,
+      highlight: spec.highlight,
     }),
     { answerMarks: true, capMm: 130, minWidthMm: 100, minHeightMm: 80, greed: 0 }
   ),
@@ -430,7 +437,7 @@ const helpers = {
   // lifted blade and the cell's short plate stop reading as different things.
   "circuit-symbol-bank": fromShared(
     circuitSymbolBankSvg,
-    (spec) => ({ items: spec.items }),
+    (spec) => ({ items: spec.items, highlight: spec.highlight }),
     {
       capMm: 60,
       minWidthMm: (spec) => Math.max(70, (Array.isArray(spec.items) ? spec.items.length : 2) * 24),
@@ -458,6 +465,7 @@ const helpers = {
       categories: spec.categories,
       values: spec.values,
       key: spec.key,
+      highlight: spec.highlight,
     }),
     {
       capMm: 140,
@@ -606,6 +614,7 @@ const helpers = {
       rows: spec.rows,
       showTotals: spec.showTotals,
       blank: spec.blank,
+      highlight: spec.highlight,
     }),
     {
       answerMarks: true,
@@ -746,6 +755,9 @@ function labelDiagramArgs(spec) {
     // `frame` gives it a squarer box to be fitted and centred in, which is the
     // honest way to make it shorter: the dots stay sized to the real picture.
     frame: spec.frame || null,
+    // The part the teacher points at (figure-highlight.js): the sheet shows
+    // the same callout ringed that the board does.
+    highlight: spec.highlight,
   };
 }
 

@@ -27,8 +27,16 @@
 //          branches left and `yes` right
 //   text   the question above the key (the worksheet prints it as its own line
 //          of sheet text; the other surfaces draw it above the key)
+//   highlight a question or a named answer, by its own words ("Does it have
+//          legs?", "snail"), or by its place ("question 2", counted from the
+//          top, down the No side first, as the key is read; "answer 3",
+//          counted left to right), or a list of them: "look at this one"
+//          while the rest steps back (figure-highlight.js). A question's Yes
+//          and No are its own and stay with it; a branch line is at full
+//          strength only between two highlighted boxes.
 
 const T = require('./figure-text');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS (ems of the settled font size) ───────────────────────────────
 const SLOT_MAX = 11; // one answer's share of the width, at most
@@ -85,6 +93,78 @@ function layoutTree(root) {
   })(root);
   return { leaves, all, depth: all.reduce((d, n) => Math.max(d, n.depth), 0) };
 }
+
+// A key's parts are its boxes, each named by its own words and by its place:
+// questions are counted in the order the key is read (top first, the No side
+// before the Yes), named answers left to right. `all` is the tree walked in
+// that order, as layoutTree gathers it.
+function partsOf(all) {
+  const seen = new Set();
+  let q = 0;
+  let a = 0;
+  return all.map((node) => {
+    const leaf = isLeaf(node);
+    const n = leaf ? ++a : ++q;
+    const kind = leaf ? 'answer' : 'question';
+    const text = String((leaf ? node.leaf : node.q) == null ? '' : leaf ? node.leaf : node.q).trim();
+    const own = text && !seen.has(text.toLowerCase()) && !/^\d+$/.test(text);
+    if (own) seen.add(text.toLowerCase());
+    const aliases = leaf ? [`answer ${n}`, `leaf ${n}`] : [`question ${n}`, `q${n}`];
+    return own ? { key: text, aliases } : { key: aliases[0], aliases: aliases.slice(1) };
+  });
+}
+
+function highlightParts(spec) {
+  return partsOf(layoutTree(normalise(spec).tree).all);
+}
+
+// ─── Pointing at a part (figure-highlight.js) ───────────────────────────────
+// The rings round the highlighted parts, and the drawing grown by exactly as
+// much as the outermost ring reaches past its edge. A part laid out against
+// the edge would otherwise lose half its ring, and a ring pulled inward to fit
+// would sit on the words it is pointing at. With nothing highlighted the
+// drawing is exactly what it was.
+function ringsFor(marked, list, W, H, ink) {
+  const long = Math.max(W, H);
+  const reach = require('./figure-highlight').ringReach(long); // the ring's pad plus half its stroke
+  const out = { svg: '', l: 0, t: 0, r: 0, b: 0 };
+  list.forEach(({ key, box: tight, air = 0 }) => {
+    if (!marked.has(key)) return;
+    // Words have no border of their own, so the ring stands clear of them.
+    const box = { x: tight.x - air, y: tight.y - air, w: tight.w + 2 * air, h: tight.h + 2 * air };
+    out.svg += highlight.ringSvg(marked, key, box, long, ink);
+    out.l = Math.max(out.l, reach - box.x);
+    out.t = Math.max(out.t, reach - box.y);
+    out.r = Math.max(out.r, box.x + box.w + reach - W);
+    out.b = Math.max(out.b, box.y + box.h + reach - H);
+  });
+  return out;
+}
+
+function ringedDoc(W, H, parts, rings) {
+  const w = W + rings.l + rings.r;
+  const h = H + rings.t + rings.b;
+  if (w === W && h === H) return { svg: T.svgDoc(W, H, [...parts, rings.svg]), w, h };
+  const f = T.f2;
+  return {
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="${f(-rings.l)} ${f(-rings.t)} ${f(w)} ${f(h)}">${parts.join('')}${rings.svg}</svg>`,
+    w,
+    h,
+  };
+}
+
+function faded(opacity, svg) {
+  return opacity < 1 ? `<g opacity="${opacity}">${svg}</g>` : svg;
+}
+
+// A faded part that is a filled box keeps a solid paper box under it, so the
+// lines it used to cover do not show through it once it steps back.
+function backed(opacity, svg, box, paper, rx = 0) {
+  if (opacity >= 1) return svg;
+  const f = T.f2;
+  return `<rect x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" rx="${f(rx)}" fill="${paper}"/>` + faded(opacity, svg);
+}
+// ────────────────────────────────────────────────────────────────────────────
 
 function normalise(spec = {}) {
   const tree = spec.tree ? JSON.parse(JSON.stringify(spec.tree)) : { leaf: '' };
@@ -160,8 +240,13 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const c = profile.colours;
   const font = profile.font;
   const f = T.f2;
+  const ink = profile.palette === 'ink';
+  const declared = partsOf(L.all);
+  const marked = highlight.resolveHighlight(spec, declared, 'classification key');
+  const opOf = new Map(L.all.map((node, i) => [node, highlight.opacityFor(marked, declared[i].key)]));
   const parts = [];
   const branches = [];
+  const ringList = [];
 
   if (L.stem.length) parts.push(T.textLines(L.stem, L.stemX, PAD * pt, pt, { fill: c.ink, font, bold: profile.bold, anchor: 'start' }));
 
@@ -173,7 +258,9 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
       const y1 = cy(node) + L.boxH / 2;
       const x2 = cx(child);
       const y2 = cy(child) - L.boxH / 2;
-      parts.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="${c.ink}" stroke-width="${f(Math.max(1, BRANCH_STROKE * pt))}"/>`);
+      // A branch is at full strength only between two highlighted boxes.
+      const op = Math.min(opOf.get(node), opOf.get(child));
+      parts.push(faded(op, `<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" stroke="${c.ink}" stroke-width="${f(Math.max(1, BRANCH_STROKE * pt))}"/>`));
       // The Yes/No sits on a white patch, because a word printed straight over
       // the branch line it labels is unreadable on paper even though it looks
       // fine on a screen at full zoom.
@@ -181,30 +268,38 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
       const my = (y1 + y2) / 2;
       const w = T.widthPt(answer, pt, true) + 2 * PATCH_PAD * pt;
       const h = T.blockHeight(1, pt);
-      branches.push(`<rect x="${f(mx - w / 2)}" y="${f(my - h / 2)}" width="${f(w)}" height="${f(h)}" rx="${f(0.25 * pt)}" fill="${c.paper}"/>`);
-      branches.push(`<text class="key-branch" x="${f(mx)}" y="${f(my - h / 2 + pt * T.BASELINE + 0.12 * pt)}" text-anchor="middle" font-family="${font}" font-size="${f(pt)}" font-weight="bold" fill="${c.ink}">${answer}</text>`);
+      const patch = { x: mx - w / 2, y: my - h / 2, w, h };
+      // The Yes or No is the question's own answer, so it stays with the question.
+      branches.push(backed(opOf.get(node),
+        `<rect x="${f(patch.x)}" y="${f(patch.y)}" width="${f(w)}" height="${f(h)}" rx="${f(0.25 * pt)}" fill="${c.paper}"/>` +
+        `<text class="key-branch" x="${f(mx)}" y="${f(my - h / 2 + pt * T.BASELINE + 0.12 * pt)}" text-anchor="middle" font-family="${font}" font-size="${f(pt)}" font-weight="bold" fill="${c.ink}">${answer}</text>`,
+        patch, c.paper, 0.25 * pt));
       walk(child);
     }
   })(L.n.tree);
   parts.push(...branches);
 
   const leafFill = profile.palette === 'ink' ? LEAF_FILL_INK : LEAF_FILL;
-  L.boxes.forEach((b) => {
+  L.boxes.forEach((b, i) => {
     // A named answer is where the key ARRIVES, so it is set apart from the
     // questions on the way to it. By a filled box, not by a colour of its own:
     // on a worksheet green means vocabulary and nothing else.
-    parts.push(`<rect class="${b.leaf ? 'key-leaf' : 'key-question'}" x="${f(b.x)}" y="${f(b.y)}" width="${f(b.w)}" height="${f(b.h)}" rx="${f(BOX_RADIUS * pt)}" fill="${b.leaf ? leafFill : c.paper}" stroke="${c.ink}" stroke-width="${f(Math.max(1, BOX_STROKE * pt))}"/>`);
+    let own = `<rect class="${b.leaf ? 'key-leaf' : 'key-question'}" x="${f(b.x)}" y="${f(b.y)}" width="${f(b.w)}" height="${f(b.h)}" rx="${f(BOX_RADIUS * pt)}" fill="${b.leaf ? leafFill : c.paper}" stroke="${c.ink}" stroke-width="${f(Math.max(1, BOX_STROKE * pt))}"/>`;
     if (b.lines.length) {
-      parts.push(T.textLines(b.lines, b.x + b.w / 2, b.y + (b.h - T.blockHeight(b.lines.length, pt)) / 2, pt, { fill: c.ink, font, bold: true }));
+      own += T.textLines(b.lines, b.x + b.w / 2, b.y + (b.h - T.blockHeight(b.lines.length, pt)) / 2, pt, { fill: c.ink, font, bold: true });
     }
+    parts.push(faded(opOf.get(L.all[i]), own));
+    ringList.push({ key: declared[i].key, box: b });
   });
 
-  return { svg: T.svgDoc(L.W, L.h, parts), w: L.W, h: L.h, aspect: L.W / L.h, layout: L };
+  const doc = ringedDoc(L.W, L.h, parts, ringsFor(marked, ringList, L.W, L.h, ink));
+  return { svg: doc.svg, w: doc.w, h: doc.h, aspect: doc.w / doc.h, layout: L };
 }
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = T.resolveProfile(profileOrSurface, box);
-  return `classification-key:${T.profileKey(p)}:${JSON.stringify(normalise(spec))}`;
+  const hi = [...highlight.resolveHighlight(spec, highlightParts(spec), 'classification key')].sort().join(',');
+  return `classification-key:${T.profileKey(p)}:${JSON.stringify(normalise(spec))}${hi ? `:hi:${hi}` : ''}`;
 }
 
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, layoutTree };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, layoutTree, highlightParts };

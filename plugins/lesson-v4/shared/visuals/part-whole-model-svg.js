@@ -52,6 +52,7 @@
 const { textWidthEm } = require('../text/comic-glyph-width');
 const { profileFor } = require('./surface-profiles');
 const { insetProfile } = require('./fit-unit');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS ──────────────────────────────────────────────────────────────
 const WHOLE_TO_PART = 1.5;    // the whole circle is this many times a part
@@ -211,6 +212,55 @@ function contentAt(node, f, paperBlank = false) {
   return { d, rowSizes, unit, coinH };
 }
 
+// ─── Pointing at part of the model (shared/visuals/figure-highlight.js) ─────
+//
+// "The whole", "this part". The circles are named by position, "whole" and
+// "part 1", "part 2", ... in the order the parts are given, because a circle's
+// number can be "?" or shared by two parts; each also answers to its own
+// number or word and its caption where only it carries them ("27", "Tens").
+
+function plain(v) {
+  return String(v == null ? '' : v).toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+// An alias that two circles would answer to is dropped rather than quietly
+// pointing at both.
+function withAliases(list) {
+  const claimed = new Map();
+  list.forEach((p) => {
+    [p.key, ...p.aliases].forEach((name) => {
+      const n = plain(name);
+      if (!n) return;
+      claimed.set(n, claimed.has(n) && claimed.get(n) !== p.key ? null : p.key);
+    });
+  });
+  return list.map((p) => ({
+    key: p.key,
+    aliases: p.aliases.filter((a) => plain(a) && claimed.get(plain(a)) === p.key && plain(a) !== plain(p.key)),
+  }));
+}
+
+function highlightParts(M) {
+  const own = (node) => [node.text, node.caption].filter((t) => t && !String(t).trim().endsWith('?'));
+  return withAliases([
+    { key: 'whole', aliases: ['total', ...own(M.whole)] },
+    ...M.parts.map((node, i) => ({ key: `part ${i + 1}`, aliases: own(node) })),
+  ]);
+}
+
+// How far a ring reaches outside the circle it is drawn round, read from the
+// shared ring itself.
+// The most a ring's clearance from its circle adds (a stroke and a half, the
+// stroke being at most 3pt).
+const RING_CLEAR_PT = 4.5;
+
+function ringReach(longSide) {
+  const probe = highlight.ringCircleSvg(new Set(['r']), 'r', { x: 0, y: 0 }, 0, longSide);
+  const r = Number(/ r="([\d.]+)"/.exec(probe)[1]);
+  const stroke = Number(/stroke-width="([\d.]+)"/.exec(probe)[1]);
+  return r + stroke / 2;
+}
+
 function resolveProfile(p, box) {
   return typeof p === 'string' ? profileFor(p, box || { widthPt: 500 }) : p;
 }
@@ -261,10 +311,14 @@ function paperProportions(M, board) {
 }
 
 function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
-  // Laid out inside the box less the stroke that bleeds past the drawing's edge.
+  // Laid out inside the box less the stroke that bleeds past the drawing's
+  // edge, and less the room a ring needs round a circle at the edge when one
+  // is pointed at.
   const given = resolveProfile(profileOrSurface, box);
-  const profile = insetProfile(given, 2);
   const M = normalise(spec);
+  const marked = highlight.resolveHighlight(spec, highlightParts(M), 'part-whole model');
+  const ringRoom = marked.size ? ringReach(Math.max(given.widthPt, given.heightPt || 0)) + RING_CLEAR_PT : 0;
+  const profile = insetProfile(given, 2 + ringRoom);
   const board = Boolean(profile.heightPt);
   paperProportions(M, board);
   const floor = board ? profile.minFontPt * BOARD_FLOOR_SHARE : profile.minFontPt;
@@ -318,7 +372,7 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
     if (node.coins.length) return f;
     return Math.max(floor, Math.min(board ? BOARD_MAX_FONT : f, (d * (board ? USABLE : PAPER_USABLE) * 0.97) / Math.max(0.1, textWidthEm(node.text, true)), f * (d / content.d)));
   };
-  return { ...M, ...fr, p, f, floor, fontFor };
+  return { ...M, ...fr, p, f, floor, fontFor, marked, ringRoom };
 }
 
 function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
@@ -328,20 +382,32 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const font = profile.font;
   const sw = Math.min(3, Math.max(1.5, L.p * 0.03));
   const parts = [];
-  const circles = [{ node: normalise(spec).whole, c: L.whole }, ...normalise(spec).parts.map((node, i) => ({ node, c: L.parts[i] }))];
+  const circles = [{ node: normalise(spec).whole, c: L.whole, key: 'whole' }, ...normalise(spec).parts.map((node, i) => ({ node, c: L.parts[i], key: `part ${i + 1}` }))];
   const drawn = [];
+  // When a circle is pointed at, every other circle steps back with its words,
+  // its coins, its caption and the line that joins it to the whole.
+  const marked = L.marked;
+  const dim = (svg, key) => {
+    const fade = highlight.opacityFor(marked, key);
+    return fade < 1 ? `<g opacity="${fade}">${svg}</g>` : svg;
+  };
   // Lines first, each meeting its circles at their own edges rather than one
   // anchor, so the whole never grows a knot where every line converges.
-  circles.slice(1).forEach(({ c }) => {
+  circles.slice(1).forEach(({ c, key }) => {
     const dx = c.cx - L.whole.cx;
     const dy = c.cy - L.whole.cy;
     const len = Math.hypot(dx, dy) || 1;
     const ux = dx / len;
     const uy = dy / len;
-    parts.push(`<line x1="${f2(L.whole.cx + (ux * L.whole.d) / 2)}" y1="${f2(L.whole.cy + (uy * L.whole.d) / 2)}" x2="${f2(c.cx - (ux * c.d) / 2)}" y2="${f2(c.cy - (uy * c.d) / 2)}" stroke="${ink ? INK : LINE}" stroke-width="${f2(Math.max(1.5, sw * 0.8))}"/>`);
+    parts.push(dim(`<line x1="${f2(L.whole.cx + (ux * L.whole.d) / 2)}" y1="${f2(L.whole.cy + (uy * L.whole.d) / 2)}" x2="${f2(c.cx - (ux * c.d) / 2)}" y2="${f2(c.cy - (uy * c.d) / 2)}" stroke="${ink ? INK : LINE}" stroke-width="${f2(Math.max(1.5, sw * 0.8))}"/>`, key));
   });
-  circles.forEach(({ node, c }) => {
-    parts.push(`<circle cx="${f2(c.cx)}" cy="${f2(c.cy)}" r="${f2(c.d / 2)}" fill="#FFFFFF" stroke="${ink ? INK : LINE}" stroke-width="${f2(sw)}"/>`);
+  circles.forEach(({ node, c, key }) => {
+    const own = [];
+    own.push(`<circle cx="${f2(c.cx)}" cy="${f2(c.cy)}" r="${f2(c.d / 2)}" fill="#FFFFFF" stroke="${ink ? INK : LINE}" stroke-width="${f2(sw)}"/>`);
+    // The ring goes on straight after its circle: over the line that joins it,
+    // under its own caption, so a name above the whole stays readable. It
+    // stands a stroke clear of the circle, or it reads as a doubled edge.
+    if (marked.size) own.push(highlight.ringCircleSvg(marked, key, { x: c.cx, y: c.cy }, c.d / 2 + sw * 1.5, Math.max(L.w, L.h), ink));
     const pt = L.fontFor(node, c.d);
     const content = contentAt(node, L.f);
     let y = c.cy - (content.coinH + (node.coins.length && node.text ? COIN_GAP * L.f : 0) + (node.text ? L.f * 1.2 : 0)) / 2;
@@ -354,25 +420,29 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
         const size = denominationMm(den);
         const cw = size.w * content.unit;
         const ch = size.h * content.unit;
-        parts.push(coinImage(den, x, y + row.h - ch, cw, ch));
+        own.push(coinImage(den, x, y + row.h - ch, cw, ch));
         x += cw + COIN_GAP * L.f;
       });
       y += row.h + COIN_GAP * L.f;
     });
     if (node.text) {
       const ty = node.coins.length ? y + L.f * 0.6 : c.cy;
-      parts.push(`<text x="${f2(c.cx)}" y="${f2(ty + pt * 0.35)}" text-anchor="middle" font-family="${font}" font-size="${f2(pt)}" font-weight="bold" fill="${ink ? INK : TEXT}">${esc(node.text)}</text>`);
+      own.push(`<text x="${f2(c.cx)}" y="${f2(ty + pt * 0.35)}" text-anchor="middle" font-family="${font}" font-size="${f2(pt)}" font-weight="bold" fill="${ink ? INK : TEXT}">${esc(node.text)}</text>`);
     }
     if (node.caption) {
       const capY = c.captionAbove ? c.cy - c.d / 2 - CAPTION_GAP * L.f - Math.max(L.floor, L.capFont) * 0.25 : c.cy + c.d / 2 + CAPTION_GAP * L.f + L.capFont;
-      parts.push(`<text x="${f2(c.cx)}" y="${f2(capY)}" text-anchor="middle" font-family="${font}" font-size="${f2(Math.max(L.floor, L.capFont))}" fill="${ink ? INK : QUIET}">${esc(node.caption)}</text>`);
+      own.push(`<text x="${f2(c.cx)}" y="${f2(capY)}" text-anchor="middle" font-family="${font}" font-size="${f2(Math.max(L.floor, L.capFont))}" fill="${ink ? INK : QUIET}">${esc(node.caption)}</text>`);
     }
+    parts.push(dim(own.join(''), key));
     drawn.push({ text: node.text, cx: c.cx, cy: c.cy, d: c.d, pt, caption: node.caption });
   });
-  L.joiners.forEach((j) =>
-    parts.push(`<text x="${f2(j.x)}" y="${f2(j.y + L.f * 0.35)}" text-anchor="middle" font-family="${font}" font-size="${f2(L.f)}" font-weight="bold" fill="${ink ? INK : TEXT}">${esc(L.joiner)}</text>`)
-  );
-  const bleed = sw / 2 + 0.5;
+  // A joiner between two parts stays lit while either of them is.
+  L.joiners.forEach((j, i) => {
+    const svg = `<text x="${f2(j.x)}" y="${f2(j.y + L.f * 0.35)}" text-anchor="middle" font-family="${font}" font-size="${f2(L.f)}" font-weight="bold" fill="${ink ? INK : TEXT}">${esc(L.joiner)}</text>`;
+    const fade = Math.max(highlight.opacityFor(marked, `part ${i + 1}`), highlight.opacityFor(marked, `part ${i + 2}`));
+    parts.push(fade < 1 ? `<g opacity="${fade}">${svg}</g>` : svg);
+  });
+  const bleed = sw / 2 + 0.5 + L.ringRoom;
   const w = L.w + 2 * bleed;
   const h = L.h + 2 * bleed;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${f2(w)}" height="${f2(h)}" viewBox="${f2(-bleed)} ${f2(-bleed)} ${f2(w)} ${f2(h)}">${parts.join('')}</svg>`;
@@ -381,7 +451,9 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = resolveProfile(profileOrSurface, box);
-  return `part-whole-model:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(normalise(spec))}`;
+  // The highlight is part of the picture; a model with none keeps its old key.
+  const hi = [...highlight.resolveHighlight(spec, highlightParts(normalise(spec)), 'part-whole model')].sort().join(',');
+  return `part-whole-model:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(normalise(spec))}` + (hi ? `:hi=${hi}` : '');
 }
 
 // The narrowest box the model can be drawn in on paper, at the surface's floor.
@@ -392,7 +464,12 @@ function minWidthPt(spec = {}, profileOrSurface = 'worksheets') {
   const f = profile.minFontPt;
   M.capFloor = f;
   const p = Math.max(contentAt(M.whole, f, true).d / M.wholeRatio, ...M.parts.map((x) => contentAt(x, f, true).d), f * 1.6);
-  return frame(M, p, f).w + 2 * 2 + 1;
+  const base = frame(M, p, f).w + 2 * 2 + 1;
+  // A pointed-at circle at the edge needs its ring's room too.
+  if (!highlight.resolveHighlight(spec, highlightParts(M), 'part-whole model').size) return base;
+  let w = base;
+  for (let k = 0; k < 3; k += 1) w = base + 2 * (ringReach(w) + RING_CLEAR_PT);
+  return w;
 }
 
 module.exports = { tightSvg, cacheKey, normalise, describeLayout, minWidthPt, coinImage };

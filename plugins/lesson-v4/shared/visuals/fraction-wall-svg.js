@@ -49,6 +49,7 @@
 
 const { textWidthEm } = require('../text/comic-glyph-width');
 const { profileFor } = require('./surface-profiles');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS (in ems of the label size unless named) ──────────────────────
 const ROW_H = 2.9; // a row that holds a stacked name: numerator, bar, denominator
@@ -103,6 +104,33 @@ function normalise(spec = {}) {
   if (shade.length) out.shade = shade;
   if (!lines.length && (spec.roomFor === 'line' || spec.roomFor === true)) out.roomFor = 'line';
   return out;
+}
+
+// A wall's parts are its rows, named by the fraction each is cut into: "1/3"
+// is the thirds row, and "thirds" finds it too; the top row is "whole" (or
+// "1"). Pointing at a row lights it and steps the others back, the ruled line
+// staying as it is because it is how one row is compared with another.
+function highlightParts(fractions) {
+  const seen = new Set();
+  return fractions
+    .filter((d) => (seen.has(d) ? false : seen.add(d)))
+    .map((d) => (d === 1
+      ? { key: 'whole', aliases: ['1', '1/1', 'one whole', 'whole row'] }
+      : { key: `1/${d}`, aliases: ROW_NAMES[d] ? [ROW_NAMES[d], `${ROW_NAMES[d]} row`] : [] }));
+}
+
+function rowKey(d) {
+  return d === 1 ? 'whole' : `1/${d}`;
+}
+
+// How far a ring reaches outside the box it is drawn round, read from the
+// shared ring itself. The wall fills its width exactly, so a row's ring is
+// drawn just inside the row rather than past the edge of the picture.
+function ringReach(longSide) {
+  const probe = highlight.ringSvg(new Set(['r']), 'r', { x: 0, y: 0, w: 0, h: 0 }, longSide);
+  const pad = -Number(/ x="([-\d.]+)"/.exec(probe)[1]);
+  const stroke = Number(/stroke-width="([\d.]+)"/.exec(probe)[1]);
+  return pad + stroke / 2;
 }
 
 const ROW_NAMES = { 2: 'halves', 3: 'thirds', 4: 'quarters', 5: 'fifths', 6: 'sixths', 7: 'sevenths', 8: 'eighths', 9: 'ninths', 10: 'tenths', 12: 'twelfths' };
@@ -297,6 +325,7 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const L = describeLayout(spec, profileOrSurface, box);
   const { profile, labelPt: pt } = L;
   const ink = profile.palette === 'ink';
+  const marked = highlight.resolveHighlight(spec, highlightParts(L.rows.map((r) => r.denominator)), 'fraction wall');
   const edgeColour = ink ? EDGE.ink : EDGE.colour;
   const text = profile.colours.ink;
   const font = profile.font;
@@ -314,26 +343,31 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
 
   L.rows.forEach((row, i) => {
     const rowFill = ink ? INK_ROWS[i % INK_ROWS.length] : ROW_COLOURS[i % ROW_COLOURS.length];
+    // A row not pointed at steps back with its names and its shaded outline.
+    const fade = highlight.opacityFor(marked, rowKey(row.denominator));
+    const own = (list) => (fade < 1 ? { push: (svg) => list.push(`<g opacity="${fade}">${svg}</g>`) } : list);
+    const rowParts = own(parts);
+    const rowNames = own(names);
     row.pieces.forEach((p) => {
       const fill = p.shaded ? (ink ? SHADE.ink : SHADE.colour) : rowFill;
-      parts.push(`<rect x="${f2(p.x)}" y="${f2(p.y)}" width="${f2(p.w)}" height="${f2(p.h)}" fill="${fill}" stroke="${edgeColour}" stroke-width="${f2(L.edge)}"/>`);
+      rowParts.push(`<rect x="${f2(p.x)}" y="${f2(p.y)}" width="${f2(p.w)}" height="${f2(p.h)}" fill="${fill}" stroke="${edgeColour}" stroke-width="${f2(L.edge)}"/>`);
       const cx = p.nameX;
       const cy = p.y + p.h / 2;
       const halo = p.overLine ? fill : null;
       if (row.denominator === 1) {
-        names.push(label('1', cx, cy + pt * 0.35, halo));
+        rowNames.push(label('1', cx, cy + pt * 0.35, halo));
       } else if (L.stacked) {
         // Numerator sitting on a bar with the denominator beneath: the notation
         // the child is taught to read, not "1/8" on one line.
         const barW = stackedBarWidth(row.denominator, pt, p.w);
         const bar = Math.max(MIN_STROKE_PT, BAR_W * pt);
-        names.push(label('1', cx, cy - pt * 0.2, halo));
-        names.push(`<rect x="${f2(cx - barW / 2)}" y="${f2(cy - bar / 2)}" width="${f2(barW)}" height="${f2(bar)}" fill="${text}"/>`);
-        names.push(label(String(row.denominator), cx, cy + pt * 0.95, halo));
+        rowNames.push(label('1', cx, cy - pt * 0.2, halo));
+        rowNames.push(`<rect x="${f2(cx - barW / 2)}" y="${f2(cy - bar / 2)}" width="${f2(barW)}" height="${f2(bar)}" fill="${text}"/>`);
+        rowNames.push(label(String(row.denominator), cx, cy + pt * 0.95, halo));
       } else {
         // A plain slash, because that is the character the name was measured
         // with; the fitting above cannot vouch for a glyph it has no width for.
-        names.push(label(`1/${row.denominator}`, cx, cy + pt * 0.35, halo));
+        rowNames.push(label(`1/${row.denominator}`, cx, cy + pt * 0.35, halo));
       }
     });
     if (row.shaded) {
@@ -343,7 +377,7 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
       const sw = SHADE_EDGE * L.edge;
       const first = row.pieces[0];
       const last = row.pieces[row.shaded - 1];
-      outlines.push(
+      own(outlines).push(
         `<rect x="${f2(first.x + sw / 2 - L.edge / 2)}" y="${f2(first.y + sw / 2 - L.edge / 2)}" width="${f2(last.x + last.w - first.x - sw + L.edge)}" height="${f2(first.h - sw + L.edge)}" fill="none" stroke-linejoin="miter" stroke="${ink ? SHADE_OUTLINE.ink : SHADE_OUTLINE.colour}" stroke-width="${f2(sw)}"/>`
       );
     }
@@ -355,6 +389,19 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   });
   if (names !== parts) parts.push(...names);
 
+  // The ring round each row pointed at, last of all, drawn just inside the row
+  // so it never runs past the wall's edge or changes the wall's size.
+  if (marked.size) {
+    const longSide = Math.max(L.w, L.h);
+    const reach = ringReach(longSide);
+    L.rows.forEach((row) => {
+      const x = row.pieces[0].x;
+      const right = row.pieces[row.pieces.length - 1].x + row.pieces[row.pieces.length - 1].w;
+      const inner = { x: x + reach, y: row.y + reach, w: right - x - 2 * reach, h: row.h - 2 * reach };
+      parts.push(highlight.ringSvg(marked, rowKey(row.denominator), inner, longSide, ink));
+    });
+  }
+
   const w = f2(L.w);
   const h = f2(L.h);
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${parts.join('')}</svg>`;
@@ -363,7 +410,9 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = typeof profileOrSurface === 'string' ? profileFor(profileOrSurface, box || { widthPt: 500 }) : profileOrSurface;
-  return `fraction-wall:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(normalise(spec))}`;
+  // The highlight is part of the picture; a wall with none keeps its old key.
+  const hi = [...highlight.resolveHighlight(spec, highlightParts(normalise(spec).fractions), 'fraction wall')].sort().join(',');
+  return `fraction-wall:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(normalise(spec))}` + (hi ? `:hi=${hi}` : '');
 }
 
 module.exports = { tightSvg, cacheKey, normalise, describeLayout, MAX_ROWS, MAX_LINES };

@@ -582,6 +582,8 @@ A `visual` the builder draws from a spec, no picture sourcing needed. Each primi
 
 Every primitive below is the same drawing the slides place, from the same fields. Where a primitive has a slide twin, copy the slide's object and change only `type` (`numberline` to `numberLine`); the wall's older spellings (`angleFan`, `comparisonSymbol`) still draw.
 
+Most primitives take `highlight`, the part to point at named in words (the parts are listed under `Pointing at part of a figure` in `references/templates.md`): that part is ringed and the rest steps back to grey, so a card can say which part of the picture its line is about.
+
 ### clock
 
 Spec: `{ "type": "clock", "time": "8:50", "label": "10 to 9" }`

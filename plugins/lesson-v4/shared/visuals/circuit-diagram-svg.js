@@ -8,6 +8,9 @@
 // lamp, buzzer, cell, battery, switch and a deliberate wire gap. There is one
 // path only: no junctions, branches or realistic component pictures.
 
+const highlight = require('./figure-highlight');
+const { printsInInk } = require('./surface-profiles');
+
 // ─── CONSTANTS (abstract SVG units) ───────────────────────────────────────
 const LOOP_W = 260;
 const LOOP_LEFT = 18;
@@ -278,8 +281,117 @@ function normaliseCircuits(spec) {
   return [normaliseCircuit(data)];
 }
 
+// ─── POINTING AT ONE PART (figure-highlight.js) ────────────────────────────
+// A teacher at the board says "the bulb", "this switch", "follow the wire".
+// The parts are the components, named by their type: "cells" (the battery),
+// "lamp", "buzzer", "switch", the "gap" in a broken path, and the "wire" loop
+// itself. Where there are several of one type each is numbered left to right
+// ("lamp 2") and the plural ("lamps") names them all. In a row of circuits a
+// whole circuit is "circuit 2" (or its letter or label, "circuit B"), and a
+// part of one is that name followed by the part: "circuit 2 switch",
+// "B gap".
+//
+// The wire is not ringed: a ring round the loop would enclose the whole
+// circuit and point at everything. Pointing at it traces the loop in the
+// highlight colour instead, under the black line, the way a Venn diagram
+// fills a region rather than boxing it.
+const COMPONENT_WORDS = {
+  lamp: { singular: ['bulb', 'light', 'light bulb'], plural: 'lamps', pluralAliases: ['bulbs', 'lights'] },
+  buzzer: { singular: ['beeper'], plural: 'buzzers', pluralAliases: ['beepers'] },
+};
+
+// The parts of one circuit: [{ key, aliases, owns }] where `owns` names what
+// the part lights: 'wire', 'gap', 'switch', 'cells', or 'component:<i>'.
+function circuitParts(circuit) {
+  const parts = [];
+  if (circuit.cells > 0) {
+    parts.push({ key: 'cells', aliases: ['cell', 'battery', 'batteries', 'power supply'], owns: ['cells'] });
+  }
+  ['lamp', 'buzzer'].forEach((type) => {
+    const at = circuit.components.map((t, i) => (t === type ? i : -1)).filter((i) => i >= 0);
+    const words = COMPONENT_WORDS[type];
+    if (at.length === 1) {
+      parts.push({ key: type, aliases: [...words.singular, `${type} 1`, ...words.singular.map((w) => `${w} 1`)], owns: [`component:${at[0]}`] });
+    } else if (at.length > 1) {
+      at.forEach((i, n) => {
+        parts.push({ key: `${type} ${n + 1}`, aliases: words.singular.map((w) => `${w} ${n + 1}`), owns: [`component:${i}`] });
+      });
+      parts.push({ key: words.plural, aliases: words.pluralAliases, owns: at.map((i) => `component:${i}`) });
+    }
+  });
+  if (circuit.switch !== 'none') {
+    parts.push({ key: 'switch', aliases: [`${circuit.switch} switch`], owns: ['switch'] });
+  }
+  if (circuit.path === 'gap') {
+    parts.push({ key: 'gap', aliases: ['break', 'wire gap', 'broken wire', 'the gap'], owns: ['gap'] });
+  }
+  parts.push({ key: 'wire', aliases: ['wires', 'loop', 'wire loop', 'path', 'circuit path'], owns: ['wire'] });
+  return parts;
+}
+
+const LETTERS = 'ABCDEFGHIJ';
+
+// Every part of the diagram, with what each one lights, per circuit.
+function diagramParts(circuits) {
+  return withoutSharedAliases(rawDiagramParts(circuits));
+}
+
+// A name two parts both answer to (two circuits captioned alike) would point
+// at whichever came last, so neither is offered it.
+function withoutSharedAliases(parts) {
+  const norm = (v) => String(v).toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const keys = new Set(parts.map((p) => norm(p.key)));
+  const count = new Map();
+  parts.forEach((p) => new Set(p.aliases.map(norm)).forEach((n) => count.set(n, (count.get(n) || 0) + 1)));
+  return parts.map((p) => ({ ...p, aliases: p.aliases.filter((a) => norm(a) && !keys.has(norm(a)) && count.get(norm(a)) === 1) }));
+}
+
+function rawDiagramParts(circuits) {
+  const out = [];
+  if (circuits.length === 1) {
+    circuitParts(circuits[0]).forEach((part) => out.push({ ...part, circuit: 0 }));
+    return out;
+  }
+  circuits.forEach((circuit, ci) => {
+    const names = [`circuit ${ci + 1}`, `circuit ${LETTERS[ci]}`];
+    if (circuit.label) names.push(circuit.label);
+    out.push({ key: names[0], aliases: names.slice(1), owns: ['whole'], circuit: ci });
+    circuitParts(circuit).forEach((part) => {
+      out.push({
+        key: `${names[0]} ${part.key}`,
+        aliases: [
+          ...part.aliases.map((a) => `${names[0]} ${a}`),
+          ...names.slice(1).flatMap((n) => [part.key, ...part.aliases].map((a) => `${n} ${a}`)),
+        ],
+        owns: part.owns,
+        circuit: ci,
+      });
+    });
+  });
+  return out;
+}
+
+// What the highlight lights in each circuit: an array, per circuit, of
+// { all, owns: Set, keyFor(own) } plus the resolved set.
+function resolveCircuitHighlight(spec, circuits) {
+  const parts = diagramParts(circuits);
+  const marked = highlight.resolveHighlight(spec && typeof spec === 'object' ? spec : {}, parts, 'circuit diagram');
+  const per = circuits.map(() => ({ whole: false, owns: new Map() }));
+  parts.forEach((part) => {
+    if (!marked.has(part.key)) return;
+    const c = per[part.circuit];
+    part.owns.forEach((own) => {
+      if (own === 'whole') c.whole = true;
+      else if (!c.owns.has(own)) c.owns.set(own, part.key);
+    });
+  });
+  return { marked, per };
+}
+
 function cacheKey(spec) {
-  return `circuit-diagram:${JSON.stringify(normaliseCircuits(spec))}`;
+  const circuits = normaliseCircuits(spec);
+  const lit = [...resolveCircuitHighlight(spec, circuits).marked].sort().join(',');
+  return `circuit-diagram:${JSON.stringify(circuits)}${lit ? `:highlight:${lit}` : ''}`;
 }
 
 function line(x1, y1, x2, y2, extra = '') {
@@ -290,15 +402,19 @@ function pathLine(d, extra = '') {
   return `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${WIRE_W}" stroke-linecap="round" stroke-linejoin="round" ${extra}/>`;
 }
 
+// Each piece of the drawing comes back split into the wire it carries and the
+// part itself, so pointing at one can fade the other.
 function drawGap(x1, x2, y) {
   const mid = (x1 + x2) / 2;
   const half = Math.min(12, Math.max(6, (x2 - x1) / 4));
-  return [
-    line(x1, y, mid - half, y),
-    line(mid + half, y, x2, y),
-    `<circle cx="${f(mid - half)}" cy="${f(y)}" r="${GAP_DOT_R}" fill="currentColor"/>`,
-    `<circle cx="${f(mid + half)}" cy="${f(y)}" r="${GAP_DOT_R}" fill="currentColor"/>`,
-  ].join('');
+  return {
+    wire: [line(x1, y, mid - half, y), line(mid + half, y, x2, y)].join(''),
+    part: [
+      `<circle cx="${f(mid - half)}" cy="${f(y)}" r="${GAP_DOT_R}" fill="currentColor"/>`,
+      `<circle cx="${f(mid + half)}" cy="${f(y)}" r="${GAP_DOT_R}" fill="currentColor"/>`,
+    ].join(''),
+    box: { x: mid - half - GAP_DOT_R - 3, y: y - 9, w: half * 2 + GAP_DOT_R * 2 + 6, h: 18 },
+  };
 }
 
 function componentPositions(components, left, right) {
@@ -328,13 +444,12 @@ function drawBuzzer(cx) {
 }
 
 function drawSwitch(right, switchState) {
-  if (switchState === 'none') return line(right, TOP, right, BOTTOM);
+  if (switchState === 'none') return { wire: line(right, TOP, right, BOTTOM), part: '', box: null };
   const mid = (TOP + BOTTOM) / 2;
   const upper = mid - SWITCH_GAP;
   const lower = mid + SWITCH_GAP;
+  const wire = line(right, TOP, right, upper) + line(right, lower, right, BOTTOM);
   const parts = [
-    line(right, TOP, right, upper),
-    line(right, lower, right, BOTTOM),
     `<circle cx="${f(right)}" cy="${f(upper)}" r="${SWITCH_DOT_R}" fill="currentColor"/>`,
     `<circle cx="${f(right)}" cy="${f(lower)}" r="${SWITCH_DOT_R}" fill="currentColor"/>`,
   ];
@@ -343,32 +458,57 @@ function drawSwitch(right, switchState) {
   } else {
     parts.push(line(right, lower, right, upper));
   }
-  return parts.join('');
+  const reach = switchState === 'open' ? 28 : 0;
+  const box = { x: right - reach - 7, y: upper - 7 - (switchState === 'open' ? 7 : 0), w: reach + 14, h: lower - upper + 14 + (switchState === 'open' ? 7 : 0) };
+  return { wire, part: parts.join(''), box };
 }
 
 function drawCells(left, right, cells) {
-  if (!cells) return line(left, BOTTOM, right, BOTTOM);
+  if (!cells) return { wire: line(left, BOTTOM, right, BOTTOM), part: '', box: null };
   const groupWidth = (cells - 1) * CELL_STEP + CELL_PAIR_GAP;
   const firstLong = (left + right - groupWidth) / 2;
+  const wire = [];
   const parts = [];
+  const all = [];   // the two interleaved, the order they were always drawn in
   let previous = left;
   for (let i = 0; i < cells; i += 1) {
     const longX = firstLong + i * CELL_STEP;
     const shortX = longX + CELL_PAIR_GAP;
-    parts.push(line(previous, BOTTOM, longX, BOTTOM));
-    parts.push(`<line x1="${f(longX)}" y1="${f(BOTTOM - CELL_LONG_H / 2)}" x2="${f(longX)}" y2="${f(BOTTOM + CELL_LONG_H / 2)}" stroke="currentColor" stroke-width="${WIRE_W}"/>`);
-    parts.push(`<line x1="${f(shortX)}" y1="${f(BOTTOM - CELL_SHORT_H / 2)}" x2="${f(shortX)}" y2="${f(BOTTOM + CELL_SHORT_H / 2)}" stroke="currentColor" stroke-width="${CELL_SHORT_W}"/>`);
+    const lead = line(previous, BOTTOM, longX, BOTTOM);
+    const plates = `<line x1="${f(longX)}" y1="${f(BOTTOM - CELL_LONG_H / 2)}" x2="${f(longX)}" y2="${f(BOTTOM + CELL_LONG_H / 2)}" stroke="currentColor" stroke-width="${WIRE_W}"/>` +
+      `<line x1="${f(shortX)}" y1="${f(BOTTOM - CELL_SHORT_H / 2)}" x2="${f(shortX)}" y2="${f(BOTTOM + CELL_SHORT_H / 2)}" stroke="currentColor" stroke-width="${CELL_SHORT_W}"/>`;
+    wire.push(lead);
+    parts.push(plates);
+    all.push(lead, plates);
     previous = shortX;
   }
-  parts.push(line(previous, BOTTOM, right, BOTTOM));
-  return parts.join('');
+  const tail = line(previous, BOTTOM, right, BOTTOM);
+  wire.push(tail);
+  all.push(tail);
+  const box = { x: firstLong - 8, y: BOTTOM - CELL_LONG_H / 2 - 4, w: groupWidth + 16, h: CELL_LONG_H + 8 };
+  return { wire: wire.join(''), part: parts.join(''), all: all.join(''), box };
 }
 
-function drawCircuit(circuit, offsetX) {
+// The order the pieces of one circuit used to be drawn in, kept, so a circuit
+// pointing at nothing draws to the byte as it always has.
+function drawCircuit(circuit, offsetX, lit) {
   const left = offsetX + LOOP_LEFT;
   const right = offsetX + LOOP_RIGHT;
   const positions = componentPositions(circuit.components, left, right);
   const parts = [];
+  const on = lit || { any: false };
+  // What one piece is drawn at: full strength when it is pointed at, or when
+  // its whole circuit is; stepped back when something else is.
+  const show = (own, svg) => {
+    if (!svg || !on.any || on.whole || on.owns.has(own)) return svg;
+    return `<g opacity="${highlight.DIMMED}">${svg}</g>`;
+  };
+  const rings = [];
+  const ring = (own, box) => {
+    if (!on.any || !box || !on.owns.has(own)) return;
+    rings.push(highlight.ringSvg(new Set([own]), own, box, on.longSide, on.ink));
+  };
+  const wire = [];
 
   // The top wire is built as separate segments around each component. If the
   // path is incomplete, the break goes in the longest available wire segment
@@ -388,16 +528,49 @@ function drawCircuit(circuit, offsetX) {
   }
   segments.forEach((segment, i) => {
     if (segment[1] <= segment[0]) return;
-    parts.push(i === gapIndex ? drawGap(segment[0], segment[1], TOP) : line(segment[0], TOP, segment[1], TOP));
+    if (i === gapIndex) {
+      const gap = drawGap(segment[0], segment[1], TOP);
+      wire.push(gap.wire);
+      parts.push(show('wire', gap.wire) + show('gap', gap.part));
+      ring('gap', gap.box);
+    } else {
+      const w = line(segment[0], TOP, segment[1], TOP);
+      wire.push(w);
+      parts.push(show('wire', w));
+    }
   });
 
-  positions.forEach((item) => {
-    parts.push(item.type === 'buzzer' ? drawBuzzer(item.cx) : drawLamp(item.cx));
+  positions.forEach((item, i) => {
+    parts.push(show(`component:${i}`, item.type === 'buzzer' ? drawBuzzer(item.cx) : drawLamp(item.cx)));
+    if (item.type === 'buzzer') {
+      ring(`component:${i}`, { x: item.cx - BUZZER_HALF - 5, y: TOP - BUZZER_RISE / 2 - 6, w: BUZZER_HALF * 2 + 10, h: BUZZER_RISE / 2 + 12 });
+    } else if (on.any && on.owns.has(`component:${i}`)) {
+      const own = `component:${i}`;
+      rings.push(highlight.ringCircleSvg(new Set([own]), own, { x: item.cx, y: TOP }, LAMP_R + 2, on.longSide, on.ink));
+    }
   });
 
-  parts.push(pathLine(`M ${f(left)} ${f(TOP)} L ${f(left)} ${f(BOTTOM)}`));
-  parts.push(drawSwitch(right, circuit.switch));
-  parts.push(drawCells(left, right, circuit.cells));
+  const side = pathLine(`M ${f(left)} ${f(TOP)} L ${f(left)} ${f(BOTTOM)}`);
+  wire.push(side);
+  parts.push(show('wire', side));
+  const sw = drawSwitch(right, circuit.switch);
+  wire.push(sw.wire);
+  parts.push(show('wire', sw.wire) + show('switch', sw.part));
+  ring('switch', sw.box);
+  const cells = drawCells(left, right, circuit.cells);
+  wire.push(cells.wire);
+  parts.push(on.any ? show('wire', cells.wire) + show('cells', cells.part) : (cells.all || cells.wire));
+  ring('cells', cells.box);
+
+  // Pointing at the wire traces the loop in the highlight colour, under it.
+  if (on.any && on.owns.has('wire')) {
+    const colour = `#${on.ink ? highlight.RING_INK : highlight.RING}`;
+    const width = WIRE_W + 2 * require('./figure-highlight').ringStroke(on.longSide);
+    const trace = wire.join('')
+      .replace(/stroke="currentColor"/g, `stroke="${colour}"`)
+      .replace(/stroke-width="[^"]*"/g, `stroke-width="${f(width)}" stroke-opacity="0.85"`);
+    parts.unshift(trace);
+  }
 
   if (circuit.label) {
     // The label band is as wide as the circuit it names. A label that will not
@@ -412,9 +585,15 @@ function drawCircuit(circuit, offsetX) {
       );
     }
     const centre = (left + right) / 2;
-    parts.push(`<text x="${f(centre)}" y="${f(LABEL_BASELINE)}" font-family="Arial, sans-serif" font-size="${LABEL_FONT}" font-weight="bold" text-anchor="middle" fill="currentColor">${esc(circuit.label)}</text>`);
+    // The caption names the whole circuit, so it steps back only when the
+    // highlight is in another circuit of the row.
+    const caption = `<text x="${f(centre)}" y="${f(LABEL_BASELINE)}" font-family="Arial, sans-serif" font-size="${LABEL_FONT}" font-weight="bold" text-anchor="middle" fill="currentColor">${esc(circuit.label)}</text>`;
+    parts.push(on.any && !on.whole && !on.owns.size ? `<g opacity="${highlight.DIMMED}">${caption}</g>` : caption);
   }
-  return parts.join('');
+  if (on.any && on.whole) {
+    rings.push(highlight.ringSvg(new Set(['whole']), 'whole', { x: offsetX + 2, y: 0, w: LOOP_W - 4, h: on.height }, on.longSide, on.ink));
+  }
+  return parts.join('') + rings.join('');
 }
 
 // ─── SYMBOL BANK ────────────────────────────────────────────────────────────
@@ -522,10 +701,45 @@ function bankSwitch(cx, cy, open) {
   return parts.join('');
 }
 
-function symbolBankSvg(spec) {
+// Pointing at one symbol in the bank (figure-highlight.js): each entry is
+// named by its symbol ("lamp", "switch-open"), by the name printed under it,
+// by the everyday word for it ("bulb", "open switch"), and by its place in
+// the row ("2"). "switch" names the switch when the bank shows only one. The
+// pointed-at entry keeps full strength with a ring round its cell, symbol and
+// name together; the others step back.
+const SYMBOL_BANK_WORDS = {
+  cell: ['battery cell'],
+  lamp: ['bulb', 'light', 'light bulb'],
+  wire: ['wires'],
+  'switch-open': ['open switch', 'switch open'],
+  'switch-closed': ['closed switch', 'switch closed'],
+};
+
+function symbolBankParts(items) {
+  const switches = items.filter((item) => item.symbol.startsWith('switch-')).length;
+  const byKey = new Map();
+  items.forEach((item, i) => {
+    const aliases = byKey.get(item.symbol) || [];
+    aliases.push(item.label, String(i + 1), ...SYMBOL_BANK_WORDS[item.symbol]);
+    if (switches === 1 && item.symbol.startsWith('switch-')) aliases.push('switch');
+    byKey.set(item.symbol, aliases);
+  });
+  return withoutSharedAliases([...byKey].map(([key, aliases]) => ({ key, aliases: [...new Set(aliases)] })));
+}
+
+// `profile` is optional: the stick-in pack passes its own, so a ring prints
+// in dark ink.
+function symbolBankSvg(spec, profile) {
+  const ink = printsInInk(profile);
   const items = normaliseSymbolBank(spec);
-  const width = SYMBOL_BANK_CELL_W * items.length;
-  const height = SYMBOL_BANK_CELL_H;
+  const marked = highlight.resolveHighlight(spec, symbolBankParts(items), 'circuit symbol bank');
+  const innerW = SYMBOL_BANK_CELL_W * items.length;
+  const innerH = SYMBOL_BANK_CELL_H;
+  // Room past the edge for a ring, only when there is one.
+  const ringStroke = require('./figure-highlight').ringStroke(Math.max(innerW, innerH));
+  const margin = marked.size ? Math.ceil(ringStroke * 1.2) : 0;
+  const width = innerW + margin * 2;
+  const height = innerH + margin * 2;
   const body = items.map((item, i) => {
     const cx = i * SYMBOL_BANK_CELL_W + SYMBOL_BANK_CELL_W / 2;
     const cy = SYMBOL_BANK_SYMBOL_CY;
@@ -536,24 +750,45 @@ function symbolBankSvg(spec) {
       : item.symbol === 'switch-open' ? bankSwitch(cx, cy, true)
       : bankSwitch(cx, cy, false);
     const label = `<text x="${f(cx)}" y="${f(SYMBOL_BANK_LABEL_BASELINE)}" font-family="Arial, sans-serif" font-size="${SYMBOL_BANK_LABEL_FONT}" font-weight="bold" text-anchor="middle" fill="currentColor">${esc(item.label)}</text>`;
-    return `<g>${glyph}${label}</g>`;
+    const fade = highlight.opacityFor(marked, item.symbol);
+    const ring = highlight.ringSvg(marked, item.symbol, { x: i * SYMBOL_BANK_CELL_W + 4, y: 2, w: SYMBOL_BANK_CELL_W - 8, h: SYMBOL_BANK_CELL_H - 4 }, Math.max(innerW, innerH), ink);
+    return `<g${fade < 1 ? ` opacity="${fade}"` : ''}>${glyph}${label}</g>${ring}`;
   }).join('');
-  const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${f(width)}" height="${f(height)}" viewBox="0 0 ${f(width)} ${f(height)}" class="h-circuit" role="img" aria-label="Circuit symbol bank"><g>${body}</g></svg>`;
+  const viewBox = margin ? `${-margin} ${-margin} ${f(width)} ${f(height)}` : `0 0 ${f(width)} ${f(height)}`;
+  const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${f(width)}" height="${f(height)}" viewBox="${viewBox}" class="h-circuit" role="img" aria-label="Circuit symbol bank"><g>${body}</g></svg>`;
   return { svg, aspect: width / height, w: width, h: height };
 }
 
 function symbolBankCacheKey(spec) {
-  return `circuit-symbol-bank:${JSON.stringify(normaliseSymbolBank(spec))}`;
+  const items = normaliseSymbolBank(spec);
+  const lit = [...highlight.resolveHighlight(spec, symbolBankParts(items), 'circuit symbol bank')].sort().join(',');
+  return `circuit-symbol-bank:${JSON.stringify(items)}${lit ? `:highlight:${lit}` : ''}`;
 }
 // ─── END SYMBOL BANK ────────────────────────────────────────────────────────
 
-function tightSvg(spec) {
+// `profile` is optional: the stick-in pack passes its own, and a ring drawn
+// for the photocopied pack is dark ink rather than the board's orange.
+function tightSvg(spec, profile) {
   const circuits = normaliseCircuits(spec);
+  const { marked, per } = resolveCircuitHighlight(spec, circuits);
   const labelled = circuits.some((circuit) => circuit.label);
-  const width = ROW_PAD_X * 2 + circuits.length * LOOP_W + (circuits.length - 1) * ROW_GAP;
-  const height = labelled ? LABEL_H : NO_LABEL_H;
-  const body = circuits.map((circuit, i) => drawCircuit(circuit, ROW_PAD_X + i * (LOOP_W + ROW_GAP))).join('');
-  const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${f(width)}" height="${f(height)}" viewBox="0 0 ${f(width)} ${f(height)}" class="h-circuit" role="img" aria-label="Series circuit diagram"><g>${body}</g></svg>`;
+  const innerW = ROW_PAD_X * 2 + circuits.length * LOOP_W + (circuits.length - 1) * ROW_GAP;
+  const innerH = labelled ? LABEL_H : NO_LABEL_H;
+  // A ring needs a little room past the drawing's edge (a lamp sits close to
+  // the top), so a diagram that points at something gains a narrow margin; one
+  // that points at nothing keeps its exact size.
+  const margin = marked.size ? 8 : 0;
+  const width = innerW + margin * 2;
+  const height = innerH + margin * 2;
+  const ink = printsInInk(profile);
+  const body = circuits.map((circuit, i) => {
+    const lit = marked.size
+      ? { any: true, whole: per[i].whole, owns: per[i].owns, ink, longSide: Math.max(width, height), height: innerH }
+      : null;
+    return drawCircuit(circuit, ROW_PAD_X + i * (LOOP_W + ROW_GAP), lit);
+  }).join('');
+  const viewBox = margin ? `${-margin} ${-margin} ${f(width)} ${f(height)}` : `0 0 ${f(width)} ${f(height)}`;
+  const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${f(width)}" height="${f(height)}" viewBox="${viewBox}" class="h-circuit" role="img" aria-label="Series circuit diagram"><g>${body}</g></svg>`;
   return { svg, aspect: width / height, w: width, h: height };
 }
 

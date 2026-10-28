@@ -383,9 +383,9 @@ function overlaps(a, b) {
   return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 }
 
-function boxAt(centre, w, h) {
+function boxAt(centre, w, h, x0 = 0, x1 = 1) {
   return {
-    x: Math.min(Math.max(centre[0] - w / 2, 0), Math.max(0, 1 - w)),
+    x: Math.min(Math.max(centre[0] - w / 2, x0), Math.max(x0, x1 - w)),
     y: Math.min(Math.max(centre[1] - h / 2, 0), Math.max(0, 1 - h)),
     w,
     h
@@ -400,7 +400,16 @@ function boxAt(centre, w, h) {
 // obstacles: boxes already on the map that a pill must also keep clear of - the
 // clue markers, so a line's label does not land on the letter beside it (the
 // Equator's "X" once sat touching marker B, and a child read them as one thing).
-function layoutLabels(items, sizeFor, obstacles) {
+// sideRoom: how far, as a fraction of the map's width, the space a map was given
+// runs past each side of it. A map held to its own shape in a wide space used to
+// leave that space empty while its names crowded onto the land (20 October
+// 2026). A name that cannot sit clear near its place goes out into the side
+// space at its own height, on the side nearer its place, with a leader back. An
+// item marked `toSide` (one whose place is near that side) goes there first.
+function layoutLabels(items, sizeFor, obstacles, sideRoom) {
+  const room = sideRoom > 0 ? sideRoom : 0;
+  const x0 = -room;
+  const x1 = 1 + room;
   const placed = (obstacles || []).map(function (box) { return Object.assign({}, box); });
   return (items || []).filter(function (item) { return item && item.text; }).map(function (item) {
     const size = sizeFor(item.text, item);
@@ -409,13 +418,39 @@ function layoutLabels(items, sizeFor, obstacles) {
     // A pill wider or taller than the whole map has nowhere clear to go, and
     // clamping it to the edge would lay it across the geography it names.
     const tooBig = size.w > 1 || size.h > 1;
+    const clear = function (candidate) {
+      return !placed.some(function (other) { return overlaps(candidate, other); });
+    };
+    // The side space, tried once the spots close to the place are taken, before
+    // the far ones: a name a short line away in clear space reads better than
+    // one a long line away in the middle of other names.
+    const outside = function () {
+      if (!room || size.w > room) return null;
+      // Just beyond the map's edge, so the leader is short, then the far side.
+      const gap = 0.02;
+      const near = item.anchor[0] < 0.5 ? -gap - size.w / 2 : 1 + gap + size.w / 2;
+      const far = item.anchor[0] < 0.5 ? 1 + gap + size.w / 2 : -gap - size.w / 2;
+      const xs = item.toSide ? [near] : [near, far];
+      for (const x of xs) {
+        for (const dy of [0, -1, 1, -2, 2, -3, 3]) {
+          const candidate = boxAt([x, item.anchor[1] + dy * size.h * 1.15], size.w, size.h, x0, x1);
+          if (clear(candidate)) return candidate;
+        }
+      }
+      return null;
+    };
 
+    if (item.toSide && !tooBig) box = outside();
     for (const step of CANDIDATE_STEPS) {
       if (box || tooBig) break;
+      if (room && step > 0.10) {
+        box = outside();
+        if (box) break;
+      }
       const sides = step === 0 ? [[0, 0]] : CANDIDATE_SIDES;
       for (const [dx, dy] of sides) {
-        const candidate = boxAt([preferred[0] + dx * step, preferred[1] + dy * step], size.w, size.h);
-        if (!placed.some(function (other) { return overlaps(candidate, other); })) {
+        const candidate = boxAt([preferred[0] + dx * step, preferred[1] + dy * step], size.w, size.h, x0, x1);
+        if (clear(candidate)) {
           box = candidate;
           break;
         }
@@ -427,7 +462,7 @@ function layoutLabels(items, sizeFor, obstacles) {
     // ten country pills on a sidebar-sized South America printed on top of one
     // another and hid the map they were naming.
     const crowded = !box;
-    if (!box) box = boxAt(preferred, size.w, size.h);
+    if (!box) box = boxAt(preferred, size.w, size.h, x0, x1);
     placed.push(box);
 
     const centre = [box.x + box.w / 2, box.y + box.h / 2];

@@ -44,6 +44,8 @@
 //   yStep    spacing of y ticks (default: a "nice" step giving ~5 ticks).
 
 const { textWidthEm } = require('../text/comic-glyph-width');
+const highlight = require('./figure-highlight');
+const { printsInInk } = require('./surface-profiles');
 
 const LINE_COLOUR  = '#C00000';   // red plotted line + points
 const AXIS_COLOUR  = '#000000';
@@ -105,6 +107,21 @@ function resolveScale(data) {
   const xMax = Number.isFinite(data.xMax) && data.xMax > 0 ? data.xMax : ceilTo(dataXMax, xStep) || xStep;
   const yMax = Number.isFinite(data.yMax) && data.yMax > 0 ? data.yMax : ceilTo(dataYMax, yStep) || yStep;
   return { points, xStep, yStep, xMax, yMax };
+}
+
+// A line graph's parts are its plotted readings, each named by its x value as
+// the axis prints it ("3" for the reading at hour 3), the same key the anchors
+// use. "point 3" and "x 3" find it too. Two readings at one x are one part.
+function highlightParts(points) {
+  const seen = new Set();
+  const out = [];
+  points.forEach((p) => {
+    const key = String(round(p.x));
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ key, aliases: [`point ${key}`, `x ${key}`] });
+  });
+  return out;
 }
 
 function ticks(max, step) {
@@ -192,11 +209,12 @@ function layout(data, profile) {
   } else {
     plotH = Math.max((W - fixedW(m)) * PLOT_H_PER_W, need(m));
   }
-  return { sc, m, W, plotW: W - fixedW(m), plotH };
+  const marked = highlight.resolveHighlight(data, highlightParts(sc.points), 'line graph');
+  return { sc, m, W, plotW: W - fixedW(m), plotH, marked, ink: printsInInk(profile) };
 }
 
 function draw(data, L) {
-  const { sc, m, W, plotW, plotH } = L;
+  const { sc, m, W, plotW, plotH, marked, ink } = L;
   const { points, xStep, yStep, xMax, yMax } = sc;
   const u = m.u;
   const w = W;
@@ -255,15 +273,24 @@ function draw(data, L) {
     parts.push(text(yx, yy, data.yLabel, m.axisFs, `text-anchor="middle" font-weight="bold" fill="${TEXT_COLOUR}" transform="rotate(-90, ${f(yx)}, ${f(yy)})"`));
   }
 
-  // Plotted line, then the points on top.
+  // Plotted line, then the points on top. When a reading is pointed at, the
+  // line and every other dot step back and the axes stay, since they are how
+  // the lit reading is read off.
+  const dim = (svg, fade) => (fade < 1 ? `<g opacity="${fade}">${svg}</g>` : svg);
   if (points.length >= 2) {
     const d = points.map((p) => `${f(px(p.x))},${f(py(p.y))}`).join(' ');
-    parts.push(`<polyline points="${d}" fill="none" stroke="${LINE_COLOUR}" stroke-width="${f(LINE_W * u)}" stroke-linejoin="round" stroke-linecap="round"/>`);
+    parts.push(dim(`<polyline points="${d}" fill="none" stroke="${LINE_COLOUR}" stroke-width="${f(LINE_W * u)}" stroke-linejoin="round" stroke-linecap="round"/>`, marked.size ? highlight.DIMMED : 1));
   }
+  const rings = [];
   points.forEach((p) => {
-    parts.push(`<circle cx="${f(px(p.x))}" cy="${f(py(p.y))}" r="${f(POINT_R * u)}" fill="${LINE_COLOUR}"/>`);
-    anchors.rows[String(round(p.x))] = pct(px(p.x), py(p.y));
+    const key = String(round(p.x));
+    parts.push(dim(`<circle cx="${f(px(p.x))}" cy="${f(py(p.y))}" r="${f(POINT_R * u)}" fill="${LINE_COLOUR}"/>`, highlight.opacityFor(marked, key)));
+    anchors.rows[key] = pct(px(p.x), py(p.y));
+    // A clear gap between the dot and its ring, so the ring reads as a ring
+    // round the reading rather than a bigger orange dot.
+    rings.push(highlight.ringCircleSvg(marked, key, { x: px(p.x), y: py(p.y) }, POINT_R * u * 2, Math.max(w, h), ink));
   });
+  parts.push(...rings.filter(Boolean));
 
   // Named anchors for the anatomy poster.
   anchors.yAxis = pct(plotLeft - Y_NUM_W * u * 0.5, plotTop + plotH * 0.5);
@@ -290,7 +317,9 @@ function cacheKey(data = {}, profile) {
   const { points, xStep, yStep, xMax, yMax } = resolveScale(data);
   const pts = points.map((p) => `${p.x},${p.y}`).join(';');
   const box = `:${profile.surface}:${f(profile.widthPt)}x${profile.heightPt ? f(profile.heightPt) : '-'}`;
-  return `line-graph${box}:${data.title || ''}:${data.xLabel || ''}:${data.yLabel || ''}:${pts}:${xStep}:${yStep}:${xMax}:${yMax}`;
+  // The highlight is part of the picture; a graph with none keeps its old key.
+  const hi = [...highlight.resolveHighlight(data, highlightParts(points), 'line graph')].sort().join(',');
+  return `line-graph${box}:${data.title || ''}:${data.xLabel || ''}:${data.yLabel || ''}:${pts}:${xStep}:${yStep}:${xMax}:${yMax}` + (hi ? `:hi=${hi}` : '');
 }
 
 module.exports = { tightSvg, cacheKey };

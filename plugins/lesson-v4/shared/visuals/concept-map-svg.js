@@ -23,8 +23,13 @@
 //   centre   the central idea (filled blue box)
 //   spokes   [{ label, relationship? }] two to six ideas, placed round the
 //            centre from the top, clockwise
+//   highlight the centre or a spoke, named by its own words ("centre" also
+//            finds the middle), or a list of them: "look at this one" while
+//            the rest steps back (figure-highlight.js). A spoke's line and its
+//            relationship are the spoke's, and step back with it.
 
 const T = require('./figure-text');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS (ems of the settled font size) ───────────────────────────────
 const NODE_PAD = 0.4; // words to border, each side
@@ -59,6 +64,70 @@ function normalise(spec = {}) {
   }
   return { centre: spec.centre != null ? String(spec.centre) : '', spokes };
 }
+
+// A concept map's parts are its centre and its spokes, each named by its own
+// words, so the mark follows the idea wherever the spokes are placed round it.
+const CENTRE_KEY = 'centre';
+function highlightParts(n) {
+  const out = [{ key: CENTRE_KEY, aliases: ['center', 'middle', 'central idea', ...(n.centre.trim() ? [n.centre.trim()] : [])] }];
+  const seen = new Set();
+  n.spokes.forEach((s) => {
+    const key = s.label.trim();
+    if (key && !seen.has(key) && key.toLowerCase() !== CENTRE_KEY) {
+      seen.add(key);
+      out.push(key);
+    }
+  });
+  return out;
+}
+
+// ─── Pointing at a part (figure-highlight.js) ───────────────────────────────
+// The rings round the highlighted parts, and the drawing grown by exactly as
+// much as the outermost ring reaches past its edge. A part laid out against
+// the edge would otherwise lose half its ring, and a ring pulled inward to fit
+// would sit on the words it is pointing at. With nothing highlighted the
+// drawing is exactly what it was.
+function ringsFor(marked, list, W, H, ink) {
+  const long = Math.max(W, H);
+  const reach = require('./figure-highlight').ringReach(long); // the ring's pad plus half its stroke
+  const out = { svg: '', l: 0, t: 0, r: 0, b: 0 };
+  list.forEach(({ key, box: tight, air = 0 }) => {
+    if (!marked.has(key)) return;
+    // Words have no border of their own, so the ring stands clear of them.
+    const box = { x: tight.x - air, y: tight.y - air, w: tight.w + 2 * air, h: tight.h + 2 * air };
+    out.svg += highlight.ringSvg(marked, key, box, long, ink);
+    out.l = Math.max(out.l, reach - box.x);
+    out.t = Math.max(out.t, reach - box.y);
+    out.r = Math.max(out.r, box.x + box.w + reach - W);
+    out.b = Math.max(out.b, box.y + box.h + reach - H);
+  });
+  return out;
+}
+
+function ringedDoc(W, H, parts, rings) {
+  const w = W + rings.l + rings.r;
+  const h = H + rings.t + rings.b;
+  if (w === W && h === H) return { svg: T.svgDoc(W, H, [...parts, rings.svg]), w, h };
+  const f = T.f2;
+  return {
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="${f(-rings.l)} ${f(-rings.t)} ${f(w)} ${f(h)}">${parts.join('')}${rings.svg}</svg>`,
+    w,
+    h,
+  };
+}
+
+function faded(opacity, svg) {
+  return opacity < 1 ? `<g opacity="${opacity}">${svg}</g>` : svg;
+}
+
+// A faded part that is a filled box keeps a solid paper box under it, so the
+// lines it used to cover do not show through it once it steps back.
+function backed(opacity, svg, box, paper, rx = 0) {
+  if (opacity >= 1) return svg;
+  const f = T.f2;
+  return `<rect x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" rx="${f(rx)}" fill="${paper}"/>` + faded(opacity, svg);
+}
+// ────────────────────────────────────────────────────────────────────────────
 
 function overlaps(a, b, gap) {
   return a.x < b.x + b.w + gap && b.x < a.x + a.w + gap && a.y < b.y + b.h + gap && b.y < a.y + a.h + gap;
@@ -174,33 +243,46 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const font = profile.font;
   const f = T.f2;
   const ink = profile.palette === 'ink';
+  const marked = highlight.resolveHighlight(spec, highlightParts(L.n), 'concept map');
+  const spokeOp = (s) => highlight.opacityFor(marked, s.label.trim());
+  const centreOp = highlight.opacityFor(marked, CENTRE_KEY);
   const parts = [];
+  const ringList = [{ key: CENTRE_KEY, box: L.cBox }];
   const node = (b, fill, stroke, cls) =>
     `<rect class="${cls}" x="${f(b.x)}" y="${f(b.y)}" width="${f(b.w)}" height="${f(b.h)}" rx="${f(NODE_RADIUS * pt)}" fill="${fill}" stroke="${stroke}" stroke-width="${f(Math.max(1.25, NODE_STROKE * pt))}"/>`;
 
   // Lines first, so the boxes sit on top of them.
   L.spokes.forEach((s) => {
-    parts.push(`<line class="concept-link" x1="${f(L.cx)}" y1="${f(L.cy)}" x2="${f(s.box.x + s.box.w / 2)}" y2="${f(s.box.y + s.box.h / 2)}" stroke="${ink ? c.ink : LINE_COLOUR}" stroke-width="${f(Math.max(1, LINE_STROKE * pt))}"/>`);
+    parts.push(faded(spokeOp(s), `<line class="concept-link" x1="${f(L.cx)}" y1="${f(L.cy)}" x2="${f(s.box.x + s.box.w / 2)}" y2="${f(s.box.y + s.box.h / 2)}" stroke="${ink ? c.ink : LINE_COLOUR}" stroke-width="${f(Math.max(1, LINE_STROKE * pt))}"/>`));
   });
-  parts.push(node(L.cBox, ink ? c.paper : CENTRE_FILL, ink ? c.ink : CENTRE_FILL, 'concept-centre'));
   const centreLines = L.centre.lines[0];
-  parts.push(T.textLines(centreLines, L.cx, L.cy - T.blockHeight(centreLines.length, pt) / 2, pt, { fill: ink ? c.ink : '#FFFFFF', font, bold: true }));
+  parts.push(backed(centreOp,
+    node(L.cBox, ink ? c.paper : CENTRE_FILL, ink ? c.ink : CENTRE_FILL, 'concept-centre') +
+    T.textLines(centreLines, L.cx, L.cy - T.blockHeight(centreLines.length, pt) / 2, pt, { fill: ink ? c.ink : '#FFFFFF', font, bold: true }),
+    L.cBox, c.paper, NODE_RADIUS * pt));
   L.spokes.forEach((s) => {
-    parts.push(node(s.box, c.paper, ink ? c.ink : SPOKE_LINE, 'concept-spoke'));
-    parts.push(T.textLines(s.lines, s.box.x + s.box.w / 2, s.box.y + (s.box.h - T.blockHeight(s.lines.length, pt)) / 2, pt, { fill: c.ink, font, bold: true }));
+    let svg = node(s.box, c.paper, ink ? c.ink : SPOKE_LINE, 'concept-spoke');
+    svg += T.textLines(s.lines, s.box.x + s.box.w / 2, s.box.y + (s.box.h - T.blockHeight(s.lines.length, pt)) / 2, pt, { fill: c.ink, font, bold: true });
     if (s.rel) {
       // A white patch behind the relationship, so the line does not run through
       // its words.
-      parts.push(`<rect x="${f(s.rel.x)}" y="${f(s.rel.y)}" width="${f(s.rel.w)}" height="${f(s.rel.h)}" fill="${c.paper}"/>`);
-      parts.push(T.textLines(s.rel.lines, s.rel.x + s.rel.w / 2, s.rel.y + (REL_PAD * pt) / 2, pt, { fill: ink ? c.ink : c.label, font, bold: true, italic: true }));
+      svg += `<rect x="${f(s.rel.x)}" y="${f(s.rel.y)}" width="${f(s.rel.w)}" height="${f(s.rel.h)}" fill="${c.paper}"/>`;
+      svg += T.textLines(s.rel.lines, s.rel.x + s.rel.w / 2, s.rel.y + (REL_PAD * pt) / 2, pt, { fill: ink ? c.ink : c.label, font, bold: true, italic: true });
     }
+    // The box steps back over a paper box; the relationship's own patch
+    // already hides the line behind its words.
+    parts.push(backed(spokeOp(s), svg, s.box, c.paper, NODE_RADIUS * pt));
+    ringList.push({ key: s.label.trim(), box: s.box });
   });
-  return { svg: T.svgDoc(L.W, L.h, parts), w: L.W, h: L.h, aspect: L.W / L.h, layout: L };
+  const doc = ringedDoc(L.W, L.h, parts, ringsFor(marked, ringList, L.W, L.h, ink));
+  return { svg: doc.svg, w: doc.w, h: doc.h, aspect: doc.w / doc.h, layout: L };
 }
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = T.resolveProfile(profileOrSurface, box);
-  return `concept-map:${T.profileKey(p)}:${JSON.stringify(normalise(spec))}`;
+  const n = normalise(spec);
+  const hi = [...highlight.resolveHighlight(spec, highlightParts(n), 'concept map')].sort().join(',');
+  return `concept-map:${T.profileKey(p)}:${JSON.stringify(n)}${hi ? `:hi:${hi}` : ''}`;
 }
 
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, MAX_SPOKES };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, highlightParts, MAX_SPOKES };

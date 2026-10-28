@@ -31,9 +31,12 @@
 //   text      one short line above the figure: the question it serves (the
 //             worksheet prints it as its own line of sheet text)
 //   caption   one short italic line centred beneath the dates
+//   highlight an era or a date, named by its own label, or a list of them:
+//             "look at this one" while the rest steps back (figure-highlight.js)
 // Every from, to and at is a fraction of the line from 0 to 1, clamped there.
 
 const T = require('./figure-text');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS (ems of the settled font size) ───────────────────────────────
 // Taken from the board's timeline, which had been tuned in inches at 18pt.
@@ -110,6 +113,62 @@ function normalise(spec = {}) {
     .sort((a, b) => a.at - b.at);
   return { eras, marks, text: str(spec.text).trim(), caption: str(spec.caption).trim() };
 }
+
+// A timeline's parts are its eras and its dates, each named by its own label,
+// so a teacher points at "Victorian period" or "1066" rather than at the third
+// tick: the mark follows the date if the line is ever re-spaced.
+function highlightParts(n) {
+  const seen = new Set();
+  const out = [];
+  [...n.eras, ...n.marks].forEach((part) => {
+    const key = part.label.trim();
+    if (key && !seen.has(key)) {
+      seen.add(key);
+      out.push(key);
+    }
+  });
+  return out;
+}
+
+// ─── Pointing at a part (figure-highlight.js) ───────────────────────────────
+// The rings round the highlighted parts, and the drawing grown by exactly as
+// much as the outermost ring reaches past its edge. A part laid out against
+// the edge would otherwise lose half its ring, and a ring pulled inward to fit
+// would sit on the words it is pointing at. With nothing highlighted the
+// drawing is exactly what it was.
+function ringsFor(marked, list, W, H, ink) {
+  const long = Math.max(W, H);
+  const reach = require('./figure-highlight').ringReach(long); // the ring's pad plus half its stroke
+  const out = { svg: '', l: 0, t: 0, r: 0, b: 0 };
+  list.forEach(({ key, box: tight, air = 0 }) => {
+    if (!marked.has(key)) return;
+    // Words have no border of their own, so the ring stands clear of them.
+    const box = { x: tight.x - air, y: tight.y - air, w: tight.w + 2 * air, h: tight.h + 2 * air };
+    out.svg += highlight.ringSvg(marked, key, box, long, ink);
+    out.l = Math.max(out.l, reach - box.x);
+    out.t = Math.max(out.t, reach - box.y);
+    out.r = Math.max(out.r, box.x + box.w + reach - W);
+    out.b = Math.max(out.b, box.y + box.h + reach - H);
+  });
+  return out;
+}
+
+function ringedDoc(W, H, parts, rings) {
+  const w = W + rings.l + rings.r;
+  const h = H + rings.t + rings.b;
+  if (w === W && h === H) return { svg: T.svgDoc(W, H, [...parts, rings.svg]), w, h };
+  const f = T.f2;
+  return {
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="${f(-rings.l)} ${f(-rings.t)} ${f(w)} ${f(h)}">${parts.join('')}${rings.svg}</svg>`,
+    w,
+    h,
+  };
+}
+
+function faded(opacity, svg) {
+  return opacity < 1 ? `<g opacity="${opacity}">${svg}</g>` : svg;
+}
+// ────────────────────────────────────────────────────────────────────────────
 
 // The box each date label may occupy, in points. A centred label may reach
 // halfway to each neighbour on its row; a label at the very edge tucks inward
@@ -287,7 +346,9 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const f = T.f2;
   const ink = profile.palette === 'ink';
   const fills = ink ? ERA_FILLS_INK : ERA_FILLS;
+  const marked = highlight.resolveHighlight(spec, highlightParts(n), 'timeline');
   const parts = [];
+  const ringList = [];
   const rect = (x, y, w, h, fill, extra = '') => `<rect x="${f(x)}" y="${f(y)}" width="${f(w)}" height="${f(h)}" fill="${fill}"${extra}/>`;
 
   if (L.stem.length) parts.push(T.textLines(L.stem, L.left, L.stemY, pt, { fill: c.ink, font, bold: true, anchor: 'start' }));
@@ -295,9 +356,12 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   n.eras.forEach((era, i) => {
     const x = L.lineX0 + era.from * L.lineW;
     const w = (era.to - era.from) * L.lineW;
-    parts.push(rect(x, L.eraY, w, L.eraH, fills[i % fills.length], ` class="timeline-era" stroke="${ERA_LINE}" stroke-width="1"`));
+    const key = era.label.trim();
+    let svg = rect(x, L.eraY, w, L.eraH, fills[i % fills.length], ` class="timeline-era" stroke="${ERA_LINE}" stroke-width="1"`);
     const lines = L.eraLines[i];
-    if (lines.length) parts.push(T.textLines(lines, x + w / 2, L.eraY + (L.eraH - T.blockHeight(lines.length, pt)) / 2, pt, { fill: c.ink, font, bold: true }));
+    if (lines.length) svg += T.textLines(lines, x + w / 2, L.eraY + (L.eraH - T.blockHeight(lines.length, pt)) / 2, pt, { fill: c.ink, font, bold: true });
+    parts.push(faded(highlight.opacityFor(marked, key), svg));
+    ringList.push({ key, box: { x, y: L.eraY, w, h: L.eraH } });
   });
 
   const capH = END_CAP_H * pt;
@@ -310,24 +374,38 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   n.marks.forEach((mark, i) => {
     const b = L.boxes[i];
     const drop = b.row * (L.markRowH + MARK_ROW_GAP * pt);
-    parts.push(rect(b.tickX - (TICK_W * pt) / 2, L.lineY, TICK_W * pt, TICK_H * pt + drop, c.ink, ' class="timeline-tick"'));
+    const key = mark.label.trim();
+    let svg = rect(b.tickX - (TICK_W * pt) / 2, L.lineY, TICK_W * pt, TICK_H * pt + drop, c.ink, ' class="timeline-tick"');
     const lines = L.markLines[i];
+    const labelTop = L.lineY + (TICK_H + MARK_GAP) * pt + drop;
+    // The ring takes in the date's tick and its words, from just under the line.
+    let ringBox = { x: b.tickX - (TICK_W * pt) / 2, y: L.lineY + LINE_THICK * pt, w: TICK_W * pt, h: labelTop - L.lineY - LINE_THICK * pt };
     if (lines.length) {
       const anchor = b.align === 'left' ? 'start' : b.align === 'right' ? 'end' : 'middle';
       const x = b.align === 'left' ? b.x : b.align === 'right' ? b.x + b.w : b.x + b.w / 2;
-      parts.push(T.textLines(lines, x, L.lineY + (TICK_H + MARK_GAP) * pt + drop, pt, { fill: c.ink, font, bold: true, anchor }));
+      svg += T.textLines(lines, x, labelTop, pt, { fill: c.ink, font, bold: true, anchor });
+      const wordsW = T.linesWidth(lines, pt, true);
+      const wx = anchor === 'start' ? x : anchor === 'end' ? x - wordsW : x - wordsW / 2;
+      const left = Math.min(ringBox.x, wx);
+      const right = Math.max(ringBox.x + ringBox.w, wx + wordsW);
+      ringBox = { x: left, y: ringBox.y, w: right - left, h: labelTop + T.blockHeight(lines.length, pt) - ringBox.y };
     }
+    parts.push(faded(highlight.opacityFor(marked, key), svg));
+    ringList.push({ key, box: ringBox, air: 0.3 * pt });
   });
 
   if (L.caption.length) {
     parts.push(T.textLines(L.caption, L.W / 2, L.captionY, pt, { fill: ink ? c.ink : DIM, font, bold: false, italic: true }));
   }
-  return { svg: T.svgDoc(L.W, L.h, parts), w: L.W, h: L.h, aspect: L.W / L.h, layout: L };
+  const doc = ringedDoc(L.W, L.h, parts, ringsFor(marked, ringList, L.W, L.h, ink));
+  return { svg: doc.svg, w: doc.w, h: doc.h, aspect: doc.w / doc.h, layout: L };
 }
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = T.resolveProfile(profileOrSurface, box);
-  return `timeline:${T.profileKey(p)}:${JSON.stringify(normalise(spec))}`;
+  const n = normalise(spec);
+  const hi = [...highlight.resolveHighlight(spec, highlightParts(n), 'timeline')].sort().join(',');
+  return `timeline:${T.profileKey(p)}:${JSON.stringify(n)}${hi ? `:hi:${hi}` : ''}`;
 }
 
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, markLabelBoxes, EDGE };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, markLabelBoxes, highlightParts, EDGE };

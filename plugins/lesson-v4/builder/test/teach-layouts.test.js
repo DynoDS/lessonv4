@@ -581,3 +581,17 @@ test('templates.md lists every layout the builder has, and no other', () => {
   const listed = [...section.matchAll(/^\| `([a-z-]+)` \|/gm)].map((m) => m[1]);
   assert.deepEqual(listed.sort(), Object.keys(LAYOUTS).sort());
 });
+
+test('a speaker keeps the picture of what they are talking about above the cards', () => {
+  // 21 October 2026: George's bubble and his maths book could not share a Teach
+  // slide, so three slides of a Year 4 PSHE deck lost the book.
+  const lesson = expandTeachLayouts({ slides: [teachSlide('speaker-lines', { pictures: [picture(WIDE)] })] });
+  const slide = lesson.slides[0];
+  assert.equal(slide.template, 'speech-bubbles-1');
+  assert.equal(slide.statement.type, 'stack');
+  assert.equal(slide.statement.items[0].type, 'image');
+  assert.deepEqual(texts(slide.statement).map((x) => x.value),
+    ['His words are a clue.', 'He might be worried.', 'Which words tell us?']);
+  assert.throws(() => expandTeachLayouts({ slides: [teachSlide('speaker-lines', { pictures: [picture(WIDE), picture(TALL)] })] }),
+    (error) => error instanceof TeachLayoutError);
+});

@@ -262,12 +262,17 @@ test('the identical map given the whole body still draws', () => {
   assert.equal(out.layout.labels.length, 10);
 });
 
-test('every label sits inside the map and clear of every other label and marker', () => {
+test('every label sits inside the drawing and clear of every other label and marker', () => {
   const out = map.tightSvg({ ...LABELLED, clueMarkers: [{ marker: 'Z', kind: 'sea', at: [0.3, 0.8] }] }, BOARD);
   const L = out.layout;
   const boxes = L.labels.map((l) => l.box);
+  // A name may go out beside the map when its space is wider than the map; the
+  // drawing grows to hold it, so it is inside the drawing even when off the land.
+  const left = -(L.sideLeft || 0) / L.map.w;
+  const right = 1 + (L.sideRight || 0) / L.map.w;
+  assert.ok(Math.abs(out.w - (L.w + (L.sideLeft || 0) + (L.sideRight || 0))) < 1e-6);
   boxes.forEach((b, i) => {
-    assert.ok(b.x >= -1e-9 && b.y >= -1e-9 && b.x + b.w <= 1 + 1e-9 && b.y + b.h <= 1 + 1e-9, L.labels[i].text);
+    assert.ok(b.x >= left - 1e-9 && b.y >= -1e-9 && b.x + b.w <= right + 1e-9 && b.y + b.h <= 1 + 1e-9, L.labels[i].text);
     boxes.slice(i + 1).forEach((o, j) => {
       const hit = b.x < o.x + o.w && o.x < b.x + b.w && b.y < o.y + o.h && o.y < b.y + b.h;
       assert.ok(!hit, `${L.labels[i].text} overlaps ${L.labels[i + j + 1].text}`);
@@ -443,4 +448,43 @@ test('the PNG reader reads every shipped map the way the image library does', ()
     const round = pixels.decodePng(pixels.encodePng(decoded));
     assert.ok(round.data.equals(decoded.data), `${key} survives a write and a read`);
   }
+});
+
+test('a map in a space wider than it puts edge names beside it, not crowded on the land', () => {
+  // Y4 Geography, 20 October 2026: a world map held to its shape in a wide,
+  // shallow card left 5.6in empty either side while its names crowded the land.
+  const spec = { map: 'world-with-antarctica', presentation: 'seven-continent-world',
+    continentLabels: [{ text: 'North America', at: [0.2, 0.25] }, { text: 'Africa', at: [0.57, 0.6] }, { text: 'Oceania', at: [0.85, 0.73] }],
+    annotations: [{ kind: 'point', at: { lon: -1.5, lat: 53 }, label: 'The UK', colour: 'blue' }] };
+  const wide = map.tightSvg(spec, profileFor('slides', { widthPt: 12.3 * 72, heightPt: 3.7 * 72 }));
+  const L = wide.layout;
+  const at = (text) => L.labels.find((l) => l.text === text).box;
+  assert.ok(at('North America').x + at('North America').w <= 0, 'North America beside the map');
+  assert.ok(at('Oceania').x >= 1, 'Oceania beside the map');
+  assert.ok(at('Africa').x >= 0 && at('Africa').x + at('Africa').w <= 1, 'Africa stays on its land');
+  assert.ok(wide.w > L.map.w && wide.w <= 12.3 * 72 + 1e-6, 'the drawing grows into the space, no further');
+  // A map that already fills its width has no side space, and its names stay on it.
+  const full = map.tightSvg(spec, profileFor('slides', { widthPt: 8 * 72, heightPt: 6 * 72 }));
+  assert.equal(full.w, full.layout.map.w);
+});
+
+test('a map points at its named things: a journey map at its stops, any map when asked', () => {
+  // Y4 Geography, 21 October 2026: the continents were as loud as the UK, the
+  // Sahara and the "?", so the stops did not stand out on the board and could
+  // not be told apart on the black-ink sheet.
+  const journey = { map: 'world-with-antarctica', presentation: 'seven-continent-world', showEquator: true,
+    continentLabels: [{ text: 'Africa', at: [0.57, 0.6] }, { text: 'Europe', at: [0.57, 0.2] }],
+    annotations: [{ kind: 'point', at: { lon: -1.5, lat: 53 }, label: 'The UK', colour: 'blue' },
+      { kind: 'point', at: { lon: 20, lat: 0 }, label: '?', colour: 'green' }] };
+  assert.deepEqual(map.resolve(journey).highlight, ['?', 'Equator', 'The UK']);
+  const sheet = map.tightSvg(journey, profileFor('stickin', { widthMm: 250 })).svg;
+  assert.ok(/<g opacity="0\.45">[^]*?>Africa</.test(sheet), 'a continent steps back');
+  assert.ok(!/<g opacity="0\.45">[^<]*<rect[^>]*\/><text[^>]*>The UK</.test(sheet), 'a stop does not');
+  // Asked for, any named thing; an unknown one is refused with the names it has.
+  assert.deepEqual(map.resolve({ ...journey, highlight: 'Africa' }).highlight, ['Africa']);
+  assert.throws(() => map.resolve({ ...journey, highlight: 'Asia' }), /not a part of this map/);
+  // A map that points at nothing draws as it always did.
+  const plain = { ...journey, annotations: [] };
+  assert.deepEqual(map.resolve(plain).highlight, []);
+  assert.ok(!map.tightSvg(plain, profileFor('stickin', { widthMm: 250 })).svg.includes('opacity="0.45"'));
 });

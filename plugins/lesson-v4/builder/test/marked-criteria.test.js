@@ -172,7 +172,7 @@ test('a marked list is drawn smaller in the practice panel at its widest, on a f
   const drawn = draw(practice(SMALLER), [SMALLER]);
   assert.equal(drawn.panel.w, 6.35, 'the panel widens as far as it goes before the list is drawn smaller');
   assert.deepEqual([...new Set(drawn.fonts)], [17], 'the largest size that fits: 17pt, not 16pt');
-  assert.ok(drawn.work, 'the working space is drawn: a finished slide, not a page to check');
+  assert.equal(drawn.work, undefined, 'generic working space stays retired on the finished slide');
   assert.ok(drawn.names.every((name) => /__MIN17__marked-step-text-\d+$/.test(name)), drawn.names.join(' '));
   // The slide is named for the teacher once, however many tries chose the
   // width and the size, and the warning that says "within the 18pt floor"

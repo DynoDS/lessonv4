@@ -98,6 +98,83 @@ const COLOURS = { BAR_FILL: BAR_FILL, OPEN_STROKE: OPEN_STROKE, SOLID_STROKE: SO
 const INK = { BAR_FILL: INK_TONES.pale, OPEN_STROKE: INK_TONES.ink, SOLID_STROKE: INK_TONES.ink, TEXT_COL: INK_TONES.ink, QUESTION_COL: INK_TONES.ink, ANSWER_COL: INK_TONES.ink };
 // ─── END CONSTANTS ───────────────────────────────────────────────────────────
 
+const highlight = require('./figure-highlight');
+
+// ─── Pointing at part of the model (shared/visuals/figure-highlight.js) ─────
+//
+// A teacher at the board says "the whole", "this part", "the difference". The
+// parts are named by position, because a label can be "?" or shared by two
+// boxes, and each also answers to its own label where that label is a word or
+// number only it carries ("biscuit 30p", "Tom"). So `highlight: "whole"`,
+// `highlight: "part 2"` and `highlight: "30p"` all find their box wherever the
+// values have put it.
+//
+//   part-whole, whole-parts   whole (or "total", or the whole's label);
+//                             part 1, part 2, ... (or each part's label)
+//   comparison                bar 1, bar 2 (or "top bar" / "bottom bar", or the
+//                             bar's name or label); difference (or "gap", or its label)
+
+// The same flattening figure-highlight applies, so an alias that would collide
+// with another part's name is dropped rather than quietly pointing at both.
+function plain(s) {
+  return String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+function withAliases(list) {
+  const claimed = new Map();
+  list.forEach((p) => {
+    [p.key, ...p.aliases].forEach((name) => {
+      const n = plain(name);
+      if (!n) return;
+      claimed.set(n, claimed.has(n) && claimed.get(n) !== p.key ? null : p.key);
+    });
+  });
+  return list.map((p) => ({
+    key: p.key,
+    aliases: p.aliases.filter((a) => plain(a) && claimed.get(plain(a)) === p.key && plain(a) !== plain(p.key)),
+  }));
+}
+
+// A label names its box only when it is a real name, not the "?" of the unknown.
+function nameOf(label) {
+  const s = label == null ? '' : String(label).trim();
+  return s && !s.endsWith('?') ? [s] : [];
+}
+
+function highlightParts(data) {
+  const shape = shapeOf(data);
+  if (shape === 'comparison') {
+    const bars = Array.isArray(data.bars) ? data.bars.filter((b) => b && typeof b === 'object') : [];
+    const b = (i) => bars[i] || {};
+    const diff = (data.difference && typeof data.difference === 'object') ? data.difference : {};
+    return withAliases([
+      { key: 'bar 1', aliases: ['top bar', 'first bar', ...nameOf(b(0).name), ...nameOf(b(0).label)] },
+      { key: 'bar 2', aliases: ['bottom bar', 'second bar', ...nameOf(b(1).name), ...nameOf(b(1).label)] },
+      { key: 'difference', aliases: ['gap', ...nameOf(diff.label)] },
+    ]);
+  }
+  const whole = (data.whole && typeof data.whole === 'object') ? data.whole : {};
+  const segs = shape === 'whole-parts'
+    ? wholePartsRegions(data).segs
+    : (() => {
+      const s = Array.isArray(data.parts) ? data.parts.filter((p) => p && typeof p === 'object') : [];
+      return s.length ? s : [{}, {}];
+    })();
+  return withAliases([
+    { key: 'whole', aliases: ['total', 'the whole', ...nameOf(whole.label)] },
+    ...segs.map((p, i) => ({ key: `part ${i + 1}`, aliases: [...nameOf(p.label)] })),
+  ]);
+}
+
+// How far a ring reaches outside the box it is drawn round, read from the
+// shared ring itself so the crop always makes room for the ring as drawn.
+function ringReach(longSide) {
+  const probe = highlight.ringSvg(new Set(['r']), 'r', { x: 0, y: 0, w: 0, h: 0 }, longSide);
+  const pad = -Number(/ x="([-\d.]+)"/.exec(probe)[1]);
+  const stroke = Number(/stroke-width="([\d.]+)"/.exec(probe)[1]);
+  return pad + stroke / 2;
+}
+
 function f(n) { return Number(n).toFixed(2); }
 
 // Set in the face of everything else on the board and the sheet, and measured
@@ -136,12 +213,34 @@ function num(x) {
 function tightSvg(data, profile) {
   const C = printsInInk(profile) ? INK : COLOURS;
   const shape = shapeOf(data);
+  const marked = highlight.resolveHighlight(data, highlightParts(data), 'bar model');
 
   const parts = [];
   // Drawing a box `hidden` still counts its room, so every click of a run is
   // cropped to the same frame and a box comes in where it will stay.
   let hidden = false;
-  const push = (svg) => { if (!hidden) parts.push(svg); };
+  // The part being drawn, so its box, its words and its lines fade together
+  // when another part is the one pointed at.
+  let fade = 1;
+  const push = (svg) => {
+    if (hidden) return;
+    parts.push(fade < 1 ? `<g opacity="${fade}">${svg}</g>` : svg);
+  };
+  const rings = [];
+  // `mark.part(key)` says which part the next shapes belong to; on a
+  // part-whole bar the parts ARE the whole, so pointing at the whole keeps
+  // them lit. `mark.ring(key, box)` records the box to ring once the crop is
+  // known.
+  const mark = {
+    part(key) {
+      const lit = shape === 'part-whole' && /^part /.test(key) && marked.has('whole');
+      fade = lit ? 1 : highlight.opacityFor(marked, key);
+    },
+    any(keys) { fade = Math.max(...keys.map((k) => highlight.opacityFor(marked, k))); },
+    plain() { fade = 1; },
+    lit(key) { return marked.has(key); },
+    ring(key, box) { if (!hidden && marked.has(key)) rings.push({ key, box }); },
+  };
   const bb = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
   function ext(x0, y0, x1, y1) {
     if (x0 < bb.x0) bb.x0 = x0;
@@ -181,12 +280,13 @@ function tightSvg(data, profile) {
   }
 
   if (shape === 'whole-parts') {
-    drawWholeParts(data, drawRect, drawText, (on) => { hidden = on; }, C);
+    drawWholeParts(data, drawRect, drawText, (on) => { hidden = on; }, C, mark);
   } else if (shape === 'part-whole') {
-    drawPartWhole(data, drawRect, drawLine, drawText);
+    drawPartWhole(data, drawRect, drawLine, drawText, mark);
   } else {
-    drawComparison(data, drawRect, drawLine, drawText);
+    drawComparison(data, drawRect, drawLine, drawText, mark);
   }
+  mark.plain();
 
   // Crop tight: translate everything so the true bounding box starts at the
   // margin, and size the canvas to it — no padded square, so the picture fills
@@ -194,6 +294,17 @@ function tightSvg(data, profile) {
   if (!Number.isFinite(bb.x0)) {
     const empty = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10"></svg>`;
     return { svg: empty, aspect: 1, w: 10, h: 10 };
+  }
+
+  // The rings go on last, over every line, sized to the drawing they sit in;
+  // the crop grows to hold a ring that stands outside the drawing's edge.
+  if (rings.length) {
+    const longSide = Math.max(bb.x1 - bb.x0, bb.y1 - bb.y0);
+    const reach = ringReach(longSide);
+    rings.forEach(({ key, box }) => {
+      parts.push(highlight.ringSvg(marked, key, box, longSide, C === INK));
+      ext(box.x - reach, box.y - reach, box.x + box.w + reach, box.y + box.h + reach);
+    });
   }
   const M  = STROKE_W;
   const ox = M - bb.x0;
@@ -205,7 +316,7 @@ function tightSvg(data, profile) {
 }
 
 // ─── Part-whole: one whole bar divided into parts ────────────────────────────
-function drawPartWhole(data, drawRect, drawLine, drawText) {
+function drawPartWhole(data, drawRect, drawLine, drawText, mark) {
   const wholeObj   = (data.whole && typeof data.whole === 'object') ? data.whole : null;
   const wholeLabel = wholeObj ? (wholeObj.label == null ? '' : String(wholeObj.label)) : '';
   const wholePos   = data.wholeLabelPosition === 'side' ? 'side' : 'above';
@@ -235,11 +346,16 @@ function drawPartWhole(data, drawRect, drawLine, drawText) {
   for (let i = 0; i < n; i++) {
     const w   = segWs[i];
     const lbl = segs[i].label == null ? '' : String(segs[i].label);
+    mark.part(`part ${i + 1}`);
     drawRect(x, 0, w, BAR_H, isOpen(lbl));
     drawText(x + w / 2, BAR_H / 2, lbl, FS, 'middle');
+    mark.ring(`part ${i + 1}`, { x, y: 0, w, h: BAR_H });
     x += w;
   }
 
+  // The whole is the bar, its bracket and its name together.
+  mark.part('whole');
+  let wholeBox = { x: 0, y: 0, w: barW, h: BAR_H };
   if (wholeObj) {
     if (wholePos === 'above') {
       // A square span-bracket above the bar: a horizontal line with short ticks
@@ -248,11 +364,19 @@ function drawPartWhole(data, drawRect, drawLine, drawText) {
       drawLine(0, hY, barW, hY, BRACKET_COL, BRACKET_W);
       drawLine(0, hY, 0, hY + BRACKET_TICK, BRACKET_COL, BRACKET_W);
       drawLine(barW, hY, barW, hY + BRACKET_TICK, BRACKET_COL, BRACKET_W);
-      drawText(barW / 2, hY - WHOLE_GAP - WHOLE_FS * 0.5, wholeLabel, WHOLE_FS, 'middle');
+      const labelY = hY - WHOLE_GAP - WHOLE_FS * 0.5;
+      drawText(barW / 2, labelY, wholeLabel, WHOLE_FS, 'middle');
+      const top = wholeLabel ? labelY - WHOLE_FS * 0.62 : hY - BRACKET_W;
+      const lw = textWidth(wholeLabel, WHOLE_FS);
+      const left = Math.min(0, barW / 2 - lw / 2);
+      wholeBox = { x: left, y: top, w: Math.max(barW, barW / 2 + lw / 2) - left, h: BAR_H - top };
     } else {
       drawText(-SIDE_GAP, BAR_H / 2, wholeLabel, WHOLE_FS, 'end');
+      const left = wholeLabel ? -SIDE_GAP - textWidth(wholeLabel, WHOLE_FS) : 0;
+      wholeBox = { x: left, y: 0, w: barW - left, h: BAR_H };
     }
   }
+  mark.ring('whole', wholeBox);
 }
 
 // ─── Whole-parts: the whole bar over the parts bar, touching ─────────────────
@@ -307,7 +431,7 @@ function buildSteps(data) {
   return steps;
 }
 
-function drawWholeParts(data, drawRect, drawText, setHidden, C) {
+function drawWholeParts(data, drawRect, drawText, setHidden, C, mark) {
   const { whole, segs } = wholePartsRegions(data);
   const n = segs.length;
   const mode = buildMode(data);
@@ -352,36 +476,42 @@ function drawWholeParts(data, drawRect, drawText, setHidden, C) {
 
   // The teacher-written kind brings every box in empty.
   const teacher = mode === 'teacher';
-  const box = (x, y, w, region, visible) => {
+  const box = (x, y, w, region, visible, key) => {
     setHidden(!visible);
+    mark.part(key);
     const t = teacher ? { text: '', colour: null, open: true } : shownText(region);
     drawRect(x, y, w, BAR_H, t.open);
     drawText(x + w / 2, y + BAR_H / 2, t.text, FS, 'middle', t.colour);
+    mark.ring(key, { x, y, w, h: BAR_H });
     setHidden(false);
   };
 
   // The whole along y in [0, BAR_H], the parts directly under it: one shared
   // edge, no gap, so the parts read as making the whole.
-  box(0, 0, barW, whole, shown >= 1);
+  box(0, 0, barW, whole, shown >= 1, 'whole');
   let x = 0;
   for (let i = 0; i < n; i++) {
-    box(x, BAR_H, segWs[i], segs[i], shown >= i + 2);
+    box(x, BAR_H, segWs[i], segs[i], shown >= i + 2, `part ${i + 1}`);
     x += segWs[i];
   }
 
   const names = data.names === true ? { whole: 'whole', parts: 'parts' }
     : (data.names && typeof data.names === 'object' ? data.names : null);
   if (names) {
+    // Each word steps back with what it names; "parts" stays lit while any
+    // part is the one pointed at.
     setHidden(shown < 1);
+    mark.part('whole');
     drawText(-NAME_GAP, BAR_H / 2, names.whole == null ? '' : String(names.whole), PART_NAME_FS, 'end');
     setHidden(shown < 2);
+    mark.any(segs.map((_, i) => `part ${i + 1}`));
     drawText(-NAME_GAP, BAR_H * 1.5, names.parts == null ? '' : String(names.parts), PART_NAME_FS, 'end');
     setHidden(false);
   }
 }
 
 // ─── Comparison: two bars with the difference shown as a gap ──────────────────
-function drawComparison(data, drawRect, drawLine, drawText) {
+function drawComparison(data, drawRect, drawLine, drawText, mark) {
   const barsIn  = Array.isArray(data.bars) ? data.bars.filter((b) => b && typeof b === 'object') : [];
   const b0      = barsIn[0] || {};
   const b1      = barsIn[1] || {};
@@ -425,15 +555,26 @@ function drawComparison(data, drawRect, drawLine, drawText) {
   const y0 = 0;
   const y1 = BAR_H + ROW_GAP;
 
-  drawRect(0, y0, w0, BAR_H, isOpen(lbl0));
-  drawText(w0 / 2, y0 + BAR_H / 2, lbl0, FS, 'middle');
-  drawRect(0, y1, w1, BAR_H, isOpen(lbl1));
-  drawText(w1 / 2, y1 + BAR_H / 2, lbl1, FS, 'middle');
-
   const name0 = b0.name == null ? '' : String(b0.name);
   const name1 = b1.name == null ? '' : String(b1.name);
-  if (name0 !== '') drawText(-NAME_GAP, y0 + BAR_H / 2, name0, NAME_FS, 'end');
-  if (name1 !== '') drawText(-NAME_GAP, y1 + BAR_H / 2, name1, NAME_FS, 'end');
+
+  // Each bar with its name beside it: the name steps back with its bar, and a
+  // ring round the bar takes its name in.
+  const bar = (key, y, w, lbl) => {
+    mark.part(key);
+    drawRect(0, y, w, BAR_H, isOpen(lbl));
+    drawText(w / 2, y + BAR_H / 2, lbl, FS, 'middle');
+  };
+  const nameAndRing = (key, y, w, name) => {
+    mark.part(key);
+    if (name !== '') drawText(-NAME_GAP, y + BAR_H / 2, name, NAME_FS, 'end');
+    const left = name !== '' ? -NAME_GAP - textWidth(name, NAME_FS) : 0;
+    mark.ring(key, { x: left, y, w: w - left, h: BAR_H });
+  };
+  bar('bar 1', y0, w0, lbl0);
+  bar('bar 2', y1, w1, lbl1);
+  nameAndRing('bar 1', y0, w0, name0);
+  nameAndRing('bar 2', y1, w1, name1);
 
   // The difference: a box filling the shorter bar's shortfall, its right edge
   // aligned to the longer bar's right end. Open (white dashed) when the
@@ -444,13 +585,24 @@ function drawComparison(data, drawRect, drawLine, drawText) {
     const shortW = Math.min(w0, w1);
     const longW  = Math.max(w0, w1);
     const gy = shorterIs0 ? y0 : y1;
+    mark.part('difference');
     drawRect(shortW, gy, longW - shortW, BAR_H, isOpen(diffLbl));
     drawText(shortW + (longW - shortW) / 2, gy + BAR_H / 2, diffLbl, FS, 'middle');
     drawLine(longW, y0, longW, y1 + BAR_H, GUIDE_COL, GUIDE_W, GUIDE_DASH);
+    mark.ring('difference', { x: shortW, y: gy, w: longW - shortW, h: BAR_H });
+  } else if (mark.lit('difference')) {
+    throw new Error('FIGURE_HIGHLIGHT_INVALID: this bar model\'s two bars are the same length, so there is no difference drawn to point at.');
   }
 }
 
+// The highlight is part of the picture, so it is part of the key; a model with
+// none keeps the key it always had.
 function cacheKey(data) {
+  const hi = [...highlight.resolveHighlight(data, highlightParts(data), 'bar model')].sort().join(',');
+  return modelKey(data) + (hi ? `:hi=${hi}` : '');
+}
+
+function modelKey(data) {
   const shape = shapeOf(data);
   if (shape === 'whole-parts') {
     const r = (x) => `${labelOf(x)}:${x && x.value != null ? x.value : ''}:${x && x.answer != null ? x.answer : ''}`;

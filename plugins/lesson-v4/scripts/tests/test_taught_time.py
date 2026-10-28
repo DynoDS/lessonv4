@@ -44,6 +44,14 @@ class TaughtTime(unittest.TestCase):
         total, _rows = taught_time.honest_minutes({"teachingSequence": [beat(12, 50)]})
         self.assertEqual(total, 12)
 
+    def test_the_lesson_is_rounded_once_not_beat_by_beat(self):
+        # 21 October 2026: five clearer words on one beat crossed its whole-minute
+        # line and cost a full minute, so the teacher's own instruction was refused.
+        # Three beats of 17 board words are 51 words, about 3.2 minutes: 4, not 6.
+        total, rows = taught_time.honest_minutes({"teachingSequence": [beat(0, 17), beat(0, 17), beat(0, 17)]})
+        self.assertEqual(total, 4)
+        self.assertEqual([taught for _label, _planned, taught in rows], [2, 2, 2])
+
 
 if __name__ == "__main__":
     unittest.main()

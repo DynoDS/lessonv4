@@ -49,5 +49,30 @@ test('regional and continent naming routes are preserved', () => {
  assert.deepEqual(map.stickInSpec(regionalTask), regionalTask);
  assert.equal(map.stickInSpec({...regionalTask,worksheetMode:'regional-marking'}).worksheetMode,'regional-marking');
  assert.equal(map.stickInSpec({map:'world-with-antarctica'}).worksheetMode,'continents-and-oceans');
+ assert.equal(map.stickInSpec({map:'world-with-antarctica',presentation:'seven-continent-world',continentLabels:[{text:'Africa',at:[0.57,0.6]}]}).worksheetMode,'continents-and-oceans');
+});
+test('a journey map of named places with nothing shaded prints as the board drew it', () => {
+ // Y4 Geography, 20 October 2026: pairs hold this map from the first stop and
+ // trace the UK south to the Sahara and on to a "?" on the Equator. Forcing it
+ // into the continent write-on task refused it, and the pack printed no map.
+ const journey = {map:'world-with-antarctica',presentation:'seven-continent-world',showEquator:true,
+  continentLabels:[{text:'Africa',at:[0.57,0.6]},{text:'Europe',at:[0.57,0.2]}],
+  annotations:[{kind:'point',at:{lon:-1.5,lat:53},label:'The UK',colour:'blue'},
+   {kind:'point',at:{lon:5,lat:23},label:'Sahara Desert',colour:'orange'},
+   {kind:'point',at:{lon:20,lat:0},label:'?',colour:'green'}]};
+ const d = map.stickInSpec(structuredClone(journey));
+ assert.equal(d.worksheetMode, undefined);
+ assert.deepEqual(d, journey);
+ const drawn = map.tightSvg(d, profileFor('stickin', {widthMm:150}));
+ assert(drawn.svg.includes('The UK')); assert(drawn.svg.includes('Sahara Desert')); assert(drawn.svg.includes('Equator'));
+ assert.equal(drawn.layout.s.writeOnMarkers.length, 0);
+ // On paper the stops print large enough to find (at the 9pt floor they could
+ // not be seen); the board keeps its own floor, because bigger names there hid Africa.
+ const sizes = (svg) => [...new Set([...svg.matchAll(/font-size="([\d.]+)"/g)].map(m => +m[1]))];
+ assert(Math.min(...sizes(drawn.svg)) >= 14);
+ const board = map.tightSvg(d, profileFor('slides', {widthMm:300}));
+ assert.deepEqual(sizes(board.svg), [profileFor('slides', {widthMm:300}).minFontPt]);
+ // A map that names places but sets clue letters for children to name is still the naming task.
+ assert.equal(map.stickInSpec({...journey, clueMarkers:[{marker:'A',at:[0.2,0.3]}]}).worksheetMode, 'continents-and-oceans');
  assert.notEqual(map.cacheKey(task(),'stickin',{widthMm:150}),map.cacheKey(fixture,'stickin',{widthMm:150}));
 });

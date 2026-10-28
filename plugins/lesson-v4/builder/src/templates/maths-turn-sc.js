@@ -68,7 +68,8 @@ function drawMathsTurnSc(pptx, slide, data, ctx) {
   const naturalQH = measureQuestionsHeight(questions, qW, null, qOptions);
   const qCap      = Q_H + 0.85;   // cap so a very long task can't swallow the visual
   const baseQH    = Math.min(naturalQH, qCap);
-  const noWork    = data.workingSpace === false;
+  // Generic blank working columns are retired; annotation stays in the visual.
+  const noWork    = true;
 
   // Room the visual will not use belongs to the task, not to the background.
   //
@@ -100,6 +101,10 @@ function drawMathsTurnSc(pptx, slide, data, ctx) {
 
   let qH = baseQH;
   let questionFont;
+  if (questions.length && !data.questionVisual) {
+    qH = Q_BOTTOM - Q_Y;
+    questionFont = largestQuestionFont(questions, qW, qH, qOptions);
+  }
 
   if (questions.length && data.questionVisual && baseVisualH > 0 && !stacked) {
     const wanted = measureCompositionExtent(

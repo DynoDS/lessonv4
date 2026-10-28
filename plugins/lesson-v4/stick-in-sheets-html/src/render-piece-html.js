@@ -24,7 +24,8 @@ const { A4 } = require("./layout-rules");
 // the 5mm page caption). A source copy is refused above it rather than cropped,
 // because a source with its bottom cut off is a different source.
 const PIECE_MAX_H_MM = A4.widthMm - 2 * A4.marginMm - 5;
-const { buildLabelDiagramSvg, buildForPaper } = require("../../shared/visuals/label-diagram-svg");
+const { buildLabelDiagramSvg, buildForPaper, resolveCalloutHighlight, calloutName } = require("../../shared/visuals/label-diagram-svg");
+const figureHighlight = require("../../shared/visuals/figure-highlight");
 const { withoutTaughtMarks } = require("../../shared/text/criteria-marks");
 const { PALETTES } = require("../../shared/visuals/surface-profiles");
 const STICKIN_INK = PALETTES.ink.ink;
@@ -74,7 +75,10 @@ function renderSingle(item, opts = {}) {
   const printedWidthMm = item.widthMm ?? ownWidthMm ?? def.defaultWidthMm;
   let drawn;
   try {
-    drawn = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, def.laidOutAtWidth ? { widthMm: printedWidthMm } : undefined);
+    const box = def.laidOutAtWidth
+      ? (def.fillsSpace && opts.heightMm > 0 ? { widthMm: printedWidthMm, heightMm: opts.heightMm } : { widthMm: printedWidthMm })
+      : undefined;
+    drawn = def.tightSvg(def.specFn ? def.specFn(rawSpec) : rawSpec, box);
   } catch (error) {
     // A shared drawing refuses a box it cannot be read in (numerals under the
     // pack's readable floor) by name. One piece that cannot draw is skipped and
@@ -113,6 +117,7 @@ function renderSingle(item, opts = {}) {
     widthMm: widthMm * zoom,
     heightMm: heightMm * zoom + reserveTopMm,
     flex,
+    fillsSpace: Boolean(def.fillsSpace),
   };
 }
 
@@ -257,14 +262,23 @@ function letterMarks(item) {
 // the page rules a line for each letter underneath. With a pointer line run
 // out to a margin for every letter, a river photograph printed an eighth of
 // its page (7 October 2026).
-function markedPictureSvg({ href, width, height, callouts, marks, widthMm }) {
+//
+// A letter the board points at (`highlight`, figure-highlight.js) is pointed at
+// here too: its circle keeps full strength with the dark ring round it, and
+// the other letters step back, so the printed piece matches the board.
+function markedPictureSvg({ href, width, height, callouts, marks, widthMm, highlight }) {
   const pxPerMm = width / widthMm;
   const r = 3.6 * pxPerMm;
+  const lit = resolveCalloutHighlight(callouts, highlight);
   const circles = callouts.map((c, i) => {
     const cx = (c.anchor[0] / 100) * width;
     const cy = (c.anchor[1] / 100) * height;
-    return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="#FFFFFF" stroke="${STICKIN_INK}" stroke-width="${(0.5 * pxPerMm).toFixed(1)}"/>` +
-      `<text x="${cx.toFixed(1)}" y="${cy.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-family="Comic Sans MS, Segoe Print, cursive" font-weight="bold" font-size="${(4.6 * pxPerMm).toFixed(1)}" fill="${STICKIN_INK}">${esc(marks[i])}</text>`;
+    const name = calloutName(c, i);
+    const fade = figureHighlight.opacityFor(lit, name);
+    const ring = figureHighlight.ringCircleSvg(lit, name, { x: cx, y: cy }, r, Math.max(width, height), true);
+    return (fade < 1 ? `<g opacity="${fade}">` : "") + `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="#FFFFFF" stroke="${STICKIN_INK}" stroke-width="${(0.5 * pxPerMm).toFixed(1)}"/>` +
+      `<text x="${cx.toFixed(1)}" y="${cy.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-family="Comic Sans MS, Segoe Print, cursive" font-weight="bold" font-size="${(4.6 * pxPerMm).toFixed(1)}" fill="${STICKIN_INK}">${esc(marks[i])}</text>` +
+      (fade < 1 ? "</g>" : "") + ring;
   }).join("");
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">` +
     `<image href="${href}" x="0" y="0" width="${width}" height="${height}"/>${circles}</svg>`;
@@ -290,7 +304,7 @@ async function renderLabelDiagram(item, baseDir, opts = {}) {
   const marks = opts.page ? letterMarks(item) : null;
   if (marks) {
     const heightMm = naturalWidthMm * (meta.height / meta.width);
-    const svg = markedPictureSvg({ href: `data:${mime};base64,${b64}`, width: meta.width, height: meta.height, callouts, marks, widthMm: naturalWidthMm });
+    const svg = markedPictureSvg({ href: `data:${mime};base64,${b64}`, width: meta.width, height: meta.height, callouts, marks, widthMm: naturalWidthMm, highlight: spec.highlight });
     return { html: centreWrap(inlineSvg(svg, naturalWidthMm, heightMm), naturalWidthMm), widthMm: naturalWidthMm, heightMm };
   }
   const drawing = {
@@ -302,6 +316,9 @@ async function renderLabelDiagram(item, baseDir, opts = {}) {
     // the stick-in profile's ink rather than the board's blue and green.
     blue: STICKIN_INK,
     answerColour: STICKIN_INK,
+    // The callout the board points at, ringed in the pack's dark ink.
+    highlight: spec.highlight,
+    ink: true,
   };
   // A piece with lines to write on is a sheet a child labels, so it is laid
   // out as the worksheet's is: the lines stacked beside the picture, each long

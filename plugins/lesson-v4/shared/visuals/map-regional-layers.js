@@ -12,6 +12,7 @@ const { textWidthEm } = require('../text/comic-glyph-width');
 // openPixel: how near white a raster pixel must be to count as open land or
 // sea rather than a drawn line. marginEm: the most white margin beside the
 // map a name out at sea may use.
+const PAPER_NAME_PT = 14;
 const C = Object.freeze({ gapEm: .65, rowEm: 1.2, minMapEm: 7, maxLabelEm: 8, swatchEm: 1.1, insetShare: .6, maxLabels: 24, maxLayers: 12, openPixel: 200, marginEm: 6 });
 // Interior anchors read against the actual 472 x 649 shipped raster: each is
 // the point deepest inside that country's own drawn outline. A name is placed
@@ -291,7 +292,12 @@ function build(d,p,base) {
  // inside its own country reads better than a bigger one out at sea on a
  // leader, so the layout that keeps most names at home wins; then the one
  // with the key at sea (a bigger map); then the largest names.
- const sizes=[p.fontPt,p.fontPt-(p.fontPt-p.minFontPt)/3,p.fontPt-2*(p.fontPt-p.minFontPt)/3,p.minFontPt];
+ // On paper the names are what a child reads the answer from, at a table:
+ // they start at 14pt, not the sheet's body size, because at the 9pt floor the
+ // country names on a printed South America could not be read (21 October 2026).
+ const paper=p.surface==='stickin'||p.surface==='worksheets';
+ const top=paper?Math.max(PAPER_NAME_PT,p.fontPt):p.fontPt;
+ const sizes=[top,top-(top-p.minFontPt)/3,top-2*(top-p.minFontPt)/3,p.minFontPt];
  // Last of all, a slightly smaller map, whose wider margins can take the
  // names of small coastal countries.
  let N=null,T=null,m=null,strip=0,margin=null,best=null;
@@ -305,12 +311,15 @@ function build(d,p,base) {
      // Room the slot leaves beside or above the map (its shape is fixed, so
      // one way usually has spare) is margin a name may sit in; unused margin
      // is cropped off afterwards.
-     const cap=C.marginEm*p.fontPt, sx=Math.min(cap,(Wm-mw)/2), sy=Number.isFinite(ceiling)?Math.min(cap,(room-mw*aspect)/2):0;
+     const cap=C.marginEm*top, sx=Math.min(cap,(Wm-mw)/2), sy=Number.isFinite(ceiling)?Math.min(cap,(room-mw*aspect)/2):0;
      const mg={l:sx,r:sx,t:sy,b:sy}, mm={x:sx,y:sy,w:mw,h:mw*aspect};
      const n=placeNames(s,p,t,mm,view,A,below,mg);
      if(n.failed){if(!best)N=n,m=mm;continue;}
      const home=n.labels.filter(l=>l.inside).length;
-     if(!best||home>best.home)best={n,t,home,m:mm,strip:st,margin:mg};
+     // On paper the size wins: a name out beside the map on a line is still
+     // read, and one at 9pt inside its country is not.
+     const better=!best||(paper?(t>best.t||(t===best.t&&home>best.home)):home>best.home);
+     if(better)best={n,t,home,m:mm,strip:st,margin:mg};
    }
  }
  if(!m&&!best)throw new Error('MAP_ZONE_TOO_SMALL: the regional map would be too small to read here; give it a larger slot.');

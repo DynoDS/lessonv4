@@ -4,6 +4,8 @@
 
 The 95 helpers, what each is for, and a working example of each.
 
+Most drawings take `highlight`, the part the board points at, named in words: it prints that part ringed and the rest in grey. The parts each drawing has are listed under `Pointing at part of a figure` in `references/templates.md`. A sheet copying a board figure keeps its highlight, except where pointing at that part would answer the question.
+
 **How Worksheet Designer reads this catalogue.** Read the Index just below -
 one line per helper - and pick the two to five that could carry what your
 sheet needs. Then read only those helpers' complete entries (each starts at a

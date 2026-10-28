@@ -2901,3 +2901,41 @@ def test_a_skill_turn_says_which_turn_it_is():
         if unit["kind"] in {"my-turn", "our-turn", "your-turn"}:
             unit["label"] = f"{unit['label']} - the move it makes"
     module.validate_design(design, photos)
+
+
+def test_a_beats_only_picture_always_has_a_route_to_an_image():
+    # 20 October 2026: a Year 4 PSHE lesson marked George's maths book `omit`
+    # because every child knows a maths book. No real photograph was found and
+    # six George slides went out as words only.
+    def beat(photo_refs, reps=()):
+        return {"photoRefs": list(photo_refs), "representationRefs": list(reps)}
+
+    book = photo_requirement("photo-001", "an open maths exercise book", "unsplash/book.jpg",
+                             essential=False, fallback_action="omit")
+    pool = photo_requirement("photo-002", "a float at the pool edge", "unsplash/pool.jpg")
+    archive = dict(photo_requirement("photo-003", "a Victorian classroom", "unsplash/class.jpg",
+                                     fallback_action="omit"), acquisition_mode="authentic-real")
+    photos = {p["id"]: p for p in (book, pool, archive)}
+
+    try:
+        module.validate_beat_keeps_a_picture([beat(["photo-001"])], photos)
+    except module.ContractError as exc:
+        assert "photo-001 is the only picture this beat shows" in str(exc), str(exc)
+    else:
+        raise AssertionError("a beat whose only picture can be omitted unexpectedly validated")
+
+    # Not refused: a second picture that arrives, a drawing beside it, a beat
+    # with no picture at all, a real-only source, and the same picture with ai.
+    module.validate_beat_keeps_a_picture([beat(["photo-001", "photo-002"])], photos)
+    module.validate_beat_keeps_a_picture([beat(["photo-001"], [{"ref": "rep-001"}])], photos)
+    module.validate_beat_keeps_a_picture([beat([])], photos)
+    module.validate_beat_keeps_a_picture([beat(["photo-003"])], photos)
+    made = dict(book, fallback_action="ai", essential=True)
+    module.validate_beat_keeps_a_picture([beat(["photo-001"])], {"photo-001": made})
+
+
+def test_omit_wording_agrees_with_the_beat_picture_check():
+    template = OUTPUT_TEMPLATE.read_text(encoding="utf-8")
+    components = (ROOT / "references" / "lesson-designer-components.md").read_text(encoding="utf-8")
+    assert "a picture that is the only thing a beat shows is essential" in template
+    assert "never a beat's only picture, and never because the thing is familiar" in components

@@ -109,6 +109,8 @@
 // 2026, was told 75 by 56 for a 1024 by 1536 picture). A box shape belongs in
 // `frame`, never in the size.
 
+const highlight = require('./figure-highlight');
+
 const INK = '#1A1A1A';
 const DEFAULT_BLUE = '#0070C0';   // house board blue; engines may pass their own
 const ANSWER_GREEN = '#00B050';   // the deck-wide "this is the answer" green
@@ -169,6 +171,69 @@ function renumberByReadingOrder(callouts, onLeft = (c) => c.anchor[0] < 50, read
   return callouts.map((c) => (renumbered.has(c) ? { ...c, label: renumbered.get(c) } : c));
 }
 
+// -- Pointing at one part (figure-highlight.js) --------------------------------
+// The photograph is not a part: it is what the class is looking at, so it never
+// fades. The parts are the callouts, named by the words the lesson wrote on
+// them (an answer after `||` is not part of the name). A labelled diagram that
+// numbers or letters its parts ("1 stamen", "A) source") is also pointed at by
+// that mark and by the name after it; one that prints no numbers, a write-on
+// diagram above all, is pointed at by the callout's place in the list, "2"
+// for the second line. A blank write-on line is still named by the word the
+// child is meant to write on it, which rides along in its `label`.
+//
+// The names are read from the callouts as the lesson wrote them, before the
+// poster layout renumbers a numbered set into reading order, so "3" names
+// the callout the lesson called 3 wherever its label ends up.
+function calloutName(c, k) {
+  const head = splitReveal((c && c.label) || '').head.replace(/\s+/g, ' ').trim();
+  return head || `callout ${k + 1}`;
+}
+
+function highlightParts(callouts) {
+  const list = Array.isArray(callouts) ? callouts : [];
+  const printedNumbers = list.some((c) => c && c.given && /^\s*\d+(\D|$)/.test(splitReveal(c.label || '').head));
+  const keys = list.map(calloutName);
+  const norm = (v) => String(v).toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const keySet = new Set(keys.map(norm));
+  const offered = new Map();   // normalised alias -> the names offering it
+  const aliasesOf = new Map();
+  const offer = (key, alias) => {
+    const n = norm(alias);
+    if (!n || keySet.has(n)) return;
+    if (!offered.has(n)) offered.set(n, new Set());
+    offered.get(n).add(key);
+    if (!aliasesOf.has(key)) aliasesOf.set(key, []);
+    aliasesOf.get(key).push(String(alias));
+  };
+  list.forEach((c, k) => {
+    const key = keys[k];
+    if (c && c.given) {
+      const head = splitReveal(c.label || '').head.trim();
+      const m = /^(\d+)[.):]?\s+(\S[\s\S]*)$/.exec(head) || /^([A-Za-z])[.):]\s*(\S[\s\S]*)$/.exec(head);
+      if (m) { offer(key, m[1]); offer(key, m[2]); }
+    }
+    if (!printedNumbers) offer(key, String(k + 1));
+  });
+  const seen = new Set();
+  const parts = [];
+  keys.forEach((key) => {
+    if (seen.has(key)) return;
+    seen.add(key);
+    // A name two different callouts answer to would point at whichever came
+    // last, so neither is offered it.
+    const aliases = (aliasesOf.get(key) || []).filter((a) => offered.get(norm(a)).size === 1);
+    parts.push({ key, aliases });
+  });
+  return parts;
+}
+
+// Which callouts a `highlight` lights, as a Set of callout names; empty when
+// nothing was asked for. A name the diagram does not have is refused, with
+// the names it does have.
+function resolveCalloutHighlight(callouts, value) {
+  return highlight.resolveHighlight({ highlight: value }, highlightParts(callouts), 'labelled diagram');
+}
+
 function escapeXml(s) {
   return String(s)
     .replace(/&/g, '&amp;')
@@ -210,7 +275,7 @@ function frameBox(W0, H0, frame) {
   return { W, H, dx: (W - W0) / 2, dy: (H - H0) / 2 };
 }
 
-function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN, frame = null, fontSize = null, reserve = null, rule = null, sides = 'both', snug = false, route = null }) {
+function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN, frame = null, fontSize = null, reserve = null, rule = null, sides = 'both', snug = false, route = null, highlight: highlightValue = null, ink = false }) {
   // W and H are the box everything is laid out around; W0 and H0 the picture
   // inside it. With no frame they are the same, and the drawing is unchanged.
   const W0 = width, H0 = height;
@@ -236,6 +301,8 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   const dotR    = Math.max(4, maxDim * 0.009, sized ? fsize * 0.18 : 0);
 
   const f = (n) => Number(n).toFixed(2);
+  const marked = resolveCalloutHighlight(callouts, highlightValue);
+  const names = (callouts || []).map(calloutName);
 
   // Pre-wrap every printed label so the margins can be sized to exactly what the
   // labels need. The chart then stays as large as possible, and no label is ever
@@ -498,10 +565,16 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   }
 
   const parts = [`<image x="${ox + picDX}" y="${oy + picDY}" width="${W0}" height="${H0}" href="${href}"/>`];
+  const rings = [];
 
   for (const o of list) {
     const { c, ax, ay, lx, ly, side } = o;
     const rows = o.rows;
+    // A callout the teacher is not pointing at steps back whole: its dot, its
+    // line and its words. The one pointed at keeps full strength and has its
+    // label ringed, drawn last so no other line crosses the ring.
+    const fade = highlight.opacityFor(marked, names[o.k]);
+    if (fade < 1) parts.push(`<g opacity="${fade}">`);
 
     // The leader line ends at the inner edge of the label block (the side facing
     // the picture) rather than under the text, so the line connects part to label
@@ -569,7 +642,18 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
       const bl = blankLineLen(c);
       parts.push(`<line x1="${f(lx - bl / 2)}" y1="${f(ly + fsize * 0.5)}" x2="${f(lx + bl / 2)}" y2="${f(ly + fsize * 0.5)}" stroke="${INK}" stroke-width="${f(strokeW)}"/>`);
     }
+    if (fade < 1) parts.push('</g>');
+    if (marked.has(names[o.k])) {
+      // Round the words, or the line a child writes them on, with a little
+      // clearance so the ring never touches a letter.
+      const bw = c.given ? Math.max(...rows.map(rowWidth)) : blankLineLen(c);
+      const bh = c.given ? blockHeight(o) : fsize * 1.1;
+      const top = c.given ? ly - bh / 2 : ly - fsize * 0.45;
+      const box = { x: lx - bw / 2 - fsize * 0.25, y: top - fsize * 0.2, w: bw + fsize * 0.5, h: bh + fsize * 0.4 };
+      rings.push(highlight.ringSvg(marked, names[o.k], box, Math.max(CW, CH), ink));
+    }
   }
+  parts.push(...rings);
 
   // What the printed labels came to, measured where they were drawn. A label
   // that lands on another, or runs off the edge of the drawing, cannot be read,
@@ -793,6 +877,8 @@ function tightSvg(spec = {}) {
     fontSize: spec.fontSize > 0 ? spec.fontSize : null,
     reserve: spec.reserve || null,
     snug: spec.snug === true,
+    highlight: spec.highlight,
+    ink: spec.ink === true,
   });
 }
 
@@ -800,6 +886,9 @@ function tightSvg(spec = {}) {
 // differently are not the same picture, so the presentation flags belong in
 // the key; the picture is named by its file, never by its inlined bytes.
 function cacheKey(spec = {}) {
+  // A pointed-at part is a different picture; a diagram pointing at nothing
+  // keeps the key it always had.
+  const lit = [...resolveCalloutHighlight(spec.callouts || spec.labels || [], spec.highlight)].sort().join(',');
   return [
     'label-diagram',
     String(spec.imagePath || spec.image || ''),
@@ -807,6 +896,7 @@ function cacheKey(spec = {}) {
     spec.layout || 'auto',
     spec.marginXRatio, spec.marginYRatio, spec.labelMaxChars, spec.arrow, spec.labelColour,
     JSON.stringify(spec.frame || null),
+    ...(lit ? [`highlight:${lit}`] : []),
   ].join('|');
 }
 
@@ -819,4 +909,4 @@ function leaderCueSvg() {
   return { svg, aspect: w / h, w, h };
 }
 
-module.exports = { buildLabelDiagramSvg: buildLabelDiagram, buildForPaper, tightSvg, cacheKey, leaderCueSvg };
+module.exports = { buildLabelDiagramSvg: buildLabelDiagram, buildForPaper, tightSvg, cacheKey, leaderCueSvg, highlightParts, resolveCalloutHighlight, calloutName };

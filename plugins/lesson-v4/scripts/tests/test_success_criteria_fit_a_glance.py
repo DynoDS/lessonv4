@@ -104,20 +104,20 @@ def test_review_view_surfaces_both_draw_live_decisions_and_count_cues():
 
 def test_guidance_puts_clarity_before_brevity_and_protects_complete_method():
     preferences = (ROOT / 'references/preferences.md').read_text(encoding='utf-8')
-    assert 'as few words as possible without making the child work out what they mean' in preferences
+    assert 'Procedure criteria are a direct reminder of the taught method' in preferences
     assert 'There is no word target or step target' in preferences
     assert 'repeat and call back' not in preferences
     assert 'Aim for 2-5 words' not in preferences
     assert 'Actual unreadability or insufficient working space remains a blocking fault' in preferences
     voice = (ROOT / 'references/teacher-voice.md').read_text(encoding='utf-8')
-    assert 'Short but vague is the commonest miss' in voice
+    assert 'Check for short but vague cues' in voice
     assert 'give the rule that decides the choice' in voice
     assert 'Show the arithmetic when the step is a calculation' in voice
     assert 'Aim for 2-5 words' not in voice
     reviewer = (ROOT / 'agents/design-reviewer.md').read_text(encoding='utf-8')
     assert 'short, memorable and easy to call back' not in reviewer
-    assert 'Apply the fresh-example and relevant-variation walkthrough' in reviewer
-    assert 'Supply no missing move from adult knowledge' in preferences
+    assert 'Apply the after-modelling walkthrough' in reviewer
+    assert 'without an adult translating the reminder' in preferences
     route = (ROOT / 'references/teaching-sequence-skill-based.md').read_text(encoding='utf-8')
     assert 'validator refuses a sixth' not in route
     assert 'validator refuses a step past 8' not in route
@@ -191,8 +191,9 @@ def test_guidance_names_both_misses_so_clear_steps_are_not_lengthened():
     assert 'A step that is already clear is finished' in voice
     # Decision 9 (23 September 2026): a second sentence is not a fault in
     # itself, but one that is a second step or only names the result still is.
-    assert 'A second sentence is not a fault in itself' in voice
-    assert 'a step that needs one is usually two steps' in voice
+    preferences = (ROOT / 'references/preferences.md').read_text(encoding='utf-8')
+    assert 'A second sentence is not itself a fault' in preferences
+    assert 'one that only names what the step produced goes' in preferences
 
 def test_a_step_leaning_on_the_lessons_own_vocabulary_is_brought_to_review():
     # 14 September 2026: full sentences, no fragments, and still unreadable,

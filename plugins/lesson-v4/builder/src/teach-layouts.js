@@ -559,18 +559,29 @@ const LAYOUTS = {
   // bubble and printed `Amara says: "..."` on a flat card. The speaker stands
   // on the left because their words are read first; the explanation, and the
   // success criteria when the unit carries them, are what the class reads next.
+  // The picture is optional because a story beat needs its character and the
+  // thing they are talking about together. On 21 October 2026 a Year 4 PSHE
+  // deck had to choose: George's face and his bubble, or the maths book he was
+  // stuck on, never both, so three slides lost the book. The picture stands
+  // above the cards, as the Lily and Eli Do slide had always drawn it.
   'speaker-lines': {
-    use: 'One person speaking on the left; the explanation of what they said, and the question, in cards beside them.',
-    slots: { speakers: [1, 1], lines: [0, 3], question: [0, 1], task: [0, 1], sticky: [0, 1], criteria: [0, 1] },
+    use: 'One person speaking on the left; the explanation of what they said, and the question, in cards beside them, with the thing they are talking about pictured above the cards when there is one.',
+    slots: { speakers: [1, 1], lines: [0, 3], question: [0, 1], task: [0, 1], sticky: [0, 1], criteria: [0, 1], pictures: [0, 1] },
     column: [1, 4],
-    build: (s) => ({
-      template: 'speech-bubbles-1', statementSide: 'right', statementRatio: s.criteria ? 0.62 : 0.58,
-      statement: s.criteria
-        ? { type: 'stack', items: [withWeight(s.criteria, 2),
-          Object.assign(column(s.columnItems, 'column'), { weight: 1 })] }
-        : column(s.columnItems, 'column'),
-      speakers: s.speakers
-    })
+    build: (s) => {
+      const cards = Object.assign(column(s.columnItems, 'column'), { weight: 1 });
+      const items = [];
+      if (s.pictures && s.pictures.length) items.push(withWeight(s.pictures[0], 1.4));
+      if (s.criteria) items.push(withWeight(s.criteria, 2));
+      return {
+        template: 'speech-bubbles-1', statementSide: 'right',
+        statementRatio: s.criteria || items.length ? 0.62 : 0.58,
+        statement: items.length
+          ? { type: 'stack', verticalAlign: 'center', items: items.concat([cards]) }
+          : column(s.columnItems, 'column'),
+        speakers: s.speakers
+      };
+    }
   },
   'two-speakers': {
     use: 'The idea across the top, two people underneath each saying what it means to them.',

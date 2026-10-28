@@ -68,11 +68,27 @@
 //             for a pin beside each part a step names, so the pin sits next to
 //             the words rather than on them. Parts: "card 1"..., each mark's
 //             id, "bracket", "arc", "sum", "working 1"...
+//   highlight the teacher pointing while they talk ("look at this digit"): a
+//             card, or a list of them, named "card 2" or "digit 2" (from the
+//             left), by its place ("thousands", "tens digit", "tenths") when
+//             it is a written number, or by a mark's id to light that mark's
+//             digits and words. The named cards take the shared ring and
+//             everything else fades back (shared/visuals/figure-highlight.js).
+//
+// `highlight` and `marks` mean different things and do not stand in for each
+// other. A mark is part of the picture the child reads, on every surface: the
+// box round "16", the greyed 3, the even digit outlined. It is the working. A
+// highlight is the teacher's finger: it adds the house ring and steps the rest
+// of the picture back, and the marks keep their own colours and shapes inside
+// it. So a mark that rings a digit as part of the task stays a mark, and a
+// highlight never draws a mark's ring; a mark whose digits are not lit fades
+// with the rest.
 //
 // A tick (✓) anywhere prints in answer green, because a tick is a yes.
 
 const T = require('./figure-text');
 const { INK_TONES } = require('./surface-profiles');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS ──────────────────────────────────────────────────────────────
 // The words print at `tp` points; the digits at DIGIT_EM of the unit, so they
@@ -308,6 +324,39 @@ function normalise(spec = {}) {
   }
 
   return { loose, tokens, count, marks, bracket, arc, sum, working, pinned, stem: str(spec.text).trim() };
+}
+
+// ─── Pointing at it ──────────────────────────────────────────────────────────
+
+const WHOLE_PLACES = ['ones', 'tens', 'hundreds', 'thousands', 'ten thousands', 'hundred thousands', 'millions', 'ten millions', 'hundred millions', 'billions', 'ten billions', 'hundred billions'];
+const DECIMAL_PLACES = ['tenths', 'hundredths', 'thousandths', 'ten thousandths', 'hundred thousandths', 'millionths'];
+
+// The place each card holds in a written number, by position from the left;
+// loose cards to arrange have no place yet.
+function placesOf(n) {
+  if (n.loose) return [];
+  const point = n.tokens.findIndex((t) => t.ch === '.');
+  const whole = n.tokens.slice(0, point === -1 ? n.tokens.length : point).filter((t) => t.kind === 'digit').length;
+  return range(1, n.count).map((k) => (k <= whole ? WHOLE_PLACES[whole - k] : DECIMAL_PLACES[k - whole - 1]));
+}
+
+// What a teacher can point at: every card, by its position and its place, and
+// every mark by its id. A place word that a mark's id already uses stays the
+// mark's, so one name never means two things.
+function highlightParts(n) {
+  const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const ids = new Set(n.marks.map((m) => norm(m.id)));
+  const places = placesOf(n);
+  const cards = range(1, n.count).map((k) => {
+    const place = places[k - 1];
+    const words = place ? [place, `${place} digit`, `${place.replace(/s$/, '')} digit`] : [];
+    return { key: `card ${k}`, aliases: [`digit ${k}`, ...words.filter((w) => !ids.has(norm(w)))] };
+  });
+  return [...cards, ...n.marks.map((m) => ({ key: m.id }))];
+}
+
+function markedParts(spec, n) {
+  return highlight.resolveHighlight(spec, highlightParts(n), 'set of digit cards');
 }
 
 // ─── Laying it out ───────────────────────────────────────────────────────────
@@ -744,6 +793,30 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   // Which marks touch each card.
   const marksOn = (k) => n.marks.filter((m) => m.digits.includes(k));
 
+  // The lit cards: those named, and the digits of any mark named. A part tied
+  // to digits (a mark, the arc, the bracket) stays lit when all its digits are;
+  // the question stays, because it is what the picture is for.
+  const marked = markedParts(spec, n);
+  const litCards = new Set();
+  for (const key of marked) {
+    const card = /^card (\d+)$/.exec(key);
+    if (card) litCards.add(Number(card[1]));
+    const mark = n.marks.find((m) => m.id === key);
+    if (mark) mark.digits.forEach((k) => litCards.add(k));
+  }
+  const allLit = (digits) => digits.every((k) => litCards.has(k));
+  const markLit = (m) => marked.has(m.id) || allLit(m.digits);
+  const partLit = (part) => {
+    if (!marked.size || part === 'question') return true;
+    const mark = n.marks.find((m) => m.id === part);
+    if (mark) return markLit(mark);
+    if (part === 'arc') return allLit([n.arc.from, n.arc.to]);
+    if (part === 'bracket') return allLit(n.bracket.digits);
+    if (part === 'sum') return allLit(range(1, n.count));
+    return false;
+  };
+  const dimmed = (svg, lit) => (marked.size && !lit ? `<g opacity="${highlight.DIMMED}">${svg}</g>` : svg);
+
   // Boxes and rings round their run of cards, out as far as the layout left
   // them room.
   n.marks.forEach((m, i) => {
@@ -758,9 +831,9 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
     const y2 = L.rowBottom + o.y - half;
     const sw = f(MARK_STROKE * D);
     if (m.style === 'box') {
-      over.push(`<rect x="${X(x1)}" y="${Y(y1)}" width="${f(x2 - x1)}" height="${f(y2 - y1)}" rx="${f(CARD_R * D * 1.2)}" fill="none" stroke="${col(m.colour)}" stroke-width="${sw}"/>`);
+      over.push(dimmed(`<rect x="${X(x1)}" y="${Y(y1)}" width="${f(x2 - x1)}" height="${f(y2 - y1)}" rx="${f(CARD_R * D * 1.2)}" fill="none" stroke="${col(m.colour)}" stroke-width="${sw}"/>`, markLit(m)));
     } else {
-      over.push(`<ellipse cx="${X((x1 + x2) / 2)}" cy="${Y((y1 + y2) / 2)}" rx="${f((x2 - x1) / 2)}" ry="${f((y2 - y1) / 2)}" fill="none" stroke="${col(m.colour)}" stroke-width="${sw}"/>`);
+      over.push(dimmed(`<ellipse cx="${X((x1 + x2) / 2)}" cy="${Y((y1 + y2) / 2)}" rx="${f((x2 - x1) / 2)}" ry="${f((y2 - y1) / 2)}" fill="none" stroke="${col(m.colour)}" stroke-width="${sw}"/>`, markLit(m)));
     }
   });
 
@@ -774,16 +847,35 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
     const stroke = outline ? col(outline.colour) : look.stroke;
     const sw = outline ? MARK_STROKE * D * (inkOnly ? 1.6 : 1.25) : (dim ? DIM_STROKE : CARD_STROKE) * D;
     const inset = sw / 2;
-    parts.push(
-      `<rect x="${X(c.x + inset)}" y="${Y(L.rowTop + inset)}" width="${f(c.w - sw)}" height="${f(L.ch - sw)}" rx="${f(CARD_R * D)}" fill="${look.fill}" stroke="${stroke}" stroke-width="${f(sw)}"/>`
-    );
+    let card = `<rect x="${X(c.x + inset)}" y="${Y(L.rowTop + inset)}" width="${f(c.w - sw)}" height="${f(L.ch - sw)}" rx="${f(CARD_R * D)}" fill="${look.fill}" stroke="${stroke}" stroke-width="${f(sw)}"/>`;
     if (c.ch) {
       const fill = coloured ? col(coloured.colour) : look.digit;
-      parts.push(
-        `<text x="${X(c.x + c.w / 2)}" y="${Y(L.rowTop + L.ch / 2 + DIGIT_BASE * D * 0.72)}" text-anchor="middle" font-family="${font}" font-size="${f(D)}" font-weight="bold" fill="${fill}">${T.esc(c.ch)}</text>`
-      );
+      card += `<text x="${X(c.x + c.w / 2)}" y="${Y(L.rowTop + L.ch / 2 + DIGIT_BASE * D * 0.72)}" text-anchor="middle" font-family="${font}" font-size="${f(D)}" font-weight="bold" fill="${fill}">${T.esc(c.ch)}</text>`;
     }
+    parts.push(dimmed(card, litCards.has(c.k)));
   }
+
+  // The ring, once round each run of lit cards, so "the last two digits" reads
+  // as one place to look. It hugs the cards, inside any box or ring a mark draws
+  // round them, so the mark keeps its own shape and colour.
+  const lit = new Set([...litCards].map((k) => `card ${k}`));
+  const rings = [];
+  for (let k = 1; k <= n.count; k += 1) {
+    if (!litCards.has(k)) continue;
+    let j = k;
+    while (litCards.has(j + 1)) j += 1;
+    const a = L.cards[k - 1];
+    const b = L.cards[j - 1];
+    const box = { x: a.x + dx, y: L.rowTop + dy, w: b.x + b.w - a.x, h: L.ch };
+    rings.push(highlight.ringSvg(lit, `card ${k}`, box, Math.max(L.w, L.h), inkOnly));
+    k = j;
+  }
+  // A comma, point or + is lit when the cards either side of it are.
+  const gapLit = (x) => {
+    const left = L.cards.filter((c) => c.x + c.w <= x).pop();
+    const right = L.cards.find((c) => c.x >= x);
+    return Boolean(left && right && litCards.has(left.k) && litCards.has(right.k));
+  };
 
   // Commas, decimal points and the + of a digit sum, in the gaps.
   for (const g of L.between) {
@@ -791,12 +883,13 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
       const s = PLUS_SIZE * D;
       const cy = L.rowTop + L.ch / 2;
       const sw = f(Math.max(1, 0.065 * D));
-      parts.push(`<path d="M${X(g.x - s / 2)},${Y(cy)} H${X(g.x + s / 2)} M${X(g.x)},${Y(cy - s / 2)} V${Y(cy + s / 2)}" stroke="${col('ink')}" stroke-width="${sw}" stroke-linecap="round"/>`);
+      parts.push(dimmed(`<path d="M${X(g.x - s / 2)},${Y(cy)} H${X(g.x + s / 2)} M${X(g.x)},${Y(cy - s / 2)} V${Y(cy + s / 2)}" stroke="${col('ink')}" stroke-width="${sw}" stroke-linecap="round"/>`, gapLit(g.x)));
     } else {
       // A comma or a decimal point sits on the digits' baseline.
-      parts.push(
-        `<text x="${X(g.x)}" y="${Y(L.rowTop + L.ch / 2 + DIGIT_BASE * D * 0.72)}" text-anchor="middle" font-family="${font}" font-size="${f(D * SEP_SIZE)}" font-weight="bold" fill="${col('ink')}">${T.esc(g.glyph)}</text>`
-      );
+      parts.push(dimmed(
+        `<text x="${X(g.x)}" y="${Y(L.rowTop + L.ch / 2 + DIGIT_BASE * D * 0.72)}" text-anchor="middle" font-family="${font}" font-size="${f(D * SEP_SIZE)}" font-weight="bold" fill="${col('ink')}">${T.esc(g.glyph)}</text>`,
+        gapLit(g.x)
+      ));
     }
   }
 
@@ -809,15 +902,18 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
     const c = col(n.arc.colour);
     const head = HEAD_LEN * tp * 1.2;
     const endY = top - head * 0.8;
-    over.push(`<path d="M${X(ax)},${Y(top)} C${X(ax + d)},${Y(cy)} ${X(bx - d)},${Y(cy)} ${X(bx)},${Y(endY)}" fill="none" stroke="${c}" stroke-width="${f(ARC_STROKE * tp)}" stroke-linecap="round"/>`);
-    over.push(headSvg(bx, top, bx - d * 0.15, top - 2 * head, c, tp * 1.2, X, Y));
+    over.push(dimmed(
+      `<path d="M${X(ax)},${Y(top)} C${X(ax + d)},${Y(cy)} ${X(bx - d)},${Y(cy)} ${X(bx)},${Y(endY)}" fill="none" stroke="${c}" stroke-width="${f(ARC_STROKE * tp)}" stroke-linecap="round"/>` +
+        headSvg(bx, top, bx - d * 0.15, top - 2 * head, c, tp * 1.2, X, Y),
+      partLit('arc')
+    ));
   }
 
   // The digit sum's lines, joining at one point.
   if (L.sumGeo) {
     const { from, joinX, joinY } = L.sumGeo;
     for (const c of L.cards) {
-      over.push(`<line x1="${X(c.x + c.w / 2)}" y1="${Y(from)}" x2="${X(joinX)}" y2="${Y(joinY)}" stroke="${col('ink')}" stroke-width="${f(LINE_STROKE * tp)}" stroke-linecap="round"/>`);
+      over.push(dimmed(`<line x1="${X(c.x + c.w / 2)}" y1="${Y(from)}" x2="${X(joinX)}" y2="${Y(joinY)}" stroke="${col('ink')}" stroke-width="${f(LINE_STROKE * tp)}" stroke-linecap="round"/>`, litCards.has(c.k)));
     }
   }
 
@@ -825,36 +921,54 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   if (L.bracketGeo) {
     const { x1, x2, y } = L.bracketGeo;
     const h = BRACKET_H * tp;
-    over.push(`<path d="M${X(x1)},${Y(y)} V${Y(y + h)} H${X(x2)} V${Y(y)}" fill="none" stroke="${col(n.bracket.colour)}" stroke-width="${f(BRACKET_STROKE * tp)}" stroke-linejoin="round"/>`);
+    over.push(dimmed(`<path d="M${X(x1)},${Y(y)} V${Y(y + h)} H${X(x2)} V${Y(y)}" fill="none" stroke="${col(n.bracket.colour)}" stroke-width="${f(BRACKET_STROKE * tp)}" stroke-linejoin="round"/>`, partLit('bracket')));
   }
 
   // Arrows down between working lines.
   for (const s of L.shapes) {
     if (s.kind !== 'arrow') continue;
     const head = HEAD_LEN * tp;
-    over.push(`<line x1="${X(s.x)}" y1="${Y(s.y1)}" x2="${X(s.x)}" y2="${Y(s.y2 - head * 0.8)}" stroke="${col('ink')}" stroke-width="${f(LINE_STROKE * tp * 1.3)}"/>`);
-    over.push(headSvg(s.x, s.y2, s.x, s.y2 - head, col('ink'), tp, X, Y));
+    over.push(dimmed(
+      `<line x1="${X(s.x)}" y1="${Y(s.y1)}" x2="${X(s.x)}" y2="${Y(s.y2 - head * 0.8)}" stroke="${col('ink')}" stroke-width="${f(LINE_STROKE * tp * 1.3)}"/>` +
+        headSvg(s.x, s.y2, s.x, s.y2 - head, col('ink'), tp, X, Y),
+      false
+    ));
   }
 
   // The words: each line set from its measured left edge, so a tick inside it
   // can print green.
   for (const t of L.texts) {
     const c = col(t.colour);
+    const textLit = partLit(t.part);
     if (t.write) {
       const yy = t.y + T.BASELINE * tp + 0.1 * tp;
-      over.push(`<line x1="${X(t.x)}" y1="${Y(yy)}" x2="${X(t.x + t.w)}" y2="${Y(yy)}" stroke="${col('ink')}" stroke-width="${f(Math.max(0.75, 0.06 * tp))}"/>`);
+      over.push(dimmed(`<line x1="${X(t.x)}" y1="${Y(yy)}" x2="${X(t.x + t.w)}" y2="${Y(yy)}" stroke="${col('ink')}" stroke-width="${f(Math.max(0.75, 0.06 * tp))}"/>`, textLit));
       continue;
     }
     t.lines.forEach((line, i) => {
       const lw = T.widthPt(line, tp, bold);
       const lx = t.align === 'end' ? t.x + t.w - lw : t.x;
       const yy = t.y + i * T.LINE * tp + T.BASELINE * tp;
-      over.push(textLine(line, lx, yy, tp, c, tick, { font, bold, X, Y }));
+      over.push(dimmed(textLine(line, lx, yy, tp, c, tick, { font, bold, X, Y }), textLit));
     });
   }
 
-  const svg = T.svgDoc(L.w, L.h, [...parts, ...over]);
-  return { svg, w: L.w, h: L.h, aspect: L.w / L.h, layout: L, anchors: anchorsOf(L) };
+  if (!marked.size) {
+    const svg = T.svgDoc(L.w, L.h, [...parts, ...over]);
+    return { svg, w: L.w, h: L.h, aspect: L.w / L.h, layout: L, anchors: anchorsOf(L) };
+  }
+  // A ring round cards at the picture's edge reaches past it, so the picture
+  // grows by that much rather than cut the ring off, and the wall's pin spots
+  // move with it.
+  const reach = require('./figure-highlight').ringStroke(Math.max(L.w, L.h)) * 0.85;
+  const w = L.w + 2 * reach;
+  const h = L.h + 2 * reach;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="${f(-reach)} ${f(-reach)} ${f(w)} ${f(h)}">${[...parts, ...over, ...rings].join('')}</svg>`;
+  const anchors = {};
+  for (const [part, [ax, ay, ar]] of Object.entries(anchorsOf(L))) {
+    anchors[part] = [((ax / 100) * L.w + reach) / w * 100, ((ay / 100) * L.h + reach) / h * 100, (ar / 100) * L.h / h * 100];
+  }
+  return { svg, w, h, aspect: w / h, layout: L, anchors };
 }
 
 function headSvg(tipX, tipY, fromX, fromY, colour, tp, X, Y) {
@@ -905,7 +1019,9 @@ function anchorsOf(L) {
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = T.resolveProfile(profileOrSurface, box);
-  return `digit-cards:${T.profileKey(p)}:${JSON.stringify(normalise(spec))}`;
+  const n = normalise(spec);
+  const hi = [...markedParts(spec, n)].sort().join(',');
+  return `digit-cards:${T.profileKey(p)}:${JSON.stringify(n)}:${hi}`;
 }
 
 // The widest the drawing ever draws: it stops growing once its words reach the
@@ -916,4 +1032,4 @@ function maxWidthPt(spec = {}, profileOrSurface = 'worksheets', box) {
   return layoutAt(n, { ...profile, widthPt: 1e6, heightPt: null }, profile.fontPt * (profile.grow || 1), DIGIT_EM).w;
 }
 
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, maxWidthPt, STYLES, COLOURS: Object.keys(COLOURS), MAX_DIGITS };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, maxWidthPt, highlightParts, STYLES, COLOURS: Object.keys(COLOURS), MAX_DIGITS };

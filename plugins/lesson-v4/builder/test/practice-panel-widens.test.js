@@ -149,28 +149,18 @@ test('a short list keeps the 4.60in panel where it has always been', () => {
   }
 });
 
-test('a number-line slide still draws when the panel widens: the line goes above the working space', () => {
-  const drawn = draw({ template: 'maths-turn-sc', title: 'My Turn', questions: ['What number is the arrow pointing to?'],
-    questionVisual: NUMBER_LINE, workingSpace: true, criteria: { type: 'steps', steps: LONG.numberLine } });
-  assert.equal(drawn.panel.w, 5.5);
-  assert.ok(drawn.stepFonts.every((pt) => pt >= 18));
-  const picture = drawn.left.find((o) => o.fill && o.fill.color === 'FFFFFF' && o.y > 1.5);
-  assert.ok(picture && drawn.work, 'the picture and the working space are both drawn');
-  assert.ok(picture.y + picture.h <= drawn.work.y, 'the working space sits below the picture');
-  assert.ok(Math.abs(picture.w - drawn.work.w) < 1e-9 && Math.abs(drawn.work.w - 7.09) < 1e-9, 'both take the whole side');
-  // The picture takes at most half of the height below the question; the
-  // working space keeps the rest.
-  assert.ok(picture.h <= 0.5 * (7.25 - picture.y) + 1e-9, `the picture took ${picture.h.toFixed(2)}in`);
-  assert.ok(drawn.work.h >= picture.h - 0.2, 'the working space kept the other half');
-});
-
-test('at 4.60in a number line keeps its place beside the working space', () => {
-  const drawn = draw({ template: 'maths-turn-sc', title: 'My Turn', questions: ['Round 346 to the nearest ten.'],
-    questionVisual: { type: 'numberline', start: 340, end: 350, interval: 5, labels: [340, 350], lineLabels: false },
-    workingSpace: true, criteria: { type: 'steps', steps: ROUNDING } });
-  assert.equal(drawn.panel.w, 4.6);
-  assert.ok(drawn.work.x > 4, 'the working space is beside the picture, not below it');
-});
+for (const [steps, width] of [[LONG.numberLine, 5.5], [ROUNDING, 4.6]]) {
+  test(`a number line uses the available width beside a ${width}in criteria panel`, () => {
+    const drawn = draw({ template: 'maths-turn-sc', title: 'My Turn', questions: ['What number is the arrow pointing to?'],
+      questionVisual: NUMBER_LINE, workingSpace: true, criteria: { type: 'steps', steps } });
+    assert.equal(drawn.panel.w, width);
+    assert.ok(drawn.stepFonts.every((pt) => pt >= 18));
+    const picture = drawn.left.find((o) => o.fill && o.fill.color === 'FFFFFF' && o.y > 1.5);
+    assert.ok(picture, 'the diagram is drawn');
+    assert.equal(drawn.work, undefined, 'no generic blank working area');
+    assert.ok(Math.abs(picture.w - (drawn.panel.x - 0.52)) < 1e-9, 'the diagram gets the whole available width');
+  });
+}
 
 test('a list no width holds is refused at the widest, before anything is drawn', () => {
   const long = 'Write each digit in its own column, lined up under the digit above it, and say its value.';
@@ -233,25 +223,20 @@ test('only the list not fitting widens the panel: a fraction wall too shallow in
   }
 });
 
-test('at 4.60in nothing moves: a picture that cannot sit beside the working space is refused as before, and goes above only once the panel widens', () => {
+test('a write-in chart keeps meaningful blanks while using the width freed by retiring working space', () => {
   const chart = { type: 'place-value-chart', columns: ['Thousands', 'Hundreds', 'Tens', 'Ones'],
     rows: [{ label: '7,482', cells: ['7', '4', '8', '2'] }, { label: 'Value', cells: ['', '', '', ''] }] };
-  const slideWith = (steps) => ({ template: 'maths-turn-sc', title: 'Our Turn', questions: ['Write the number in expanded form.'],
-    questionVisual: chart, workingSpace: true, criteria: { type: 'steps', steps } });
-  let message = '';
-  try {
-    drawSlide(new PptxGenJS(), new PptxGenJS().addSlide(), slideWith(ROUNDING), { slideIndex: 0, cardLook: true, imageDims: {} });
-  } catch (err) {
-    message = err.message;
+  for (const [steps, width] of [[ROUNDING, 4.6], [LONG.addition, 5.5]]) {
+    const drawn = draw({ template: 'maths-turn-sc', title: 'Our Turn', questions: ['Write the number in expanded form.'],
+      questionVisual: chart, workingSpace: true, criteria: { type: 'steps', steps } });
+    assert.equal(drawn.panel.w, width);
+    assert.equal(drawn.work, undefined);
+    assert.ok(drawn.left.some(o => o.fill && o.fill.color === 'FFFFFF' && o.w > 7), 'chart has the full task width');
   }
-  assert.match(message, /^PLACE_VALUE_WRITE_IN_TOO_NARROW/, 'at 4.60in the chart stays beside the working space and is refused, as before');
-  const drawn = draw(slideWith(LONG.addition));
-  assert.equal(drawn.panel.w, 5.5);
-  assert.ok(drawn.work.x < 1 && drawn.work.w > 7, 'once the panel widens the chart goes above the working space');
 });
 
-test('a photo beside the working space stays beside it, and its findings are reported once', () => {
-  // A photograph always draws, so it does not move above the working space;
+test('a photo uses the task area without generic working space, and its findings are reported once', () => {
+  // Missing photographs still report once from the real drawing;
   // below its readable floor it is reported, once, from the real drawing, not
   // again from the tries that chose the panel's width or the picture's place.
   const slideData = { template: 'maths-turn-sc', title: 'My Turn', questions: ['What is happening in the photograph?'],
@@ -265,15 +250,15 @@ test('a photo beside the working space stays beside it, and its findings are rep
   const slide = pptx.addSlide();
   drawSlide(pptx, slide, slideData, { slideIndex: 0, cardLook: true, imageDims: {}, lesson: { slides: [slideData] } });
   const panel = slide._slideObjects.find((o) => o.options && o.options.fill && o.options.fill.color === 'D5F5E3').options;
-  const work = slide._slideObjects.find((o) => o.options && o.options.fill && o.options.fill.color === 'F2F2F2').options;
+  const work = slide._slideObjects.find((o) => o.options && o.options.fill && o.options.fill.color === 'F2F2F2');
   assert.equal(panel.w, 6.35);
-  assert.ok(work.x > 3, 'the working space is still beside the photo');
+  assert.equal(work, undefined, 'the photo does not reserve generic working space');
   const floor = pictureFloorFindings().filter((f) => f.slide === 1);
-  assert.equal(floor.length, 1, `the floor finding was reported ${floor.length} times`);
+  assert.equal(floor.length, 0, 'the full task width keeps the photo above its readability floor');
   assert.equal(missingPictureFindings().length, 1);
   assert.equal(zoneFillWarnings().length, new Set(zoneFillWarnings().map((f) => f.message)).size, 'a zone finding was repeated');
   const floorWarnings = getWarnings().filter((w) => /on its short side/.test(w));
-  assert.equal(floorWarnings.length, 1, floorWarnings.join('\n'));
+  assert.equal(floorWarnings.length, 0, floorWarnings.join('\n'));
   clearPictureFloor();
   clearZoneFill();
   clearMissingPictures();

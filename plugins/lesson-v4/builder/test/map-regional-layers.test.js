@@ -11,7 +11,11 @@ test('every named country label is placed once, inside the picture, clear of the
    const profile=profileFor(surface,{widthPt:900});
    const L=map.describeLayout(spec,profile);
    assert.equal(L.labels.length,Object.keys(regional.COUNTRIES).length);
-   assert(L.fontPt>=profile.minFontPt&&L.fontPt<=profile.fontPt);
+   // On paper the names a child reads the answer from start at 14pt, above the
+   // sheet's body size (21 October 2026: at the 9pt floor they could not be read).
+   const paper=surface==='worksheets'||surface==='stickin';
+   assert(L.fontPt>=profile.minFontPt&&L.fontPt<=(paper?Math.max(14,profile.fontPt):profile.fontPt));
+   if(paper)assert.equal(L.fontPt,14,surface+' names at 14pt where the space allows');
    L.labels.forEach((b,i)=>{
      assert(b.x>=-.01&&b.y>=-.01&&b.x+b.w<=L.w+.01&&b.y+b.h<=L.h+.01,b.text+' leaves the picture');
      L.labels.slice(i+1).forEach(other=>assert(!overlap(b,other),b.text+' covers '+other.text));

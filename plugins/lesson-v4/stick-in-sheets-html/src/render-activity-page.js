@@ -198,6 +198,21 @@ async function figurePages(item, natural, render, { printableWMm, printableHMm, 
   const aspect = natural.widthMm / natural.heightMm;
   const key = keyOf(item);
   const taskH = taskHeightMm(task, printableWMm, key);
+  // A figure that lays itself out in a width and a depth (a map) is given the
+  // whole space under its task and arranges itself in it, one to a page.
+  if (natural.fillsSpace) {
+    const piece = await render(printableWMm, 1, printableHMm - taskH);
+    const body = `<div style="width:${printableWMm}mm">${taskHtml(task, key)}` +
+      `<div style="display:flex;justify-content:center">${piece.html}</div></div>`;
+    const copies = copiesFor(item.per || (item.spec && item.spec.per), classSize);
+    return {
+      pages: Array.from({ length: copies }, () => pageHtml("", body)),
+      perPage: 1,
+      widthMm: piece.widthMm,
+      heightMm: piece.heightMm,
+      aspect,
+    };
+  }
   const sizes = await sizesOf(natural, render, printableWMm);
   const oneRoomH = printableHMm - taskH;
   const halfRoomH = (printableHMm - TWO_UP_GAP_MM) / 2 - taskH;

@@ -1465,12 +1465,16 @@ baseline.
 
 Launch the selected role directly.
 
-Add this line to every repair prompt, whichever owner it goes to:
+Add these lines to every repair prompt, whichever owner it goes to:
 
 ```text
 Edit the named file in place: change the values this repair names and leave
 every other byte as it is. Do not delete and recreate it, and do not re-emit the
 whole file to alter part of it. See [PLUGIN_ROOT]/references/revising-in-place.md.
+If the specification is right and the plugin's own code is what refuses it,
+change nothing (a right specification rewritten to get past the plugin loses
+the design) and return `PLUGIN_GAP: [what the design asks] - [what the plugin
+does instead, and its diagnostic]`.
 ```
 
 `Already passed - leave unchanged` protects passing content from being redesigned
@@ -1532,6 +1536,9 @@ missing picture *was* the task's evidence has named the one fault only the
 Lesson Designer can fix: it goes to the content-gap picture wave whenever it
 surfaces, never to exclusion.
 
+**A repair returning `PLUGIN_GAP:`** takes the temporary-fix route: read
+`[PLUGIN_ROOT]/references/temporary-fix-route.md` and follow it.
+
 ---
 
 ## Phase 3.6 - Finalisation
@@ -1554,6 +1561,8 @@ Run picture provenance once from the final schema-2 requirements and
   --output "[WORKING_DIR]/picture-provenance.json" \
   --summary-output "[WORKING_DIR]/picture-provenance-summary.json"
 ```
+
+After a temporary fix, run its `tidy` (`temporary-fix-route.md`).
 
 Require `PICTURE_PROVENANCE_OK` before removing transient picture work. Keep
 requirements snapshots, assignments, terminal receipts and provenance. Delete
@@ -1615,7 +1624,8 @@ Write `[WORKING_DIR]/run-report.md` with:
   this run built and left waiting in `pending-helper/`. Say in plain English
   what each waiting helper draws, name its folder, and say `/install-helper`
   over that folder installs it. Nothing else surfaces it, so one the report
-  omits is one nobody installs;
+  omits is one nobody installs. A temporary fix is reported here as
+  `temporary-fix-route.md` says;
 - the worker-launch audit marker and the `WORKER_TIMELINE:` block it prints
   under `## Worker launches`, both from `worker-launch.py audit` run
   immediately beforehand and copied verbatim;

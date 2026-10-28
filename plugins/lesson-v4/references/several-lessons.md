@@ -9,7 +9,7 @@ The reason is memory. One lesson run fills most of the chat that conducts it,
 so a chat conducting several at once juggles several runs' instructions and
 mixes them up, and a run handed to a subagent cannot launch its own workers in
 the background, so every step waits on the one before it (2 October 2026).
-On Claude Code, each lesson therefore runs as its own background session with
+On Claude Code and Codex with a runnable CLI, each lesson runs as its own background session with
 a fresh memory, exactly as if the teacher had opened a chat for it.
 
 `lesson-batch.py` below means `"[PYTHON]" "[PLUGIN_ROOT]/scripts/lesson-batch.py"`,
@@ -44,8 +44,8 @@ the teacher anything, so a question left for it becomes a guess.
 
 Run `lesson-batch.py route`.
 
-- `BATCH_ROUTE=in-chat`: this host cannot start separate sessions (Codex, a
-  computer without the `claude` command, or an account without auto mode).
+- `BATCH_ROUTE=in-chat`: the selected host's command or automatic approval
+  mode is unavailable.
   Build the lessons one after another in this chat as ordinary runs, in the
   teacher's order, each with its planned save slot from step 3 named as the
   teacher's day. Tell the teacher this in one line, with the
@@ -58,6 +58,14 @@ Run `lesson-batch.py route`.
   mode starts here; if it prints `BATCH_ROUTE=in-chat`, take the in-chat route
   above and say why in one line. On no, take the in-chat route.
 - `BATCH_ROUTE=sessions` with `BATCH_AGREED=yes`: carry on.
+
+Codex uses `codex exec --approve-for-me`, with separate consent from Claude
+Code's auto mode. Run these commands with `LESSON_BATCH_HOST=codex` when host
+detection is unavailable. The saved batch records its host so its keeper and
+resume never switch engines. Keep approval review enabled; a denied operation
+is a reported block, not a reason to disable permissions. Each Codex session
+loads this package's skill by its absolute path and receives the exact teacher
+brief in a separate file.
 
 Before starting any session, run the setup check in the main chat as the
 skill describes (`check-setup.js`), and fix what it asks for here, where the

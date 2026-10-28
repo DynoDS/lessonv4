@@ -193,11 +193,11 @@ The lesson opens on the starter (slide 1). Its Date and LO sit in the `starter` 
 
 My Turn / Our Turn / Your Turn is a teaching move, not a maths-only feature, so it also runs in grammar, punctuation, spelling and comprehension — but there the modelled answer is a word, a choice or a mark with no working to write out. Those non-numerical turns belong on `body-full` (or another free template), where the question and its options, sentence, `table` or `matching` fill the body. The maths templates here expose no body zone and size their cards for short sums, so non-numerical content placed in them comes out cramped or unrendered. The slide-designer's skill-based mapping covers which to choose.
 
-**Choose the template from the planned live action.** Follow the upstream modelling state and specified working. A reference-only layout is valid when all annotation is inside the helper or no on-slide working is intended. When the model requires separate on-slide working, use the existing working-space option in `maths-turn-sc` or `maths-turn-ref-sc`, or a free layout with a clear unboxed area. Protect readable reference size and enough room for the actual writing; do not choose a template merely from the subject name.
+**Choose the template from the planned live action.** Follow the upstream modelling state and `modelling-formats.md`. Keep questions and useful references readable, with meaningful blanks inside helpers available for completion. Do not reserve a generic blank working area, boxed or unboxed; the teacher decides where to produce separate working.
 
 #### `writing-turn-ref-sc`
 
-**Purpose:** Question strip, large reference panel and full-height SC panel. Use this reference-only layout when the upstream state needs no separate on-slide writing. If the teacher will build working beside the reference, choose `maths-turn-ref-sc` with `hideWorkingSpace: false` or a suitable free layout instead.
+**Purpose:** Question strip, large reference panel and full-height SC panel. Use this reference-only layout for a question and useful reference. Follow `modelling-formats.md` for annotation; do not reserve a separate blank working area.
 
 **Slots:** `title`, `questions`, `criteria`, `criteriaLabel`, `flipchart` (see `maths-turn-sc`'s entry below for what it renders), plus:
 - `reference` (optional) — a content object holding whatever the teacher and class need visible during modelling: a fraction wall or number line shown for context, a price list, a results table, or leave it out entirely for a plain calculation with nothing else to show.
@@ -216,7 +216,7 @@ There's no `workingSpace` flag to set here: this template never draws a working 
 - `questionNumbering` (optional) — omit or use `"none"` for My Turn and ordinary non-Maths Our Turn. Use `"teacher-led"` only for a Maths Our Turn containing two or more discrete questions; it renders `(a)`, `(b)`, `(c)` and restarts on that turn.
 - `flipchart` (optional) — set `true` when the lesson-designer marked this criteria `drawLive: true` (a labelled set a later lesson assumes, or a method children run across a sequence of lessons). Renders a small flipchart drawing in the panel's top-right corner suggesting to the teacher that this is worth building live and keeping; nothing else on the slide changes. Applies across the `*-sc` family (`maths-turn-sc`, `maths-turn-ref-sc`, `maths-your-turn-sc`, `writing-turn-ref-sc`) — set it at the slide level beside `criteria`, with `criteriaRef` naming that displayed source criterion. The ID must also be in the slide's `successCriteriaRefs`.
 - `questionVisual` (required) — a content object (clock, diagram, image, etc.) — the diagram the question is *about* (e.g. "What time is shown on this clock?", "What fraction is shaded?").
-- `workingSpace` — set `true` when the planned model needs the separate annotation column; otherwise explicitly pass `false` so the question visual uses the full width. Check the reference and handwriting area at actual slide size. No visual and no planned working usually calls for a simpler layout.
+- `workingSpace` — use `false`; generic working columns are retired. The question visual uses the full available width. Meaningful blanks inside the visual remain available for completion.
 
 **The panel widens itself for a long list.** Across the `*-sc` family the success-criteria panel is 4.60″ wide, and it widens to 5.50″ or 6.35″ only when the whole list needs the room to read at 18pt, never past half the slide; the question, reference, cards and working space beside it give up what it takes. There is nothing to set, and a list that fits 4.60″ keeps it (`slide-success-criteria.md` says how much each width holds). On `maths-turn-sc`, when the panel has widened and the `questionVisual` cannot be drawn in its half of the side beside the working space, the builder puts it above the working space instead.
 
@@ -229,7 +229,7 @@ There's no `workingSpace` flag to set here: this template never draws a working 
 - `referenceLabel` (optional) — short label rendered at the top-left of the reference panel ("Price list", "Speeds (mph)", "Ingredients"). Omit for unlabelled references.
 - `questionNumbering` (optional) — omit or use `"none"` for My Turn and ordinary non-Maths Our Turn. Use `"teacher-led"` only for a Maths Our Turn containing two or more discrete questions; it renders `(a)`, `(b)`, `(c)` and restarts on that turn.
 - `questionVisual` (optional) — the diagram the question is about, same as `maths-turn-sc`.
-- `hideWorkingSpace` — pass `false` when the planned model needs separate working below the reference; pass `true` when it does not, expanding the reference instead. This flag has the opposite polarity to `maths-turn-sc`'s `workingSpace`.
+- `hideWorkingSpace` — use `true`; generic working areas are retired. The reference expands into that room unless a question visual uses it.
 
 **When to choose this over `maths-turn-sc`:** if the question can stand on its own without the reference visible, use `maths-turn-sc` and embed the values in the question stem. If the question is *about* a separate dataset that children read repeatedly while solving — most SATs-style "use the price list / table to answer" problems — use `maths-turn-ref-sc`.
 
@@ -317,7 +317,7 @@ A text slot is a string, or an object with `value`, optional `textWeight: "regul
 | `picture-steps` | `pictures`, `steps` 2 to 5 | The explanation as numbered steps beside the picture, for something that happens in order. |
 | `picture-with-statement` | `pictures`, `lead` | The picture takes most of the slide, with one statement along the bottom. |
 | `one-speaker` | `pictures`, `speakers` | The object on one side and one person's claim on the other, for the class to test. |
-| `speaker-lines` | `speakers` 1, `lines` up to 3, `question` optional, `task` optional, `sticky` optional, `criteria` optional | One person speaking in a bubble on the left, and the teaching about what they said in cards beside them: what their words tell us, the question, the line to remember. For a Teach beat that opens with someone's words (a child's worry, a claim, a model of what to say); `one-speaker` is for a speaker beside a picture with no explanation. With `criteria`, the panel stands above the cards. Cards in total: 1 to 4. |
+| `speaker-lines` | `speakers` 1, `lines` up to 3, `question` optional, `task` optional, `sticky` optional, `criteria` optional, `pictures` up to 1 | One person speaking in a bubble on the left, and the teaching about what they said in cards beside them: what their words tell us, the question, the line to remember. For a Teach beat that opens with someone's words (a child's worry, a claim, a model of what to say), or a story beat where an invented child says what they think (`slide-speech-and-characters.md` → The bubble holds only the spoken words); `one-speaker` is for a speaker beside a picture with no explanation. With `pictures`, the picture of what they are talking about stands above the cards, so a story slide keeps both the child and the thing. With `criteria`, the panel stands above the cards. Cards in total: 1 to 4. |
 | `two-speakers` | `statement`, `speakers` 2 | The idea across the top, two people underneath each saying what it means to them. |
 | `statement-support-sticky` | `lead`, `lines`, `sticky` | One big statement, a supporting line under it, and the line to remember along the bottom. |
 | `two-cards-bar` | `lines` 2, `sticky` optional, `lead` optional | Two equal cards side by side, with the idea that joins them along the bottom. |
@@ -1881,6 +1881,32 @@ The parts each figure has:
 | `carroll` | `topLeft`, `topRight`, `bottomLeft`, `bottomRight` (also `both`, `row-only`, `column-only`, `neither`) |
 | `tally-chart` | each row's own label |
 | `pictogram` | each category's own name |
+| `map` | each marked place's label, each continent, ocean and sea name, `Equator` and the Tropics when drawn. A journey map (named places, nothing shaded) points at its places and the Equator by itself; set `highlight` only to point elsewhere (`"Africa"`) |
+| `bar-model` | `whole`, `part 1`, `part 2`… or a part's own label; comparison bars `bar 1`, `bar 2`, `difference` |
+| `bar-chart` | each category's name |
+| `line-graph` | each reading by its x value as the axis prints it (`"3"`) |
+| `fraction-wall` | `whole`, `1/2`, `1/3`… (also `halves`, `thirds row`) |
+| `mult-grid` | `row 3`, `column 4`, `3 x 4` |
+| `part-whole-model` | `whole`, `part 1`, `part 2`… or a circle's own number or word |
+| `base-ten-blocks` | `thousands`, `hundreds`, `tens`, `ones` |
+| `counter-group` | `group 1`, `group 2`… or a group's own value or place word |
+| `digit-cards` | `card 1`… or a digit's place (`tens`); a mark's id lights that mark |
+| `pyramid` | `row 1`… (`top`, `bottom`), `row 2 brick 1` |
+| `number-network` | `circle 1`… or its number; `line 1`… or `30 and 70` |
+| `timeline` | each era's and each date mark's own label |
+| `concept-map` | `centre`, each spoke's own words |
+| `continuum-line` | `left`, `right`, `middle`, or the label's own words |
+| `fishbone` | `effect`, each cause's own words |
+| `process-chain`, `cycle` | each stage's own words or `stage 2`; in a cycle also `arrow 1` |
+| `classification-key` | each question's words or `question 1`; each answer's words or `answer 1` |
+| `label-diagram` | each callout by its label word (`"stem"`). Name it by its word, not its number: the board can renumber labels into reading order |
+| `circuit-diagram` | `cells`, `lamp` (`lamp 2` when there are several), `buzzer`, `switch`, `gap`, `wire`; in a row, `circuit B` or `circuit B gap` |
+| `circuit-symbol-bank` | each symbol's name (`open switch`) |
+| `parachute-forces` | `air resistance`, `gravity`, `large canopy`, `small canopy`, `cords`, `loads` |
+
+`rainforest-layers`, `place-value-chart`, `numberline`, `ten-frame` and `coordinate-grid` carry their own `highlight`, described with each. A picture whose reading is the point (a clock, a coin, a ruler, a dial, an angle) has nothing to point at and takes none.
+
+On paper, the same field does the same thing in ink, so a sheet or printed piece copied from the slide keeps the slide's highlight. Leave it off a piece where pointing at a part would answer the child's task.
 
 One part or several (`"overlap"` or `["Dogs", "Fish"]`). A name the figure does not have is refused by name and told what its parts are, rather than drawing nothing. Highlighting every part is refused too, because a picture with nothing faded points at nothing.
 

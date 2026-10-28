@@ -1,5 +1,5 @@
 ---
-description: Install a helper a lesson run built but left waiting. Takes the pending-helper folder from a lesson's working directory, copies it into the package, wires it in, proves every picture it draws, and stops for the teacher before anything is published. Use when a run report says a helper is waiting, or the teacher says to install one.
+description: Install a helper or a temporary fix a lesson run built but left waiting. Takes the pending-helper folder from a lesson's working directory, copies it into the package, wires it in, proves every picture it draws, and stops for the teacher before anything is published. Use when a run report says a helper is waiting, or the teacher says to install one.
 ---
 
 # Install a Waiting Helper
@@ -39,6 +39,32 @@ You are writing to the package, so you also need a writable checkout:
 ```
 
 Store the value after `PLUGIN_SOURCE_ROOT=`. On `PLUGIN_SOURCE_ROOT_UNAVAILABLE`, stop and tell the teacher plainly that this computer is not set up to change the plugin (developer mode is off), and that the helper is safe where it is. The person who develops the plugin turns developer mode on once with `"[PYTHON]" "[PLUGIN_ROOT]/scripts/lesson-settings.py" developer on "<their checkout's plugin folder>"`. Never write to an installed cache copy, and never search for a checkout yourself.
+
+## A temporary fix instead of a helper
+
+A run that met something the plugin could not draw may have fixed it for that
+lesson alone, in a copy, and left the fix waiting at `[WORKING_DIR]/temporary-fix/`
+(it holds `note.md`, `record.json`, `fix.diff` and the changed files). It is
+already proved: the plugin's tests ran on the copy and the run looked at the
+page it made. What nobody has done is decide it belongs in every lesson, which
+is what keeping it does.
+
+Read `note.md` and `fix.diff` so you can tell the teacher what it changes. Then
+preview and apply it to the checkout:
+
+```bash
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/temporary-fix.py" apply --fix "[the temporary-fix folder]" --to "[PLUGIN_SOURCE_ROOT]" --dry-run
+"[PYTHON]" "[PLUGIN_ROOT]/scripts/temporary-fix.py" apply --fix "[the temporary-fix folder]" --to "[PLUGIN_SOURCE_ROOT]"
+```
+
+`TEMPORARY_FIX_APPLY_REFUSED` means a file the fix changes has itself changed in
+the plugin since the run copied it, so copying the fix over it would undo that
+later work. Merge the two by hand from `fix.diff`, keeping both, rather than
+forcing it. After applying, run the plugin's tests (`npm run check` in
+`builder/`, `npm test` in each sheet builder, the Python suite) and rebuild the
+lesson's affected page from the checkout to see it unchanged. Then follow
+*Prove it, then hand the decision back* below from its version bump on: the same
+stop before any commit or push applies.
 
 ## Read the drop-in before you move anything
 

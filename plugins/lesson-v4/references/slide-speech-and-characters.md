@@ -46,6 +46,8 @@ A source task line often arrives fused: `Dev says: 'A laptop belongs in the main
 
 This decomposition is a sanctioned mechanical transformation, like automatic question labels: each piece keeps its exact wording, and only where it sits changes.
 
+**A Teach explanation is decomposed the same way.** When a story beat's `explanation` line gives an invented child's own words (`Inside his head, George says: "I'm rubbish at maths."`, `The next time he was stuck, George told himself: "This is easy!"`), the quoted words go in that child's bubble on `speaker-lines`, the lead-in that only attributes them (`Inside his head, George says:`) is carried by the portrait and not printed, and the rest of the line stays a card. Keep the beat's picture: `speaker-lines` takes one in `pictures`, above the cards, so the class sees the child and the thing they are talking about together. A Year 4 PSHE deck (20 October 2026) printed George's words as plain lines beside his maths book on six slides, and when they were moved into bubbles the book had nowhere to go until this slot existed. This is for a child the lesson invents; a quotation from a source or a real person stays in the lines or the extract, and an example phrase the teacher names (`"I'm rubbish" is negative self-talk`) is not a character speaking.
+
 **Then put that task line after the claim, not before it.** Children read left to
 right, so a column carrying "Is Dev right? Explain." to the left of Dev's bubble
 asks the question before its subject exists. On the speech-bubble templates set

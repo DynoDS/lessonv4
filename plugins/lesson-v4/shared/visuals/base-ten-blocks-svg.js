@@ -18,11 +18,18 @@
 // a whole number from 0 to 10. The sheet's spelling, { thousands, hundreds,
 // tens, ones }, is read too. A count outside 0 to 10 is refused by name, because
 // a column of eleven blocks is an exchange the picture should show, not hide.
+//
+//   highlight  a column, or a list of them, to point at while the teacher talks
+//              ("the tens"): "thousands", "hundreds", "tens", "ones" (or Th, H,
+//              T, O). The named columns are ringed and the others fade back,
+//              headings and blocks together (shared/visuals/figure-highlight.js).
+//              Next-door columns named together take one ring round both.
 
 const { textWidthEm } = require('../text/comic-glyph-width');
 const { profileFor } = require('./surface-profiles');
 const { fitUnit, insetProfile } = require('./fit-unit');
 const { canonicalColumn, COLUMN_COLOURS } = require('./place-value-chart-svg');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS (in U, one block's box, unless named) ────────────────────────
 const PLACES = ['Th', 'H', 'T', 'O'];
@@ -38,6 +45,19 @@ const INK = '#1A1A1A';
 const SURFACE = '#F2F2F2';
 const FINE = '#9A9A9A';
 // ─── END CONSTANTS ──────────────────────────────────────────────────────────
+
+// A column is pointed at by its place, in the words its heading prints.
+const HIGHLIGHT_PARTS = PLACES.map((p) => ({ key: WORDS[p].toLowerCase(), aliases: [p, WORDS[p].toLowerCase().replace(/s$/, '')] }));
+
+function markedColumns(spec) {
+  return highlight.resolveHighlight(spec, HIGHLIGHT_PARTS, 'set of base-ten blocks');
+}
+
+// How far the shared ring reaches past the box it is drawn round, so the
+// picture's edge leaves it room (figure-highlight: stroke plus its clearance).
+function ringReach(longSide) {
+  return require('./figure-highlight').ringReach(longSide);
+}
 
 function f2(n) {
   return Math.round(n * 100) / 100;
@@ -119,10 +139,40 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const sw = Math.max(0.8, L.U * 0.035);
   const parts = [];
   const ink = profile.palette === 'ink';
+  const marked = markedColumns(spec);
+  const keyOf = (p) => WORDS[p].toLowerCase();
+  const longSide = Math.max(L.w, L.h);
+  // The run of named columns each column belongs to, for the one ring round it.
+  const runs = [];
+  for (let i = 0; i < PLACES.length; i += 1) {
+    if (!marked.has(keyOf(PLACES[i]))) continue;
+    let j = i;
+    while (j + 1 < PLACES.length && marked.has(keyOf(PLACES[j + 1]))) j += 1;
+    runs.push({ from: i, to: j, x1: i * (L.colW + COL_GAP * L.U), x2: j * (L.colW + COL_GAP * L.U) + L.colW });
+    i = j;
+  }
+  // A ringed column takes the ring's rounded corners, or its square ones poke
+  // out through the ring's curve.
+  const corner = (run) => {
+    const pad = require('./figure-highlight').ringStroke(longSide) * 0.35;
+    return Math.max(0, Math.min(run.x2 - run.x1 + 2 * pad, L.h + 2 * pad) * 0.14 - pad);
+  };
   PLACES.forEach((p, i) => {
     const x = i * (L.colW + COL_GAP * L.U);
-    parts.push(`<rect x="${f2(x)}" y="0" width="${f2(L.colW)}" height="${f2(L.h)}" fill="#FFFFFF" stroke="${INK}" stroke-width="${f2(sw)}"/>`);
-    parts.push(`<rect x="${f2(x)}" y="0" width="${f2(L.colW)}" height="${f2(L.headH)}" fill="${ink ? '#E6E6E6' : COLUMN_COLOURS[p][0]}" stroke="${INK}" stroke-width="${f2(sw)}"/>`);
+    // A faded column fades whole: its heading belongs to it as much as its blocks.
+    const fade = highlight.opacityFor(marked, keyOf(p));
+    if (fade < 1) parts.push(`<g opacity="${fade}">`);
+    const run = runs.find((r) => i >= r.from && i <= r.to);
+    const r = run ? corner(run) : 0;
+    const head = ink ? '#E6E6E6' : COLUMN_COLOURS[p][0];
+    if (r > 0) {
+      const hr = Math.min(r, L.headH);
+      parts.push(`<rect x="${f2(x)}" y="0" width="${f2(L.colW)}" height="${f2(L.h)}" rx="${f2(r)}" fill="#FFFFFF" stroke="${INK}" stroke-width="${f2(sw)}"/>`);
+      parts.push(`<path d="M${f2(x)} ${f2(L.headH)}V${f2(hr)}A${f2(hr)} ${f2(hr)} 0 0 1 ${f2(x + hr)} 0H${f2(x + L.colW - hr)}A${f2(hr)} ${f2(hr)} 0 0 1 ${f2(x + L.colW)} ${f2(hr)}V${f2(L.headH)}Z" fill="${head}" stroke="${INK}" stroke-width="${f2(sw)}"/>`);
+    } else {
+      parts.push(`<rect x="${f2(x)}" y="0" width="${f2(L.colW)}" height="${f2(L.h)}" fill="#FFFFFF" stroke="${INK}" stroke-width="${f2(sw)}"/>`);
+      parts.push(`<rect x="${f2(x)}" y="0" width="${f2(L.colW)}" height="${f2(L.headH)}" fill="${head}" stroke="${INK}" stroke-width="${f2(sw)}"/>`);
+    }
     parts.push(`<text x="${f2(x + L.colW / 2)}" y="${f2(L.headH / 2 + L.font * 0.35)}" text-anchor="middle" font-family="${profile.font}" font-size="${f2(L.font)}" font-weight="bold" fill="${INK}">${L.fullWords ? WORDS[p] : p}</text>`);
     const blocksW = PER_ROW * L.U + (PER_ROW - 1) * BLOCK_GAP * L.U;
     for (let k = 0; k < L.counts[p]; k += 1) {
@@ -130,8 +180,14 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
       const by = L.headH + COL_PAD * L.U + Math.floor(k / PER_ROW) * (L.U + BLOCK_GAP * L.U);
       parts.push(blockParts(p, bx, by, L.U, sw));
     }
+    if (fade < 1) parts.push('</g>');
   });
-  const bleed = sw;
+  // The ring, once round each run of named columns, so "tens and ones" reads as
+  // one place to look rather than two rings jostling in the gap between them.
+  runs.forEach((run) => {
+    parts.push(highlight.ringSvg(marked, keyOf(PLACES[run.from]), { x: run.x1, y: 0, w: run.x2 - run.x1, h: L.h }, longSide, ink));
+  });
+  const bleed = sw + (marked.size ? ringReach(longSide) : 0);
   const w = L.w + 2 * bleed;
   const h = L.h + 2 * bleed;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${f2(w)}" height="${f2(h)}" viewBox="${f2(-bleed)} ${f2(-bleed)} ${f2(w)} ${f2(h)}">${parts.join('')}</svg>`;
@@ -140,7 +196,8 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = resolveProfile(profileOrSurface, box);
-  return `base-ten-blocks:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(normalise(spec))}`;
+  const hi = [...markedColumns(spec)].sort().join(',');
+  return `base-ten-blocks:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(normalise(spec))}:${hi}`;
 }
 
 function minWidthPt() {
@@ -148,4 +205,4 @@ function minWidthPt() {
   return 4 * (PER_ROW * U + BLOCK_GAP * U + 2 * COL_PAD * U) + 3 * COL_GAP * U + 2 * 4 + 1;
 }
 
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, minWidthPt };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, minWidthPt, HIGHLIGHT_PARTS };

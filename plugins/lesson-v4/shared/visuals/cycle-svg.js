@@ -41,6 +41,14 @@
 //   title      what the cycle is ("The water cycle"), set in the middle of the
 //              loop, which the two rows leave free.
 //   text       the question above (the worksheet prints it as sheet text).
+//   highlight  a stage or an arrow, or a list of them: "look at this one"
+//              while the rest steps back (figure-highlight.js). A stage is
+//              named by its own words ("chrysalis") or its place in `boxes`
+//              ("3", "stage 3"); an arrow by its words ("evaporation") or its
+//              place in `arrows` ("arrow 3"). An arrow stays at full strength
+//              when it is highlighted itself or runs between two highlighted
+//              stages. An answer is found by its words on every surface,
+//              including a pupil sheet where they are not printed.
 //
 // The answers. A cycle with blank stages or blank arrow words has an answers
 // slide that fills them in, and the words that fill them are the answer, so
@@ -67,6 +75,7 @@
 const T = require('./figure-text');
 const chain = require('./process-chain-svg');
 const { PALETTES } = require('./surface-profiles');
+const highlight = require('./figure-highlight');
 
 // A stage as a chain link, keeping whether its name is the answer.
 function stage(raw) {
@@ -313,6 +322,66 @@ function normalise(spec = {}) {
     title: filled(spec.title) ? String(spec.title).trim() : '',
     text: spec.text == null ? '' : String(spec.text).trim(),
   };
+}
+
+// The parts of a cycle, read from the spec with every answer in, so a pupil
+// sheet points at the same stage the board does. A stage is a cell of the
+// track; the place a teacher counts it by is its place in `boxes`, which a
+// loop through a shared stage turns, so the turn is undone here. Each arrow is
+// named by its words, and by its place in `arrows`.
+function highlightParts(spec) {
+  const raw = Array.isArray(spec.boxes) ? spec.boxes : Array.isArray(spec.stages) ? spec.stages : [];
+  const n = normalise({ ...spec, roomFor: undefined });
+  const count = raw.length;
+  const names = new Map();
+  raw.forEach((r, i) => {
+    const key = sameName(r);
+    if (key) names.set(key, [...(names.get(key) || []), i]);
+  });
+  const repeat = [...names.values()].find((at) => at.length > 1);
+  const shift = repeat ? repeat[0] : 0;
+  // The cell each place in `boxes` is drawn as.
+  const rawOfCell = n.cells.map(() => []);
+  if (!repeat) raw.forEach((_, i) => rawOfCell[i].push(i));
+  else {
+    const [p, q] = repeat;
+    rawOfCell[0].push(p, q);
+    let cell = 1;
+    for (let k = 1; k < count; k += 1) {
+      const at = (p + k) % count;
+      if (at !== q) rawOfCell[cell++].push(at);
+    }
+  }
+  const cellOfRaw = [];
+  rawOfCell.forEach((list, c) => list.forEach((i) => { cellOfRaw[i] = c; }));
+
+  const seen = new Set();
+  const stages = n.cells.map((cell, c) => {
+    const places = rawOfCell[c].map((i) => i + 1);
+    const text = cell && cell.text ? cell.text.trim() : '';
+    const own = text && !seen.has(text.toLowerCase()) && !/^\d+$/.test(text);
+    if (own) seen.add(text.toLowerCase());
+    const key = own ? text : `stage ${places[0]}`;
+    const aliases = [];
+    places.forEach((m) => aliases.push(String(m), `stage ${m}`, `box ${m}`, `step ${m}`));
+    if (cell && cell.label) aliases.push(cell.label);
+    return { key, aliases: aliases.filter((a) => a !== key) };
+  });
+  // Arrow at route place `pos` leaves boxes[(pos + shift) % count].
+  const arrows = n.arrows.map((words, pos) => {
+    const at = (pos + shift) % count;
+    const text = words ? String(words).trim() : '';
+    const own = text && !seen.has(text.toLowerCase()) && !/^(arrow )?\d+$/i.test(text);
+    if (own) seen.add(text.toLowerCase());
+    const key = own ? text : `arrow ${at + 1}`;
+    return {
+      key,
+      aliases: own ? [`arrow ${at + 1}`] : [],
+      from: cellOfRaw[at],
+      to: cellOfRaw[(at + 1) % count],
+    };
+  });
+  return { stages, arrows, all: [...stages, ...arrows.map(({ key, aliases }) => ({ key, aliases }))] };
 }
 
 function wrapped(text, pt, width, bold, most, what, profile) {
@@ -784,33 +853,64 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   // teacher's answer sheet, whose sheet colours otherwise print it as ink.
   const answer = profile.answers === 'show' && profile.palette === 'sheet' ? PALETTES.colour.answer : c.answer;
   const font = profile.font;
+  const ink = profile.palette === 'ink';
+  const named = highlightParts(spec);
+  const marked = highlight.resolveHighlight(spec, named.all, 'cycle');
+  const stageOp = (i) => highlight.opacityFor(marked, named.stages[i].key);
+  const arrowOp = (pos) => {
+    const a = named.arrows[pos];
+    if (!marked.size || marked.has(a.key)) return 1;
+    return Math.min(stageOp(a.from), stageOp(a.to));
+  };
   const parts = [];
+  const ringList = [];
   const hair = Math.max(0.5, (BOX_STROKE * pt) / 2);
   const rule = (x, y, w, cls) => `<rect class="${cls}" x="${T.f2(x)}" y="${T.f2(y - hair)}" width="${T.f2(w)}" height="${T.f2(hair)}" fill="${c.ink}"/>`;
   if (L.stemLines.length) parts.push(T.textLines(L.stemLines, PAD * pt, PAD * pt, pt, { fill: c.ink, font, bold: profile.bold, anchor: 'start' }));
   if (L.title) parts.push(`<g class="cycle-title">${T.textLines(L.title.lines, L.title.cx, L.title.y, L.titlePt, { fill: c.ink, font, bold: true })}</g>`);
-  L.boxes.forEach((b) => {
+  L.boxes.forEach((b, i) => {
     const cx = b.x + b.w / 2;
+    const own = [];
     if (b.boxed) {
-      parts.push(
+      own.push(
         `<rect class="cycle-stage" x="${T.f2(b.x)}" y="${T.f2(b.y)}" width="${T.f2(b.w)}" height="${T.f2(b.h)}" rx="${T.f2(BOX_RADIUS * pt)}" fill="${c.paper}" stroke="${c.ink}" stroke-width="${T.f2(Math.max(1, BOX_STROKE * pt))}"/>`
       );
     }
-    if (b.pic) parts.push(chain.imageTag(b.pic));
-    if (b.lines.length) parts.push(T.textLines(b.lines, cx, b.nameY, pt, { fill: b.answer ? answer : c.ink, font, bold: true }));
+    if (b.pic) own.push(chain.imageTag(b.pic));
+    if (b.lines.length) own.push(T.textLines(b.lines, cx, b.nameY, pt, { fill: b.answer ? answer : c.ink, font, bold: true }));
     if (b.labelLines.length) {
-      parts.push(`<g class="cycle-label">${T.textLines(b.labelLines, cx, b.labelY + LABEL_GAP * pt, L.labelPt, { fill: c.answer, font, bold: true })}</g>`);
+      own.push(`<g class="cycle-label">${T.textLines(b.labelLines, cx, b.labelY + LABEL_GAP * pt, L.labelPt, { fill: c.answer, font, bold: true })}</g>`);
     } else if (b.writeLine) {
       const lw = (b.tall ? b.w - 2 * BOX_PAD_X * pt : b.w) * LABEL_LINE_SHARE;
-      parts.push(rule(cx - lw / 2, b.labelY + WRITE_LINE_H * pt, lw, 'cycle-label-line'));
+      own.push(rule(cx - lw / 2, b.labelY + WRITE_LINE_H * pt, lw, 'cycle-label-line'));
     }
+    parts.push(chain.faded(stageOp(i), own.join('')));
+    // The ring takes in the whole stage: its box or picture, its name, and
+    // the phrase or writing line under it.
+    ringList.push({ key: named.stages[i].key, box: { x: b.x, y: b.y, w: b.w, h: Math.max(b.h, b.bottom - b.y) } });
   });
   L.arrows.forEach((a) => {
-    parts.push(arrowSvg(a, pt, c.ink, n.arrowHeads));
-    if (a.words) parts.push(`<g class="cycle-arrow-words">${T.textLines(a.lines, a.words.cx, a.words.y, pt, { fill: a.answer ? answer : c.ink, font, bold: profile.bold, anchor: a.words.anchor })}</g>`);
-    if (a.line) parts.push(rule(a.line.x, a.line.y, a.line.w, 'cycle-arrow-line'));
+    let own = arrowSvg(a, pt, c.ink, n.arrowHeads);
+    if (a.words) own += `<g class="cycle-arrow-words">${T.textLines(a.lines, a.words.cx, a.words.y, pt, { fill: a.answer ? answer : c.ink, font, bold: profile.bold, anchor: a.words.anchor })}</g>`;
+    if (a.line) own += rule(a.line.x, a.line.y, a.line.w, 'cycle-arrow-line');
+    parts.push(chain.faded(arrowOp(a.pos), own));
+    // An arrow's ring takes in its shaft and the words or line beside it.
+    const half = (ARROW_HEAD_H * pt) / 2;
+    let x0 = Math.min(a.x1, a.x2) - (a.level ? 0 : half);
+    let x1 = Math.max(a.x1, a.x2) + (a.level ? 0 : half);
+    let y0 = Math.min(a.y1, a.y2) - (a.level ? half : 0);
+    let y1 = Math.max(a.y1, a.y2) + (a.level ? half : 0);
+    for (const extra of [a.words, a.line && { ...a.line, y: a.line.y - hair, h: hair }]) {
+      if (!extra) continue;
+      x0 = Math.min(x0, extra.x);
+      y0 = Math.min(y0, extra.y);
+      x1 = Math.max(x1, extra.x + extra.w);
+      y1 = Math.max(y1, extra.y + (extra.h || 0));
+    }
+    ringList.push({ key: named.arrows[a.pos].key, box: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }, air: 0.2 * pt });
   });
-  return { svg: T.svgDoc(L.W, L.h, parts), w: L.W, h: L.h, aspect: L.W / L.h, layout: L };
+  const doc = chain.ringedDoc(L.W, L.h, parts, chain.ringsFor(marked, ringList, L.W, L.h, ink));
+  return { svg: doc.svg, w: doc.w, h: doc.h, aspect: doc.w / doc.h, layout: L };
 }
 
 // The pictures are named by their files in the key: a photograph's own bytes
@@ -821,7 +921,8 @@ function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const n = normalise(shown ? spec : withoutAnswers(spec));
   const slim = (b) => (b ? { text: b.text, label: b.label, answer: b.answer, pic: b.pic ? [b.imagePath || (b.pic.href || '').length, Boolean(b.pic.href), b.pic.w, b.pic.h] : null } : null);
   const room = Array.isArray(spec.roomFor) && spec.roomFor.length ? `:room:${JSON.stringify(spec.roomFor)}` : '';
-  return `cycle:${T.profileKey(p)}${shown ? '' : ':question'}:${JSON.stringify({ ...n, cells: n.cells.map(slim) })}${room}`;
+  const hi = [...highlight.resolveHighlight(spec, highlightParts(spec).all, 'cycle')].sort().join(',');
+  return `cycle:${T.profileKey(p)}${shown ? '' : ':question'}:${JSON.stringify({ ...n, cells: n.cells.map(slim) })}${room}${hi ? `:hi:${hi}` : ''}`;
 }
 
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, MIN_STAGES, MAX_STAGES };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, highlightParts, MIN_STAGES, MAX_STAGES };

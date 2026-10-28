@@ -32,6 +32,7 @@
 const { textWidthEm } = require('../text/comic-glyph-width');
 const { profileFor, answerColour } = require('./surface-profiles');
 const { fitUnit, insetProfile } = require('./fit-unit');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS (in points unless named otherwise) ───────────────────────────
 const FONT_OF_CELL = 0.46;        // a number's height as a share of its cell
@@ -90,14 +91,93 @@ function normalise(spec = {}) {
   return { grid, rows: grid.length, cols: grid[0].length };
 }
 
+// ─── Pointing at part of the grid (shared/visuals/figure-highlight.js) ──────
+//
+// The teacher says "the 3 times row", "the 4 column", "3 times 4". So a row is
+// named by its header, "row 3" (or "3 row", "3 times row"), a column the same,
+// "column 4" (or "col 4", "4 column"), and one product by its two headers,
+// "3 x 4" (or "3 times 4"), row first. A header left empty for the child to
+// find has no number to be named by, so its row is "row 2 down" and its column
+// "column 3 across", counted from the top and the left.
+
+function plain(v) {
+  return String(v == null ? '' : v).toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+// An alias that two parts would answer to is dropped rather than quietly
+// pointing at both ("12 x 3" and "1 x 23" both flatten to "123").
+function withAliases(list) {
+  const claimed = new Map();
+  list.forEach((p) => {
+    [p.key, ...p.aliases].forEach((name) => {
+      const n = plain(name);
+      if (!n) return;
+      claimed.set(n, claimed.has(n) && claimed.get(n) !== p.key ? null : p.key);
+    });
+  });
+  return list.map((p) => ({
+    key: p.key,
+    aliases: p.aliases.filter((a) => plain(a) && claimed.get(plain(a)) === p.key && plain(a) !== plain(p.key)),
+  }));
+}
+
+// The names of the grid's rows, columns and cells, and which grid squares each
+// covers: { key, aliases, cells: [[r, c]] } in grid coordinates (headers at 0).
+function gridParts(g) {
+  const headerNames = (texts) => texts.map((t) => {
+    const s = String(t).trim();
+    return s && texts.filter((u) => String(u).trim() === s).length === 1 ? s : null;
+  });
+  const rowNames = headerNames(g.grid.slice(1).map((row) => row[0].text));
+  const colNames = headerNames(g.grid[0].slice(1).map((c) => c.text));
+  const list = [];
+  rowNames.forEach((h, i) => {
+    const r = i + 1;
+    const cells = [];
+    for (let c = 0; c < g.cols; c += 1) cells.push([r, c]);
+    list.push(h ? { key: `row ${h}`, aliases: [`${h} row`, `${h} times row`], cells } : { key: `row ${r} down`, aliases: [], cells });
+  });
+  colNames.forEach((h, i) => {
+    const c = i + 1;
+    const cells = [];
+    for (let r = 0; r < g.rows; r += 1) cells.push([r, c]);
+    list.push(h ? { key: `column ${h}`, aliases: [`col ${h}`, `${h} column`], cells } : { key: `column ${c} across`, aliases: [], cells });
+  });
+  rowNames.forEach((rh, i) => colNames.forEach((ch, j) => {
+    const cells = [[i + 1, j + 1]];
+    list.push(rh && ch
+      ? { key: `${rh} x ${ch}`, aliases: [`${rh} times ${ch}`, `${rh} \u00d7 ${ch}`], cells }
+      : { key: `cell ${i + 1} down ${j + 1} across`, aliases: [], cells });
+  }));
+  const named = withAliases(list);
+  return named.map((p, i) => ({ ...p, cells: list[i].cells }));
+}
+
+function markedParts(spec, g) {
+  return highlight.resolveHighlight(spec, gridParts(g), 'multiplication grid');
+}
+
+// How far a ring reaches outside the box it is drawn round, read from the
+// shared ring itself.
+function ringReach(longSide) {
+  const probe = highlight.ringSvg(new Set(['r']), 'r', { x: 0, y: 0, w: 0, h: 0 }, longSide);
+  const pad = -Number(/ x="([-\d.]+)"/.exec(probe)[1]);
+  const stroke = Number(/stroke-width="([\d.]+)"/.exec(probe)[1]);
+  return pad + stroke / 2;
+}
+
 function resolveProfile(p, box) {
   return typeof p === 'string' ? profileFor(p, box || { widthPt: 500 }) : p;
 }
 
 function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
-  // Laid out inside the box less the stroke that bleeds past the drawing's edge.
-  const profile = insetProfile(resolveProfile(profileOrSurface, box), 2);
+  // Laid out inside the box less the stroke that bleeds past the drawing's
+  // edge, and less the room a ring needs when a row, column or cell at the
+  // edge is pointed at.
+  const given = resolveProfile(profileOrSurface, box);
   const g = normalise(spec);
+  const ringRoom = markedParts(spec, g).size ? ringReach(Math.max(given.widthPt, given.heightPt || 0)) : 0;
+  const profile = insetProfile(given, 2 + ringRoom);
   const widest = Math.max(...g.grid.flat().map((c) => textWidthEm(c.text, true)), 0.6);
   const board = Boolean(profile.heightPt);
   // Only paper holds a cell to a child's handwriting; the wall's grid is read
@@ -135,25 +215,55 @@ function describeLayout(spec = {}, profileOrSurface = 'worksheets', box) {
     cell = Math.max(cell, Math.min(profile.widthPt / g.cols, profile.heightPt / g.rows));
     font = Math.max(floor, Math.min(BOARD_MAX_FONT, cell * FONT_OF_CELL, (cell * TEXT_WIDTH_SHARE) / widest));
   }
-  return { ...g, cell, font, w: cell * g.cols, h: cell * g.rows, floor };
+  return { ...g, cell, font, w: cell * g.cols, h: cell * g.rows, floor, ringRoom };
 }
 
 function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const profile = resolveProfile(profileOrSurface, box);
   const L = describeLayout(spec, profile);
   const pal = profile.palette === 'ink' ? INK : COLOURS;
-  const bleed = LINE_W;
+  const bleed = LINE_W + L.ringRoom;
   const parts = [];
-  L.grid.forEach((row, r) =>
-    row.forEach((c, k) => {
-      const x = k * L.cell;
-      const y = r * L.cell;
-      parts.push(`<rect x="${f2(x)}" y="${f2(y)}" width="${f2(L.cell)}" height="${f2(L.cell)}" fill="${c.header ? pal.header : pal.body}" stroke="${pal.line}" stroke-width="${LINE_W}"/>`);
-      if (c.text) {
-        parts.push(`<text x="${f2(x + L.cell / 2)}" y="${f2(y + L.cell / 2 + L.font * 0.35)}" text-anchor="middle" font-family="${profile.font}" font-size="${f2(L.font)}" font-weight="bold" fill="${c.answer ? answerColour(profile, pal.answer, pal.text) : pal.text}">${esc(c.text)}</text>`);
-      }
-    })
-  );
+  // Pointing at a row, a column or a product: its squares stay lit with the
+  // headers that name them, and the rest of the grid steps back. The corner
+  // sign always stays.
+  const named = gridParts(L);
+  const marked = markedParts(spec, L);
+  const lit = new Set();
+  named.filter((p) => marked.has(p.key)).forEach((p) => p.cells.forEach(([r, c]) => lit.add(`${r},${c}`)));
+  if (marked.size) {
+    for (let r = 1; r < L.rows; r += 1) for (let c = 1; c < L.cols; c += 1) {
+      if (lit.has(`${r},${c}`)) { lit.add(`${r},0`); lit.add(`0,${c}`); }
+    }
+    lit.add('0,0');
+  }
+  const square = (c, r, k) => {
+    const x = k * L.cell;
+    const y = r * L.cell;
+    let svg = `<rect x="${f2(x)}" y="${f2(y)}" width="${f2(L.cell)}" height="${f2(L.cell)}" fill="${c.header ? pal.header : pal.body}" stroke="${pal.line}" stroke-width="${LINE_W}"/>`;
+    if (c.text) {
+      svg += `<text x="${f2(x + L.cell / 2)}" y="${f2(y + L.cell / 2 + L.font * 0.35)}" text-anchor="middle" font-family="${profile.font}" font-size="${f2(L.font)}" font-weight="bold" fill="${c.answer ? answerColour(profile, pal.answer, pal.text) : pal.text}">${esc(c.text)}</text>`;
+    }
+    return svg;
+  };
+  if (!marked.size) {
+    L.grid.forEach((row, r) => row.forEach((c, k) => parts.push(square(c, r, k))));
+  } else {
+    // The faded squares first, so a lit square's edges are drawn over theirs.
+    const faded = [];
+    const full = [];
+    L.grid.forEach((row, r) => row.forEach((c, k) => (lit.has(`${r},${k}`) ? full : faded).push(square(c, r, k))));
+    parts.push(`<g opacity="${highlight.DIMMED}">${faded.join('')}</g>`, ...full);
+    const long = Math.max(L.w, L.h);
+    named.filter((p) => marked.has(p.key)).forEach((p) => {
+      const rs = p.cells.map(([r]) => r);
+      const cs = p.cells.map(([, c]) => c);
+      const r0 = Math.min(...rs);
+      const c0 = Math.min(...cs);
+      const box = { x: c0 * L.cell, y: r0 * L.cell, w: (Math.max(...cs) - c0 + 1) * L.cell, h: (Math.max(...rs) - r0 + 1) * L.cell };
+      parts.push(highlight.ringSvg(marked, p.key, box, long, profile.palette === 'ink'));
+    });
+  }
   const w = L.w + 2 * bleed;
   const h = L.h + 2 * bleed;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${f2(w)}" height="${f2(h)}" viewBox="${f2(-bleed)} ${f2(-bleed)} ${f2(w)} ${f2(h)}">${parts.join('')}</svg>`;
@@ -162,14 +272,21 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = resolveProfile(profileOrSurface, box);
-  return `mult-grid:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(normalise(spec))}`;
+  // The highlight is part of the picture; a grid with none keeps its old key.
+  const hi = [...markedParts(spec, normalise(spec))].sort().join(',');
+  return `mult-grid:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(normalise(spec))}` + (hi ? `:hi=${hi}` : '');
 }
 
 // The narrowest box the grid can be drawn in on paper: every cell at the size a
 // child writes a product in.
 function minWidthPt(spec = {}) {
   const g = normalise(spec);
-  return g.cols * PAPER_CELL_MIN_PT + 2 * 2 + 1;
+  const base = g.cols * PAPER_CELL_MIN_PT + 2 * 2 + 1;
+  // A pointed-at row or column at the edge needs its ring's room too.
+  if (!markedParts(spec, g).size) return base;
+  let w = base;
+  for (let k = 0; k < 3; k += 1) w = base + 2 * ringReach(w);
+  return w;
 }
 
 module.exports = { tightSvg, cacheKey, normalise, describeLayout, minWidthPt };

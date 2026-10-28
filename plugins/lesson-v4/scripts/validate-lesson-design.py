@@ -306,6 +306,14 @@ PRINTED_PER = {"child", "pair", "group"}
 LESSON_MINUTES_AIM = 45
 LESSON_MINUTES_MAX = 50
 LESSON_MINUTES_UNPLANNED = 5
+# Clearer wording added after the design (the voice edit, or the teacher's own
+# words) may take the lesson up to this much past its limit, when the design it
+# rewords fitted (the teacher, 21 October 2026: "let clearer wording add up to a
+# minute"). Without it the voice editor could not add "Put your finger on the
+# UK" to a lesson already at 50, and the instruction went out without a start.
+WORDING_ALLOWANCE_MINUTES = 1
+DESIGN_BEFORE_WORDING = "lesson-design.before-voice.json"
+_wording_allowance = 0
 LESSON_MINUTES_MIN = 30
 BEAT_MINUTES_MAX = 25
 
@@ -1922,6 +1930,43 @@ def validate_sees_happening_has_its_own_picture(
                 )
         earlier_photos |= set(unit.get("photoRefs") or [])
         earlier_reps |= {ref["ref"] for ref in unit.get("representationRefs") or []}
+
+
+def validate_beat_keeps_a_picture(
+    sequence: list[dict[str, Any]],
+    photo_by_id: dict[str, dict[str, Any]],
+) -> None:
+    """A beat's only picture always has a route to an image.
+
+    A Year 4 PSHE lesson (20 October 2026) marked George's maths book and a
+    child reading to the class `omit`, because a child already knows what a
+    maths book looks like. No real photograph was found, and six George slides
+    and Jun's case card went out as words only. The teacher's first look was
+    "too many text slides"; with both pictures made, the deck looked much
+    better. A picture that is the only thing a beat shows is never one the
+    lesson is no poorer without, so it takes `fallback_action: ai`.
+
+    Not refused: an omittable picture beside a drawing or another picture
+    that still arrives, and `authentic-real`, where a made picture would lie.
+    """
+    for index, unit in enumerate(sequence):
+        refs = unit.get("photoRefs") or []
+        if not refs or unit.get("representationRefs"):
+            continue
+        losable = [
+            ref for ref in refs
+            if (photo_by_id.get(ref) or {}).get("acquisition_mode") == "ordinary-real"
+            and (photo_by_id.get(ref) or {}).get("fallback_action") == "omit"
+        ]
+        if losable and len(losable) == len(refs):
+            expect(
+                False,
+                f"teachingSequence[{index}].photoRefs: {', '.join(losable)} is the only picture "
+                "this beat shows, and `fallback_action: omit` lets every slide of the beat go out "
+                "as words only when no real photograph is found. Give it `fallback_action: ai` "
+                "with a complete generation_prompt (and `essential: true`): a familiar thing is "
+                "still what the class looks at while the teacher talks",
+            )
 
 
 def validate_takeaway(raw: Any, path: str, sticky_ids: set[str]) -> None:
@@ -4265,7 +4310,7 @@ def validate_lesson_fits_the_slot(root: dict[str, Any]) -> None:
         # (`taught_time.py`: a 17-minute plan took a cover teacher 40), so a
         # lesson can fit on paper and still not fit in the room.
         honest, rows = taught_time.honest_minutes(root)
-        if honest + LESSON_MINUTES_UNPLANNED <= LESSON_MINUTES_MAX:
+        if honest + LESSON_MINUTES_UNPLANNED <= LESSON_MINUTES_MAX + _wording_allowance:
             return
         heavy = sorted((row for row in rows if row[2] > row[1]), key=lambda row: row[2] - row[1], reverse=True)[:3]
         named = "; ".join(f"{label}: planned {planned}min, its slides take about {taught}min to teach"
@@ -4663,6 +4708,8 @@ def run_design_checks(
 
     with faults.section():
         validate_sees_happening_has_its_own_picture(sequence, photo_by_id)
+    with faults.section():
+        validate_beat_keeps_a_picture(sequence, photo_by_id)
     with faults.section():
         validate_route_sequence(structure, sequence, concept_items)
     with faults.section():
@@ -5273,6 +5320,19 @@ def check_set_thread(design: Any, folder: Path) -> None:
         raise ContractError("; ".join(faults))
 
 
+def wording_allowance(design_path: Path) -> int:
+    """The minute clearer wording may add: given only when the design as it
+    stood before the wording pass (its saved copy beside it) fitted the limit."""
+    before = design_path.resolve().parent / DESIGN_BEFORE_WORDING
+    if not before.is_file():
+        return 0
+    try:
+        honest, _rows = taught_time.honest_minutes(json.loads(before.read_text(encoding="utf-8")))
+    except (OSError, json.JSONDecodeError):
+        return 0
+    return WORDING_ALLOWANCE_MINUTES if honest + LESSON_MINUTES_UNPLANNED <= LESSON_MINUTES_MAX else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     initial_photo_namespace = False
@@ -5288,9 +5348,11 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
+    global _wording_allowance
     try:
         design = json.loads(Path(args[0]).read_text(encoding="utf-8"))
         photos = json.loads(Path(args[1]).read_text(encoding="utf-8"))
+        _wording_allowance = wording_allowance(Path(args[0]))
         validate_design(
             design,
             photos,

@@ -28,11 +28,19 @@
 //   joiner     the operator between groups ("+"), or none
 //   groups     [{ value: "1000", count: 5 }, ...]; count 1 to 20, value the
 //              number on the counter
+//   highlight  a group, or a list of them, to point at while the teacher talks:
+//              "group 1", "group 2"... in the order given, or the number on its
+//              counters ("1000") or its place ("thousands") when only one group
+//              carries it. The named groups are ringed and the rest fade back,
+//              the operator between them too; the claim above stays, because
+//              it is what every group is evidence for
+//              (shared/visuals/figure-highlight.js).
 
 const { textWidthEm } = require('../text/comic-glyph-width');
 const { profileFor } = require('./surface-profiles');
 const { fitUnit, insetProfile } = require('./fit-unit');
 const { COLUMN_COLOURS } = require('./place-value-chart-svg');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS (in F, the counter's face font, unless named) ────────────────
 const PER_ROW = 3;          // a group of nine reads as three rows of three, not a
@@ -48,6 +56,7 @@ const STATEMENT_PAD = 0.5;
 const STATEMENT_GAP = 0.45;
 const NATURAL_FONT = 0.9;   // of the profile's font: the sheet's 9pt note-size face
 const PLACE_OF_VALUE = { '1000000': 'M', '100000': 'HTh', '10000': 'TTh', '1000': 'Th', '100': 'H', '10': 'T', '1': 'O', '0.1': 't', '0.01': 'h', '0.001': 'th' };
+const PLACE_WORDS = { M: 'millions', HTh: 'hundred thousands', TTh: 'ten thousands', Th: 'thousands', H: 'hundreds', T: 'tens', O: 'ones', t: 'tenths', h: 'hundredths', th: 'thousandths' };
 const TINT = '#F2F2F2';
 const TEXT = '#000000';
 const LINE = '#4A4A4A';
@@ -83,6 +92,31 @@ function normalise(spec = {}) {
       return { face, count, place: PLACE_OF_VALUE[face.replace(/,/g, '')] || null };
     }),
   };
+}
+
+// The groups a teacher can point at: each by its order, and by the number on
+// its counters or its place when no other group shares them, so "the
+// thousands" can never quietly mean the first of two.
+function highlightParts(G) {
+  const count = (pick) => (v) => G.groups.filter((g) => pick(g) === v).length;
+  const faces = count((g) => g.face.replace(/,/g, ''));
+  const places = count((g) => g.place);
+  return G.groups.map((g, i) => {
+    const aliases = [];
+    if (faces(g.face.replace(/,/g, '')) === 1) aliases.push(g.face);
+    if (g.place && places(g.place) === 1) aliases.push(PLACE_WORDS[g.place], PLACE_WORDS[g.place].replace(/s$/, ''));
+    return { key: `group ${i + 1}`, aliases };
+  });
+}
+
+function markedGroups(spec, G) {
+  return highlight.resolveHighlight(spec, highlightParts(G), 'counter group');
+}
+
+// How far the shared ring reaches past the box it is drawn round, so the
+// picture's edge leaves it room (figure-highlight: stroke plus its clearance).
+function ringReach(longSide) {
+  return require('./figure-highlight').ringReach(longSide);
 }
 
 function wrap(text, width, font) {
@@ -137,7 +171,10 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const ink = profile.palette === 'ink';
   const font = profile.font;
   const F = L.F;
+  const marked = markedGroups(spec, L);
+  const longSide = Math.max(L.w, L.h);
   const parts = [];
+  const rings = [];
   let y = 0;
   if (L.statement) {
     // The claim sits with the evidence for it, or a page ends up with a row of
@@ -154,12 +191,15 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
     if (gi > 0) {
       if (L.joiner) {
         x += GROUP_GAP * F * 0.5;
-        parts.push(`<text x="${f2(x + (OP_W * F) / 2)}" y="${f2(y + L.tallest / 2 + STATEMENT_FONT * F * 0.35)}" text-anchor="middle" font-family="${font}" font-size="${f2(STATEMENT_FONT * F)}" font-weight="bold" fill="${TEXT}">${esc(L.joiner)}</text>`);
+        parts.push(`<text${marked.size ? ` opacity="${highlight.DIMMED}"` : ''} x="${f2(x + (OP_W * F) / 2)}" y="${f2(y + L.tallest / 2 + STATEMENT_FONT * F * 0.35)}" text-anchor="middle" font-family="${font}" font-size="${f2(STATEMENT_FONT * F)}" font-weight="bold" fill="${TEXT}">${esc(L.joiner)}</text>`);
         x += OP_W * F + GROUP_GAP * F * 0.5;
       } else x += GROUP_GAP * F;
     }
     const top = y + (L.tallest - g.h) / 2;
     const fill = ink ? '#FFFFFF' : g.place ? COLUMN_COLOURS[g.place][0] : '#D0D0D0';
+    const key = `group ${gi + 1}`;
+    const fade = highlight.opacityFor(marked, key);
+    if (fade < 1) parts.push(`<g opacity="${fade}">`);
     for (let k = 0; k < g.count; k += 1) {
       const row = Math.floor(k / PER_ROW);
       const inRow = Math.min(PER_ROW, g.count - row * PER_ROW);
@@ -170,9 +210,12 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
       parts.push(`<rect x="${f2(px)}" y="${f2(py)}" width="${f2(g.pillW)}" height="${f2(PILL_H * F)}" rx="${f2((PILL_H * F) / 2)}" fill="${fill}" stroke="${ink ? '#1A1A1A' : LINE}" stroke-width="${f2(Math.max(0.75, 0.06 * F))}"/>`);
       parts.push(`<text x="${f2(px + g.pillW / 2)}" y="${f2(py + (PILL_H * F) / 2 + F * 0.35)}" text-anchor="middle" font-family="${font}" font-size="${f2(F)}" font-weight="bold" fill="${TEXT}">${esc(g.face)}</text>`);
     }
+    if (fade < 1) parts.push('</g>');
+    rings.push(highlight.ringSvg(marked, key, { x, y: top, w: g.w, h: g.h }, longSide, ink));
     x += g.w;
   });
-  const bleed = 1;
+  parts.push(...rings);
+  const bleed = 1 + (marked.size ? ringReach(longSide) : 0);
   const w = L.w + 2 * bleed;
   const h = L.h + 2 * bleed;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${f2(w)}" height="${f2(h)}" viewBox="${f2(-bleed)} ${f2(-bleed)} ${f2(w)} ${f2(h)}">${parts.join('')}</svg>`;
@@ -181,7 +224,9 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
 
 function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = resolveProfile(profileOrSurface, box);
-  return `counter-group:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(normalise(spec))}`;
+  const G = normalise(spec);
+  const hi = [...markedGroups(spec, G)].sort().join(',');
+  return `counter-group:${p.surface}:${f2(p.widthPt)}x${p.heightPt ? f2(p.heightPt) : '-'}:${JSON.stringify(G)}:${hi}`;
 }
 
 // The width of the counters alone at the sheet's readable counter, which is the
@@ -191,4 +236,4 @@ function minWidthPt(spec = {}, profileOrSurface = 'worksheets') {
   return describeLayout(spec, profile).rowW + 2 * 1 + 1;
 }
 
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, minWidthPt };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, minWidthPt, highlightParts };

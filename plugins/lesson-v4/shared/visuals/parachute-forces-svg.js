@@ -36,6 +36,7 @@ const LABEL_FILL = '#FFFFFF';
 const LABEL_STROKE = '#93A4B8';
 
 const { INK_TONES, printsInInk } = require('./surface-profiles');
+const highlight = require('./figure-highlight');
 
 // The drawing's colours, and the photocopied pack's. Each force is named by the
 // label its leader points at and told apart by which way its arrow points, so
@@ -54,6 +55,76 @@ const DEFAULT_LABELS = Object.freeze({
   cords: 'Same cord length',
   loads: 'Same load',
 });
+
+// -- Pointing at one part (figure-highlight.js) --------------------------------
+// The parts a teacher points at while talking through the fair test are the
+// forces, by name, and the things the test holds the same or changes. Each is
+// named by the field the lesson's `labels` uses for it, by the words a teacher
+// says ("gravity", "air resistance"), and by the words printed on its label.
+// "air resistance" on its own names both upward arrows: the comparison of the
+// two is usually the point. Whatever is drawn for a part - its arrow or its
+// shape, its label and the leader to it - fades or stays with it.
+const PART_ALIASES = Object.freeze({
+  airResistance: ['air resistance', 'up forces', 'upward forces', 'upward force', 'up force'],
+  largeUpForce: ['large air resistance', 'big air resistance', 'large up force', 'more air resistance'],
+  smallUpForce: ['small air resistance', 'little air resistance', 'small up force', 'less air resistance'],
+  downForce: ['gravity', 'down force', 'downward force', 'gravity arrows', 'weight'],
+  largeCanopy: ['large canopy', 'big canopy', 'large parachute', 'big parachute'],
+  smallCanopy: ['small canopy', 'little canopy', 'small parachute', 'little parachute'],
+  cords: ['cord', 'strings', 'string', 'cord length'],
+  loads: ['load', 'same load'],
+});
+// Which parts each label and each arrow belongs to.
+const OWNERS = Object.freeze({
+  largeUpForce: ['largeUpForce', 'airResistance'],
+  smallUpForce: ['smallUpForce', 'airResistance'],
+  downForce: ['downForce'],
+  largeCanopy: ['largeCanopy'],
+  smallCanopy: ['smallCanopy'],
+  cords: ['cords'],
+  loads: ['loads'],
+});
+
+function highlightParts(labels) {
+  const norm = (v) => String(v).toLowerCase().replace(/[^a-z0-9]+/g, '');
+  const keys = Object.keys(PART_ALIASES);
+  const keySet = new Set(keys.map(norm));
+  const offered = new Map();
+  const listed = keys.map((key) => {
+    const words = PART_ALIASES[key].slice();
+    if (labels && labels[key]) words.push(labels[key]);
+    const aliases = words.filter((w) => norm(w) && !keySet.has(norm(w)));
+    aliases.forEach((w) => {
+      if (!offered.has(norm(w))) offered.set(norm(w), new Set());
+      offered.get(norm(w)).add(key);
+    });
+    return { key, aliases };
+  });
+  // A label worded like another part's name would point at whichever came
+  // last, so a name two parts share is offered by neither.
+  return listed.map(({ key, aliases }) => ({ key, aliases: aliases.filter((w) => offered.get(norm(w)).size === 1) }));
+}
+
+function resolveParts(spec, labels) {
+  return highlight.resolveHighlight(spec || {}, highlightParts(labels), 'parachute forces diagram');
+}
+
+function lit(marked, owner) {
+  return (OWNERS[owner] || [owner]).some((key) => marked.has(key));
+}
+
+function fadeWrap(marked, owner, svg) {
+  if (!marked.size || lit(marked, owner)) return svg;
+  return `<g opacity="${highlight.DIMMED}">${svg}</g>`;
+}
+
+// The ring the shared treatment draws round one of this drawing's boxes, for
+// whichever part lights it.
+function ringFor(marked, owner, box, longSide, ink) {
+  if (!marked.size || !lit(marked, owner)) return '';
+  const key = (OWNERS[owner] || [owner]).find((k) => marked.has(k));
+  return highlight.ringSvg(marked, key, box, longSide, ink);
+}
 
 function f(n) { return Number(n).toFixed(2); }
 function esc(value) {
@@ -262,36 +333,57 @@ function labelSvg(box, C) {
 
 // `profile` is optional: the stick-in pack passes its own so the schematic prints in ink.
 function tightSvg(spec, profile) {
-  const C = printsInInk(profile) ? INK_COLOURS : COLOURS;
+  const ink = printsInInk(profile);
+  const C = ink ? INK_COLOURS : COLOURS;
   const layout = describeLayout(spec);
   const { canvas, canopies, cords, loads, arrows, labels, data } = layout;
+  const marked = resolveParts(spec, data.labels);
+  const longSide = Math.max(canvas.w, canvas.h);
   const parts = [];
+  const rings = [];
   parts.push(`<?xml version="1.0" encoding="UTF-8"?>`);
   parts.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${f(canvas.w)}" height="${f(canvas.h)}" viewBox="0 0 ${f(canvas.w)} ${f(canvas.h)}">`);
   parts.push(`<defs><marker id="arrow" markerWidth="13" markerHeight="13" refX="7" refY="4" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,8 L8,4 z" fill="${C.green}"/></marker></defs>`);
-  parts.push(`<path data-role="large-canopy" d="${canopyPath(canopies.large)}" fill="${C.bluePale}" stroke="${C.blue}" stroke-width="10"/>`);
-  parts.push(`<path data-role="small-canopy" d="${canopyPath(canopies.small)}" fill="${C.bluePale}" stroke="${C.blue}" stroke-width="10"/>`);
+  parts.push(fadeWrap(marked, 'largeCanopy', `<path data-role="large-canopy" d="${canopyPath(canopies.large)}" fill="${C.bluePale}" stroke="${C.blue}" stroke-width="10"/>`));
+  parts.push(fadeWrap(marked, 'smallCanopy', `<path data-role="small-canopy" d="${canopyPath(canopies.small)}" fill="${C.bluePale}" stroke="${C.blue}" stroke-width="10"/>`));
+  const cordParts = [];
   for (const [size, pair] of Object.entries(cords)) {
     pair.forEach((c, i) => {
-      parts.push(`<line data-role="${size}-cord-${i}" x1="${f(c.x1)}" y1="${f(c.y1)}" x2="${f(c.x2)}" y2="${f(c.y2)}" stroke="${C.ink}" stroke-width="7"/>`);
-      if (data.showEqualityTicks) parts.push(tickSvg(c, `${size}-cord-tick-${i}`, C));
+      cordParts.push(`<line data-role="${size}-cord-${i}" x1="${f(c.x1)}" y1="${f(c.y1)}" x2="${f(c.x2)}" y2="${f(c.y2)}" stroke="${C.ink}" stroke-width="7"/>`);
+      if (data.showEqualityTicks) cordParts.push(tickSvg(c, `${size}-cord-tick-${i}`, C));
     });
   }
+  parts.push(fadeWrap(marked, 'cords', cordParts.join('')));
+  const loadParts = [];
   for (const [size, box] of Object.entries(loads)) {
-    parts.push(`<rect data-role="${size}-load" x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" rx="9" fill="${C.loadFill}" stroke="${C.ink}" stroke-width="8"/>`);
+    loadParts.push(`<rect data-role="${size}-load" x="${f(box.x)}" y="${f(box.y)}" width="${f(box.w)}" height="${f(box.h)}" rx="9" fill="${C.loadFill}" stroke="${C.ink}" stroke-width="8"/>`);
   }
-  parts.push(arrowSvg(arrows.largeUp, 'large-air-resistance', C));
-  parts.push(arrowSvg(arrows.smallUp, 'small-air-resistance', C));
-  parts.push(arrowSvg(arrows.largeDown, 'large-gravity', C));
-  parts.push(arrowSvg(arrows.smallDown, 'small-gravity', C));
-  labels.forEach((box) => parts.push(labelSvg(box, C)));
+  parts.push(fadeWrap(marked, 'loads', loadParts.join('')));
+  const forceArrows = [
+    [arrows.largeUp, 'large-air-resistance', 'largeUpForce'],
+    [arrows.smallUp, 'small-air-resistance', 'smallUpForce'],
+    [arrows.largeDown, 'large-gravity', 'downForce'],
+    [arrows.smallDown, 'small-gravity', 'downForce'],
+  ];
+  forceArrows.forEach(([a, role, owner]) => {
+    parts.push(fadeWrap(marked, owner, arrowSvg(a, role, C)));
+  });
+  // The ring goes round the part's label, as on a labelled diagram, and the
+  // arrow or shape it leads to stands out by staying at full strength. A
+  // second ring round each arrow was tried and crowded the gravity label.
+  labels.forEach((box) => {
+    parts.push(fadeWrap(marked, box.key, labelSvg(box, C)));
+    rings.push(ringFor(marked, box.key, box, longSide, ink));
+  });
+  parts.push(rings.join(''));
   parts.push('</svg>');
   return { svg: parts.join(''), aspect: canvas.w / canvas.h, w: canvas.w, h: canvas.h, layout };
 }
 
 function cacheKey(spec) {
   const d = normaliseSpec(spec);
-  return `parachute-forces:${d.canopyShape}:${d.largeCanopyWidthRatio}:${d.cordLengthRatio}:${d.loadSizeRatio}:${d.showEqualityTicks ? 1 : 0}:${Object.keys(DEFAULT_LABELS).map((k) => `${k}=${d.labels[k]}`).join('|')}`;
+  const hi = [...resolveParts(spec, d.labels)].sort().join(',');
+  return `parachute-forces:${d.canopyShape}:${d.largeCanopyWidthRatio}:${d.cordLengthRatio}:${d.loadSizeRatio}:${d.showEqualityTicks ? 1 : 0}:${Object.keys(DEFAULT_LABELS).map((k) => `${k}=${d.labels[k]}`).join("|")}${hi ? `:highlight:${hi}` : ""}`;
 }
 
-module.exports = { tightSvg, cacheKey, describeLayout, normaliseSpec };
+module.exports = { tightSvg, cacheKey, describeLayout, normaliseSpec, highlightParts };

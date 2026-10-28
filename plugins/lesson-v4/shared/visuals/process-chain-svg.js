@@ -41,6 +41,13 @@
 //   arrowHeads  false draws each join as a plain line, for the child to turn
 //               into an arrow. The direction is then the child's decision,
 //               which is the point where the arrow's meaning is being taught.
+//   highlight   a stage, named by its own words ("rabbit") or by its place
+//               in the chain ("2", "stage 2", "box 2"), or a list of them:
+//               "look at this one" while the rest steps back
+//               (figure-highlight.js). An arrow stays at full strength only
+//               between two highlighted stages. An answer stage is found by
+//               its words on every surface, including a pupil sheet where
+//               they are not printed.
 //   bank        named pictures in a row above the chain, in the order given,
 //               joined by nothing: the things to be put into the empty boxes.
 //               Give it mixed up; the drawing keeps the order it is handed.
@@ -70,6 +77,7 @@
 
 const T = require('./figure-text');
 const { PALETTES } = require('./surface-profiles');
+const highlight = require('./figure-highlight');
 
 // ─── CONSTANTS (in ems of the settled font size) ─────────────────────────────
 const BOX_PAD_X = 0.5; // words to the box edge, each side
@@ -201,6 +209,64 @@ function normalise(spec = {}) {
     text: spec.text == null ? '' : String(spec.text).trim(),
   };
 }
+
+// A chain's parts are its stages, each named by its own words (or, with the
+// answers on, the words that fill it) and by its place in the chain, so an
+// empty box can still be pointed at. Read from the spec with the answers in,
+// so a pupil sheet points at the same box the board does.
+function highlightParts(full) {
+  const seen = new Set();
+  return full.boxes.map((b, i) => {
+    const n = i + 1;
+    const text = b && b.text ? b.text.trim() : '';
+    const own = text && !seen.has(text.toLowerCase()) && !/^\d+$/.test(text);
+    if (own) seen.add(text.toLowerCase());
+    const aliases = [String(n), `stage ${n}`, `box ${n}`, `step ${n}`];
+    if (b && b.label) aliases.push(b.label);
+    return own ? { key: text, aliases } : { key: `stage ${n}`, aliases: aliases.filter((a) => a !== `stage ${n}`) };
+  });
+}
+
+// ─── Pointing at a part (figure-highlight.js) ───────────────────────────────
+// The rings round the highlighted parts, and the drawing grown by exactly as
+// much as the outermost ring reaches past its edge. A part laid out against
+// the edge would otherwise lose half its ring, and a ring pulled inward to fit
+// would sit on the words it is pointing at. With nothing highlighted the
+// drawing is exactly what it was.
+function ringsFor(marked, list, W, H, ink) {
+  const long = Math.max(W, H);
+  const reach = require('./figure-highlight').ringReach(long); // the ring's pad plus half its stroke
+  const out = { svg: '', l: 0, t: 0, r: 0, b: 0 };
+  list.forEach(({ key, box: tight, air = 0 }) => {
+    if (!marked.has(key)) return;
+    // Words have no border of their own, so the ring stands clear of them.
+    const box = { x: tight.x - air, y: tight.y - air, w: tight.w + 2 * air, h: tight.h + 2 * air };
+    out.svg += highlight.ringSvg(marked, key, box, long, ink);
+    out.l = Math.max(out.l, reach - box.x);
+    out.t = Math.max(out.t, reach - box.y);
+    out.r = Math.max(out.r, box.x + box.w + reach - W);
+    out.b = Math.max(out.b, box.y + box.h + reach - H);
+  });
+  return out;
+}
+
+function ringedDoc(W, H, parts, rings) {
+  const w = W + rings.l + rings.r;
+  const h = H + rings.t + rings.b;
+  if (w === W && h === H) return { svg: T.svgDoc(W, H, [...parts, rings.svg]), w, h };
+  const f = T.f2;
+  return {
+    svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="${f(-rings.l)} ${f(-rings.t)} ${f(w)} ${f(h)}">${parts.join('')}${rings.svg}</svg>`,
+    w,
+    h,
+  };
+}
+
+function faded(opacity, svg) {
+  return opacity < 1 ? `<g opacity="${opacity}">${svg}</g>` : svg;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 
 function wrapped(text, pt, width, bold, most, what, profile) {
   const lines = T.wrap(text, pt, width, bold);
@@ -431,7 +497,12 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   // a surface that shows answers in colour, and the same green on the
   // teacher's answer sheet, whose sheet colours otherwise print it as ink.
   const answer = profile.answers === 'show' && profile.palette === 'sheet' ? PALETTES.colour.answer : c.answer;
+  const ink = profile.palette === 'ink';
+  const declared = highlightParts(normalise(spec));
+  const marked = highlight.resolveHighlight(spec, declared, 'process chain');
+  const op = (i) => highlight.opacityFor(marked, declared[i].key);
   const parts = [];
+  const ringList = [];
   if (L.stemLines.length) {
     parts.push(T.textLines(L.stemLines, L.stemX, PAD * pt, pt, { fill: c.ink, font, bold: profile.bold, anchor: 'start' }));
   }
@@ -443,25 +514,34 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
   const head = (tip, y) => `<polygon points="${T.f2(tip)},${T.f2(y)} ${T.f2(tip - ARROW_HEAD_W * pt)},${T.f2(y - (ARROW_HEAD_H * pt) / 2)} ${T.f2(tip - ARROW_HEAD_W * pt)},${T.f2(y + (ARROW_HEAD_H * pt) / 2)}" fill="${c.ink}"/>`;
   L.boxes.forEach((b, i) => {
     const underTop = b.rowTop + L.mainH + L.nameH;
+    const own = [];
     if (b.pic) {
-      parts.push(imageTag(b.pic));
-      if (b.lines.length) parts.push(T.textLines(b.lines, b.x + b.w / 2, b.rowTop + L.mainH + PIC_NAME_GAP * pt, pt, { fill: b.answer ? answer : c.ink, font, bold: true }));
+      own.push(imageTag(b.pic));
+      if (b.lines.length) own.push(T.textLines(b.lines, b.x + b.w / 2, b.rowTop + L.mainH + PIC_NAME_GAP * pt, pt, { fill: b.answer ? answer : c.ink, font, bold: true }));
     } else {
-      parts.push(
+      own.push(
         `<rect x="${T.f2(b.x)}" y="${T.f2(b.y)}" width="${T.f2(b.w)}" height="${T.f2(b.h)}" rx="${T.f2(BOX_RADIUS * pt)}" fill="${c.paper}" stroke="${c.ink}" stroke-width="${T.f2(Math.max(1, BOX_STROKE * pt))}"/>`
       );
       if (b.lines.length) {
         const top = b.y + (b.h - T.blockHeight(b.lines.length, pt)) / 2;
-        parts.push(T.textLines(b.lines, b.x + b.w / 2, top, pt, { fill: b.answer ? answer : c.ink, font, bold: true }));
+        own.push(T.textLines(b.lines, b.x + b.w / 2, top, pt, { fill: b.answer ? answer : c.ink, font, bold: true }));
       }
     }
     if (b.labelLines.length) {
-      parts.push(`<g class="chain-label">${T.textLines(b.labelLines, b.x + b.w / 2, underTop + LABEL_GAP * pt, L.labelPt, { fill: c.answer, font, bold: true })}</g>`);
+      own.push(`<g class="chain-label">${T.textLines(b.labelLines, b.x + b.w / 2, underTop + LABEL_GAP * pt, L.labelPt, { fill: c.answer, font, bold: true })}</g>`);
     } else if (b.writeLine) {
       const lw = b.w * LABEL_LINE_SHARE;
-      parts.push(`<rect class="chain-label-line" x="${T.f2(b.x + (b.w - lw) / 2)}" y="${T.f2(underTop + LABEL_LINE_H * pt - hair)}" width="${T.f2(lw)}" height="${T.f2(hair)}" fill="${c.ink}"/>`);
+      own.push(`<rect class="chain-label-line" x="${T.f2(b.x + (b.w - lw) / 2)}" y="${T.f2(underTop + LABEL_LINE_H * pt - hair)}" width="${T.f2(lw)}" height="${T.f2(hair)}" fill="${c.ink}"/>`);
     }
+    parts.push(faded(op(i), own.join('')));
+    // The ring takes in the whole link: its box or picture, its name, and the
+    // role word or writing line under it.
+    const under = b.labelLines.length ? LABEL_GAP * pt + T.blockHeight(b.labelLines.length, L.labelPt) : b.writeLine ? LABEL_LINE_H * pt : 0;
+    const bottom = under ? underTop + under : b.pic ? b.rowTop + L.mainH + L.nameH : b.y + b.h;
+    ringList.push({ key: declared[i].key, box: { x: b.x, y: b.y, w: b.w, h: Math.max(b.h, bottom - b.y) } });
     const next = L.boxes[i + 1];
+    // An arrow is at full strength only between two highlighted stages.
+    const joinOp = next ? Math.min(op(i), op(i + 1)) : 1;
     if (next && next.row !== b.row) {
       // The turn: out of the last link of the top row, down past everything
       // under that row, back along the gap between the rows, down beside the
@@ -475,23 +555,23 @@ function tightSvg(spec = {}, profileOrSurface = 'worksheets', box) {
       const end = L.n.arrowHeads ? tip - ARROW_HEAD_W * pt + 0.5 : tip;
       const d = `M ${T.f2(b.x + b.w + ARROW_GAP * pt)} ${T.f2(b.arrowY)} H ${T.f2(xR)} V ${T.f2(yMid)} H ${T.f2(xL)} V ${T.f2(next.arrowY)} H ${T.f2(end)}`;
       const line = `<path d="${d}" fill="none" stroke="${c.ink}" stroke-width="${T.f2(ARROW_STROKE * pt)}" stroke-linejoin="miter"/>`;
-      parts.push(L.n.arrowHeads ? `<g class="chain-arrow chain-turn">${line}${head(tip, next.arrowY)}</g>` : `<g class="chain-join chain-turn">${line}</g>`);
+      parts.push(faded(joinOp, L.n.arrowHeads ? `<g class="chain-arrow chain-turn">${line}${head(tip, next.arrowY)}</g>` : `<g class="chain-join chain-turn">${line}</g>`));
     } else if (next) {
       const y = b.arrowY;
       const x1 = b.x + b.w + ARROW_GAP * pt;
       const tip = x1 + L.joinW;
       const headL = tip - ARROW_HEAD_W * pt;
       const bar = (to) => `<rect x="${T.f2(x1)}" y="${T.f2(y - (ARROW_STROKE * pt) / 2)}" width="${T.f2(to - x1)}" height="${T.f2(ARROW_STROKE * pt)}" fill="${c.ink}"/>`;
-      parts.push(
+      parts.push(faded(joinOp,
         L.n.arrowHeads
           ? `<g class="chain-arrow">${bar(headL + 0.5)}` +
               `<polygon points="${T.f2(tip)},${T.f2(y)} ${T.f2(headL)},${T.f2(y - (ARROW_HEAD_H * pt) / 2)} ${T.f2(headL)},${T.f2(y + (ARROW_HEAD_H * pt) / 2)}" fill="${c.ink}"/></g>`
           : `<g class="chain-join">${bar(tip)}</g>`
-      );
+      ));
     }
   });
-  const h = L.h;
-  return { svg: T.svgDoc(L.W, h, parts), w: L.W, h, aspect: L.W / h, layout: L };
+  const doc = ringedDoc(L.W, L.h, parts, ringsFor(marked, ringList, L.W, L.h, ink));
+  return { svg: doc.svg, w: doc.w, h: doc.h, aspect: doc.w / doc.h, layout: L };
 }
 
 // The pictures are named by their files in the key: a photograph's own bytes
@@ -500,11 +580,12 @@ function cacheKey(spec = {}, profileOrSurface = 'worksheets', box) {
   const p = T.resolveProfile(profileOrSurface, box);
   const n = normalise(answersShown(p) ? spec : withoutAnswers(spec));
   const slim = (b) => (b ? { text: b.text, label: b.label, answer: Boolean(b.answer), pic: b.pic ? [b.imagePath || (b.pic.href || '').length, Boolean(b.pic.href), b.pic.w, b.pic.h] : null } : null);
-  return `process-chain:${T.profileKey(p)}:${JSON.stringify({ ...n, boxes: n.boxes.map(slim), bank: n.bank.map(slim) })}`;
+  const hi = [...highlight.resolveHighlight(spec, highlightParts(normalise(spec)), 'process chain')].sort().join(',');
+  return `process-chain:${T.profileKey(p)}:${JSON.stringify({ ...n, boxes: n.boxes.map(slim), bank: n.bank.map(slim) })}${hi ? `:hi:${hi}` : ''}`;
 }
 
 const { preparePictures, prepareChainsIn } = require('./process-chain-pictures');
 
 // `link`, `fit` and `imageTag` are also the cycle's (cycle-svg.js): a stage of a
 // loop is written, and its picture placed, exactly as a link of a chain is.
-module.exports = { tightSvg, cacheKey, normalise, describeLayout, preparePictures, prepareChainsIn, MAX_BOXES, link, fit, imageTag };
+module.exports = { tightSvg, cacheKey, normalise, describeLayout, highlightParts, preparePictures, prepareChainsIn, MAX_BOXES, link, fit, imageTag, ringsFor, ringedDoc, faded };

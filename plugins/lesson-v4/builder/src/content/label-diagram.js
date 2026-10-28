@@ -187,6 +187,9 @@ function labelDiagramKey(data) {
     data.layout || 'auto',
     data.marginXRatio, data.marginYRatio, data.labelMaxChars, data.arrow, data.labelColour,
     JSON.stringify(data.frame || null),
+    // A diagram pointing at one part is a different picture from the same
+    // diagram pointing at nothing; one pointing at nothing keeps its old key.
+    ...(data.highlight != null && data.highlight !== false ? [`highlight:${JSON.stringify(data.highlight)}`] : []),
   ].join('|');
 }
 

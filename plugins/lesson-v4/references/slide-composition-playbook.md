@@ -56,7 +56,8 @@ The derived line may:
 
 - name the action already present in the source unit, such as `Match each pair`, `Sort the examples`, `Write one reason`, or `Choose and explain`;
 - identify an already-specified recording form, such as `Write the pairs` when the source unit already requires written pairs;
-- distinguish task from material so children know where to start.
+- distinguish task from material so children know where to start;
+- when a set is split across slides, bind the existing directive to the displayed item: “Find the area of each shape” becomes “Find the area of shape I” on the slide showing I. Keep every item across the set and preserve any accompanying requirement such as showing the counting. A shape label remains a label beside its diagram, not a numbered question consisting of the letter alone. Keep the source phase title, such as Your Turn. This is a presentation binding, not permission to change the task.
 
 It may not:
 
@@ -64,7 +65,7 @@ It may not:
 - add a new task, concept, phase or pedagogical decision;
 - add a reason, condition, method, medium, number of responses or success standard not supplied upstream;
 - reveal an answer or judgement;
-- replace a source-authored question with a near-copy;
+- replace a source-authored question with a near-copy, except the item binding explicitly allowed above;
 - invent classroom routine, such as books, whiteboards, partner talk or cold call, unless that medium is itself part of the settled task;
 - rescue genuinely unclear upstream wording by silently rewriting it.
 
@@ -92,7 +93,7 @@ A lettered or card task slot confers task identity. Put only genuine child tasks
 
 Ask of every entry placed in a question or task-card slot: **is this something the child does here, or something they are being told about?** Only the doing earns a label and a card.
 
-Label practice items by index, not by what they obviously are. Give each item a plain letter or number and let the task prompt name the real work. Calling visible items `grid`, `pyramid`, `clock` or `triangle` wastes the label on something children can already see and can leak the classification they are meant to decide.
+Distinguish question numbering from object names. Keep question indices plain, but make a referenced object's identity clear: `Shape E` or `Graph B`, using a neutral noun that does not reveal an answer. Place that name directly beside its object within the same visual group, without a separate label card, so children can connect the question to what it refers to. Use available space beside or around the object for its name; preserve the diagram's useful size rather than shrinking it to fit a label. The name may also appear in the question; that reference is not a repeated instruction. Preserve the source identifier and any substantive label wording; adding the neutral object noun is presentation furniture. Keep conventional mathematical labels such as vertex A unchanged, and do not name a classification children must discover, such as `triangle` in a shape-identification task.
 
 When an entry is a read-a-value task, show the real question the figure answers - for example, `How many children chose football?` - rather than a meta-instruction such as `Read the football bar`, unless the latter is the exact source-authored wording.
 

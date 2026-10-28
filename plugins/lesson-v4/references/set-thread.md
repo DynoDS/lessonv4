@@ -27,9 +27,11 @@ reads a reworded step as a new rule.
    list you had just written. Where the set continues its method, a list that
    passes carries on word for word; one that does not is rewritten to that
    standard, and the rewrite is the list from the set's first day on.
-4. `teacher-voice.md` → Success criteria in full, and the subject file's
+4. `preferences.md` → Success Criteria in full, then `teacher-voice.md` → Success criteria in full, and the subject file's
    vocabulary section (`[PLUGIN_ROOT]/references/subject-[subject].md`, when the subject has one), because
    the words you write here go on every slide and wall in the set.
+
+Before fixing shared wording, apply the child walkthrough from `preferences.md` → Success Criteria to a representative question and a relevant variation for each distinct method in the set, using the plan's intended teaching and available references. Test the later days where its scope changes too. Record the questions and any repaired sticking point briefly in your completion response. A list inherited from an earlier day is not exempt. Keep common wording where the action stays the same; shared wording must not force unused routes onto every task or remove a method the task requires.
 
 ## What to write
 

@@ -166,3 +166,22 @@ test('maths-turn-ref-sc stays unlettered without questionNumbering', async () =>
     'no letters without an explicit teacher-led request'
   );
 });
+
+for (const [name, draw, on, off] of [
+  ['maths-turn-sc', drawMathsTurnSc, { workingSpace: true }, { workingSpace: false }],
+  ['maths-turn-ref-sc', drawMathsTurnRefSc, { hideWorkingSpace: false }, { hideWorkingSpace: true }]
+]) {
+  test(`${name}: legacy working flags cannot restore a generic blank area`, async () => {
+    const data = {
+      title: 'My Turn', questions: ['Find the missing part.'],
+      questionVisual: { type: 'text', value: 'Known part: 12. Missing part: ?' },
+      reference: { type: 'text', value: 'Whole: 20' },
+      criteria: { type: 'steps', steps: ['Find the missing part.'] }
+    };
+    const enabled = await renderSlideXml(draw, { ...data, ...on });
+    const disabled = await renderSlideXml(draw, { ...data, ...off });
+    assert.equal((enabled.match(/<p:sp>/g) || []).length, (disabled.match(/<p:sp>/g) || []).length);
+    assert.ok(enabled.includes('Missing part: ?'), 'the meaningful unknown remains visible');
+    assert.ok(enabled.includes('Find the missing part.'), 'the question remains visible');
+  });
+}

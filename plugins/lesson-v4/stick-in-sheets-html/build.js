@@ -606,7 +606,7 @@ async function build(specPath, outDir, options = {}) {
       for (const m of group) {
         const plain = Object.assign({}, m.item);
         delete plain.tag;
-        const render = (widthMm, zoom) => renderPieceHtml(Object.assign({}, plain, { widthMm }), { baseDir, page: true, zoom });
+        const render = (widthMm, zoom, heightMm) => renderPieceHtml(Object.assign({}, plain, { widthMm }), { baseDir, page: true, zoom, heightMm });
         const marks = letterMarks(m.item);
         // A picture marked with letters is drawn without its pointer lines on
         // a page, so its shape there is the picture's own.

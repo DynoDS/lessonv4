@@ -34,7 +34,9 @@ def setup(tmp, occupied=(), today="2026-06-01", sorting=True):
     home.mkdir(exist_ok=True)
     delivery = {"folder": str(base), "sorting": sorting, "termDates": str(base / "Term.md")}
     (home / "settings.json").write_text(json.dumps({"delivery": delivery}), encoding="utf-8")
-    env = dict(os.environ, LESSON_RESOURCES_HOME=str(home), LESSON_RESOURCES_TODAY=today)
+    # These fixtures emit Claude session logs, regardless of the host running pytest.
+    env = dict(os.environ, LESSON_RESOURCES_HOME=str(home), LESSON_RESOURCES_TODAY=today,
+               LESSON_BATCH_HOST="claude")
     output = base / "out"
     output.mkdir()
     return base, output, env

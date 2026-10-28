@@ -974,6 +974,20 @@ def validate(working_dir: str, output_dir: str, report: str) -> list[str]:
                         "and is not named in the Helper gaps section."
                     )
 
+    # ── A lesson built from a temporary fix says so ───────────────────────
+    # The fix changed how this lesson was drawn and nobody but the run has
+    # looked at it (the teacher, 21 October 2026: "make a temporary helper
+    # thing and tell me"). Unreported, it is drawing code nobody reviewed in a
+    # delivered lesson, and a fix nobody installs.
+    if (working / "temporary-fix" / "record.json").is_file():
+        gap_section = sections.get("## Helper gaps", "")
+        if "temporary-fix" not in gap_section:
+            failures.append(
+                "helper gaps: this lesson was built from a temporary fix "
+                "(temporary-fix/record.json) and the Helper gaps section does not "
+                "name its folder, what it changed and that /install-helper keeps it."
+            )
+
     # ── A lesson the last review sent back is not a finished lesson ──────
     # A run once closed COMPLETE while its last design review still said
     # REDESIGN REQUIRED, the findings never carried into the report (reviewer

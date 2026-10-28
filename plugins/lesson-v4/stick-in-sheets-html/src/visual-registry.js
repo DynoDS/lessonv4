@@ -286,8 +286,13 @@ const VISUALS = {
   // the one shared map (shared/visuals/map-svg.js) in the pack's ink profile,
   // laid out at the width it prints, so its markers and boxes are sized for a
   // Year 4 pencil rather than as a share of the picture (13 September 2026).
+  // On a page of its own a map is given the whole page, width and depth, so
+  // its names can sit in the space beside a map the depth holds narrow; laid
+  // out at a width alone, a tall South America left both sides of the page
+  // empty while its country names crowded down to 9pt (21 October 2026).
   map: sharedPiece(map, 150, {
     specFn: map.stickInSpec,
+    fillsSpace: true,
   }),
   // 145mm wide: this is a handwriting frame, so the ruled lines set the minimum
   // usable size. The registry always forces task mode, preventing optional

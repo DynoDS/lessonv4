@@ -52,6 +52,8 @@
 //   x_label      optional title under the categories (xLabel).
 
 const { textWidthEm } = require('../text/comic-glyph-width');
+const highlight = require('./figure-highlight');
+const { printsInInk } = require('./surface-profiles');
 
 const BAR_FILL     = '#2E74B5';   // house blue
 const BAR_STROKE   = '#1F4E79';   // house deep blue
@@ -219,6 +221,13 @@ function squareGrid(s, m, plotW, plotH, fixedDepth) {
   return best;
 }
 
+// A bar chart's parts are its bars, named by their own categories, so a lesson
+// points at "Football" rather than at the third bar, and the ring follows the
+// bar if the categories are reordered or the values change.
+function highlightParts(s) {
+  return s.categories.map(String);
+}
+
 function refuse(code, message) {
   throw new Error(`${code}: ${message}`);
 }
@@ -290,12 +299,14 @@ function layout(data, profile) {
   }
   const plotW = W - 2 * m.margin - m.padLeft - PAD_RIGHT * u;
   const squares = squareGrid(s, m, plotW, plotH, Boolean(profile.heightPt));
-  if (squares) return { s, m, W, plotW: squares.plotW, plotH: squares.plotH, squares };
-  return { s, m, W, plotW, plotH, squares: null };
+  const marked = highlight.resolveHighlight(data, highlightParts(s), 'bar chart');
+  const ink = printsInInk(profile);
+  if (squares) return { s, m, W, plotW: squares.plotW, plotH: squares.plotH, squares, marked, ink };
+  return { s, m, W, plotW, plotH, squares: null, marked, ink };
 }
 
 function draw(L) {
-  const { s, m, W, plotW, plotH, squares } = L;
+  const { s, m, W, plotW, plotH, squares, marked, ink } = L;
   const u = m.u;
   const contentW = W - 2 * m.margin;
   const h = m.padTop + plotH + m.catH + m.xTitleH + 2 * m.margin;
@@ -359,18 +370,34 @@ function draw(L) {
   parts.push(`<line x1="${f(plotLeft)}" y1="${f(plotTop)}" x2="${f(plotLeft)}" y2="${f(plotBottom)}" stroke="${AXIS_COLOUR}" stroke-width="${f(STROKE_W * u)}"/>`);
   parts.push(`<line x1="${f(plotLeft)}" y1="${f(plotBottom)}" x2="${f(plotLeft + plotW)}" y2="${f(plotBottom)}" stroke="${AXIS_COLOUR}" stroke-width="${f(STROKE_W * u)}"/>`);
 
-  // Bars + category labels. A bar of nothing is no bar, just its label.
+  // Bars + category labels. A bar of nothing is no bar, just its label. When
+  // one bar is pointed at, every other bar steps back WITH its name, while the
+  // scale, the gridlines and the title stay as they are: they are how the lit
+  // bar is read.
+  const rings = [];
   for (let i = 0; i < n; i++) {
     const v = Number(s.values[i]) || 0;
     const by = yFor(v);
     const bx = barLeft(i);
     const bh = plotBottom - by;
+    const fade = highlight.opacityFor(marked, s.categories[i]);
+    const own = [];
     if (bh > 0.01) {
-      parts.push(`<rect x="${f(bx)}" y="${f(by)}" width="${f(barW)}" height="${f(bh)}" fill="${BAR_FILL}" stroke="${BAR_STROKE}" stroke-width="${f(STROKE_W * u)}"/>`);
+      own.push(`<rect x="${f(bx)}" y="${f(by)}" width="${f(barW)}" height="${f(bh)}" fill="${BAR_FILL}" stroke="${BAR_STROKE}" stroke-width="${f(STROKE_W * u)}"/>`);
     }
     const cx = bx + barW / 2;
-    parts.push(text(cx, plotBottom + m.labelFs + (i % m.tiers) * m.labelFs * 1.2, s.categories[i], m.labelFs, `text-anchor="middle" dominant-baseline="alphabetic" fill="${TEXT_COLOUR}"`));
+    const labelY = plotBottom + m.labelFs + (i % m.tiers) * m.labelFs * 1.2;
+    own.push(text(cx, labelY, s.categories[i], m.labelFs, `text-anchor="middle" dominant-baseline="alphabetic" fill="${TEXT_COLOUR}"`));
+    parts.push(fade < 1 ? `<g opacity="${fade}">${own.join('')}</g>` : own.join(''));
     anchors.rows[s.categories[i]] = pct(cx, by);
+    if (marked.has(s.categories[i])) {
+      // Round the bar and its name together: "this bar, Football".
+      const nameW = textW(s.categories[i], m.labelFs);
+      const left = Math.min(bx, cx - nameW / 2) - m.labelFs * 0.25;
+      const right = Math.max(bx + barW, cx + nameW / 2) + m.labelFs * 0.25;
+      const top = Math.min(by - m.labelFs * 0.3, plotBottom - m.labelFs * 0.5);
+      rings.push({ key: s.categories[i], box: { x: left, y: top, w: right - left, h: labelY + m.labelFs * 0.28 - top } });
+    }
   }
 
   if (s.xLabel) {
@@ -381,6 +408,9 @@ function draw(L) {
     const yy = plotTop + plotH / 2;
     parts.push(text(yx, yy, s.yLabel, AXIS_TITLE_FS * u, `text-anchor="middle" font-weight="bold" fill="${TEXT_COLOUR}" transform="rotate(-90, ${f(yx)}, ${f(yy)})"`));
   }
+
+  // The rings last, over the axes and the axis titles.
+  rings.forEach(({ key, box }) => parts.push(highlight.ringSvg(marked, key, box, Math.max(w, h), ink)));
 
   const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${f(w)}" height="${f(h)}" viewBox="0 0 ${f(w)} ${f(h)}">${parts.join('')}</svg>`;
   return { svg, aspect: w / h, w, h, anchors };
@@ -393,7 +423,9 @@ function tightSvg(data = {}, profile) {
 function cacheKey(data = {}, profile) {
   const s = readSpec(data);
   const box = `:${profile.surface}:${f(profile.widthPt)}x${profile.heightPt ? f(profile.heightPt) : '-'}`;
-  return `bar-chart${box}:${s.title}:${s.categories.join(',')}:${s.values.join(',')}:${s.interval}:${s.max}:${s.yLabel}:${s.xLabel}`;
+  // The highlight is part of the picture; a chart with none keeps its old key.
+  const hi = [...highlight.resolveHighlight(data, highlightParts(s), 'bar chart')].sort().join(',');
+  return `bar-chart${box}:${s.title}:${s.categories.join(',')}:${s.values.join(',')}:${s.interval}:${s.max}:${s.yLabel}:${s.xLabel}` + (hi ? `:hi=${hi}` : '');
 }
 
 // Compact construction cue. Scale values and category labels belong to the
