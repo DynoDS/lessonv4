@@ -40,11 +40,39 @@ def _words(value) -> int:
     return 0
 
 
+def visible_answer_words(unit: dict) -> int:
+    """Count displayed outcomes, never marking guidance or routing metadata."""
+    answer = unit.get("answer") or {}
+    if answer.get("delivery") in {"teacher-only", "none"}:
+        return 0
+    # Missing delivery is retained for legacy estimates; valid new contracts
+    # explicitly select answer-slide, visible-in-unit, teacher-only or none.
+    if answer.get("content") is not None:
+        return _words(answer["content"])
+    structure = answer.get("structure") or {}
+    task = unit.get("taskStructure") or {}
+    if structure.get("kind") == "sort":
+        items = {row.get("id"): row.get("label", "") for row in task.get("items") or []}
+        groups = {row.get("id"): row.get("label", "") for row in task.get("groups") or []}
+        placements = structure.get("placements") or []
+        return sum(_words(items.get(p.get("itemRef"), "")) for p in placements) + sum(
+            _words(groups.get(ref, "")) for ref in {p.get("groupRef") for p in placements})
+    if structure.get("kind") == "evidence-classification":
+        return sum(_words(value.get("value")) for result in structure.get("results") or []
+                   for value in result.get("values") or [])
+    return 0
+
+
 def board_words(unit: dict, design: dict) -> int:
     """The words a beat puts in front of the class: its board, its task, the
     line to remember and the answers gone through. Never its script."""
     content = unit.get("content") if isinstance(unit.get("content"), dict) else {}
-    count = sum(_words(value) for key, value in content.items() if key != "takeaway")
+    excluded = NOT_ON_THE_BOARD | {"takeaway", "modelledExemplar", "teacherListensFor"}
+    # An activity alongside the actual task is the designer's description.
+    # Retain activity-only legacy/pupil prompts rather than erase their text.
+    if any(content.get(key) for key in ("task", "prompt", "question")):
+        excluded = excluded | {"activity"}
+    count = sum(_words(value) for key, value in content.items() if key not in excluded)
     takeaway = content.get("takeaway")
     if isinstance(takeaway, dict) and takeaway.get("ref"):
         sticky = {row.get("id"): row for row in design.get("stickyKnowledge") or [] if isinstance(row, dict)}
@@ -52,7 +80,7 @@ def board_words(unit: dict, design: dict) -> int:
     elif isinstance(takeaway, str):
         count += _words(takeaway)
     count += _words(unit.get("pupilInstruction") or "")
-    count += _words(unit.get("answer") or {})
+    count += visible_answer_words(unit)
     return count
 
 

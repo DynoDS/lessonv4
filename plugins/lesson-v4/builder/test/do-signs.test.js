@@ -127,3 +127,42 @@ test('both badge drawings are in the deck\'s signs', () => {
   assert.ok(signalWidth('lightning', 0.5) > 0);
   assert.ok(signalWidth('sheet', 0.5) > 0);
 });
+
+// The designer chooses scope; delivery and timing are independent axes.
+test('explicit quick/deeper choices override printing, minutes and slide badges without a sequence quota', () => {
+  const design = { teachingSequence: [
+    { sourceUnitId: 'q1', kind: 'do', minutes: 4, levels: PRINTED, doMode: 'quick' },
+    { sourceUnitId: 'q2', kind: 'do', minutes: 1, levels: BOARD, doMode: 'quick' },
+    { sourceUnitId: 'd1', kind: 'do', minutes: 2, levels: BOARD, doMode: 'deeper' },
+    { sourceUnitId: 'd2', kind: 'do', minutes: 7, levels: PRINTED, doMode: 'deeper' },
+  ] };
+  const lesson = { slides: design.teachingSequence.map((u) => ({
+    title: u.sourceUnitId, designUnitId: u.sourceUnitId,
+    doSign: u.doMode === 'quick' ? 'sheet' : 'quick'
+  })) };
+  applyDoSigns(lesson, folderWith(design));
+  assert.deepStrictEqual(lesson.slides.map(s => s.doSign), ['quick', 'quick', 'sheet', 'sheet']);
+});
+
+test('explicit mode clears stale badges from setup and answers, and never badges Our Turn', () => {
+  const design = { teachingSequence: [
+    { sourceUnitId: 'd1', kind: 'do', levels: BOARD, doMode: 'deeper' },
+    { sourceUnitId: 'o1', kind: 'our-turn', levels: BOARD },
+  ] };
+  const lesson = { slides: [
+    { title: 'Meet the case', designUnitId: 'd1', doSign: 'quick' },
+    { title: 'Work on the case', designUnitId: 'd1', doSign: 'quick', instruction: { signal: 'pencil' } },
+    { title: 'Case - Answers', designUnitId: 'd1', doSign: 'sheet' },
+    { title: 'Revealed', designUnitId: 'd1', doSign: 'sheet', content: { revealPair: { state: 'answer' } } },
+    { title: 'Our Turn', designUnitId: 'o1', doSign: 'quick' },
+  ] };
+  applyDoSigns(lesson, folderWith(design));
+  assert.deepStrictEqual(lesson.slides.map(s => s.doSign), [undefined, 'sheet', undefined, undefined, undefined]);
+});
+
+test('new multi-slide tasks require a marked working slide instead of badging setup', () => {
+  const design = { teachingSequence: [{ sourceUnitId: 'd1', kind: 'do', doMode: 'deeper' }] };
+  assert.throws(() => applyDoSigns({ slides: [
+    { title: 'Setup', designUnitId: 'd1' }, { title: 'Task', designUnitId: 'd1' },
+  ] }, folderWith(design)), /no task signal/);
+});

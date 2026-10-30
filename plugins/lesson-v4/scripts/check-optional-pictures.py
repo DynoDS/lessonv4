@@ -1103,10 +1103,10 @@ SIGN_LOOKALIKES = {
     "the tick sign, which marks an answers slide": re.compile(
         r"\b(ticks?|check ?marks?|checkmarks?)\b", re.IGNORECASE
     ),
-    "the lightning bolt, which marks a task done on the board": re.compile(
+    "the lightning bolt, which marks a quick Do": re.compile(
         r"\b(lightning|thunderbolts?)\b", re.IGNORECASE
     ),
-    "the sheet sign, which marks a task done on the worksheet": re.compile(
+    "the book/sheet sign, which marks a deeper Do": re.compile(
         r"\b(worksheets?|sheets? of paper|paper sheets?|notepaper)\b", re.IGNORECASE
     ),
 }

@@ -551,7 +551,7 @@ def test_image_team_cap_is_authoritative_and_current_aware():
     assert "PHOTO_CAP_GAP" in adaptation
     assert "Once a filename appears in an immutable compiled assignment manifest" in output_template
     assert (
-        "Keep its immutable schema-2 assignments, staged worker results, "
+        "Only the picture stage retains immutable schema-2 assignments, staged results, "
         "per-filename terminal receipts and final provenance" in flat
     )
     # The teacher's ruling (16 October 2026): 16 is the lesson's aim, not a
@@ -2320,7 +2320,7 @@ def test_post_freeze_new_photos_use_immutable_supplemental_waves():
     assert "expected-prefix" in compiler
     assert "Never reopen a passing sibling." in flat
     assert (
-        "Keep its immutable schema-2 assignments, staged worker results, "
+        "Only the picture stage retains immutable schema-2 assignments, staged results, "
         "per-filename terminal receipts and final provenance" in flat
     )
 

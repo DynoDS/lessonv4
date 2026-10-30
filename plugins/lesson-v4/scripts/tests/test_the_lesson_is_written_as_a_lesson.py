@@ -110,9 +110,13 @@ class TheReviewerReadsTheLessonFirst(unittest.TestCase):
         lines are tested against the lesson rather than framing it; the
         walk-through is still read as the lesson before the structured view."""
         reviewer = REVIEWER.read_text(encoding="utf-8")
-        words = reviewer.index("Read the opening section of `[WORKING_DIR]/design-review-view.md`, `As the class meets it`")
+        surface = reviewer.index("Before the combined view, run")
+        words = reviewer.index("Now read the opening section of `[WORKING_DIR]/design-review-view.md`, `As the class meets it`")
         walk = reviewer.index("Read the walk-through that opens `[WORKING_DIR]/design-decisions.md`")
         view = reviewer.index("Read the rest of `[WORKING_DIR]/design-review-view.md` once, straight through")
+        self.assertLess(surface, words)
+        self.assertIn("Execute the visible tasks and inspect Teach boards with notes closed", reviewer[surface:words])
+        self.assertIn("Retain provisional missing moves/referents and minimum responses before uncovering the key", reviewer[surface:words])
         self.assertLess(words, walk)
         self.assertLess(walk, view)
 

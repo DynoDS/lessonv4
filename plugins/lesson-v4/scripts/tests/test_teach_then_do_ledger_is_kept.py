@@ -47,7 +47,7 @@ class TheRhythmHasOneHome(unittest.TestCase):
         for kept in ("**Write each beat's `unlocks` by looking forward, not back.**",
                      "**Write each beat's `minutes` as the time it really takes with a class, and read the sum.**",
                      "**Write each beat's `thinking` before you choose its activity.**",
-                     "A substantial task is launched before it is instructed"):
+                     "Give a task the preparation its unfamiliar product or process needs"):
             with self.subTest(kept=kept):
                 self.assertIn(kept, designer)
 

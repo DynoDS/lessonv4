@@ -3,9 +3,9 @@
 The Tudor lesson taught on 15 September 2026 passed every check and its main
 beats could be completed from everyday sense. The repair is not another rule:
 the designer's overlapping guidance is folded into one working order (settle
-the understanding, choose what establishes it, choose what children do, check
-what the responses would show); a small set of cross-subject contrasts
-calibrates the last step for designer and reviewer alike; and the reviewer's
+the learning, choose pupil work and material, prepare the attempt, check
+what the work and feedback show); cross-subject contrasts calibrate the choice
+and its review, while retaining simpler sufficient tasks; and the reviewer's
 existing worked answer gains two probes, can weak understanding still pass and
 can good understanding be marked wrong, with the limits that keep a quick check,
 purposeful repetition and a supplied source legitimate.
@@ -45,15 +45,16 @@ class TheDesignerWorksInOneOrderTests(unittest.TestCase):
     def test_the_working_order_is_stated_once_and_points_at_its_owners(self):
         text = flat(DESIGNER)
         self.assertIn(
-            "settle what children need to understand → choose the explanation, example, evidence or "
-            "demonstration that establishes it → choose what children do with it → check what their "
-            "responses would actually show",
+            "what children need to understand and become able to do → the material and pupil performance "
+            "that develop that learning → the teaching and support that prepare the attempt → "
+            "what the work and feedback would show",
             text,
         )
         # The four steps route to the existing owners rather than restating them.
         self.assertIn("`Before You Design Anything`, `Teaching substance and demand`, owns how", text)
         self.assertIn("`The Teach → Do Rhythm`, below, owns both", text)
         self.assertIn("`One Completion Pass, Then Done` runs this on the finished contract", text)
+        self.assertIn("This is planning order, not classroom order: teach what children need before asking them to use it", text)
 
     def test_the_pivotal_teaching_supplies_the_missing_connection(self):
         text = flat(DESIGNER)
@@ -74,7 +75,8 @@ class TheDesignerWorksInOneOrderTests(unittest.TestCase):
     def test_the_misunderstanding_is_worked_at_design_and_at_completion(self):
         text = flat(DESIGNER)
         self.assertIn("the response a child with a plausible misunderstanding could give", text)
-        self.assertIn("Then work it a second time holding the plausible misunderstanding", text)
+        self.assertIn("For a diagnostic claim, write the response a child who has understood would give", text)
+        self.assertIn("Then run step 4 of `Settle the classroom experience before collecting content`", text)
 
     def test_the_completion_pass_budgets_actions_not_slides(self):
         text = flat(DESIGNER)
@@ -85,7 +87,7 @@ class TheDesignerWorksInOneOrderTests(unittest.TestCase):
 
     def test_the_old_rehearsal_section_was_folded_not_duplicated(self):
         text = DESIGNER.read_text(encoding="utf-8")
-        self.assertEqual(text.count("rehearse how you would teach the objective yourself"), 1)
+        self.assertEqual(text.count("Rehearse the resulting lesson yourself"), 1)
         self.assertEqual(text.count("Walk through the middle as carefully as the opening"), 1)
 
 
@@ -100,12 +102,14 @@ class TheContrastsReachBothAgentsTests(unittest.TestCase):
         # set of meanings. It has its own boundary case.
         self.assertEqual(text.count("**Where the simpler task is right.**"), 8)
         self.assertIn("\n## One story, one process, one set of meanings\n", text)
-        self.assertIn("A sort can be the stronger task and a sentence the weaker one", text)
-        self.assertIn("never asked to match an example's names, order or materials", text)
+        self.assertIn("The response format, number of questions and length of an answer settle none of those judgements", text)
+        self.assertIn("Use these as calibration, not recipes", text)
+        self.assertIn("For a diagnostic claim, also ask whether a child could succeed from everyday sense", text)
 
     def test_the_designer_reads_it_at_the_task_decision(self):
         text = flat(DESIGNER)
-        self.assertIn("Read `task-contrasts.md` → The contrasts once, when choosing the main task", text)
+        self.assertIn("Read `task-contrasts.md` → The contrasts once at step 2", text)
+        self.assertIn("before committing to the main task or a Do the lesson relies on", text)
 
     def test_the_reviewer_packet_always_reads_it(self):
         packet = load("packet_contrasts", "design-review-packet.py")

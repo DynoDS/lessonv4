@@ -150,9 +150,8 @@ const INSTRUCTION_TEXT_INSET = 0.12;
 const INSTRUCTION_TWO_LINE_H = 0.62;
 const HEADER_TITLE_TWO_LINE_H = 0.74;
 
-// The Do beat's badge (`doSign`): a lightning bolt on any task kept on
-// the board, a sheet where the beat has a printed activity, so the teacher sees
-// at a glance which is which (1 October 2026). It sits at the header's far
+// The Do beat's badge (`doSign`) follows the source doMode: lightning for
+// quick, the existing book/sheet drawing for deeper. It sits at the header's far
 // right, and the instruction gives it this much room: the badge's own 0.66in,
 // the 0.05in a header pill reaches past its box, and a clear gap between them.
 const DO_SIGN_ROOM = 0.82;

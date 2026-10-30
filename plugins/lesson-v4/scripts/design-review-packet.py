@@ -70,7 +70,7 @@ CHILD_FACING_CONTENT_KEYS = (
     "accurateExplanation",
     "conditionsAndSafety",
 )
-ACTIVITY_IS_THE_TASK_KINDS = {"starter", "observe", "apply", "reflect"}
+ACTIVITY_IS_THE_TASK_KINDS = {"starter", "observe", "apply", "reflect", "explore", "use-learning", "do-task"}
 ACTIVITY_IS_READ_PREPARE_MODES = {"explanation"}
 
 
@@ -107,8 +107,9 @@ PREFERENCE_REVIEW_ROUTES = (
     ),
     (
         "Classroom Norms",
-        "Read when timing, routine teacher autonomy, partner talk or the "
-        "visible learning objective is in doubt.",
+        "Read Time on every review to judge the whole allocation. Read the rest "
+        "when routine teacher autonomy, partner talk or the visible learning "
+        "objective is in doubt.",
     ),
     (
         "Slide Philosophy",
@@ -236,6 +237,12 @@ PREFERENCE_REVIEW_ROUTES = (
 # reviewer to have noticed the defect first never fires on the defect the
 # section exists to calibrate.
 ALWAYS_READ_REVIEW_SECTIONS = (
+    (
+        "preferences.md",
+        "Slide Philosophy > Lesson Designer content boundaries > Five-second recognition",
+        "Read before judging any Teach board, without first having to notice a gap. "
+        "This is the visible-board recognition test, including its live-modelling boundary.",
+    ),
     # This was "read only when a difficult quality boundary remains
     # unresolved", and no review ever found one: the section is the
     # calibration for how much a beat carries and how often a lesson returns
@@ -1464,6 +1471,99 @@ def build_class_view(design: dict) -> tuple[list[str], int]:
 PRINTED_FOR = {"child": "one for each child", "pair": "one between two", "group": "one per group"}
 
 
+def build_surface_view(design: dict, photo_requirements: dict) -> str:
+    """First-read teaching/task surface, before private intent can fill gaps.
+
+    Reuse the class-facing extractor, keeping prepared models and task support.
+    Feedback answers are deferred to the normal full view, not silently treated
+    as available before the pupil attempts a task. This is evidence, not a gate.
+    """
+    import copy
+
+    visible = copy.deepcopy(design)
+    for unit in lesson_units(visible):
+        if (unit.get("answer") or {}).get("delivery") != "visible-in-unit":
+            unit["answer"] = None
+        if isinstance(unit.get("speakerNotes"), dict):
+            unit["speakerNotes"]["script"] = None
+    for introduction in visible.get("vocabularyIntroductions") or []:
+        introduction["script"] = None
+    if isinstance(visible.get("lessonQuestion"), dict):
+        visible["lessonQuestion"]["script"] = None
+    lines = ["# Cover and pupil surface", "",
+             "Read the authored board/page words and selected visual plans first. Notes, private intentions, "
+             "acceptance conditions and feedback answers are withheld. Prepared examples and same-task writing "
+             "models remain because children see them. This is a design view, not rendered slides.", "",
+             "Work the visible task before opening the full view: what exactly do children do, to which thing, "
+             "using what? Give a reasonable minimum response. Note a missing referent or necessary move rather "
+             "than inventing it. For Teach boards, apply the existing five-second and teaching-pace checks. "
+             "These are provisional observations: the full pass still checks feedback, delivery and materials.", ""]
+    for label, strings in class_view_blocks(visible):
+        lines.extend(["## " + label, ""])
+        lines.extend(strings)
+        lines.append("")
+
+    registry = {r.get("id"): r for r in design.get("representations") or []}
+    photos = {p.get("id"): p for p in photo_requirements.get("photos") or []}
+    lines.extend(["## Selected visual plans", "",
+                  "These specifications describe planned material; they do not prove image quality, "
+                  "legibility or layout. Inspect only the state selected for that moment.", ""])
+    moments = [(unit.get("label", unit.get("sourceUnitId", "Unit")), unit)
+               for unit in lesson_units(design)]
+
+    def worksheet_moments(node: dict, label: str) -> None:
+        moments.append((label, node))
+        for key in ("contentBlocks", "parts", "prompts", "sections"):
+            for index, child in enumerate(node.get(key) or [], 1):
+                if isinstance(child, dict):
+                    worksheet_moments(child, f"{label} / {key} {index}")
+
+    worksheet = design.get("worksheet") or {}
+    if worksheet.get("status") == "generated":
+        worksheet_moments(worksheet, "Worksheet")
+    for label, unit in moments:
+        uses = unit.get("representationRefs") or []
+        picture_refs = list(unit.get("photoRefs") or [])
+        if unit.get("photoRef"):
+            picture_refs.append(unit["photoRef"])
+        for item in (unit.get("taskStructure") or {}).get("items") or []:
+            if item.get("photoRef"):
+                picture_refs.append(item["photoRef"])
+        picture_refs = list(dict.fromkeys(picture_refs))
+        if not uses and not picture_refs:
+            continue
+        lines.extend(["### " + label, ""])
+        for use in uses:
+            config = next((c for c in registry.get(use.get("ref"), {}).get("configurations", [])
+                           if c.get("id") == use.get("configuration")), None)
+            lines.append(review_json({"use": use, "selectedConfiguration": config}))
+        for ref in picture_refs:
+            photo = photos.get(ref)
+            if photo is None:
+                lines.append("Picture specification to inspect: " + ref)
+            else:
+                # Acquisition and rationale are not pupil content. Scene/prompt
+                # define the intended visual; do not import teacher guidance.
+                scene = {k: photo[k] for k in ("id", "subject", "load_bearing_evidence", "generation_prompt", "text_rule") if k in photo}
+                lines.append(review_json(scene or {"id": ref}))
+        lines.append("")
+    return "\n".join(lines)
+
+
+def surface(args: argparse.Namespace) -> int:
+    working = Path(args.working_dir).resolve()
+    design = load_json(working / "lesson-design.json", "lesson design")
+    photos = load_json(working / "photo-requirements.json", "photo requirements")
+    output = Path(args.output).resolve()
+    protected = {working / "lesson-design.json", working / "photo-requirements.json",
+                 working / "design-decisions.md", working / "design-review.md"}
+    if output in protected:
+        raise PacketError("Surface output must not overwrite a canonical lesson or review file")
+    atomic_write_text(output, build_surface_view(design, photos))
+    print("DESIGN_SURFACE_READY: " + str(output))
+    return 0
+
+
 def printed_pieces(design: dict) -> dict[str, str]:
     """The note each printed beat's block opens with, keyed by its label."""
     beats = [design.get("starter"), *(design.get("teachingSequence") or [])]
@@ -1754,14 +1854,16 @@ def build_do_beside_teach(design: dict) -> list[str]:
             "already said, and what the design says the task brings. A high "
             "count does not make a beat wrong: a task that uses a taught idea "
             "on a new case says the idea in the Teach's words. So for every "
-            "Do, decide which it is and write it in `Each Do`: it uses the "
-            "learning on something the class has not been shown; it is "
-            "rehearsal, and rehearsal is the right job at that point; or it "
-            "can be answered by remembering the last slide (`preferences.md` "
-            "→ `A quick check is a fresh case, not the last slide again`). "
+            "Do, give its verdict in `Each Do` (uses, practice, rehearsal, says it back "
+            "or guessable), then name what pupils practise or what the check establishes "
+            "and what the prompt and support leave them to do. "
+            "Judge practice under `preferences.md` → `Choose Do activities "
+            "for the learning`; note a feedback or preparation gap where it matters. "
             "The design's own claim is a claim: read `new` against the "
-            "teaching sentence, and `rehearsal` against where the lesson then "
-            "uses the thing rehearsed."
+            "teaching sentence, `practice` against the actual pupil action, "
+            "and `rehearsal` against where the lesson then uses the thing rehearsed. "
+            "Keep the fresh-case and answer-leakage checks for diagnostic claims "
+            "(`preferences.md` → `A quick check is a fresh case, not the last slide again`)."
         ),
         "",
     ]
@@ -1791,6 +1893,10 @@ def build_do_beside_teach(design: dict) -> list[str]:
         else:
             names = ", ".join(f"`{unit['label']}`" for unit in before)
             lines.append(f"### {pupil['label']} (after {names})")
+        if pupil.get("doMode") in {"quick", "deeper"}:
+            lines.append(f"- Designer-selected Do scope: {pupil['doMode']}; judge the work under "
+                         "`preferences.md` → `Choose Do activities for the learning`, "
+                         "not its duration or printing.")
         lines.append(f"- Asked: {asked}")
         structure = pupil.get("taskStructure") or {}
         items = [entry.get("label", "") for entry in structure.get("items") or [] if entry.get("label")]
@@ -3174,11 +3280,11 @@ def compare_photo_transition(
 
 
 EACH_DO_HEADING = "## Each Do"
-EACH_DO_VERDICTS = ("uses", "rehearsal", "says it back", "guessable")
+EACH_DO_VERDICTS = ("uses", "practice", "rehearsal", "says it back", "guessable")
 
 
 def require_every_do_has_its_line(review_path: Path, design: dict) -> None:
-    """Every Do the design sets gets one line in the review, with a verdict.
+    """Every Do gets a line naming its contribution and the supporting evidence.
 
     On 6 October 2026 a review sent one beat of a science lesson back and
     listed the beat beside it under `Preserve`. That beat's answer was its
@@ -3199,8 +3305,8 @@ def require_every_do_has_its_line(review_path: Path, design: dict) -> None:
     if len(starts) != 1:
         raise PacketError(
             f"design-review.md must contain exactly one {EACH_DO_HEADING!r} heading: one line "
-            "for each Do and quick check, saying whether it uses the learning on something "
-            "new, is rehearsal, says it back, or is guessable"
+            "for each Do and quick check, naming what pupils practise or what the check "
+            "establishes, with evidence from the prompt and support"
         )
     section: list[str] = []
     for line in lines[starts[0] + 1:]:
@@ -3213,10 +3319,23 @@ def require_every_do_has_its_line(review_path: Path, design: dict) -> None:
             raise PacketError(
                 f"design-review.md {EACH_DO_HEADING!r} has no line for `{label}`"
             )
-        if not any(verdict in line.lower() for line in own for verdict in EACH_DO_VERDICTS):
+        if not any(
+            len(parts := [part.strip() for part in line.split("|")]) >= 2
+            and parts[1].lower().strip("*` ") in EACH_DO_VERDICTS
+            for line in own
+        ):
             raise PacketError(
                 f"design-review.md {EACH_DO_HEADING!r}: the line for `{label}` gives no verdict "
                 f"(one of: {', '.join(EACH_DO_VERDICTS)})"
+            )
+        if not any(
+            len(parts := [part.strip() for part in line.split("|")]) >= 3
+            and all(parts)
+            for line in own
+        ):
+            raise PacketError(
+                f"design-review.md {EACH_DO_HEADING!r}: the line for `{label}` needs "
+                "non-empty parts: beat | verdict | practice or checking evidence"
             )
 
 
@@ -3529,6 +3648,10 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
     )
 
+    surface_parser = subparsers.add_parser("surface", help="write the notes-closed first-read view")
+    surface_parser.add_argument("--working-dir", required=True)
+    surface_parser.add_argument("--output", required=True)
+
     prepare_parser = subparsers.add_parser(
         "prepare"
     )
@@ -3616,11 +3739,13 @@ def main(
     args = parser.parse_args(argv)
 
     try:
+        if args.command == "surface":
+            return surface(args)
         if args.command == "prepare":
             return prepare(args)
         return verify(args)
     except PacketError as exc:
-        marker = (
+        marker = "DESIGN_SURFACE_FAILED" if args.command == "surface" else (
             "DESIGN_REVIEW_PREFLIGHT_FAILED"
             if args.command == "prepare"
             else "DESIGN_REVIEW_POSTFLIGHT_FAILED"

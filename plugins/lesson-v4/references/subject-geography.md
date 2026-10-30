@@ -2,7 +2,7 @@
 
 Geography lessons fail in a particular way, and it is not the way you would expect. They rarely fail on accuracy. They fail by teaching correct geographical facts while never asking a child to do anything a geographer does, so children leave able to recite where the Amazon is and unable to think about anywhere.
 
-Geographical knowledge includes places, features and processes as well as ways of locating, comparing, investigating and explaining them. Choose the balance from the approved objective and the wider sequence. A lesson that secures important locational or descriptive knowledge can be worthwhile without adding a separate reasoning demand; an explanation objective needs more than naming facts.
+Geographical knowledge includes places, features and processes as well as ways of locating, comparing, investigating and explaining them. Choose the balance from the approved objective and wider sequence. Securing important locational knowledge may need no separate reasoning demand. Description can also be worthwhile without adding a why question: use `Describe` below to decide which observations children select, how they organise them spatially and which features they connect. Do not treat all descriptive learning as remembering a list; an explanation objective needs more than naming facts.
 
 The purpose underneath all of it is that children become genuinely interested in the world, not that they accumulate facts about it. Geography has a reputation among children for being boring, and it is earned by how it is taught rather than by the subject: naming rock types, memorising where countries are, colouring in a map. The planet is remarkable, so a Geography lesson children leave bored is a lesson that went wrong.
 
@@ -49,7 +49,7 @@ The routing worth watching is the tool one. Map and atlas work looks like conten
 
 ## Making the thinking geographical
 
-**The quickest test, and it runs on the LO before anything else is designed.** Could this be answered without a map, without data, and without a place? If it could, it is not yet a geography lesson, whatever the topic heading says. *What is Kenya like?* fails, because a child could answer it from a picture book. *Why do more people live on this side of our town than that side?* passes, because the answer needs somewhere real and something to read it off. Run it on the LO, and where the LO is fixed and fails the test, run it on the written outcome instead and make that carry the geography.
+**The quickest test runs on the intended learning and material together.** What makes this work geographical: the place, spatial relationship, physical or human feature, process or evidence children use? `What is Kenya like?` is too broad until the chosen maps, photographs, data or accounts and the pupil work give it a clear purpose. A picture book can supply useful evidence; its format does not settle the demand. `Why do more people live on this side of our town than that side?` needs a real spatial pattern and sufficient evidence to examine possible reasons. Where the LO is fixed, make its outcome carry the geography rather than replacing it with an unrelated enquiry.
 
 When the learning is one of the seven moves as an idea (a pattern with a reason, a process, a comparison), it goes in `concepts` and is met on more than one place or dataset; a pattern shown on one map is a fact about that map.
 
@@ -75,12 +75,12 @@ Map work includes decoding symbols and keys, constructing maps, reading distribu
 
 ## What a Do beat looks like in geography
 
-A geography Do beat has a map, a photograph, a graph or a place in it, and the child gets something out of it. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each works on a place or map the Teach did not already use:
+A geography Do beat has a map, a photograph, a graph or a place in it, and the child gets something out of it. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; for a check of an idea or relationship, use a fresh case or a new decision on the material under `preferences.md` → `A quick check is a fresh case, not the last slide again`. Locating a taught place or practising a map technique may properly reuse the place:
 
 - **Mark it.** Put the river, city or biome on a blank map, working outward from what the class already holds.
 - **Where is it from here?** On a map in front of them, children circle the village upstream of the dam, or tick the town nearer the coast: the decision is the spatial relationship, not the name.
 - **Spot the pattern, then the one that doesn't fit.** Children choose from three statements the one that describes where the shaded areas are, then cross the place that breaks the pattern. The reason comes after the noticing.
-- **Circle the clues.** On a photograph of a place the class has not seen, children circle two things that show it is a hot, wet place, or a place people have changed (`do-beats.md` 4.10).
+- **Circle the clues.** On a photograph, children mark features showing how people have changed a place and describe what supports that reading. If the question concerns climate, supply suitable climate information too; a green photograph alone does not establish that a place is hot and wet (`do-beats.md` 4.10).
 - **Order the process.** Put the stages of a river's journey or the water cycle in order, or fill the stage that is missing (`do-beats.md` 5.8, 5.9).
 - **Map to sentence, sentence to map.** Say two true things the climate graph shows, or mark on the map where a description puts the town (10.5, 10.6).
 - **Sort physical and human.** Cards from a place children have not studied yet, sorted by the features the lesson taught them to see.
@@ -111,7 +111,7 @@ The design reviewer reads the finished design against this file and asks whether
 - Data read and interpreted, not just copied
 - The child's own position on a geographical question, with a reason
 
-Judge the response against the geographical learning. Matching, locating, labelling or short factual answers may show exactly what the objective requires. Copying does not demonstrate an explanation, and an elaborate product does not establish understanding. Choose the response form and demand from the knowledge or thinking children need to demonstrate.
+Judge the response against the geographical learning. Matching, locating, labelling or short factual answers may show exactly what the objective requires. For description, apply `Describe` above: a brief answer can still select observations, organise them spatially or connect features. Copying does not demonstrate an explanation, and an elaborate product does not establish understanding. Choose the response form and demand from the knowledge or thinking children need to demonstrate.
 
 ---
 
@@ -121,11 +121,11 @@ A sheet takes the shape its geography needs, and these are shapes that work on r
 
 - **Mark up the map.** A real map the child works on: the countries the Amazon crosses marked from a list, or arrows showing which way a town grew and labels on what stopped it.
 - **Read the graph, then say what it shows.** A climate graph or bar chart with questions underneath that need its numbers (`Which month is wettest? How is July different from January?`), then one that uses the reading (`Which of these two places could this graph belong to?`).
-- **A data table to compare.** Today's temperature in ten rainforest places, tropical and temperate, then one sentence on the difference and a reason for it.
+- **A data table to compare.** Supplied long-term monthly average temperatures for a tropical and a temperate rainforest: identify how temperature varies through the year, then use their mapped locations and taught knowledge to explain a contrast. A single day's weather supports only a claim about that day.
 - **Who's right about the place?** Three children describe how a river changes from source to mouth; the child picks the one who is right and fixes the others.
 - **Photograph clues.** A photograph of a place the class has not seen, with the things that show today's idea circled or labelled.
 - **A table along the river or across places.** Upper, middle and lower course with the size, speed and landform of each, or two places compared on the criteria the lesson taught.
-- **Label it, then use it.** The layers of the rainforest labelled, then what lives in each layer and why it can live there.
+- **Label it, then use it.** After locating rainforest layers, compare observations from beneath dense canopy and beneath a gap. Use the taught relationship between overhead leaves and sunlight to account for the contrasting ground vegetation. Children connect the observations to the cause; another list of taught layer facts would only consolidate that list.
 
 The page list above says what a geographical answer holds; these are ways to lay a sheet out so children produce it. A poster, a leaflet or a postcard does not earn a sheet, because the time goes on layout and the page shows little of the geography.
 
@@ -157,7 +157,7 @@ Why it is load-bearing rather than trivia: without knowing where places are, chi
 
 Most primary teachers have no geography background, so these are held here rather than predicted from scratch each week. Reach for the ones the topic actually touches.
 
-Naming one is only half of it. Each misconception you name gets a question attached that a child holding it answers *wrongly*, because that is the only way it surfaces. "Does everyone understand?" catches nothing, and neither does a question the child can get right either way. If the misconception is that all deserts are hot, the question is which of these four photographs shows a desert, with a cold one in the set.
+Naming one is only half of it. Each misconception you name gets a question attached that a child holding it answers *wrongly*, because that is the only way it surfaces. "Does everyone understand?" catches nothing, and neither does a question the child can get right either way. If the misconception is that all deserts are hot, give rainfall records and temperature information for several places, including a cold desert, and ask which meet the taught definition. Photographs alone do not establish how little rain a place receives.
 
 - Rivers start at the sea (Ofsted's 2023 geography report found pupils saying so), and rivers flow because it rained, not because the land slopes
 - Weather and climate taken for the same thing

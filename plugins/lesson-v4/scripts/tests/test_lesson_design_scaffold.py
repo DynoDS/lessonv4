@@ -236,6 +236,8 @@ def test_content_scaffold_assigns_mechanical_ids_and_envelopes():
         expected = validator.UNIT_FIELDS | validator.UNIT_OPTIONAL_FIELDS
         if unit["kind"] not in validator.LEVEL_KINDS:
             expected = expected - {"levels"}
+        if unit["kind"] not in validator.DO_MODE_KINDS:
+            expected = expected - {"doMode"}
         # A Do says what it brings, or that it is rehearsal; other beats do not.
         if unit["kind"] not in validator.beside_teaching.USE_KINDS:
             expected = expected - {"use"}

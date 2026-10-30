@@ -250,7 +250,7 @@ UNIT_FIELDS = {
 # `use` and still reads; it is asked for one only on a beat whose expected
 # answer the teaching just before it had mostly said already
 # (`validate_each_do_says_what_it_brings`).
-UNIT_OPTIONAL_FIELDS = {"taskStructure", "minutes", "levels", "use", "seesHappening"}
+UNIT_OPTIONAL_FIELDS = {"taskStructure", "minutes", "levels", "use", "seesHappening", "doMode"}
 
 # What a beat that explains how something happens shows the class happening
 # (Daniel, 18 October 2026: children look at the picture first while the words
@@ -278,6 +278,25 @@ LEVEL_KINDS = {
 # text or picture children read or look closely at; `figure` is a drawn figure
 # children write, mark or label on (a map, a timeline, a Venn, a table); `task`
 # is a task sheet: the task, what children work on, and room to answer.
+# Designer-owned scope, independent of delivery, duration and assessment purpose.
+# Optional for saved legacy designs; new scaffolded pupil work must resolve it.
+DO_MODE_KINDS = (LEVEL_KINDS - {"our-turn"}) | {"apply", "reflect", "teach-needed"}
+DO_MODES = {"quick", "deeper"}
+
+
+def validate_do_mode(value: Any, path: str, kind: str, pupil_instruction: Any = None) -> None:
+    expect(kind in DO_MODE_KINDS, f"{path} belongs only on pupil-work units, not {kind}")
+    if kind == "teach-needed":
+        expect((value is None) == (pupil_instruction is None),
+               f"{path}: teach-needed chooses quick/deeper for its own pupilInstruction, "
+               "or null when the following task is its immediate use")
+        if value is None:
+            return
+    expect(isinstance(value, str) and value in DO_MODES,
+           f"{path} must be quick or deeper: the lesson designer chooses the scope "
+           "under preferences.md, Choose Do activities for the learning")
+
+
 PRINTED_FORMS = {"sort", "source", "figure", "task"}
 PRINTED_PER = {"child", "pair", "group"}
 
@@ -3051,6 +3070,8 @@ def validate_source_unit(
         )
     kind = expect_string(unit["kind"], f"{path}.kind")
     expect(kind in allowed_kinds, f"{path}.kind invalid for this section/route: {kind}")
+    if "doMode" in unit:
+        validate_do_mode(unit["doMode"], f"{path}.doMode", kind, unit.get("pupilInstruction"))
     if "levels" in unit:
         validate_levels(unit["levels"], f"{path}.levels", unit)
     if "use" in unit:
@@ -4321,9 +4342,10 @@ def validate_lesson_fits_the_slot(root: dict[str, Any]) -> None:
             f"(what its slides put in front of the class at about {taught_time.BOARD_WORDS_A_MINUTE} words a minute: "
             "each slide read, asked about until it makes sense, and its task done), and with about "
             f"{LESSON_MINUTES_UNPLANNED} that no beat plans that is {honest + LESSON_MINUTES_UNPLANNED}, over the "
-            f"{LESSON_MINUTES_MAX} a lesson can run to. Where the time goes: {named}. Teach fewer things: leave "
-            "out an idea, a case or a detail the objective can be met without, or keep it for another lesson. "
-            "Do not squeeze what stays onto fewer words or shrink the tasks",
+            f"{LESSON_MINUTES_MAX} a lesson can run to. Where the time goes: {named}. Reconsider the whole "
+            "allocation using preferences.md, Classroom Norms, Time. Change the teaching or pupil work "
+            "where that best preserves the objective, then estimate the revised work honestly; do not "
+            "merely lower minutes, clip explanations or move them into notes",
         )
         return
     longest = sorted(beats, key=lambda pair: pair[1], reverse=True)[:3]
@@ -4333,10 +4355,10 @@ def validate_lesson_fits_the_slot(root: dict[str, Any]) -> None:
         f"the lesson's beats add up to {total} minutes, and with about {LESSON_MINUTES_UNPLANNED} that no "
         f"beat plans (books out, the date and objective, moving to tables and back) that is "
         f"{total + LESSON_MINUTES_UNPLANNED}, over the {LESSON_MINUTES_MAX} a lesson can "
-        f"run to. The longest beats are: {named}. Leave out an idea the objective can be met "
-        "without, or keep it for another lesson, or take a cheaper form of a beat (a sort run as a "
-        "class discussion rather than printed cards at tables); do not shave a minute off each or "
-        "time the worksheet short, because the beats were honest and the lesson is too big",
+        f"run to. The longest beats are: {named}. Reconsider the whole allocation using preferences.md, "
+        "Classroom Norms, Time. Change the teaching or pupil work where that best preserves the "
+        "objective, then estimate the revised work honestly; do not merely lower minutes, clip "
+        "explanations or move them into notes",
     )
 
 

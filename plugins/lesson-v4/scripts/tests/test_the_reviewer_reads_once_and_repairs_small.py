@@ -277,8 +277,13 @@ class TheReviewerRepairsAfterItJudges(unittest.TestCase):
         self.assertLess(playbook.index("## Phase 1.5 — Helper Check"), playbook.index("## Phase 1.6 - The Lesson Voice Editor"))
         self.assertIn("it keeps every edit inside the lane, puts the rest and the walk-through back", playbook)
         self.assertIn("Then run the validator again, and the script's `restore` if it fails", playbook)
-        self.assertIn("A failed voice edit never stops a run", playbook)
-        self.assertIn("does not return here: its new words keep the designer's register, a known gap", playbook)
+        self.assertIn("An ordinary failed wording edit does not stop a run", playbook)
+        self.assertIn("This exception does not make ordinary voice-edit failure blocking", playbook)
+        self.assertIn("Return those named notes and affected units to the Lesson Designer for a focused repair", playbook)
+        self.assertIn("A repeated unresolved hand-off is reported as incomplete and the affected slides are not built", playbook)
+        self.assertIn("A later revision that introduces or changes pupil wording", playbook)
+        self.assertIn("also returns to this voice stage after its design review and before the affected resources are rebuilt", playbook)
+        self.assertIn("A layout-only repair does not", playbook)
 
     def test_a_validator_hand_back_goes_to_the_compact_repair_role(self) -> None:
         playbook = flat(ROOT / "skills" / "make-lesson" / "playbook-lite.md")

@@ -272,8 +272,8 @@ function validateSignals(slide, n, errors, warnings) {
   if (!slide || typeof slide !== 'object') return;
   const { TASK_SIGNALS } = require('./signals');
   const names = [...TASK_SIGNALS].join(', ');
-  // A Do beat's badge: `quick` draws a lightning bolt (a quick check kept on
-  // the board), `sheet` a printed sheet (the beat has a printed activity).
+  // Rendered badge values: quick = lightning, sheet = the existing deeper-work
+  // book/sheet drawing. Source doMode chooses them independently of printing.
   if (slide.doSign !== undefined && slide.doSign !== 'quick' && slide.doSign !== 'sheet') {
     errors.push(`slide ${n}: doSign ${JSON.stringify(slide.doSign)} is not a badge the deck draws; use "quick" or "sheet".`);
   }

@@ -46,7 +46,7 @@ An RE Do beat makes children connect what people do with what they believe, and 
 - **Which teaching explains it?** Children underline the line in the extract that supports this practice, and tell a partner how.
 - **Fix the claim.** `All Christians celebrate Christmas in the same way`: correct it with what the lesson taught. Choose a claim the Teach did not itself put right, so the correction is worked out, not remembered (8.8).
 - **Which beliefs clash?** A short story card with four belief cards beneath: children circle the two that pull against each other in this situation.
-- **Look closely at the object.** A crib scene, an Advent candle or a prayer mat, or its photograph printed large: children find what in it shows what the person believes, and the practice stays observed, never performed (`do-beats.md` §11.4).
+- **Look closely at the object.** A crib scene, an Advent candle or a prayer mat, or its photograph printed large: children connect a visible feature to the meaning taught in a contextualised account of its use. An object alone cannot show what a particular person believes. The practice stays observed, never performed (`do-beats.md` §11.4).
 - **Religious, non-religious or either?** Sort reasons someone might give for helping a neighbour.
 
 Children observe and reason about practices in these beats; none asks them to perform worship (below).
@@ -57,7 +57,7 @@ A sheet takes the shape its RE needs, and these are shapes that work on real Yea
 
 - **Who understands it best?** Two or three people say what a teaching means; the child decides and finishes `... shows an accurate understanding because...`.
 - **One sentence is wrong.** Jun explains why Makkah matters to Muslims and one of his sentences is incorrect: find it and say why.
-- **True or false, then fix it.** Statements about the story of the widow's mite, with the false ones corrected. Recall, unless a false statement is one a child really believes.
+- **True or false, then fix it.** Statements about the story of the widow's mite, with the false ones corrected. Recalling the taught correction is recall, even when it addresses a misconception. It becomes interpretation when children use the taught meaning to examine a claim whose correction has not already been supplied (as in `What a Do beat looks like`).
 - **The practice and its meaning.** A stem for each practice with the meaning left to the child: `Pilgrims wear plain white clothes because...`
 - **Read the data.** A census chart of worldviews, then `What is the largest group? How do you know?`
 - **A caption for a visitor.** One object in a place of worship (the charred cross at Coventry) and what a visitor should know it means.

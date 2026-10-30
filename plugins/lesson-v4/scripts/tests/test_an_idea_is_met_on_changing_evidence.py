@@ -195,11 +195,14 @@ class TheRuleReachesEveryRouteAndSubjectTests(unittest.TestCase):
         body = section(REF / "preferences.md", "What a Lesson Is For")
         self.assertIn("When the learning is an idea, name it, and the evidence changes while the idea holds still", body)
         self.assertIn("The limit is the kind of learning, not a quota", body)
-        self.assertIn("an idea shown on one case is a fact about that case", body)
+        self.assertIn("A lesson teaching a transferable idea still changes the evidence; repeating one case does not establish transfer", body)
+        self.assertIn("A factual lesson keeps one well-developed case", body)
+        self.assertIn("A name, location or convention may need only a clear example and recall", body)
 
     def test_the_designer_says_which_kind_of_learning_it_is(self) -> None:
         text = flat(LESSON_DESIGNER)
-        self.assertIn("Say which kind of thing that learning is: a fact, a method, or an idea", text)
+        self.assertIn("Classify the learning under `preferences.md` → `When the learning is an idea`, including any mix of factual knowledge, method and idea", text)
+        self.assertIn("An idea goes in `concepts` whatever the route, and every beat that is an instance of it carries its `conceptRef`", text)
         self.assertIn("which kind of learning it is, a fact, a method or an idea", text)
         # Release 7A folded the sticky rule into its home, which the designer's
         # Sticky Knowledge section tells it to read before naming a fact.

@@ -1,68 +1,52 @@
 # Make Lesson — Lightweight runtime playbook
 
-This is the active runtime playbook. It deliberately avoids a generic job
-controller. The host launches named workers directly, waits through the host's
-normal worker lifecycle, and runs deterministic checks at meaningful file
-boundaries. Do not create orchestration job specs, completion events, worker
-snapshots, transition receipts, scheduler audits or latency reports. The
-timing records a run keeps are the `WORKER_TIMELINE:` block that
-`worker-launch.py audit` prints from the host's own log and `run-record.md`
-(SKILL.md): they cost the orchestrator nothing to produce, and they are what
-say whether a change made runs faster.
+Launch named workers directly through the host lifecycle; run deterministic
+checks at file boundaries. Do not create orchestration job specs, completion
+events, worker snapshots, transition receipts, scheduler audits or latency
+reports. Timing evidence is the host-log `WORKER_TIMELINE:` from
+`worker-launch.py audit` and `run-record.md` (SKILL.md); neither requires
+orchestrator bookkeeping.
 
 ## Lightweight execution protocol
 
-For a named model worker:
+For each named model worker:
 
-1. give it only its role file, authoritative input paths, owned output paths,
+1. supply only its role file, authoritative input paths, owned output paths,
    required check and terminal marker;
-2. launch it directly with clean context, at the model, effort and task name
-   `worker-launch.py spec` prints for its role;
-3. wait for it through the host's ordinary worker-wait mechanism;
-4. require its owned files and exact terminal marker;
-5. run the named deterministic validator immediately.
+2. launch with clean context and the model, effort and task name from
+   `worker-launch.py spec`;
+3. use the host's worker-wait mechanism;
+4. require the owned files and exact terminal marker;
+5. immediately run the named deterministic validator.
 
-Independent workers may run in parallel. Never launch two workers that own the
-same file. A downstream worker starts only after its authoritative input has
-passed its deterministic check.
+Parallelise independent workers only; never let two workers own one file.
+Start a downstream worker only after its authoritative input passes validation.
 
-Retry once only for an infrastructure failure: a launch that never starts, a
-terminated tool session, or a worker that has genuinely stopped working.
-Use a fresh clean-context worker with the same saved inputs. Do not retry a
-completed semantic result merely because it is inconvenient. Use the explicit
-redesign or focused-repair route instead. After the one infrastructure retry,
-preserve clean outputs from unrelated branches and report the affected output
-as incomplete.
+Retry once only for infrastructure failure (unstarted launch, terminated tool
+session, genuinely stopped worker), using fresh clean context and the same
+saved inputs. Completed semantic results, however inconvenient, use explicit
+redesign or focused repair, never retry. After that one retry, preserve
+unrelated clean outputs and report the affected output incomplete.
 
 **Judge a worker by its whole working directory, never by its owned outputs.**
-Several roles write their owned file exactly once, at the end, after their
-checks pass: the Slide Designer builds its candidate in
-`lesson.json.tmp.[ATTEMPT_ID]` and only then replaces `lesson.json`. An
-untouched owned output is therefore what a healthy run looks like for most of
-its length, and watching one tells you nothing until the moment it tells you
-everything. A worker is making progress when anything in `[WORKING_DIR]` has
-changed recently, including a temporary or attempt-suffixed file; it has
-stopped when nothing there has moved and the host reports no activity. Kill a
-long worker only on that second reading.
+Owned files may appear only after checks: the Slide Designer first builds
+`lesson.json.tmp.[ATTEMPT_ID]`. Recent changes anywhere in `[WORKING_DIR]`,
+including temporary/attempt files, show progress. Kill a long worker only when
+nothing there has moved and the host reports no activity. Read any stage's
+newest produced artefact before declaring failure.
 
-That evidence rule is not confined to workers. Read the newest artefact a stage
-actually produced before declaring the stage failed.
+Canonical validated files are checkpoints. Resume an interrupted run from the
+latest checkpoint whose validator still passes and whose upstream teacher
+input belongs to this working directory. Do not create another queue or
+receipt system.
 
-Canonical validated files are the checkpoints. On an interrupted run, resume
-from the latest checkpoint whose validator still passes and whose upstream
-teacher input belongs to this working directory. Do not manufacture a second
-queue or receipt system.
+Run deterministic commands directly, requiring exit status, exact success
+marker and any defined structured summary. A failed build may receive its one
+documented focused repair; ordinary commands are not model-worker jobs.
 
-Run deterministic commands directly. Require their exit status, exact success
-marker, and structured summary when the command defines one. A failed build may
-receive its one documented focused repair; do not wrap ordinary commands in
-model workers.
-
-The picture stage is the sole evidence-heavy exception. Keep its immutable
-schema-2 assignments, staged worker results, per-filename terminal receipts and
-final provenance because they protect external-source licensing, generated-
-image history and partial publication. These picture records do not require or
-authorise the generic orchestration controller.
+Only the picture stage retains immutable schema-2 assignments, staged results,
+per-filename terminal receipts and final provenance for licensing, generated-
+image history and partial publication; this authorises no generic controller.
 
 ---
 
@@ -586,13 +570,26 @@ focused retry carrying the exact failure lines. If the lane check still fails,
 run the same script's `settle`: it keeps every edit inside the lane, puts the
 rest and the walk-through back (`VOICE_EDIT_SETTLED`), or restores the approved
 files when the structure changed (`VOICE_EDIT_RESTORED`). Then run the validator
-again, and the script's `restore` if it fails. A failed voice edit never stops a run: the reviewed lesson is
-complete without it. Record which happened in the run report, and carry each
+again, and the script's `restore` if it fails. An ordinary failed wording edit does not stop a run: the reviewed lesson is
+complete without it. Record which happened in the run report, and normally carry each
 line of `voice-edit.md` under `For the lesson designer` into the teacher flags.
 
-A later revision of the design (a content-gap wave, a Phase 3.5 owner repair,
-or a re-review either brings) does not return here: its new words keep the
-designer's register, a known gap.
+**A missing pupil-wording hand-off is different.** Before Phase 2, inspect that
+report for slide wording prescribed only in planning notes, as defined by
+`output-template.md` → Planning notes and visible wording. Return those named
+notes and affected units to the Lesson Designer for a focused repair; preserve
+the approved task, facts and unaffected material. Have the designer put required
+copy in the existing child-facing fields or remove inappropriate visible copy,
+and validate the result. If this changes a teaching decision, rerun design review;
+then snapshot the repaired design and rerun this voice stage before rendering.
+A repeated unresolved hand-off is reported as incomplete and the affected slides
+are not built: a teacher flag cannot stand in for missing reviewed pupil copy.
+This exception does not make ordinary voice-edit failure blocking.
+
+A later revision that introduces or changes pupil wording (a content-gap wave,
+a Phase 3.5 owner repair, or a re-review either brings) also returns to this voice
+stage after its design review and before the affected resources are rebuilt.
+A layout-only repair does not. Keep the existing worker model and effort.
 
 ---
 

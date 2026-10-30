@@ -4,8 +4,8 @@
 It exists for the lesson designer's completion check "The Do beats read in a
 row" and for a redesign, which both have to read every Do beat together rather
 than one at a time. It never fails a design itself; the design check
-(`validate-lesson-design.py`) refuses a Do that owes an answer and has not
-given a true one, and this is where the designer sees which ones owe it.
+(`validate-lesson-design.py`) refuses missing or inconsistent declarations.
+This view supplies evidence for the designer's separate semantic judgement.
 
 For each Do beat (and the practice) it prints how children answer (the
 format and the first words of what they are told to do), and any run of three
@@ -116,9 +116,9 @@ CHUNK_TEACH_KINDS = {"teach", "teach-why", "teach-needed", "my-turn"}
 # A steady classroom reading pace. What the teacher says aloud, before any
 # question is asked or answered, so the real stretch is longer.
 WORDS_A_MINUTE = 120
-# A Do planned at this many minutes or fewer is a quick check; longer is a task,
-# however it is described (the teacher, 30 September 2026, after a four-minute
-# rice test with equipment was counted as "quick").
+# Legacy saved designs without doMode retain their old timing heuristic.
+# New designs carry the designer's explicit scope; neither time nor printing
+# silently reclassifies that choice.
 QUICK_CHECK_MINUTES = 2
 TOGETHER = re.compile(r"\b(partners?|pairs?|groups?|together|table)\b", re.IGNORECASE)
 
@@ -246,7 +246,9 @@ def child_seat(design: dict) -> list[str]:
             listened += count
             stretch.append((name, count))
             taught_in_stretch = taught_in_stretch or item.get("kind") in CHUNK_TEACH_KINDS
-            continue
+            # An enabling input can own the immediate pupil action too.
+            if not (item.get("kind") == "teach-needed" and item.get("pupilInstruction")):
+                continue
         if (taught_in_stretch and main_at is not None and i < main_at
                 and item.get("kind") != "starter"):
             chunks_before_main += 1
@@ -286,14 +288,16 @@ def child_seat(design: dict) -> list[str]:
             where += f", or with {levels['realThings']}"
         who = "with a partner or group" if together else "on their own"
         planned = item.get("minutes")
-        # A beat with a printed sheet is a task however short it was planned:
-        # handing out, doing and checking a sheet is not a one-minute check.
-        # The Shaftesbury lesson of 1 October 2026 planned three tasks and a
-        # quick check, printed the check, and the teacher felt four tasks.
-        quick = (item.get("kind") != "starter" and i != main_at and printed is None
-                 and isinstance(planned, (int, float)) and planned <= QUICK_CHECK_MINUTES)
+        # Explicit source scope wins. Only old saved designs without it use
+        # the historical print/time approximation.
+        mode = item.get("doMode")
+        quick = (mode == "quick" if mode in {"quick", "deeper"} else
+                 (item.get("kind") != "starter" and i != main_at and printed is None
+                  and isinstance(planned, (int, float)) and planned <= QUICK_CHECK_MINUTES))
         tag = "MAIN" if i == main_at else ("quick" if quick else "do")
         minutes = f", {planned} min planned" if isinstance(planned, (int, float)) else ""
+        if mode in {"quick", "deeper"}:
+            minutes += f", designer chose {mode}"
         lines.append(f"  {tag:<6}  {name}: \"{first_words(flatten(told), 10)}\" - {where}, {who}"
                      f" (teacher says {count} words{minutes})")
         if item.get("kind") == "starter":
@@ -429,17 +433,17 @@ def room(design: dict, order: list[tuple[str, dict]], planned: float) -> list[st
         f"{WORKSHEET_ABOUT_MINUTES} for a worksheet when the lesson ends on one.",
     ]
     if whole > LESSON_MOST_MINUTES:
-        lines.append(f"  THE DESIGN CHECK WILL REFUSE THIS: {whole:g} is past {LESSON_MOST_MINUTES}. An idea the "
-                     "objective can be met without gives way, or it is two lessons; the tasks keep their size.")
+        lines.append(f"  THE DESIGN CHECK WILL REFUSE THIS: {whole:g} is past {LESSON_MOST_MINUTES}. Reconsider "
+                     "the whole allocation using preferences.md, Classroom Norms, Time; change the work, "
+                     "then estimate it honestly.")
     if late_teach:
         label, spent = late_teach
         lines.append(
             f"  LOOK AGAIN: \"{label}\" starts new teaching after {spent:g} minutes of tasks since the starter, "
-            "with the main work still to come. Long tasks can be exactly right; they also use the room a "
-            "further idea needs, and a class that has worked that long has little left for one. Can the "
-            "objective be met without this idea today? If it can, it waits for another lesson and the tasks "
-            "stay as they are. If it cannot, keep it and say in the closing decisions that the lesson is "
-            "full. Making the tasks quick so the idea fits is the other way to get this wrong.")
+            "with the main work still to come. Judge whether this sequence leaves enough capacity for "
+            "the new learning and its use. Apply preferences.md, Classroom Norms, Time to reconsider "
+            "both the teaching and pupil work; long tasks may be justified, but their current allocation "
+            "is not protected by this warning.")
     sheet = (design.get("worksheet") or {}).get("status") == "generated"
     if sheet and main_at is not None and 0 < main <= WORKSHEET_SHORT_MINUTES:
         lines.append(
@@ -475,6 +479,50 @@ def clock(design: dict, order: list[tuple[str, dict]]) -> list[str]:
         lines.append(f"  Dos after each taught idea, before the next: "
                      + "; ".join(f"{names[ref]}: {n}" for ref, n in dos.items())
                      + f" ({len(dos)} ideas, {sum(dos.values())} Dos).")
+    return lines
+
+
+def response_contract_lines(design: dict, unit: dict) -> list[str]:
+    """Expose the authored success boundary and actual response affordance.
+
+    This is a readout for judgement, not a semantic pass/fail classifier.
+    Resolve only the selected visual configuration: another state may supply
+    the answer or leave different work for the pupil.
+    """
+    content = unit.get("content") or {}
+    answer = unit.get("answer") or {}
+    private = {"format", "connection", "modelledExemplar", "teacherListensFor", "focus", "evidenceProduced"}
+    if any(content.get(key) for key in ("task", "prompt", "question")):
+        private.add("activity")
+    task_content = {key: value for key, value in content.items() if key not in private and value is not None}
+    lines = ["  RESPONSE CONTRACT (check against the actual pupil task):",
+             "    intended thinking: " + str(unit.get("thinking") or "(not recorded)"),
+             "    task-facing content: " + json.dumps(task_content, ensure_ascii=False),
+             "    pupil instruction: " + str(unit.get("pupilInstruction") or "(none)"),
+             "    model/exact answer: " + beside_teaching.beside_expected_answer(unit),
+             "    acceptance boundary: " + str(answer.get("acceptanceCondition") or "(none recorded)"),
+             "    answer delivery: " + str(answer.get("delivery") or "(not recorded)")]
+    if unit.get("taskStructure"):
+        lines.append("    task material: " + json.dumps(unit["taskStructure"], ensure_ascii=False))
+    for field, pool in (("successCriteriaRefs", "successCriteria"), ("stickyKnowledgeRefs", "stickyKnowledge")):
+        registry_rows = {r.get("id"): r for r in design.get(pool) or [] if isinstance(r, dict)}
+        for ref in unit.get(field) or []:
+            lines.append("    supplied reference: " + json.dumps(registry_rows.get(ref, {"unresolved": ref}), ensure_ascii=False))
+    registry = {r.get("id"): r for r in design.get("representations") or [] if isinstance(r, dict)}
+    for use in unit.get("representationRefs") or []:
+        if not isinstance(use, dict):
+            continue
+        config = next((c for c in registry.get(use.get("ref"), {}).get("configurations", [])
+                       if c.get("id") == use.get("configuration")), None)
+        lines.append("    selected visual state: " + json.dumps(
+            {"use": use, "configuration": config}, ensure_ascii=False))
+    lines.append("    response materials: " + json.dumps(unit.get("levels"), ensure_ascii=False))
+    if unit.get("photoRefs"):
+        lines.append("    picture specifications to inspect: " + ", ".join(unit["photoRefs"]))
+    lines.append("    Work the least demanding correct response allowed here. Does it contain the "
+                 "intended subject work? Check what the pupil actually chooses, draws or uses; "
+                 "do not infer a choice already supplied. Apply task-contrasts.md, "
+                 "'Test the least demanding successful response too', including its recall and modelling limits.")
     return lines
 
 
@@ -514,6 +562,7 @@ def main(argv: list[str]) -> int:
         label = "practice" if kind == "practise" else f"Do {count}"
         print(f"{label}: {unit.get('label') or unit.get('sourceUnitId')}")
         print(f"  answered as: {form}; told: \"{first_words(told)}\"")
+        print("\n".join(response_contract_lines(design, unit)))
 
         beat_text = " ".join([flatten(task), flatten((unit.get("answer") or {}).get("content"))])
         repeats = shared(beat_text, last_teach)
@@ -552,18 +601,31 @@ def main(argv: list[str]) -> int:
                     print("    cards: " + " | ".join(str(i.get("label")) for i in structure.get("items") or []))
                 for _refused, sentence in clues:
                     print(f"  ON THE PAGE: {sentence}" + ("" if sentence.endswith("?") else "."))
-                print(
-                    "  Answer it now from that page alone, as the child who heard none of the lesson. "
-                    "If you reach the expected answer (a matching word, the only option that is an "
-                    "answer at all, a line that says where to look, an instruction that states the "
-                    "repair), the page is doing the thinking: change the page and run this again."
-                )
-                half = row.half_listener_line()
-                if half:
-                    print(f"  Then answer it once more. {half} Run this again. If they reach the "
-                          "wrong answer you named, the task is working.")
+                if row.practice:
+                    print(
+                        "  PRACTICE: Attempt the pupil action with this material and support. "
+                        "Judge it under `preferences.md` → `Choose Do activities for the learning`: "
+                        "what is practised, what remains for the child, and what feedback improves it? "
+                        "A practice label does not turn a supplied answer into worthwhile work."
+                    )
+                elif row.rehearsal:
+                    print("  REHEARSAL: Check what this secures and where children then use it; "
+                          "do not treat it as independent evidence.")
                 else:
-                    print("  If you reach the wrong answer you named, the task is working.")
+                    print(
+                        "  Answer it now from that page alone, as the child who heard none of the lesson. "
+                        "If you reach the expected answer (a matching word, the only option that is an "
+                        "answer at all, a line that says where to look, an instruction that states the "
+                        "repair), the page is doing the thinking: change the page and run this again."
+                    )
+                    half = row.half_listener_line()
+                    if half:
+                        print(f"  Then answer it once more. {half} Run this again. If they reach the "
+                              "wrong answer you named, that misconception is distinguished; also test "
+                              "the least demanding correct response in the response contract.")
+                    else:
+                        print("  Reaching the named wrong answer distinguishes that misconception, "
+                              "not every route to a shallow correct response. Check the response contract.")
 
     if owing:
         print(
@@ -571,12 +633,16 @@ def main(argv: list[str]) -> int:
             "in. For each one marked above: change the task so the taught idea is used on "
             "something the class has not been shown, and write that thing in `use.new` in the "
             "task's own words; or, if saying it back is the beat's job, write why in "
-            "`use.rehearsal`. `validate-lesson-design.py` prints the same faults with the two "
-            "ways each one goes wrong."
+            "`use.rehearsal`; where doing the work is the learning, use `use.practice` alone "
+            "and judge the action under `preferences.md` → `Choose Do activities for the learning`. "
+            "`validate-lesson-design.py` prints the same faults."
         )
     else:
         print(
-            f"DO_BEATS_IN_A_ROW: {count} beats, none refused. Read each `new` beside the "
+            f"DO_BEATS_IN_A_ROW: {count} beats, none refused by the mechanical checks. "
+            "This is not a judgement of task quality. Judge the practice under `preferences.md` "
+            "→ `Choose Do activities for the learning`, including its feedback and preparation. "
+            "Read each `new` beside the "
             "teaching sentence above it as the reviewer will: is it something the class has not "
             "been shown, that the taught idea decides? One answer form across every beat is "
             "fine only where the thinking genuinely suits it."
@@ -584,6 +650,10 @@ def main(argv: list[str]) -> int:
     whole = beside_teaching.whole_lesson_line(list(beside.values()))
     if whole:
         print(whole)
+    for _label, unit in taught_time.lesson_beats(design):
+        if unit.get("kind") in beside_teaching.BESIDE_PUPIL_KINDS - {"do", "practise"}:
+            print(f"Response task: {unit.get('label') or unit.get('sourceUnitId')}")
+            print("\n".join(response_contract_lines(design, unit)))
     print()
     print("\n".join(child_seat(design)))
     return 0

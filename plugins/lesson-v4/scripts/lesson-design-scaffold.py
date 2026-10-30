@@ -483,6 +483,8 @@ def source_unit(
         "speakerNotes": notes_scaffold(kind),
         "answer": answer_scaffold(task_structure),
     }
+    if kind in _validator.DO_MODE_KINDS:
+        unit["doMode"] = PLACEHOLDER
     if kind in LEVEL_KINDS:
         unit["levels"] = {"printed": PLACEHOLDER, "boardOnlyBecause": PLACEHOLDER, "realThings": PLACEHOLDER}
     if kind in _validator.beside_teaching.USE_KINDS:

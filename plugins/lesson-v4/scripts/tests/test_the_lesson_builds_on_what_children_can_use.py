@@ -175,7 +175,12 @@ class TheCleanupPassReachesItsOwnersTests(unittest.TestCase):
         self.assertIn("Read each definition beside the teaching that uses the term and the success criteria that assess it", flat(DESIGNER))
         self.assertIn("describe the same concept the teaching uses and the success criteria assess", flat(ROOT / "agents" / "design-reviewer.md"))
         self.assertIn("When the sheet asks for essentially the same performance as the slide Practise, choose one", flat(PREFERENCES))
-        self.assertIn("A sort done from the board, recorded on whiteboards or in books, prints nothing", flat(DESIGNER))
+        # Printing provision follows the shared owner, while the teacher can
+        # still run the board version without preparing that printed option.
+        self.assertIn("read `stick-in-sheets-pedagogy.md` → The lesson's printed levels come first for beats with `levels`", flat(DESIGNER))
+        self.assertIn("A sort or an order is always printed", flat(PREFERENCES))
+        self.assertIn("Design the board version first and make it carry the task on its own", flat(DESIGNER))
+        self.assertIn("a table children would first have to copy into books is not that case, and prints as a `figure`", flat(DESIGNER))
 
 
 class ContrastsAndHistoryTests(unittest.TestCase):

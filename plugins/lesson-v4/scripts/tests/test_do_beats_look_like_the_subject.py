@@ -97,8 +97,13 @@ class EachIdeaNamesWhatEveryChildDoes(unittest.TestCase):
     def test_every_list_says_a_question_alone_is_not_the_beat(self) -> None:
         for subject in ("history", "geography", "science", "re", "pshe"):
             with self.subTest(subject=subject):
+                # Science includes purposeful observation and measurement; its
+                # apparatus/model wording retains the every-child action rule.
+                action = ("Name what every child does with the apparatus, model, cards or page."
+                          if subject == "science" else
+                          "each names what every child does with the cards, map or page")
                 self.assertIn(
-                    "each names what every child does with the cards, map or page",
+                    action,
                     flat(REF / f"subject-{subject}.md"),
                 )
 

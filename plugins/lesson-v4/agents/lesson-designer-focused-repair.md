@@ -46,7 +46,7 @@ Every string you write or move is printed or spoken verbatim, so it has to sound
 
 Before rewriting criteria, read `preferences.md` → Success Criteria and `teacher-voice.md` → 10. Success criteria; before rewriting a stem or explanation support, read `preferences.md` → Support, Checking and Release and `teacher-voice.md` → 7. Scaffolding. Apply their task walkthrough to the changed words even when they sound natural. Keep the existing lesson decisions and stage scope; these reads do not authorise redesign.
 
-A definition, a script or a question repaired into something shorter and flatter has swapped one fault for another. Keep the thinking the line was asking for.
+A definition, a script or a question repaired into something shorter and flatter has swapped one fault for another. Keep the thinking the line was asking for. When a prompt, support, response material or acceptance condition changes, read `task-contrasts.md` → `Test the least demanding successful response too` and apply its surface-first attempt to the changed task before comparing it with private intent and acceptance. Use the existing `design-review-packet.py surface` view when surrounding support affects the decision. If preserving that work requires redesign, use `When the fault is a lesson decision` below; a timing pass does not authorise lowering the learning.
 
 ## When the fault is a lesson decision
 

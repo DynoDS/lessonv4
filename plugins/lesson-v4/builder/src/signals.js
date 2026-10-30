@@ -24,9 +24,8 @@ const SIGNALS = {
   magnifier: { file: 'magnifier.png', aspect: 245 / 338 },
   tick:      { file: 'tick.png',      aspect: 273 / 300 },
   flipchart: { file: 'flipchart.png', aspect: 466 / 663 },
-  // The Do beat badges (Daniel's own pair, 1 October 2026): a lightning bolt
-  // for a quick check kept on the board, a sheet for a beat with a printed
-  // activity.
+  // The vetted pair: lightning for quick pupil work, the book/sheet drawing
+  // for deeper work. The source doMode supplies this choice.
   lightning: { file: 'lightning.png', aspect: 718 / 652 },
   sheet:     { file: 'sheet.png',     aspect: 705 / 536 }
 };

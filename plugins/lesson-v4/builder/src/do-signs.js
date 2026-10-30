@@ -1,26 +1,10 @@
 'use strict';
 
-// The Do beat's badge, read off the lesson design rather than left to anyone
-// to remember (Daniel, 1 October 2026). A beat with a printed activity shows a
-// sheet; a task kept on the board shows a lightning bolt, however long it runs
-// (2 October 2026: a three-minute board task carried no mark, and he looked for
-// one where a Do should be). The teacher reading the deck sees at a glance which tasks
-// have a sheet to hand out and which stay quick ("I would have seen the
-// lightning bolt and did it on the board").
-//
-// Two more rulings (8 October 2026). An Our Turn carries no badge: the class
-// works it with the teacher, and the bolt is for the task children do on their
-// own. And the lesson's main worksheet earns the sheet only on the task it
-// IS (`worksheet.taskUnitId`: the planning grid a child can only fill in on
-// paper), never on a Your Turn that has its own questions on the board with
-// the worksheet as fresh practice beside it; that one keeps the bolt. Until
-// the design named the task, a Your Turn done on the worksheet showed the
-// bolt, because the worksheet is planned apart from the beats.
-//
-// The design sits beside lesson.json in the working folder; a deck built
-// without it (a test deck, an older lesson) simply carries no badges. A badge
-// the slide already names is kept. Answer and check slides take none: the
-// beat's work is done by then.
+// The Lesson Designer's doMode controls the badge: quick -> lightning,
+// deeper -> the existing book/sheet drawing. Time, printing and practice vs
+// checking do not choose it. Older saved designs without doMode retain their
+// print-based mapping. Source choices override slide-authored badges.
+// Answer, setup and Our Turn slides carry no Do badge.
 
 const fs = require('fs');
 const path = require('path');
@@ -46,6 +30,8 @@ function worksheetTaskId(design) {
 
 function badgeFor(unit, worksheetTask) {
   if (unit.kind === 'our-turn') return null;
+  if (unit.doMode === 'quick') return 'quick';
+  if (unit.doMode === 'deeper') return 'sheet';
   if (worksheetTask && unit.sourceUnitId === worksheetTask) return 'sheet';
   const levels = unit.levels && typeof unit.levels === 'object' ? unit.levels : null;
   if (!levels) return null;
@@ -65,32 +51,37 @@ function applyDoSigns(lesson, lessonDir) {
   } catch (err) {
     return lesson;
   }
-  // A task told over several slides (the scene, a good and a weak example,
-  // the partner talk, then the writing) carries its badge only where children
-  // do the work, never on the slides that set it up (Daniel, 20 October 2026:
-  // "the book should be on the bit that is the do beat, not the setting up
-  // for it"). The working slide is the one whose task line carries a sign:
-  // the pencil for a sheet, any task sign for a bolt. A beat with no task
-  // sign anywhere keeps the badge on every slide, as before.
+  // Use task signals to locate actual work within a source unit's slides;
+  // an explicit mode never puts badges on its launch or model slides.
   const byUnit = new Map();
   for (const slide of lesson.slides) {
-    if (!slide || typeof slide !== 'object' || slide.doSign !== undefined) continue;
-    if (slide.headerStyle === 'starter') continue;
-    const title = String(slide.title || slide.heading || '').trim();
-    if (ANSWER_TITLE.test(title) || CHECK_TITLE.test(title)) continue;
+    if (!slide || typeof slide !== 'object') continue;
     const ids = typeof slide.designUnitId === 'string' ? [slide.designUnitId]
       : Array.isArray(slide.designUnitIds) ? slide.designUnitIds : [];
-    const unit = ids.map((id) => units.get(id)).find(Boolean);
+    const linked = ids.map((id) => units.get(id)).filter(Boolean);
+    const unit = linked.find((u) => u.doMode === 'quick' || u.doMode === 'deeper') || linked[0];
+    const explicit = unit && (unit.doMode === 'quick' || unit.doMode === 'deeper');
+    if (unit && unit.kind === 'our-turn') { delete slide.doSign; continue; }
+    if (explicit) delete slide.doSign;
+    else if (slide.doSign !== undefined) continue;
+    if (slide.headerStyle === 'starter') continue;
+    const title = String(slide.title || slide.heading || '').trim();
+    if (ANSWER_TITLE.test(title) || CHECK_TITLE.test(title) || revealsAnswers(slide)) continue;
     const badge = unit ? badgeFor(unit, worksheetTask) : null;
     if (!badge) continue;
-    if (!byUnit.has(unit)) byUnit.set(unit, { badge, slides: [] });
+    if (!byUnit.has(unit)) byUnit.set(unit, { badge, slides: [], explicit });
     byUnit.get(unit).slides.push(slide);
   }
-  for (const { badge, slides } of byUnit.values()) {
+  for (const { badge, slides, explicit } of byUnit.values()) {
     const working = (wanted) => slides.filter((slide) => taskSigns(slide).some((sign) => wanted.has(sign)));
     let marked = badge === 'sheet' ? working(new Set(['pencil'])) : [];
     if (!marked.length) marked = working(TASK_SIGNS);
-    if (!marked.length) marked = slides;
+    if (!marked.length) {
+      if (explicit && slides.length > 1) {
+        throw new Error('A source unit with doMode has several slides but no task signal identifying its working slide.');
+      }
+      marked = slides;
+    }
     marked.forEach((slide) => { slide.doSign = badge; });
   }
   return lesson;

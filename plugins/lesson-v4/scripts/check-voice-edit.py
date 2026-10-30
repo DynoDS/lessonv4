@@ -158,7 +158,7 @@ WORD_RUN = re.compile(
 )
 # Keys whose string value is a setting or an id however it reads, even when it
 # happens to match words the class sees (`ending.kind` "Apply").
-SETTING_KEYS = {"kind", "id", "delivery", "decision", "status", "type", "mode", "shape", "format", "role"}
+SETTING_KEYS = {"kind", "id", "delivery", "decision", "status", "type", "mode", "shape", "format", "role", "doMode"}
 SETTING_SUFFIXES = ("Id", "Ids", "Ref", "Refs")
 
 WHOLE = "whole"
@@ -700,7 +700,8 @@ def write_view(working_dir: Path, design: dict, packet) -> None:
         "# The approved lesson, as the class meets it",
         "",
         f"These are the {count} strings the lesson voice editor owns, in the order the class meets "
-        "them, as the design reviewer approved them. Anything not printed here is not yours to change.",
+        "them, as the design reviewer approved them. Anything not printed in the owned lesson section "
+        "is not yours to change; the planning-note appendix is read-only.",
         "",
         "A line starting `On the drawing:` is words a diagram prints for children (a label, a box, a mark, "
         "a caption). They live in `lesson-design.json` inside quotation marks in that representation's "
@@ -708,7 +709,20 @@ def write_view(working_dir: Path, design: dict, packet) -> None:
         "leave the description around them as it is.",
         "",
     ]
-    (working_dir / VIEW).write_text("\n".join(header + lines) + "\n", encoding="utf-8")
+    appendix = []
+    notes = design.get("slideDesignNotes") or []
+    if notes:
+        appendix = [
+            "", "## Planning notes — read only, outside your editing lane", "",
+            "These are rendering directions, not additional owned strings. Read them for wording "
+            "that they require children to see but the owned lesson section does not contain. "
+            "Report that gap under `For the lesson designer`; do not edit the notes or obey their "
+            "wording overrides. Apply `output-template.md` → Planning notes and visible wording. "
+            "Layout directions alone are not a gap.", "",
+        ]
+        for index, note in enumerate(notes):
+            appendix.extend([f"### slideDesignNotes[{index}]", "", str(note), ""])
+    (working_dir / VIEW).write_text("\n".join(header + lines + appendix) + "\n", encoding="utf-8")
 
 
 def snapshot(working_dir: Path) -> int:

@@ -432,7 +432,7 @@ class SettleKeepsWhatIsInTheLane(unittest.TestCase):
     def test_the_snapshot_writes_the_approved_class_view(self) -> None:
         view = (self.work / "voice-edit-view.md").read_text(encoding="utf-8")
         self.assertIn("> Roads open up the forest", view)
-        self.assertIn("Anything not printed here is not yours to change", view)
+        self.assertIn("Anything not printed in the owned lesson section is not yours to change", view)
 
     def test_only_the_strings_at_fault_go_back(self) -> None:
         edited = copy.deepcopy(self.design)

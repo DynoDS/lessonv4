@@ -73,7 +73,7 @@ class TheReviewerJudgesAmountAgainstThePrideLessonsTests(unittest.TestCase):
     def test_the_report_line_carries_the_judgement_not_a_feature_list(self) -> None:
         self.assertIn(
             "Teacher fit: [the heaviest beat and what the class looks at there, "
-            "the simpler route compared and why this one earned its extra;",
+            "the feasible alternative compared and the gain and cost of this route;",
             self.text,
         )
         self.assertIn(

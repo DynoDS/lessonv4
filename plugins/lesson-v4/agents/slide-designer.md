@@ -135,6 +135,8 @@ Do not pick templates while reading the first unit. A deck gets repetitive, visu
 
 **A slide's script goes in `speakerNotes`, and that is the only key the builder reads.** Not `notes`, which looks equally reasonable and leaves every slide's speaker notes empty: a deck can carry a whole lesson's teaching in the spec and none of it in the file. The build refuses a slide carrying `notes` and names the rename, and the key is written here because a refused build is a run you have to repeat.
 
+Before copying, apply `output-template.md` → Planning notes and visible wording if `slideDesignNotes` prescribes text for the slide; return a missing wording hand-off instead of treating the note as approved copy.
+
 Copy every source-authored child-facing string exactly unless the template contract explicitly calls for a mechanical transformation such as automatic question labels, or the composition playbook allows a visual line break or binding the existing task to the displayed item. Do not polish, shorten, simplify or rewrite wording to make it fit.
 
 This includes:

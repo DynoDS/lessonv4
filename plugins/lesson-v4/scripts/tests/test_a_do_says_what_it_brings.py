@@ -305,6 +305,9 @@ class SayingItAloudCanBeTheSkill(unittest.TestCase):
         self.assertIsNone(rows[1].fault())
         self.assertIn("practises the skill itself", rows[1].declaration_line())
 
+    def test_practice_does_not_trigger_the_diagnostic_half_listener_probe(self) -> None:
+        self.assertEqual(self.lesson()[1].half_listener_line(), "")
+
     def test_it_is_not_counted_with_the_say_it_back_beats(self) -> None:
         self.assertIsNone(beside_teaching.too_much_rehearsal(self.lesson()))
 
@@ -391,6 +394,17 @@ class TheReviewGivesEveryDoALine(unittest.TestCase):
 
     def test_a_line_with_a_verdict_passes(self) -> None:
         self.check("## Result\nREDESIGN REQUIRED\n\n## Each Do\n- The task | says it back | the answer is the Teach board\n\n## Judgements\n")
+
+    def test_practice_verdict_with_actual_work_passes(self) -> None:
+        self.check("## Each Do\n- The task | practice | children measure twice and use feedback to correct the scale reading\n")
+
+    def test_unknown_verdict_is_not_saved_by_practice_in_the_evidence(self) -> None:
+        with self.assertRaises(self.packet.PacketError):
+            self.check("## Each Do\n- The task | fine | useful practice\n")
+
+    def test_practice_without_evidence_is_refused(self) -> None:
+        with self.assertRaises(self.packet.PacketError):
+            self.check("## Each Do\n- The task | practice | \n")
 
 
 if __name__ == "__main__":

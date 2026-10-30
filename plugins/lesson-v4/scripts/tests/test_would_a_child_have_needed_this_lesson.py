@@ -82,7 +82,11 @@ class TheFourthTestIsStatedTests(unittest.TestCase):
 
 class EverySubjectTiesTheThinkingLineToItsOwnTestTests(unittest.TestCase):
     def test_history(self) -> None:
-        self.assertIn("a source beat's `thinking` line names the thing the source does not say outright", flat(REF / "subject-history.md"))
+        text = flat(REF / "subject-history.md")
+        self.assertIn("A source beat's `thinking` line names what children are finding out about the past and how the relevant detail helps", text)
+        self.assertIn("copying an isolated word or a conclusion already supplied does not establish that work", text)
+        self.assertIn("Inference is another move, not the entry requirement for evidence", text)
+        self.assertIn("Reading together for what the source plainly says is right when that is the knowledge being taught", text)
 
     def test_geography(self) -> None:
         self.assertIn("A map beat's `thinking` line names that interrogation, not the looking", flat(REF / "subject-geography.md"))
@@ -91,7 +95,11 @@ class EverySubjectTiesTheThinkingLineToItsOwnTestTests(unittest.TestCase):
         self.assertIn("a fluency beat's `thinking` line names the decision inside the method", flat(REF / "subject-maths.md"))
 
     def test_science(self) -> None:
-        self.assertIn("a science beat's `thinking` line names the explanation, prediction or fair-test decision", flat(REF / "subject-science.md"))
+        text = flat(REF / "subject-science.md")
+        self.assertIn("Purposeful observation and recording can themselves be scientific work", text)
+        self.assertIn("Name that decision or focus in the beat's `thinking` line", text)
+        self.assertIn("Copying supplied observations does not show careful observing", text)
+        self.assertIn("when recording serves an explanation, prediction or fair-test decision, name that purpose instead", text)
 
     def test_pshe(self) -> None:
         self.assertIn("a PSHE beat's `thinking` line names the taught reason or boundary", flat(REF / "subject-pshe.md"))

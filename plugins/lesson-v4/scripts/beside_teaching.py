@@ -496,12 +496,14 @@ class Beside:
         if not (self.headline and self.declares and self.new):
             return ""
         return (
-            f"The child who half listened has this one sentence and everyday sense: "
+            f"For this diagnostic claim: The child who half listened has this one sentence and everyday sense: "
             f"\"{self.headline}\" Answer the task as that child "
             "(`task-contrasts.md` -> `One story, one process, one set of meanings`, `name the wrong answer first`). If they reach the "
             "expected answer, the cases are doing the thinking (the only plant among "
             "animals): change a case so that this child goes wrong and the taught reason "
-            "puts it right."
+            "puts it right. If doing the work is the learning rather than a diagnostic "
+            "claim, use the existing `practice` declaration and judge that action under "
+            "`preferences.md` → `Choose Do activities for the learning`."
         )
 
     @property
@@ -545,7 +547,7 @@ class Beside:
 
     def fault(self, guide: bool = True) -> str | None:
         """What is wrong with this beat's declaration, or None. `guide` adds
-        the two ways to put it right; a report of several says them once."""
+        the repair options; a report of several says them once."""
         if not self.declares:
             return None
         label = self.pupil.get("label") or self.pupil.get("sourceUnitId")
@@ -566,13 +568,15 @@ class Beside:
             "to one ask, and write the new thing in "
             "`use.new` in the task's own words. Or, if saying it back really is this beat's job "
             "(a name or a term to secure, a sentence rehearsed before it is written), write why "
-            "in `use.rehearsal`; a lesson holds one of those. Two ways this goes wrong: left as it is, a child gets it right by "
+            "in `use.rehearsal`; a lesson holds one of those. Where doing the work is the "
+            "learning, declare `use.practice` alone and judge the action under "
+            "`preferences.md` → `Choose Do activities for the learning`. Two ways this goes wrong: left as it is, a child gets it right by "
             "remembering the last slide and the teacher learns only who was listening; and a "
             "freshness bought by changing a name, or by needing a law, a process or a fact the "
             "lesson never taught, is not fairer, it is a different fault"
         )
         if not guide:
-            two_ways = "Put it right one of the two ways given for the first such beat above"
+            two_ways = "Use the repair guidance given for the first such beat above"
         if self.use is None:
             if not self.asked:
                 return None
@@ -589,8 +593,8 @@ class Beside:
             if len(self.practice.split()) < REHEARSAL_MIN_WORDS:
                 return (
                     f"`{label}`.use.practice is \"{self.practice}\". Say in a sentence what each "
-                    "child says or does, and that it is something they will have to say or do in "
-                    "life (a refusal, asking for help, a partner voice); a fact, a meaning or a rule "
+                    "child practises, judged under `preferences.md` → `Choose Do activities "
+                    "for the learning`; a fact, a meaning or a rule "
                     "recited to a partner is rehearsal, not practice"
                 )
             return None

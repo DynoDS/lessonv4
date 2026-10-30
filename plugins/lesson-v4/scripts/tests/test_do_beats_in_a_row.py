@@ -210,7 +210,8 @@ class DoBeatsInARowTests(unittest.TestCase):
         self.assertIn("DO_BEATS_IN_A_ROW: 3 beats", self.result.stdout)
         self.assertNotIn("A look, not a verdict", self.result.stdout)
         self.assertIn("words of that answer the teaching already said:", self.result.stdout)
-        self.assertIn("none refused. Read each `new` beside the teaching sentence", self.result.stdout)
+        self.assertIn("none refused by the mechanical checks", self.result.stdout)
+        self.assertIn("This is not a judgement of task quality", self.result.stdout)
 
     def test_every_beat_is_listed_in_order_with_how_children_answer(self) -> None:
         marker = next(i for i, line in enumerate(self.lines) if line.startswith("DO_BEATS"))
@@ -293,5 +294,47 @@ class DoBeatsInARowTests(unittest.TestCase):
         self.assertIn("usage: do-beats-in-a-row.py", result.stderr)
 
 
+class PracticeReadoutTests(unittest.TestCase):
+    def test_performance_is_read_as_practice_without_forcing_a_wrong_answer(self) -> None:
+        design = {
+            "teachingSequence": [
+                {"kind": "teach", "sourceUnitId": "t1", "label": "Reading a ruler",
+                 "content": {"headline": "Start at zero and read the end mark.",
+                             "explanation": "Start at zero and read the end mark."}},
+                {"kind": "do", "sourceUnitId": "d1", "label": "Measure a strip",
+                 "pupilInstruction": "Measure your strip, compare your reading and correct it if needed.",
+                 "content": {"task": "Measure your strip.", "format": "measurement"},
+                 "answer": {"content": "Start at zero and read the end mark."},
+                 "use": {"new": None, "wrong": None, "rehearsal": None,
+                         "practice": "Each child positions the ruler, reads the scale and corrects the reading after comparison."}},
+            ]
+        }
+        result = run_design(design)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("PRACTICE: Attempt the pupil action", result.stdout)
+        self.assertNotIn("Answer it now from that page alone", result.stdout)
+        self.assertNotIn("Reaching the named wrong answer distinguishes", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
+
+
+class ExplicitDoModeReadoutTests(unittest.TestCase):
+    def test_scope_is_not_reclassified_by_printing_or_minutes(self):
+        import copy
+        design = copy.deepcopy(SEAT)
+        tasks = [u for u in design["teachingSequence"] if u["kind"] == "do"]
+        self.assertGreaterEqual(len(tasks), 2)
+        tasks[0]["label"] = "Quick printed activity"
+        tasks[0]["doMode"] = "quick"
+        tasks[0]["minutes"] = 4
+        tasks[0]["levels"] = {"printed": {"form": "task", "per": "pair", "what": "Cases"}, "boardOnlyBecause": None, "realThings": None}
+        tasks[1]["label"] = "Deeper board activity"
+        tasks[1]["doMode"] = "deeper"
+        tasks[1]["minutes"] = 2
+        tasks[1]["levels"] = {"printed": None, "boardOnlyBecause": "No printing needed.", "realThings": None}
+        out = run_design(design)
+        self.assertEqual(out.returncode, 0, out.stderr)
+        self.assertRegex(out.stdout, r"quick\s+Quick printed activity:.*designer chose quick")
+        self.assertRegex(out.stdout, r"do\s+Deeper board activity:.*designer chose deeper")

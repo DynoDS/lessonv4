@@ -106,7 +106,9 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
             "so the answer needs the idea and every child commits, settled in the task itself",
             flat(CONTENT_BASED),
         )
-        self.assertIn("A question put to the room is not one unless it is chosen", flat(DO_BEATS))
+        # The catalogue routes to the participation owner instead of copying it.
+        self.assertIn("owns its purpose, the distinction between a quick check and a bounded task, participation, and timing", flat(DO_BEATS))
+        self.assertIn("How every child commits is part of the task itself", flat(PREFERENCES))
 
     def test_reviewer_checks_each_do_beat_is_a_use(self) -> None:
         text = flat(DESIGN_REVIEWER)
@@ -127,7 +129,7 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
         rhythm = section(PREFERENCES, "The Teach → Do → Teach → Do Rhythm")
         self.assertIn("requires every child to use what they have just been told", rhythm)
         self.assertIn(
-            "a written answer, a partner's spoken response, a visible decision, a physical position",
+            "Evidence may be spoken, written, drawn, performed or handled",
             rhythm,
         )
         self.assertIn("Match the form to what was just taught", rhythm)
@@ -143,14 +145,15 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
 
     def test_the_catalogue_and_designer_carry_the_restored_definition(self) -> None:
         do_beats = flat(DO_BEATS)
-        self.assertIn("It requires every child to use the chunk they have just been taught", do_beats)
-        self.assertIn("The shape across the lesson matters more than any single beat", do_beats)
-        self.assertIn("A fact may suit recall or a sort", do_beats)
+        self.assertIn("puts the concept just taught to work before the next new concept", do_beats)
+        self.assertIn("The Teach → Do → Teach → Do Rhythm owns activity selection and purposeful variety", do_beats)
+        self.assertIn("recall a fact, name a thing, match given items to given items, label from memory", do_beats)
         # The designer's copies folded into the one home in 4.2.285.
         designer = flat(LESSON_DESIGNER)
         self.assertIn("variety and demand across the lesson", designer)
         rhythm = section(PREFERENCES, "The Teach → Do → Teach → Do Rhythm")
-        self.assertIn("It gives every child something concrete to do with the chunk and leaves something the teacher can see", rhythm)
+        self.assertIn("A Do beat is every child putting the concept just taught to work before the next new concept", rhythm)
+        self.assertIn("Evidence may be spoken, written, drawn, performed or handled", rhythm)
         self.assertIn("Climb the demand across the lesson, without forcing a staircase", rhythm)
         self.assertIn("Then match the form to what was just taught", flat(CONTENT_BASED))
 
@@ -184,8 +187,9 @@ class GivingInstructionsIsNotLaunchingTests(unittest.TestCase):
 
     def test_lesson_designer_records_the_launch(self) -> None:
         text = flat(LESSON_DESIGNER)
-        self.assertIn("A substantial task is launched before it is instructed", text)
-        self.assertIn("or why its question alone is enough", text)
+        self.assertIn("Give a task the preparation its unfamiliar product or process needs", text)
+        self.assertIn("`Giving a task its instructions is not launching it`", text)
+        self.assertIn("deeper work does not automatically need a separate launch, good/weak pair or steps", text)
 
     def test_reviewer_checks_the_launch(self) -> None:
         self.assertIn("a substantial task is launched before it is instructed", flat(DESIGN_REVIEWER))

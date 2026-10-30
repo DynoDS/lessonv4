@@ -264,14 +264,18 @@ class TheRouteFilesSayTheSameRule(unittest.TestCase):
         content = self.flat("references/teaching-sequence-content-based.md")
         self.assertIn("`launch` is `null` when children can begin from the question alone, " + earlier, content)
 
-    def test_13b_is_in_the_home_and_its_three_pointers_in_the_same_words(self) -> None:
+    def test_13b_is_in_the_home_and_reaches_its_consumers(self) -> None:
         # It skips only a second model: the launch keeps its case and steps.
         words = ("success criteria on the board that already show what a good one looks like (an actual good one, such "
                  "as a model answer or a good paragraph, never a list of what a good one includes) stand in for the good "
                  "instance, so the launch keeps its case and steps and needs no second model")
         self.assertIn(words[0].upper() + words[1:], self.flat("references/preferences.md"))
         designer = self.flat("agents/lesson-designer.md")
-        self.assertEqual(designer.count(words), 2)
+        # The recording guidance now points to the owner; the board-writing
+        # guidance still carries the complete exception where it is applied.
+        self.assertIn(words, designer)
+        self.assertIn("Give a task the preparation its unfamiliar product or process needs under `preferences.md` → Slide Philosophy, `Giving a task its instructions is not launching it`", designer)
+        self.assertIn("Apply that owner's conditions and exceptions", designer)
         reviewer = self.flat("agents/design-reviewer.md")
         self.assertIn(words + ", and the program cannot see whether they do, so judge that from the criteria beside the task", reviewer)
         for rel in ("references/preferences.md", "agents/lesson-designer.md", "agents/design-reviewer.md"):

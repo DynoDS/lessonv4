@@ -148,7 +148,9 @@ class TheReviewerReadsTheBoardWithTheNotesClosed(unittest.TestCase):
     def test_the_other_half_of_user_fit(self) -> None:
         text = flat(DESIGN_REVIEWER)
         self.assertIn("The other half of User-fit is whether each Teach board teaches", text)
-        self.assertIn("with the `Teacher says:` line covered", text)
+        self.assertIn("with `Teacher says:` covered and before reading the rationale", text)
+        self.assertIn("Do not credit yourself with a connection supplied only by the script or your subject knowledge", text)
+        self.assertIn("identify the first explanation or connection the cover teacher would have to invent", text)
         self.assertIn("REVISE on User-fit and a purposeful design defect, because the route is content only the Lesson Designer writes", text)
         # Its limit: not every slide is a Teach board.
         self.assertIn("neither is read as a Teach board", text)

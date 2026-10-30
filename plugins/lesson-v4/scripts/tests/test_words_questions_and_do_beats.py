@@ -219,7 +219,11 @@ class AWhyLessonDoesMoreThanExplain(unittest.TestCase):
         self.assertIn("the user finds true or false \"fine, but can be cheap\"", text)
 
     def test_the_reviewer_reads_the_run_of_channels(self) -> None:
-        self.assertIn("a lesson whose Do beats all share one response channel", flat(ROOT / "agents" / "design-reviewer.md"))
+        text = flat(ROOT / "agents" / "design-reviewer.md")
+        self.assertIn("under `preferences.md` → `Use variety deliberately, without a quota`", text)
+        self.assertIn("flag a monotonous run of generic explanations where the learning would benefit from another suitable activity, even if every response individually matches its Teach", text)
+        self.assertIn("do not reward five formats that still amount to five whole-class explanations", text)
+        self.assertIn("Preserve purposeful repeated practice and useful simple checks", text)
 
 
 class TheBoardLooksAsCarefulAsItReads(unittest.TestCase):

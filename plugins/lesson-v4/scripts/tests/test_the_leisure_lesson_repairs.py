@@ -153,7 +153,9 @@ class TheReviewerSeesTheNamesAndEachDoBesideItsTeach(unittest.TestCase):
 class TheRulesThatPushedTowardTheFaultsNowSayTheOpposite(unittest.TestCase):
     def test_history_thinking_is_about_the_people_not_source_limits(self) -> None:
         designer = flat(ROOT / "agents" / "lesson-designer.md")
-        self.assertIn("what it shows about the people, and why they acted as they did, is the thought", designer)
+        self.assertIn("Read it against the subject file's account of the learning, including legitimate direct evidence", designer)
+        self.assertIn("what children are finding out about the past and how the relevant detail helps",
+                      flat(REF / "subject-history.md"))
         self.assertNotIn("what it can and cannot tell us is the thought", designer)
         self.assertNotIn("its thinking (what the source can and cannot tell us)", flat(ROOT / "agents" / "design-reviewer.md"))
 

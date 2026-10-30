@@ -258,8 +258,8 @@ class TheTeachersDecisionsAreWritten(unittest.TestCase):
         held; the four other files keep notes with their own extras."""
         designer = text(LD)
         self.assertIn("- Read the one matching `subject-*.md` file when it exists, whole, with `--file` and every "
-                      "page, before the structure is chosen: in history and geography its routing is part of that "
-                      "choice.", designer)
+                      "page, before naming and classifying the learning or rehearsing the told lesson: its "
+                      "disciplinary meaning governs those decisions as well as structure and task selection.", designer)
         self.assertIn("Come back to it alongside the teaching-sequence file once the structure is set: the "
                       "structure file tells you what shape the lesson takes, and the subject file what the "
                       "thinking inside it should be.", designer)
