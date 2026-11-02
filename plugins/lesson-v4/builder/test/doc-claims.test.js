@@ -294,7 +294,7 @@ test('question cards and numbered questions share one stage boundary', () => {
     'Zone class compatibility'
   );
   assert.match(entry, /restricted to a starter or the lesson's main independent work/);
-  assert.match(entry, /A Do beat, quick check, discussion question, My Turn or other smaller task uses an unnumbered composition/);
+  assert.match(entry, /A Do beat, quick Do, discussion question, My Turn or other smaller task uses an unnumbered composition/);
 });
 
 test("answer slides are limited without removing speaker-note answers", () => {

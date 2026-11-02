@@ -219,9 +219,9 @@ def child_seat(design: dict) -> list[str]:
     stretches: list[list[tuple[str, int]]] = []
     before_main = {"do": 0, "cards": 0, "together": 0, "quick": 0}
     # Chunks of teaching before the main work: a listening stretch holding a
-    # Teach, ended by whatever children do next, quick check or task. A Year 4
+    # Teach, ended by whatever children do next, quick Do or task. A Year 4
     # sound lesson (18 October 2026) taught three chunks, the middle one
-    # checked only by a quick check, then its explanation task, and passed
+    # checked only by a quick Do, then its explanation task, and passed
     # the task count; the teacher found it "so much".
     chunks_before_main = 0
     lead_in: list[str] = []
@@ -309,7 +309,7 @@ def child_seat(design: dict) -> list[str]:
             before_main["cards"] += cards
             before_main["together"] += together
         elif main_at is not None and i > main_at and quick:
-            # A quick check is not a task wherever it falls. A Year 6 PSHE
+            # A quick Do is not a task wherever it falls. A Year 6 PSHE
             # lesson of the 20-lesson test (7 October 2026) put a two-minute
             # check after its main sort and was told it held three tasks.
             quick_after_main += 1
@@ -335,7 +335,7 @@ def child_seat(design: dict) -> list[str]:
         lines.append(
             f"  Between the starter and the main work children do {before_main['do']} "
             f"task{'' if before_main['do'] == 1 else 's'} and {before_main['quick']} quick "
-            f"check{'' if before_main['quick'] == 1 else 's'} (a Do planned at {QUICK_CHECK_MINUTES} minutes "
+            f"Do{'' if before_main['quick'] == 1 else 's'} (a Do planned at {QUICK_CHECK_MINUTES} minutes "
             f"or less): {before_main['cards']} with cards in their hands, {before_main['together']} with "
             f"a partner or group, the rest on their own from the board or in books."
         )
@@ -344,19 +344,19 @@ def child_seat(design: dict) -> list[str]:
             if after_main:
                 parts.append(f"{after_main} more task{'' if after_main == 1 else 's'}")
             if quick_after_main:
-                parts.append(f"{quick_after_main} quick check{'' if quick_after_main == 1 else 's'}")
+                parts.append(f"{quick_after_main} quick Do{'' if quick_after_main == 1 else 's'}")
             lines.append(f"  After the main work they do {' and '.join(parts)}.")
         counted = before_main["do"] + 1 + after_main
-        lines.append(f"  Tasks counted against the two or three a lesson holds (the main work and anything "
-                     f"after it included, quick checks not): {counted}.")
+        lines.append(f"  Tasks counted against the most a lesson normally holds, two or three (the main work and anything "
+                     f"after it included, quick Dos not): {counted}.")
         lines.append("  A written piece children start once a sort or an order is done is a task of its own "
                      "and adds one to that count, which this list cannot see.")
-        lines.append(f"  Chunks of teaching before the main work, each ended by a quick check or a task: "
-                     f"{chunks_before_main}. Usually two, then a short lead-in and the final task "
-                     f"(`preferences.md` -> `A lesson holds two or three Dos, then its final task`); "
+        lines.append(f"  Chunks of teaching before the main work, each ended by a quick Do or a task: "
+                     f"{chunks_before_main}. Usually one or two, then a short lead-in and the final task "
+                     f"(`preferences.md` -> `Judge the workload of Dos and the final task`); "
                      f"a third is the sign to look again at what the objective needs, never a cap. This number "
                      f"is not argued down: teaching closed by a task of its own is its own chunk whatever the "
-                     f"design calls it, and only a set of names checked by quick checks as it arrives stays one. "
+                     f"design calls it, and only a set of names checked by quick Dos as it arrives stays one. "
                      f"At three, go back to fewer things or say in the closing decisions' Amount line why this "
                      f"objective needs the third. A skill lesson's My Turn cycles keep their own shape.")
         if lead_in:
@@ -579,6 +579,10 @@ def main(argv: list[str]) -> int:
             print(f"  words of that answer the teaching already said: {row.repeated} of {row.total}")
             if row.declares:
                 print(f"  {row.declaration_line()}")
+                print("  Nobody reads the answers: is the child better at the subject when this "
+                      "beat ends, would someone who does the subject recognise the work, and "
+                      "whose decision is it? (`preferences.md` -> `A Do makes the child better at "
+                      "the subject`)")
                 if row.wrong:
                     print(
                         "  Read the page below beside the wrong answer you named: is that an answer "

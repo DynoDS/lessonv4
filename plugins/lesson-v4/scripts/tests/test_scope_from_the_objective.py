@@ -9,7 +9,7 @@ teacher found it "so much". Asked one decision at a time, he ruled:
 1. A lesson is about achieving its objective for this year group; a scheme is
    ideas, binding only where he marks it.
 2. A word stays when it helps achieve the objective, never babyish.
-3. Quick checks teach nothing new and cost time; usually two chunks of
+3. Quick Dos teach nothing new and cost time; usually two chunks of
    teaching, then a short lead-in and the final task.
 4. Depth follows what the child must explain.
 5. A picture shows what the words explain; ask what the child must see before
@@ -89,8 +89,8 @@ class QuickChecksAndChunks(unittest.TestCase):
 
     def test_quick_checks_never_make_room_for_ideas(self) -> None:
         self.assertNotIn("a lesson with four things to teach keeps each one used without four tasks", self.RHYTHM)
-        self.assertIn("A quick check checks what was just taught and teaches nothing new", self.RHYTHM)
-        self.assertIn("Quick checks still cost time", self.RHYTHM)
+        self.assertIn("A quick Do works on what was just taught and brings in no next idea", self.RHYTHM)
+        self.assertIn("Quick Dos still cost time", self.RHYTHM)
         self.assertIn("Count the chunks of teaching as well as the tasks", self.RHYTHM)
         self.assertIn("It is the picture a judgement starts from, not a template", self.RHYTHM)
 
@@ -119,7 +119,7 @@ class QuickChecksAndChunks(unittest.TestCase):
                                  encoding="utf-8").stdout
         # Three chunks: the rice follows the table test with no teaching
         # between, so it does not start a chunk of its own here.
-        self.assertIn("Chunks of teaching before the main work, each ended by a quick check or a task: 3.", out)
+        self.assertIn("Chunks of teaching before the main work, each ended by a quick Do or a task: 3.", out)
         self.assertIn("never a cap", out)
 
 
@@ -196,7 +196,7 @@ class TheBuiltDecksOf18October(unittest.TestCase):
         # A Year 4 cholera lesson (18 October 2026) called three stretches of
         # teaching, each ended by its own task, "one idea told in three parts",
         # counted two, and the teacher found it "way too much". The grouping
-        # clause had been written for a set of names checked by quick checks.
+        # clause had been written for a set of names checked by quick Dos.
         rhythm = section_by_heading(PREFS, "## The Teach → Do → Teach → Do Rhythm", 0)
         self.assertIn("Teaching closed by a task of its own is its own chunk whatever the design calls it", rhythm)
         self.assertNotIn("parts of one idea checked one by one (each part of a journey, each member of a set) "

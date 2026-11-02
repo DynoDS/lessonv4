@@ -358,7 +358,7 @@ During execution, keep these checks active:
 
 ## Question labels
 
-Before assigning or rendering a question number, read Question Labelling in `preferences.md` and the selected template contract. Preserve source numbers exactly. Number an unnumbered prompt only when the source structure and the preference rule require it. Do not use `numbered-questions`, `question-cards` or `questionNumbering` for a Do beat, quick check, discussion question or single prompt between teaching steps. Keep a teacher-facing cue outside child-facing numbering.
+Before assigning or rendering a question number, read Question Labelling in `preferences.md` and the selected template contract. Preserve source numbers exactly. Number an unnumbered prompt only when the source structure and the preference rule require it. Do not use `numbered-questions`, `question-cards` or `questionNumbering` for a Do beat, quick Do, discussion question or single prompt between teaching steps. Keep a teacher-facing cue outside child-facing numbering.
 
 ---
 

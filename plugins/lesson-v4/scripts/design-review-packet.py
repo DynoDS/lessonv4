@@ -282,7 +282,7 @@ ALWAYS_READ_REVIEW_SECTIONS = (
         "second job; a Do whose expected "
         "answer is a summary, headline, recap or restatement of the "
         "explanation its own Teach just gave; orientation and every beat "
-        "earning its place; quick checks; and each beat changing the state of "
+        "earning its place; quick Dos; and each beat changing the state of "
         "the lesson. When the sequence has three or more Teach "
         "beats, say in your own words the move each Teach taught and what its "
         "own Do makes children do, and check each pair before reading on.",
@@ -1854,16 +1854,18 @@ def build_do_beside_teach(design: dict) -> list[str]:
             "already said, and what the design says the task brings. A high "
             "count does not make a beat wrong: a task that uses a taught idea "
             "on a new case says the idea in the Teach's words. So for every "
-            "Do, give its verdict in `Each Do` (uses, practice, rehearsal, says it back "
-            "or guessable), then name what pupils practise or what the check establishes "
-            "and what the prompt and support leave them to do. "
+            "Do, give its verdict in `Each Do` (uses, practice, rehearsal, checks only, says it "
+            "back or guessable), then name what the child is better at afterwards "
+            "and what the prompt and support leave them to do. Read `develops` first, "
+            "against `preferences.md` → `A Do makes the child better at the subject`: "
+            "a sound item that only shows who has got it is `checks only`. "
             "Judge practice under `preferences.md` → `Choose Do activities "
             "for the learning`; note a feedback or preparation gap where it matters. "
             "The design's own claim is a claim: read `new` against the "
             "teaching sentence, `practice` against the actual pupil action, "
             "and `rehearsal` against where the lesson then uses the thing rehearsed. "
             "Keep the fresh-case and answer-leakage checks for diagnostic claims "
-            "(`preferences.md` → `A quick check is a fresh case, not the last slide again`)."
+            "(`preferences.md` → `A quick Do is a fresh case, not the last slide again`)."
         ),
         "",
     ]
@@ -1960,7 +1962,7 @@ def build_child_seat(design: dict) -> list[str]:
             "children listened to rather than did, however right each beat is "
             "beside its Teach. Read the count of what children do between the "
             "starter and the main work, and after it, against `preferences.md` → "
-            "`A lesson holds two or three Dos, then its final task`. The numbers "
+            "`Judge the workload of Dos and the final task`. The numbers "
             "are where to look, not the verdict."
         ),
         "",
@@ -3280,7 +3282,7 @@ def compare_photo_transition(
 
 
 EACH_DO_HEADING = "## Each Do"
-EACH_DO_VERDICTS = ("uses", "practice", "rehearsal", "says it back", "guessable")
+EACH_DO_VERDICTS = ("uses", "practice", "rehearsal", "checks only", "says it back", "guessable")
 
 
 def require_every_do_has_its_line(review_path: Path, design: dict) -> None:
@@ -3305,8 +3307,8 @@ def require_every_do_has_its_line(review_path: Path, design: dict) -> None:
     if len(starts) != 1:
         raise PacketError(
             f"design-review.md must contain exactly one {EACH_DO_HEADING!r} heading: one line "
-            "for each Do and quick check, naming what pupils practise or what the check "
-            "establishes, with evidence from the prompt and support"
+            "for each Do and quick Do, naming what the child is better at afterwards, "
+            "with evidence from the prompt and support"
         )
     section: list[str] = []
     for line in lines[starts[0] + 1:]:

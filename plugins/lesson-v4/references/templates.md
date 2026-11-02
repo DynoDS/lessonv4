@@ -1019,7 +1019,7 @@ A jump's label is its size, never where it lands, so labelling the jumps does no
 
 Supported columns: `M`, `HTh`, `TTh`, `Th`, `H`, `T`, `O`, `.`, `t`, `h`, `th`. A full name (`Thousands`, `Tens`) is accepted and prints as its short name at any size, because a whole word does not fit a column a digit fits; the short name is the finished heading, not a squeezed one.
 
-**A bare heading strip — `"rows": []`.** An explicitly empty `rows` array draws the headings on their own, with no cells beneath: the `Th | H | T | O` strip a quick check puts in its side rail so children have the column names to answer with. It sits at the top of its zone rather than centred, because a reference belongs where the eye lands first.
+**A bare heading strip — `"rows": []`.** An explicitly empty `rows` array draws the headings on their own, with no cells beneath: the `Th | H | T | O` strip a quick Do puts in its side rail so children have the column names to answer with. It sits at the top of its zone rather than centred, because a reference belongs where the eye lands first.
 
 ```json
 { "type": "place-value-chart", "columns": ["Th", "H", "T", "O"], "rows": [] }
@@ -1401,7 +1401,7 @@ The matching slide uses the same surrounding composition and slot:
 
 **A second way to present a question set, beside `numbered-questions`.** The same questions, but each on its own plain white card with the shared soft shadow. Each carries a purple number badge on its corner and sits at a degree or two of tilt so the set reads as placed rather than gridded. The cards pack across the zone and wrap, and the type grows until the set fills the height it is given. The cards do not take category colours because an ordinary question list is not a set of categories.
 
-Use `question-cards` only for a starter or, in maths, a main independent question set. Do not use it for a Do beat, quick check or another smaller task between teaching steps because every card carries a number badge.
+Use `question-cards` only for a starter or, in maths, a main independent question set. Do not use it for a Do beat, quick Do or another smaller task between teaching steps because every card carries a number badge.
 
 ```json
 { "type": "question-cards",
@@ -1419,7 +1419,7 @@ Fields:
 
 Answer reveals work exactly as they do in a list: `"6 × 7 = ||42"` prints the answer in green. Use the `revealPair` contract above for an ordinary question/answer pair so the cards share their actual positions. The inline colour markers (`**bold**`, `[[blue]]`, `{{green}}`, `<<orange>>`) all work inside a card too, but `{{green}}` is reserved for an answer/reveal slide. Prepared teaching models are worked examples: give the card `colorRole: "worked-purple"`.
 
-**Which of the two a set belongs in.** Both helpers are restricted to a starter or the lesson's main independent work in maths. Within those permitted stages, use `numbered-questions` as the default. Use `question-cards` only when the set has about five or fewer short questions and the placed-card treatment makes those short prompts use the available space more clearly. A sentence-length or multi-sentence question belongs in `numbered-questions`. A Do beat, quick check, discussion question, My Turn or other smaller task uses an unnumbered composition instead of either numbered helper.
+**Which of the two a set belongs in.** Both helpers are restricted to a starter or the lesson's main independent work in maths. Within those permitted stages, use `numbered-questions` as the default. Use `question-cards` only when the set has about five or fewer short questions and the placed-card treatment makes those short prompts use the available space more clearly. A sentence-length or multi-sentence question belongs in `numbered-questions`. A Do beat, quick Do, discussion question, My Turn or other smaller task uses an unnumbered composition instead of either numbered helper.
 
 Zone class compatibility: fits A, B, C, D, E-wide, E-narrow. Too compact for F or G.
 

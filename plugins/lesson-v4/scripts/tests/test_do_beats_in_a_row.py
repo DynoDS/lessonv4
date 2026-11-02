@@ -113,11 +113,11 @@ class FromAChildsSeatTests(unittest.TestCase):
                             for line in self.seat))
         self.assertTrue(any("Wise men" in line and "with printed cards, one set per pair, with a partner or group"
                             in line for line in self.seat))
-        self.assertIn("  Between the starter and the main work children do 2 tasks and 0 quick checks (a Do "
+        self.assertIn("  Between the starter and the main work children do 2 tasks and 0 quick Dos (a Do "
                       "planned at 2 minutes or less): 1 with cards in their hands, 1 with a partner or group, "
                       "the rest on their own from the board or in books.", self.seat)
-        self.assertIn("  Tasks counted against the two or three a lesson holds (the main work and anything "
-                      "after it included, quick checks not): 3.", self.seat)
+        self.assertIn("  Tasks counted against the most a lesson normally holds, two or three (the main work and anything "
+                      "after it included, quick Dos not): 3.", self.seat)
 
     def test_a_do_planned_at_two_minutes_or_less_is_a_quick_check_and_longer_is_a_task(self) -> None:
         design = json.loads(json.dumps(SEAT))
@@ -128,8 +128,8 @@ class FromAChildsSeatTests(unittest.TestCase):
         lines = run_design(design).stdout.splitlines()
         self.assertTrue(any(line.startswith("  quick ") and "True or false" in line for line in lines))
         self.assertTrue(any(line.startswith("  do ") and "Wise men" in line for line in lines))
-        self.assertIn("  Tasks counted against the two or three a lesson holds (the main work and anything "
-                      "after it included, quick checks not): 3.", lines)
+        self.assertIn("  Tasks counted against the most a lesson normally holds, two or three (the main work and anything "
+                      "after it included, quick Dos not): 3.", lines)
 
     def test_a_short_beat_with_a_printed_sheet_counts_as_a_task(self) -> None:
         # 1 October 2026: the Shaftesbury lesson printed its one-minute check
@@ -153,7 +153,7 @@ class FromAChildsSeatTests(unittest.TestCase):
         counted = lambda design: next(line.rsplit(" ", 1)[1] for line in run_design(design).stdout.splitlines()
                                       if line.startswith("  Tasks counted"))
         self.assertEqual(int(counted(base).rstrip(".")) - 1, int(counted(quick).rstrip(".")))
-        self.assertIn("  After the main work they do 1 quick check.", run_design(quick).stdout.splitlines())
+        self.assertIn("  After the main work they do 1 quick Do.", run_design(quick).stdout.splitlines())
 
     def test_a_further_idea_after_long_tasks_and_a_short_worksheet_are_looked_at_again(self) -> None:
         # The 20-lesson test, Year 5 Athens and Sparta: 39 minutes of 45 and

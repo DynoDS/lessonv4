@@ -488,10 +488,11 @@ def source_unit(
     if kind in LEVEL_KINDS:
         unit["levels"] = {"printed": PLACEHOLDER, "boardOnlyBecause": PLACEHOLDER, "realThings": PLACEHOLDER}
     if kind in _validator.beside_teaching.USE_KINDS:
-        # One of the two is a sentence and the other null: what this task puts
-        # in front of children that the lesson has not shown them, or why
+        # `develops` is always a sentence: what the child is better at
+        # afterwards. Of the next two, one is a sentence and the other null:
+        # what this task puts in front of children that the lesson has not shown them, or why
         # saying it back is the job here (`beside_teaching.py`).
-        unit["use"] = {"new": PLACEHOLDER, "wrong": PLACEHOLDER, "rehearsal": PLACEHOLDER, "practice": PLACEHOLDER}
+        unit["use"] = {"develops": PLACEHOLDER, "new": PLACEHOLDER, "wrong": PLACEHOLDER, "rehearsal": PLACEHOLDER, "practice": PLACEHOLDER}
     return unit
 
 

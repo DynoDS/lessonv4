@@ -107,7 +107,7 @@ class QuestioningIsNotDoingTests(unittest.TestCase):
             flat(CONTENT_BASED),
         )
         # The catalogue routes to the participation owner instead of copying it.
-        self.assertIn("owns its purpose, the distinction between a quick check and a bounded task, participation, and timing", flat(DO_BEATS))
+        self.assertIn("owns its purpose (`A Do makes the child better at the subject`), the distinction between a quick Do and a bounded task, participation, and timing", flat(DO_BEATS))
         self.assertIn("How every child commits is part of the task itself", flat(PREFERENCES))
 
     def test_reviewer_checks_each_do_beat_is_a_use(self) -> None:

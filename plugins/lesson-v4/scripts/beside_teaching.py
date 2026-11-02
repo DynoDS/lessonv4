@@ -45,7 +45,7 @@ BESIDE_SHOWN_KINDS = TEACH_KINDS | {
     "my-turn", "grounding-input", "stimulus", "make-sense", "observe", "prepare",
 }
 
-# The beats that carry a `use` declaration: the Do and quick check of a
+# The beats that carry a `use` declaration: the Do and quick Do of a
 # content lesson and the Use the learning of a discovery lesson. The final
 # task is left out on purpose: the class is shown a good answer to that very
 # question before writing (the teacher's ruling of 1 October 2026), so its
@@ -517,6 +517,11 @@ class Beside:
         return value.strip() if isinstance(value, str) and value.strip() else None
 
     @property
+    def develops(self) -> str | None:
+        value = (self.use or {}).get("develops")
+        return value.strip() if isinstance(value, str) and value.strip() else None
+
+    @property
     def wrong(self) -> str | None:
         value = (self.use or {}).get("wrong")
         return value.strip() if isinstance(value, str) and value.strip() else None
@@ -571,7 +576,7 @@ class Beside:
             "in `use.rehearsal`; a lesson holds one of those. Where doing the work is the "
             "learning, declare `use.practice` alone and judge the action under "
             "`preferences.md` → `Choose Do activities for the learning`. Two ways this goes wrong: left as it is, a child gets it right by "
-            "remembering the last slide and the teacher learns only who was listening; and a "
+            "remembering the last slide and ends the beat no better than it started; and a "
             "freshness bought by changing a name, or by needing a law, a process or a fact the "
             "lesson never taught, is not fairer, it is a different fault"
         )
@@ -583,6 +588,14 @@ class Beside:
             return (
                 f"`{label}`: the teaching just before this beat already said {count}, and the beat "
                 f"does not say what it brings. {beside}. {two_ways}"
+            )
+        if "develops" in self.use and len((self.develops or "").split()) < REHEARSAL_MIN_WORDS:
+            return (
+                f"`{label}`.use.develops has to say in a sentence what a child is better at when "
+                "this beat ends, even if nobody reads their answer, and which of the subject's "
+                "moves got them there (`preferences.md` -> `A Do makes the child better at the "
+                "subject`). If the only honest answer is that the teacher sees who has got it, "
+                "choose the beat again"
             )
         if self.practice:
             if self.new or self.rehearsal or self.wrong:
@@ -692,18 +705,19 @@ class Beside:
         """The declaration as one line for a view."""
         if not self.declares:
             return ""
+        develops = f"What it develops: \"{self.develops}\" " if self.develops else ""
         if self.new:
             wrong = (
                 f" A child who has not understood would say: \"{self.wrong}\""
                 if self.wrong else " It does not say what a child who has not understood would answer."
             )
             again = self.look_again()
-            return (f"The design says this task brings something new: \"{self.new}\"" + wrong
+            return (develops + f"The design says this task brings something new: \"{self.new}\"" + wrong
                     + (f" {again}" if again else ""))
         if self.practice:
-            return f"The design says this beat practises the skill itself: \"{self.practice}\""
+            return (develops + f"The design says this beat practises the skill itself: \"{self.practice}\"")
         if self.rehearsal:
-            return f"The design says this beat is rehearsal: \"{self.rehearsal}\""
+            return develops + f"The design says this beat is rehearsal: \"{self.rehearsal}\""
         if self.asked:
             return "The design does not say what this task brings. It has to."
         return "The design does not say what this task brings (it was not asked to)."
@@ -731,7 +745,7 @@ def read_beside(design: dict) -> list[Beside]:
     return result
 
 
-# How many Do beats and quick checks in one lesson may be rehearsal. This is
+# How many Do beats and quick Dos in one lesson may be rehearsal. This is
 # the teacher's own number for this one thing (6 October 2026, shown a lesson
 # whose first two tasks each said back what had just been taught: "two is too
 # many, one at most"). It is not a pattern for other limits: he has ruled
@@ -740,7 +754,7 @@ REHEARSAL_MOST = 1
 
 
 def too_much_rehearsal(rows: list[Beside]) -> str | None:
-    """The fault when more than one Do or quick check is declared rehearsal.
+    """The fault when more than one Do or quick Do is declared rehearsal.
 
     Only the beats that carry `use` are counted (`USE_KINDS`). So these are
     not: the final task and the good answer shown before it, a maths My Turn,
@@ -756,7 +770,7 @@ def too_much_rehearsal(rows: list[Beside]) -> str | None:
     names = ", ".join(f"`{row.pupil.get('label')}`" for row in said_back)
     return (
         f"{len(said_back)} beats are declared rehearsal ({names}), and a lesson holds one "
-        "say-it-back Do or quick check at most (the teacher, 6 October 2026: \"two is too many, "
+        "say-it-back Do or quick Do at most (the teacher, 6 October 2026: \"two is too many, "
         "one at most\"). Keep the one where saying it back does most good, and make each of the "
         "others a use, starting from a real case: something the class could meet that the "
         "lesson did not show, a named child saying what a real child might think, a new person "

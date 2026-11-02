@@ -356,7 +356,7 @@ A longer version is better only when the extra wording adds:
 
 # 6. Questions and pupil instructions
 
-This section is for every question a child reads or hears: the starter, a question on a Teach slide or in its script, a quick check, a Do, the final task and its launch, a worksheet question at any level. Whatever its job, it is few words, one ask, asked positively, names the people and things it is about, and does not signal its own answer; the reading is the easy part and the thinking the hard one. The parts below say how.
+This section is for every question a child reads or hears: the starter, a question on a Teach slide or in its script, a quick Do, a Do, the final task and its launch, a worksheet question at any level. Whatever its job, it is few words, one ask, asked positively, names the people and things it is about, and does not signal its own answer; the reading is the easy part and the thinking the hard one. The parts below say how.
 
 There is no single required question stem.
 

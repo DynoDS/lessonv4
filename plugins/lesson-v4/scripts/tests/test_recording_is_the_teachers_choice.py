@@ -1,6 +1,6 @@
 """Where children record an answer is the teacher's choice, so no lesson names it.
 
-Daniel read a Year 4 RE deck (5 October 2026) whose quick check said `Write your
+Daniel read a Year 4 RE deck (5 October 2026) whose quick Do said `Write your
 answer on your whiteboard.` and ruled: "It should never say whiteboards or books
 or anything like that. That's up to teacher." The rule was already in
 `preferences.md` as a "normally"; the design reviewer had sent the lesson back
@@ -65,7 +65,7 @@ class RecordingIsTheTeachersChoice(unittest.TestCase):
         )
         self.assertIn(
             "teacherOrientation",
-            self.refused(task="What does the orange stand for?", orientation="Teacher orientation: Quick checks use mini-whiteboards."),
+            self.refused(task="What does the orange stand for?", orientation="Teacher orientation: Quick Dos use mini-whiteboards."),
         )
 
     def test_writing_in_a_book_is_refused(self) -> None:

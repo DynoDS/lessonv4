@@ -90,7 +90,7 @@ Children told to "explain" the objective with nothing in front of them could not
 4. Each child tells a partner their explanation of the same case (`rehearsal`, above).
 5. They write it.
 
-Remembering the good one is part of the learning here. A Do beat or a quick check a child passes by remembering the slide is still a weak beat (`preferences.md` → What a Lesson Is For), because its point is to use an idea; this task's point is to learn how an explanation of the idea goes, and a child learns that by holding a good one in mind, saying it in their own words and writing it. So do not make the final case harder to copy by changing it, adding a step the model never showed, or modelling a different case to keep a decision back for the children. Which case is modelled, and the two places a different one is right, is `preferences.md` → Slide Philosophy, `Model this very task by default`.
+Remembering the good one is part of the learning here. A Do beat or a quick Do a child passes by remembering the slide is still a weak beat (`preferences.md` → What a Lesson Is For), because its point is to use an idea; this task's point is to learn how an explanation of the idea goes, and a child learns that by holding a good one in mind, saying it in their own words and writing it. So do not make the final case harder to copy by changing it, adding a step the model never showed, or modelling a different case to keep a decision back for the children. Which case is modelled, and the two places a different one is right, is `preferences.md` → Slide Philosophy, `Model this very task by default`.
 
 This is about the lesson's final explanation. An explanation asked mid-lesson as a Do beat is there to use the idea on a fresh case, and `task-contrasts.md` judges it.
 

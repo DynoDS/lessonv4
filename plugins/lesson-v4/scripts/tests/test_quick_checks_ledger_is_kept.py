@@ -1,12 +1,12 @@
 """Every quick-check rule the teacher's ledger recorded is still where it lives.
 
-What makes a quick check genuine was written about 307 times: the rule that a
+What makes a quick Do genuine was written about 307 times: the rule that a
 check is a fresh case and not the last slide again, its copies in every subject
 and route, the excuse that let a beat pass by being "named as a check", the
 permissions for a short recall, and the catalogue formats that give back what
 was just taught. The streamline of 23 September 2026 listed every one
 (plans/2026-09-22-quick-checks-ledger.md), the teacher agreed each decision,
-and the rule now has one home, `preferences.md` -> `A quick check is a fresh
+and the rule now has one home, `preferences.md` -> `A quick Do is a fresh
 case, not the last slide again`, with what makes a case fresh, when recall is
 honest, and when saying what a beat is for is honest written beside it.
 

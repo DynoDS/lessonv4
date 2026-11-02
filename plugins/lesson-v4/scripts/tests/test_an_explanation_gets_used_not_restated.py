@@ -109,11 +109,11 @@ class PreferencesOwnsTheSelectorTests(unittest.TestCase):
         self.assertIn("needs connecting", self.rhythm)
 
     def test_a_quick_check_on_a_fresh_case_is_still_allowed(self) -> None:
-        """Discrimination: the rule must not fire on a quick check that uses
+        """Discrimination: the rule must not fire on a quick Do that uses
         the idea on something the Teach did not show (the teacher's ruling,
         14 September 2026). What it refuses is the sentence just said, picked
         back, whatever the beat is called (22 September 2026)."""
-        self.assertIn("**A quick check is a fresh case, not the last slide again.**", self.rhythm)
+        self.assertIn("**A quick Do is a fresh case, not the last slide again.**", self.rhythm)
         self.assertIn("a new card to sort", self.rhythm)
         self.assertIn("calling the beat a check does not change what the child does", self.rhythm)
         self.assertNotIn("and the design says which", self.rhythm)

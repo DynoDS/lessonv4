@@ -203,7 +203,7 @@ class TheViewReachesEveryShapeTests(unittest.TestCase):
                                    "content": {"task": "Which tooth?"}, "answer": {"kind": "exact", "content": "Tooth C"}}], STICKY)
         self.assertIn("## Each Do beside the teaching before it", text)
         self.assertIn("Words of the expected answer the Teach's board or script already said", text)
-        self.assertIn("A quick check is a fresh case", text)
+        self.assertIn("A quick Do is a fresh case", text)
 
 
 if __name__ == "__main__":

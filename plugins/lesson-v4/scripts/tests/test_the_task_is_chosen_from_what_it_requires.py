@@ -7,7 +7,7 @@ the learning, choose pupil work and material, prepare the attempt, check
 what the work and feedback show); cross-subject contrasts calibrate the choice
 and its review, while retaining simpler sufficient tasks; and the reviewer's
 existing worked answer gains two probes, can weak understanding still pass and
-can good understanding be marked wrong, with the limits that keep a quick check,
+can good understanding be marked wrong, with the limits that keep a quick Do,
 purposeful repetition and a supplied source legitimate.
 
 These are wiring checks. They show the words reach the agents; they say nothing
@@ -95,12 +95,13 @@ class TheContrastsReachBothAgentsTests(unittest.TestCase):
     def test_the_file_holds_a_boundary_case_for_every_contrast(self):
         text = CONTRASTS.read_text(encoding="utf-8")
         # Six single-task contrasts and, since the follow-on (16 September
-        # 2026), one short-sequence contrast, each with its boundary case.
-        self.assertEqual(text.count("### "), 7)
+        # 2026), one short-sequence contrast, and since 2 November 2026 one
+        # across every subject, each with its boundary case.
+        self.assertEqual(text.count("### "), 8)
         # Since 6 October 2026 a section of its own after them: saying it back
         # beside using it, for a lesson that is one story, one process or one
         # set of meanings. It has its own boundary case.
-        self.assertEqual(text.count("**Where the simpler task is right.**"), 8)
+        self.assertEqual(text.count("**Where the simpler task is right.**"), 9)
         self.assertIn("\n## One story, one process, one set of meanings\n", text)
         self.assertIn("The response format, number of questions and length of an answer settle none of those judgements", text)
         self.assertIn("Use these as calibration, not recipes", text)
@@ -168,7 +169,7 @@ class TheContrastsReachBothAgentsTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("REFERENCE_READ_OK", result.stdout)
         self.assertIn("`wrong` goes with `new`", result.stdout)
-        self.assertIn("one Do or quick check declared `rehearsal` at most", result.stdout)
+        self.assertIn("one Do or quick Do declared `rehearsal` at most", result.stdout)
 
     def test_the_say_it_back_section_is_read_whole_in_one_page(self):
         """Inside `The contrasts` it sat on page 2 of a read that had been one page."""

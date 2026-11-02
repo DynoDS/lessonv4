@@ -28,7 +28,7 @@ A festival's date marks when a tradition celebrates an event, not a known date o
 
 ## What a Do beat looks like in RE
 
-**Name the wrong answer first, and know which kind of thing was taught** (`task-contrasts.md` → `One story, one process, one set of meanings`). The wrong answers real children give in RE, to build a question around:
+RE's own work is asking what a text or a practice means to those who hold it, seeing who is speaking, comparing how people interpret it, and asking what would help us know. **Know the wrong answers children bring, and which kind of thing was taught** (`task-contrasts.md` → `One story, one process, one set of meanings`). The wrong answers real children give in RE, to build a question around:
 - The belief behind a story or practice: an everyday reason in place of the belief. `Because a baby was born.` `So it looks nice.` `It is God's birthday` (Ofsted's 2024 RE report, from pupils asked to reflect on the Christmas story before they knew what Christians believe about it).
 - An object with a job: the name without the job. `The mihrab is a decoration.`
 - Diversity in a tradition: `All Christians...`, one person's practice taken as everyone's rule (Ofsted's 2021 RE review warns of this). `Catholics are not Christians` and `Christians believe in three gods` come from one teacher educator's list, drawn from experience and mostly secondary (Steele, RE:ONLINE 2026); it is not research.
@@ -38,6 +38,8 @@ A wrong option is something a child thinks, never something put into believers' 
 
 An RE Do beat makes children connect what people do with what they believe, and see who is speaking. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each uses a practice, person or text the Teach did not already explain:
 
+- **What will they say?** Children predict how two people in a tradition would answer a question, using what was taught, then read or hear what those people really said and say what surprised them.
+- **What would we need to ask?** Children write the question they would put to someone who holds this belief, one that the lesson's teaching makes possible, then compare it with a question it does not help with.
 - **Match the practice to the belief.** Practice cards (lighting a candle at Advent, giving at Eid) matched to the belief cards that help explain them. The practice is a new one; the belief is the one taught.
 - **Doing and meaning.** Sort cards into what a person does and what it means to them, so the two stop being one thing.
 - **Whose voice?** Children sort three statements into one person, many people in the tradition, and the tradition's own teaching.

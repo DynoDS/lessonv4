@@ -1295,9 +1295,9 @@ def validate_use(raw: Any, path: str, kind: str) -> None:
     )
     use = expect_dict(raw, path)
     fields = {"new", "rehearsal"}
-    # `wrong` is optional in the schema and written by the scaffold, like `use`
+    # `wrong` and `develops` are optional in the schema and written by the scaffold, like `use`
     # itself: a design saved before it existed still reads.
-    expect_exact_keys(use, fields | {"wrong", "practice"}, fields, path)
+    expect_exact_keys(use, fields | {"wrong", "practice", "develops"}, fields, path)
     for field in sorted(use):
         value = use[field]
         expect(
@@ -2038,7 +2038,7 @@ def _sentences(text: str) -> list[str]:
 
 # Where children record an answer is the teacher's choice on the day, so no
 # wording a class sees or a teacher reads names it (`preferences.md` -> Routine
-# classroom management). A Year 4 RE lesson was sent back for quick checks
+# classroom management). A Year 4 RE lesson was sent back for quick Dos
 # where no child committed an answer, and came back with `on your whiteboard`
 # on three boards, in three scripts and in the teacher's orientation (5 October
 # 2026). The patterns are the recording phrases, not the nouns: a history

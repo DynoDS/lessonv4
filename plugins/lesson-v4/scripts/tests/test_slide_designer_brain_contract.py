@@ -465,7 +465,7 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
         self.assert_tokens(
             question_cards,
             "restricted to a starter or the lesson's main independent work",
-            "A Do beat, quick check, discussion question, My Turn or other smaller task uses an unnumbered composition",
+            "A Do beat, quick Do, discussion question, My Turn or other smaller task uses an unnumbered composition",
         )
 
     def test_capacity_rule_matches_the_blocking_slide_check(self) -> None:

@@ -31,7 +31,7 @@ A personal reflection or a piece about the child's own life names the product. T
 
 ## What a Do beat looks like in PSHE
 
-**Name the wrong answer first.** No researched list of PSHE misconceptions exists for this age; these come from the PSHE Association's guidance and from this plugin's own tasks that worked:
+PSHE's own work is a citizen's: weighing a situation, deciding what to do and who to ask, practising the words, seeing another side and persuading someone who can act. **Know the wrong answers children bring.** No researched list of PSHE misconceptions exists for this age; these come from the PSHE Association's guidance and from this plugin's own tasks that worked:
 - Facts and rules: `I will get in trouble if I tell.` A stranger looks scary (children asked to draw one draw a villain).
 - Recognising it: the child looks for a nasty voice, so a friendly push is missed; `maybe later` is taken for a no. Borderline cases find this.
 - Strategies and words: there is no wrong idea. The child knows what to say and cannot yet say it, so the beat is every child saying it.
@@ -42,6 +42,8 @@ Two questions are unsafe however well they would sort a class (PSHE Association:
 
 A PSHE Do beat has children apply the taught reason or boundary to a situation, always someone else's. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; and each uses a scenario the Teach did not already settle:
 
+- **What would you do next, and who could help?** A situation that is someone else's: children weigh two ways it could go, choose one and say the words.
+- **Change someone's mind.** Children work out who could change something (the head, the school council, a councillor) and what would persuade them, using what was taught.
 - **Sort the behaviours.** Kind, unkind or not sure, for short scenarios the class has not discussed, with the taught rule deciding the hard one.
 - **Spot the warning sign.** Children underline the phrase in Mia's message that is trying to pressure her, or the detail in the story that is the risk.
 - **Safest next step.** Three things Leo could do; choose the safest and name the rule that makes it so.

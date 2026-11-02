@@ -75,8 +75,11 @@ Map work includes decoding symbols and keys, constructing maps, reading distribu
 
 ## What a Do beat looks like in geography
 
-A geography Do beat has a map, a photograph, a graph or a place in it, and the child gets something out of it. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; for a check of an idea or relationship, use a fresh case or a new decision on the material under `preferences.md` → `A quick check is a fresh case, not the last slide again`. Locating a taught place or practising a map technique may properly reuse the place:
+Geography's own work is asking why here and not there, reading and making maps, collecting and reading data, seeing how people and places change each other, and deciding what to do about a real place. A geography Do beat has a map, a photograph, a graph or a place in it, and the child gets something out of it. These are starting points to choose from by the beat's `thinking` line, not a list to work through; each names what every child does with the cards, map or page, because a question on its own is answered by the hands that go up; for a check of an idea or relationship, use a fresh case or a new decision on the material under `preferences.md` → `A quick Do is a fresh case, not the last slide again`. Locating a taught place or practising a map technique may properly reuse the place:
 
+- **Why here and not there?** Two places on a map or graph: children work out what makes one suit something the other does not, and say what on the map shows it.
+- **Decide for this place.** `Where should this village build its footbridge?` Children choose on the map, say what decided it and who loses out.
+- **Collect it and read it.** A short count, tally or photograph set: what does it show, and what would we still need to find out?
 - **Mark it.** Put the river, city or biome on a blank map, working outward from what the class already holds.
 - **Where is it from here?** On a map in front of them, children circle the village upstream of the dam, or tick the town nearer the coast: the decision is the spatial relationship, not the name.
 - **Spot the pattern, then the one that doesn't fit.** Children choose from three statements the one that describes where the shaded areas are, then cross the place that breaks the pattern. The reason comes after the noticing.

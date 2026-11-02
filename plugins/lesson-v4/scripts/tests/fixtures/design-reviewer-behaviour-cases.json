@@ -495,7 +495,7 @@
       "materialDifference": "Straight after a Teach that named the four tooth types on a diagram, a Do beat asks children to label the same four teeth on a fresh outline. The design says the beat secures the names before the next chunk uses them.",
       "expectedResult": "APPROVED",
       "expectedOwner": "Design Reviewer",
-      "protectedBehaviour": "A quick check may establish only that the class caught a new distinction, on a case the Teach did not show (here a fresh outline); judge what the beat claims, not whether a misunderstanding could pass a beat that never claimed to test one.",
+      "protectedBehaviour": "A quick Do may establish only that the class caught a new distinction, on a case the Teach did not show (here a fresh outline); judge what the beat claims, not whether a misunderstanding could pass a beat that never claimed to test one.",
       "forbiddenFinding": "Do not demand reasoning or a because sentence from a beat whose stated job is securing the names on a fresh outline; do not call a supplied diagram answer leakage."
     },
     {
@@ -544,7 +544,7 @@
       "expectedResult": "REDESIGN REQUIRED",
       "expectedOwner": "Lesson Designer",
       "protectedBehaviour": "A Do whose expected answer says its Teach back changes what children have to think once repaired, so it goes back to the Lesson Designer with the fix named, keeping the chunk: here, ask what the fair would lose without its steam engine.",
-      "forbiddenFinding": "Do not make the change yourself; name it. Do not return a quick check on a case the Teach did not show, or a term used on a fresh case when the term's exact wording is the learning."
+      "forbiddenFinding": "Do not make the change yourself; name it. Do not return a quick Do on a case the Teach did not show, or a term used on a fresh case when the term's exact wording is the learning."
     },
     {
       "id": "photograph-of-a-drawn-tool-goes-back-named",

@@ -242,7 +242,7 @@ class ALessonHoldsOneSayItBackAtMost(unittest.TestCase):
         sequence = [ABSORPTION, do("Task 1", *SAID_BACK, use=REASON), ABSORPTION, do("Task 2", *SAID_BACK, use=REASON)]
         validator.validate_each_do_says_what_it_brings({"teachingSequence": sequence}, Log())
         self.assertEqual(len(found), 1)
-        self.assertIn("one say-it-back Do or quick check at most", found[0])
+        self.assertIn("one say-it-back Do or quick Do at most", found[0])
 
 
 class AUseHasAWrongAnswerAChildWouldGive(unittest.TestCase):

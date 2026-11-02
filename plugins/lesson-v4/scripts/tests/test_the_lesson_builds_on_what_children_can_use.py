@@ -116,7 +116,7 @@ class MaterialThinkingAndResponseTests(unittest.TestCase):
 
     def test_the_task_is_judged_not_its_label_and_simple_work_stays_legitimate(self):
         self.assertIn("never its operation label", self.rhythm)
-        self.assertIn("A quick check, fresh practice of a taught method and a discussion", self.rhythm)
+        self.assertIn("A quick Do, fresh practice of a taught method and a discussion", self.rhythm)
         # The preference that no device is named in the rhythm section still holds.
         self.assertNotIn("whiteboard", self.rhythm)
 
