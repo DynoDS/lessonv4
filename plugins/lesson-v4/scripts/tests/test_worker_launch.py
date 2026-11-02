@@ -85,6 +85,15 @@ def write_session(path: Path, launches: list[dict]) -> Path:
 
 
 class SpecTests(unittest.TestCase):
+    def test_terra_61_and_legacy_terra_resolve_to_distinct_models(self) -> None:
+        for alias, expected in (("terra61", "gpt-6.1-terra"), ("terra", "gpt-5.6-terra")):
+            with self.subTest(alias=alias):
+                result = run_with_made_up_role(
+                    "trial-role", [f"codex_model: {alias}", "codex_effort: medium"], "spec"
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f"model: {expected}", result.stdout)
+
     def test_every_role_the_package_ships_resolves(self) -> None:
         """A new role with an unmapped model must fail here, not in a lesson."""
         roles = sorted(path.stem for path in AGENTS.glob("*.md"))

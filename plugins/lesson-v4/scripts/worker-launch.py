@@ -80,6 +80,7 @@ HOST_MODELS = {
         # The newer rungs the roles moved to on 3 October 2026.
         "sol61": "gpt-6.1-sol",
         "luna6": "gpt-6-luna",
+        "terra61": "gpt-6.1-terra",
         "terra": "gpt-5.6-terra",
         "luna": "gpt-5.6-luna",
         "haiku": "gpt-5.6-luna",
@@ -101,6 +102,7 @@ HOST_EFFORTS = {
         "gpt-6-sol": ("low", "medium", "high", "xhigh"),
         "gpt-6.1-sol": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-6-luna": ("low", "medium", "high", "xhigh", "max"),
+        "gpt-6.1-terra": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-5.6-terra": ("low", "medium", "high", "xhigh", "max", "ultra"),
         "gpt-5.6-luna": ("low", "medium", "high", "xhigh", "max"),
     },

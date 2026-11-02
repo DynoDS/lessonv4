@@ -4048,11 +4048,11 @@
     },
     {
       "id": "VOC-K01",
-      "outcome": "unchanged in place",
+      "outcome": "unchanged in place On 1 November 2026, the progression/materials audit distinguishes planned teaching from mastery and permits relevant knowledge or methods to transfer when the topic changes; unrelated content still does not determine today's teaching. Other obligations in this pin are retained.",
       "present": [
         {
           "file": "agents/lesson-designer.md",
-          "text": "Earlier lessons tell you what children already hold, so continuity is real rather than assumed - reuse their success criteria, sticky knowledge, vocabulary and representation verbatim where this lesson continues them.",
+          "text": "Earlier lessons show planned teaching, not mastery (`Prior knowledge`, above). Use them to identify the knowledge or subject practice today builds on, extends or consolidates; a new topic may still use a familiar skill. Reuse their success criteria, sticky knowledge, vocabulary and representation verbatim where this lesson continues them.",
           "section": {
             "heading": "## Before You Design Anything",
             "occurrence": 0,
