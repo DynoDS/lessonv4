@@ -5,6 +5,7 @@ const { categoryColourFor } = require('../category-colours');
 const { bodyZone } = require('../layout');
 const { drawHeader } = require('../headers');
 const { drawContent } = require('../content');
+const { drawComparedSides } = require('../content/board');
 
 // ─── COORDINATES ──────────────────────────────────────────────
 const CARD_GAP        = 0.30;
@@ -33,17 +34,36 @@ function drawTeachCompare(pptx, slide, data, ctx) {
     String(data.headingRole || '').toLowerCase() === 'vocabulary';
   const headingColor = vocabHeadings ? COLOURS.textGreen : null;
 
-  drawCard(pptx, slide, {
-    x: leftX, y: bz.y, w: cardW, h: bz.h
-  }, data.leftHeading, data.leftContent, {
+  // Two pictures compared are one size: each side's card cannot see the other,
+  // so the pair is drawn once both cards stand.
+  const paired = data.leftContent && data.leftContent.boardSide &&
+    data.rightContent && data.rightContent.boardSide;
+  const leftCard = { x: leftX, y: bz.y, w: cardW, h: bz.h };
+  const rightCard = { x: rightX, y: bz.y, w: cardW, h: bz.h };
+
+  drawCard(pptx, slide, leftCard, data.leftHeading, paired ? null : data.leftContent, {
     categoryColor: LEFT_CATEGORY, headingColor: headingColor
   }, ctx);
 
-  drawCard(pptx, slide, {
-    x: rightX, y: bz.y, w: cardW, h: bz.h
-  }, data.rightHeading, data.rightContent, {
+  drawCard(pptx, slide, rightCard, data.rightHeading, paired ? null : data.rightContent, {
     categoryColor: RIGHT_CATEGORY, headingColor: headingColor
   }, ctx);
+
+  if (paired) {
+    drawComparedSides(pptx, slide, [contentZoneOf(leftCard), contentZoneOf(rightCard)],
+      [data.leftContent, data.rightContent], ctx);
+  }
+}
+
+function contentZoneOf(card) {
+  return {
+    x: card.x + CARD_PAD,
+    y: card.y + CARD_PAD + HEADING_H + 0.05,
+    w: card.w - 2 * CARD_PAD,
+    h: card.h - 2 * CARD_PAD - HEADING_H - 0.05,
+    class: 'C',
+    noCard: true // the compare card is this zone's surface
+  };
 }
 
 function drawCard(pptx, slide, card, heading, content, style, ctx) {
@@ -68,15 +88,7 @@ function drawCard(pptx, slide, card, heading, content, style, ctx) {
   }
 
   if (content) {
-    const contentZone = {
-      x: card.x + CARD_PAD,
-      y: card.y + CARD_PAD + HEADING_H + 0.05,
-      w: card.w - 2 * CARD_PAD,
-      h: card.h - 2 * CARD_PAD - HEADING_H - 0.05,
-      class: 'C',
-      noCard: true // the compare card is this zone's surface
-    };
-    drawContent(pptx, slide, contentZone, content, ctx);
+    drawContent(pptx, slide, contentZoneOf(card), content, ctx);
   }
 }
 

@@ -26,6 +26,7 @@ const TEMPLATES_MD = path.resolve(ROOT, '..', 'references', 'templates.md');
 
 const WIDE = path.join(ROOT, 'assets', 'science', 'water-cycle.png');
 const TALL = path.join(ROOT, 'assets', 'children', 'bailey.png');
+const NEAR = path.join(ROOT, 'assets', 'money', 'pound20.png');
 
 function picture(file) {
   return { type: 'image', imagePath: path.basename(file), essential: false };
@@ -52,6 +53,8 @@ const EXAMPLES = {
   'banner-picture-sidebar': { lead: 'Moving gives your brain a break.', pictures: [picture(WIDE)], lines: ['It can lift your mood.', 'It can help you feel calm.'] },
   'picture-steps': { pictures: [picture(TALL)], steps: ['A tooth bites something hard.', 'A piece breaks off.'] },
   'picture-with-statement': { pictures: [picture(WIDE)], lead: 'The same object can mean different things.' },
+  'flexible': { lead: 'Two biomes.', pictures: [picture(WIDE), picture(WIDE)], lines: ['Each has its own weather.'],
+    question: 'Which is wetter?', sticky: 'Weather decides what grows.' },
   'one-speaker': { pictures: [picture(WIDE)], speakers: [{ name: 'Sam', child: 'mr-sear', speech: 'A candle is only for light.' }] },
   'speaker-lines': { speakers: [{ name: 'Sam', child: 'boy-1', speech: 'I keep thinking about the swimming lesson.' }],
     lines: ['His words are a clue.', 'He might be worried.'], question: 'Which words tell us?' },
@@ -78,6 +81,7 @@ function tmpDir(t, prefix) {
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   fs.copyFileSync(WIDE, path.join(dir, path.basename(WIDE)));
   fs.copyFileSync(TALL, path.join(dir, path.basename(TALL)));
+  fs.copyFileSync(NEAR, path.join(dir, path.basename(NEAR)));
   return dir;
 }
 
@@ -167,6 +171,94 @@ test('captions under a row of pictures settle on one text size', async (t) => {
   assert.equal(new Set(captions.map((c) => Math.max(...c.sizes))).size, 1);
 });
 
+// ─── the flexible board: sized by what is most useful ──────────────────
+
+// Every picture on a slide with its size, from the built file.
+async function picturesOn(deckPath, slideNumber) {
+  const zip = await JSZip.loadAsync(fs.readFileSync(deckPath));
+  const xml = await zip.file(`ppt/slides/slide${slideNumber}.xml`).async('string');
+  return (xml.match(/<p:pic>[\s\S]*?<\/p:pic>/g) || []).map((pic) => {
+    const ext = pic.match(/<a:ext cx="(\d+)" cy="(\d+)"/);
+    return { w: +ext[1] / 914400, h: +ext[2] / 914400 };
+  });
+}
+
+async function buildBoard(t, slots) {
+  const dir = tmpDir(t, 'teach-layouts-board-');
+  const specPath = writeLesson(dir, [{ template: 'teach-layout', layout: 'flexible', title: 'Biomes', headerStyle: 'title', ...slots }]);
+  const result = spawnSync(process.execPath, [path.join(ROOT, 'build.js'), specPath, dir], { encoding: 'utf8' });
+  assert.equal(result.status, 0, (result.stdout || '') + (result.stderr || ''));
+  return path.join(dir, fs.readdirSync(dir).find((n) => n.endsWith('.pptx')));
+}
+
+test('pictures that share a board are one size, whatever shapes they arrive in', async (t) => {
+  const deck = await buildBoard(t, { pictures: [picture(WIDE), picture(NEAR)], lines: ['Each has its own weather.'] });
+  const shown = await picturesOn(deck, 1);
+  assert.equal(shown.length, 2);
+  assert.ok(Math.abs(shown[0].h - shown[1].h) < 0.02, `heights ${shown[0].h} and ${shown[1].h}`);
+  assert.ok(Math.abs(shown[0].w - shown[1].w) < 0.02, `widths ${shown[0].w} and ${shown[1].w}`);
+});
+
+test('words take what they need and the pictures take the rest of the board', async (t) => {
+  const deck = await buildBoard(t, { pictures: [picture(WIDE), picture(WIDE)], question: 'Which is wetter?' });
+  const [first] = await picturesOn(deck, 1);
+  const words = (await slideShapes(deck, 1)).filter((s) => s.text === 'Which is wetter?');
+  assert.ok(first.h > 3.5, `picture only ${first.h}in tall`);
+  assert.ok(words.length && Math.max(...words.flatMap((s) => s.sizes)) <= 3200, 'a short question grew past its reading size');
+});
+
+test('a picture marked keepWhole is not cropped to match', () => {
+  const [expanded] = expandTeachLayouts({ slides: [teachSlide('flexible', {
+    pictures: [Object.assign(picture(WIDE), { keepWhole: true }), picture(WIDE)] })] }).slides;
+  assert.equal(expanded.body.items.find((item) => item.type === 'image').keepWhole, true);
+});
+
+test('the board holds a speaker, the criteria, or four pictures', async (t) => {
+  const pair = [picture(WIDE), picture(WIDE)];
+  const speaker = { name: 'Sam', child: 'boy-1', speech: 'It is hot in both.' };
+  const withSpeaker = await picturesOn(await buildBoard(t, { pictures: pair, speakers: [speaker], question: 'Is Sam right?' }), 1);
+  assert.ok(withSpeaker.length >= 2);
+  const criteria = { type: 'sc-panel', content: { type: 'steps', steps: ['Name it.', 'Say why.'] } };
+  assert.equal((await picturesOn(await buildBoard(t, { pictures: pair, lines: ['A line.'], criteria }), 1)).length, 2);
+  const four = await picturesOn(await buildBoard(t, { pictures: pair.concat(pair), lines: ['A line.'], question: 'Why?' }), 1);
+  assert.equal(four.length, 4);
+  assert.equal(new Set(four.map((p) => p.h.toFixed(2))).size, 1);
+});
+
+test('flexible slides in a row are one look only when they hold the same things', (t) => {
+  const pair = { pictures: [picture(WIDE), picture(WIDE)], lines: ['A line.'] };
+  const speaker = { name: 'Sam', child: 'boy-1', speech: 'It is hot.' };
+  const repeats = (second) => {
+    const dir = tmpDir(t, 'teach-layouts-look-');
+    const specPath = writeLesson(dir, [teachSlide('flexible', pair), teachSlide('flexible', second)]);
+    return /TEACH_LAYOUT_REPEATED/.test(runSlideDesignCheck(specPath).stdout || '');
+  };
+  assert.equal(repeats({ speakers: [speaker] }), false);
+  assert.equal(repeats({}), true);
+});
+
+test('the two sides of a comparison show their pictures at one size', async (t) => {
+  const dir = tmpDir(t, 'teach-layouts-compare-');
+  const specPath = writeLesson(dir, [teachSlide('compare-pictures', { sides: [
+    { heading: 'rainforest', picture: picture(WIDE), text: 'Rain nearly every day.' },
+    { heading: 'desert', picture: picture(NEAR), text: 'It hardly ever rains.' }] })]);
+  const result = spawnSync(process.execPath, [path.join(ROOT, 'build.js'), specPath, dir], { encoding: 'utf8' });
+  assert.equal(result.status, 0, (result.stdout || '') + (result.stderr || ''));
+  const shown = await picturesOn(path.join(dir, fs.readdirSync(dir).find((n) => n.endsWith('.pptx'))), 1);
+  assert.equal(shown.length, 2);
+  assert.ok(Math.abs(shown[0].h - shown[1].h) < 0.02, `heights ${shown[0].h} and ${shown[1].h}`);
+  assert.ok(Math.abs(shown[0].w - shown[1].w) < 0.02, `widths ${shown[0].w} and ${shown[1].w}`);
+});
+
+test('a flexible slide refuses captions that do not match and pictures with nothing to say', () => {
+  refuses({ template: 'teach-layout', layout: 'flexible', pictures: [picture(WIDE), picture(WIDE)], captions: ['One.'] }, /one caption for each picture/);
+  refuses({ template: 'teach-layout', layout: 'flexible', pictures: [picture(WIDE)] }, /nothing to say/);
+});
+
+test('a row of two pictures in one slot is pointed at the flexible layout', () => {
+  refuses(teachSlide('picture-with-statement', { pictures: [{ type: 'row', items: [picture(WIDE), picture(TALL)] }] }), /"flexible" holds up to four/);
+});
+
 // ─── the expansion keeps every word and owns the look ──────────────────
 
 for (const name of Object.keys(LAYOUTS)) {
@@ -199,7 +291,7 @@ function refuses(slide, pattern) {
 
 test('a slot the layout cannot place is refused, not dropped', () => {
   refuses(teachSlide('three-pictures-captions', { question: 'Where would this go?' }),
-    /nowhere to put "question".*Layouts that use "question"/);
+    /nowhere to put "question".*Layouts that take everything this slide has.*flexible/);
 });
 
 test('an unknown layout names the catalogue', () => {

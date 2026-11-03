@@ -91,7 +91,7 @@ class QuickChecksAndChunks(unittest.TestCase):
         self.assertNotIn("a lesson with four things to teach keeps each one used without four tasks", self.RHYTHM)
         self.assertIn("A quick Do works on what was just taught and brings in no next idea", self.RHYTHM)
         self.assertIn("Quick Dos still cost time", self.RHYTHM)
-        self.assertIn("Count the chunks of teaching as well as the tasks", self.RHYTHM)
+        self.assertIn("Look at the chunks of teaching as well as the tasks", self.RHYTHM)
         self.assertIn("It is the picture a judgement starts from, not a template", self.RHYTHM)
 
     def test_the_child_seat_view_counts_the_chunks(self) -> None:
@@ -120,7 +120,7 @@ class QuickChecksAndChunks(unittest.TestCase):
         # Three chunks: the rice follows the table test with no teaching
         # between, so it does not start a chunk of its own here.
         self.assertIn("Chunks of teaching before the main work, each ended by a quick Do or a task: 3.", out)
-        self.assertIn("never a cap", out)
+        self.assertIn("never a pass or fail", out)
 
 
 class WhatChildrenAnswerAndSee(unittest.TestCase):
@@ -190,7 +190,7 @@ class TheBuiltDecksOf18October(unittest.TestCase):
         rhythm = section_by_heading(PREFS, "## The Teach → Do → Teach → Do Rhythm", 0)
         self.assertIn("so two is never a reason to pack the set into one telling", rhythm)
         self.assertIn("the answer is fewer things, never bigger chunks", rhythm)
-        self.assertIn("more new things are never folded into one telling to keep the count low", DESIGNER)
+        self.assertIn("more new things are never folded into one telling to keep the number low", DESIGNER)
 
     def test_a_chunk_is_counted_as_the_class_lives_it(self) -> None:
         # A Year 4 cholera lesson (18 October 2026) called three stretches of
@@ -203,10 +203,12 @@ class TheBuiltDecksOf18October(unittest.TestCase):
                          "stay one chunk", rhythm)
         self.assertIn("Teaching that runs straight into the final task with nothing for children to do is a "
                       "chunk too when it brings in something new", rhythm)
-        # Justify or cut at three, never a cap, and never recounted down.
-        self.assertIn("The count is not argued down: at three, the lesson goes back to fewer things, or the "
-                      "design's closing decisions say plainly why this objective needs the third chunk", rhythm)
-        self.assertIn("The count is not argued down", DESIGNER)
+        # The number is looked at, never a pass or fail (3 November 2026), and a
+        # dropped Do never makes two ideas one; a third chunk still needs its reason.
+        self.assertIn("leaving a Do out never makes two ideas one", rhythm)
+        self.assertIn("say in the closing decisions why any third chunk stays", rhythm)
+        self.assertNotIn("The count is not argued down", rhythm)
+        self.assertIn("write in the closing decisions' Amount line why any third chunk stays", DESIGNER)
         self.assertNotIn("Read the count by ideas", DESIGNER)
         self.assertIn("The design does not recount it", REVIEWER)
         self.assertIn("a missing reason, or one that only says the final task asks for it, is REVISE on User-fit",

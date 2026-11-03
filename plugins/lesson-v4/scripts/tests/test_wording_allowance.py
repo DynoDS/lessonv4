@@ -38,7 +38,9 @@ class WordingAllowance(unittest.TestCase):
         self.assertEqual(self.allowance_with_before(45 * 16), 1)
 
     def test_a_design_that_was_already_too_long_gets_nothing(self):
-        self.assertEqual(self.allowance_with_before(46 * 16), 0)
+        # 50 is now a second look and 55 the refusal (3 November 2026).
+        self.assertEqual(self.allowance_with_before(50 * 16), 1)
+        self.assertEqual(self.allowance_with_before(51 * 16), 0)
 
     def test_no_wording_pass_means_no_minute(self):
         self.assertEqual(self.allowance_with_before(None), 0)

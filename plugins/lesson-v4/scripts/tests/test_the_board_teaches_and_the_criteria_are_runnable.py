@@ -80,7 +80,10 @@ class TheTeachBoardTeaches(unittest.TestCase):
         route = flat(CONTENT_ROUTE)
         self.assertIn("A key question is not a second response demand competing with the Do", route)
         self.assertIn("makes them look at the thing while you are teaching it", route)
-        self.assertIn("Most Teach beats earn one", route)
+        # Usual, never a slot to fill (3 November 2026).
+        self.assertIn("Questioning is a usual part of good teaching", route)
+        self.assertIn("when you are only getting a question in somewhere", route)
+        self.assertNotIn("Most Teach beats earn one", route)
 
 
 class CriteriaAreRunnableByTheWeakestChild(unittest.TestCase):

@@ -181,7 +181,11 @@ class FromAChildsSeatTests(unittest.TestCase):
         roomy = lesson(3, 3, 15)
         self.assertNotIn("LOOK AGAIN", roomy)
         # Honest numbers past the whole lesson are named before the check refuses them.
-        self.assertIn("THE DESIGN CHECK WILL REFUSE THIS: 51 is past 50", lesson(10, 10, 13))
+        # Past 50 the view asks for a second look (the teacher, 3 November 2026:
+        # 52 should not be refused); past 55 it names the refusal.
+        self.assertIn("LOOK AGAIN: 51 is past the usual 50", lesson(10, 10, 13))
+        self.assertNotIn("WILL REFUSE", lesson(10, 10, 13))
+        self.assertIn("THE DESIGN CHECK WILL REFUSE THIS: 57 is past 55", lesson(13, 13, 13))
 
     def test_a_task_after_the_main_work_is_counted_and_the_starter_is_not(self) -> None:
         design = json.loads(json.dumps(SEAT))

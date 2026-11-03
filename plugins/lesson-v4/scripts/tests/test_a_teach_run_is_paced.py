@@ -52,7 +52,7 @@ class TheChosenDeckShips(unittest.TestCase):
 
 class TheRulesThatMakeIt(unittest.TestCase):
     def test_pace_is_one_thing_to_look_at_per_slide(self) -> None:
-        self.assertIn("**A Teach run is paced: one thing to look at per slide.**", PREFERENCES)
+        self.assertIn("**A Teach run is paced: one concept to a slide, and a concept may take several slides.**", PREFERENCES)
         self.assertIn("It's the information, but paced up.", PREFERENCES)
         self.assertIn("Pacing moves words between slides and never removes them", PREFERENCES)
         self.assertNotIn("a beat splits once", PREFERENCES)

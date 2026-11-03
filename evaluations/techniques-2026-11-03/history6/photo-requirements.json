@@ -1,0 +1,231 @@
+{
+  "schema_version": 2,
+  "lesson_name": "How diseases spread and were treated",
+  "photos": [
+    {
+      "id": "photo-001",
+      "subject": "A crowded, dirty court or street in Victorian London where poor families lived, as a picture made at the time (an engraving or drawing from about 1840 to 1875), with a modern illustration only as second best",
+      "pedagogical_constraint": "Children look at it while the teacher describes how crowded and dirty the houses and yards were.",
+      "teaching_requirement": "Picture the crowded, dirty streets of Victorian London where cholera spread.",
+      "load_bearing_evidence": [
+        "houses crammed close together",
+        "a dirty yard or narrow street",
+        "poor Victorian people living there"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/victorian-london-crowded-court.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": "If made, it is an artist's picture of a Victorian street, not a picture from the time.",
+      "generation_prompt": {
+        "physical_state": "A crowded courtyard in Victorian London around 1850: tall run-down houses close together, rubbish in the yard, poorly dressed adults and children.",
+        "must_avoid": [
+          "photographic realism",
+          "modern buildings, cars or clothes",
+          "readable words or signs"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A drawing or engraving-style picture, landscape, showing the whole crowded yard."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-002",
+      "subject": "A street water pump in Victorian times with people or children fetching water in buckets or jugs, as a picture made at the time (an engraving, drawing or early photograph), with a modern illustration only as second best",
+      "pedagogical_constraint": "Shows how families got water: from a pump with a handle in the street, not a tap at home.",
+      "teaching_requirement": "Picture families, often children, fetching water from a street pump by working its handle.",
+      "load_bearing_evidence": [
+        "a hand pump with a handle in a street",
+        "people filling buckets or jugs at it"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/victorian-street-pump-fetching-water.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": "If made, it is an artist's picture of a Victorian street pump, not a picture from the time.",
+      "generation_prompt": {
+        "physical_state": "A cast-iron hand pump with a long handle in a Victorian London street; a child pushes the handle while another holds a bucket under the spout.",
+        "must_avoid": [
+          "photographic realism",
+          "modern buildings, cars or clothes",
+          "readable words or signs"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A drawing or engraving-style picture, landscape, pump and children clearly visible."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-003",
+      "subject": "A person very ill in bed in Victorian times, being looked after, as a picture made at the time (an engraving or drawing), with a modern illustration only as second best",
+      "pedagogical_constraint": "Shows what being very ill with a disease looked like; calm and suitable for Year 4, with nothing frightening.",
+      "teaching_requirement": "See that cholera made people very ill; also the picture for the word disease.",
+      "load_bearing_evidence": [
+        "a person lying ill in bed",
+        "someone looking after them"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/victorian-person-ill-in-bed.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": "If made, it is an artist's picture of an ill person in Victorian times.",
+      "generation_prompt": {
+        "physical_state": "A Victorian room: an adult lies ill in a simple bed, pale and tired, while a woman sits beside them holding a cup.",
+        "must_avoid": [
+          "photographic realism",
+          "modern buildings, cars or clothes",
+          "readable words or signs",
+          "skeletons, death or anything frightening"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A drawing or engraving-style picture, landscape, the bed and both people visible."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-004",
+      "subject": "Tar or a barrel of tar burning in a Victorian street to clean the air during a cholera outbreak, giving thick black smoke, as a picture made at the time (an engraving or drawing), with a modern illustration only as second best",
+      "pedagogical_constraint": "Shows what Victorians did because they blamed bad air: burning tar to make thick smoke in the street.",
+      "teaching_requirement": "Picture people burning tar in the street because they thought the smoke would clean the air.",
+      "load_bearing_evidence": [
+        "a fire or barrel burning in a street",
+        "thick dark smoke rising",
+        "Victorian buildings or people"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/victorian-street-tar-burning.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": "If made, it is an artist's picture of tar burning in a Victorian street, not a picture from the time.",
+      "generation_prompt": {
+        "physical_state": "A Victorian London street around 1850: a barrel of tar burns on the ground with thick black smoke rising between the houses, and a few people stand nearby.",
+        "must_avoid": [
+          "photographic realism",
+          "modern buildings, cars or clothes",
+          "readable words or signs"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A drawing or engraving-style picture, landscape, the burning barrel and its smoke in the middle."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-005",
+      "subject": "Portrait of Dr John Snow, the London doctor, from the 1850s",
+      "pedagogical_constraint": "This is John Snow, the real doctor the lesson is about.",
+      "teaching_requirement": "Recognise John Snow as a real person, a London doctor in 1854.",
+      "load_bearing_evidence": [
+        "a recognisable portrait of John Snow"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/john-snow-portrait.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-only",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A made portrait would be a lie about what the real John Snow looked like.",
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-006",
+      "subject": "John Snow's original 1854 map of cholera deaths around Broad Street, Soho, London, with the deaths shown as small black marks and the Broad Street pump marked",
+      "pedagogical_constraint": "Children find from it where most of the deaths crowded, so the black marks round the Broad Street pump must be clear at slide size.",
+      "teaching_requirement": "See that most of the deaths were packed round one water pump on Broad Street.",
+      "load_bearing_evidence": [
+        "the street plan of Soho around Broad Street",
+        "small black marks for the people who died",
+        "the marks crowded round the Broad Street pump",
+        "the pump marked on the map"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/john-snow-cholera-map-1854.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-only",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A made map would be a fake of the real source the class reads the deaths from.",
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-007",
+      "subject": "The copy of the Broad Street water pump kept without a handle in Broadwick Street, Soho, London, today, or another old black cast-iron street pump with its handle removed",
+      "pedagogical_constraint": "The missing handle is what children notice, so the pump must clearly have no handle.",
+      "teaching_requirement": "See that with no handle nobody could get water out of the pump.",
+      "load_bearing_evidence": [
+        "an old black cast-iron street pump",
+        "no handle on the pump"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/broad-street-pump-no-handle.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "ai",
+      "fallback_note": "If made, it is a picture of an old street pump with no handle, not the real Soho pump.",
+      "generation_prompt": {
+        "physical_state": "An old black cast-iron street water pump standing on a pavement, with a spout but no handle, where the handle has been taken off.",
+        "must_avoid": [
+          "a handle on the pump",
+          "people",
+          "readable words or plaques"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A clear photograph-style picture, the whole pump in the middle of the frame."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-008",
+      "subject": "A nurse or carer helping an ill adult in bed to drink from a cup, today",
+      "pedagogical_constraint": "Shows treatment as care that helps an ill person get better; calm and kind, with nothing frightening.",
+      "teaching_requirement": "Picture treatment: helping an ill person get better, here by giving them a drink.",
+      "load_bearing_evidence": [
+        "an ill adult in bed or a chair",
+        "a nurse or carer helping them drink from a cup"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/nurse-helping-patient-drink.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A nurse in a plain uniform gently holds a cup while an ill adult sitting up in a hospital bed drinks from it.",
+        "must_avoid": [
+          "needles, drips or blood",
+          "readable words or logos"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A clear photograph-style picture, landscape, both people and the cup visible."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    }
+  ]
+}

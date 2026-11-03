@@ -63,7 +63,7 @@ Check every item independently for:
 
 Classify each output:
 
-- `accepted`: it teaches the right thing and contains nothing that misteaches;
+- `accepted`: it teaches the right thing, shows every evidence item, and contains nothing that misteaches. A missing evidence item is never a blemish: a picture asked to show rays reaching the top of the Earth at a slant that shows every ray arriving flat has missed what it was for;
 - `near_miss`: one concrete and correctable fault in an otherwise good image;
 - `provider_misdirection`: an unrelated subject, not a bad attempt at the right subject;
 - `rejected`: wrong concept, several structural faults, or a fundamental miss.

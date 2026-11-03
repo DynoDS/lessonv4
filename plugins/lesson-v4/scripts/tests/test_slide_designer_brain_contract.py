@@ -162,7 +162,7 @@ class SlideDesignerBrainContractTests(unittest.TestCase):
             "Copy every source-authored child-facing string exactly",
             "Do not polish, shorten, simplify or rewrite wording to make it fit",
             "A wording problem is an upstream content fault",
-            "You make no pedagogical decisions",
+            "You never change what the lesson teaches",
             "Do not read the teacher's original brief",
             "when `pupilInstruction` is null",
         )

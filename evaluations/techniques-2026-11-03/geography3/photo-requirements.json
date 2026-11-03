@@ -1,0 +1,277 @@
+{
+  "schema_version": 2,
+  "lesson_name": "Who lives in the rainforest?",
+  "photos": [
+    {
+      "id": "photo-001",
+      "subject": "An Indigenous village in the Amazon rainforest, in a clearing right beside a river, with its houses and the forest all around",
+      "pedagogical_constraint": "This is the village the lesson starts from and comes back to: the river must be right beside the houses, because the class is asked why the village was built there.",
+      "teaching_requirement": "Children see that people live in the rainforest, in a village beside a river, and use it to think about what a family would need and where it could come from.",
+      "load_bearing_evidence": [
+        "houses of a village",
+        "a river right beside the village",
+        "rainforest trees around it"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/amazon-indigenous-village-by-river.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A made picture would invent how a real Indigenous community lives, which is the stereotype this lesson works against; without a real photograph the slides teach from the words.",
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-002",
+      "subject": "Indigenous people of the Amazon in their own village today, on an ordinary day, for example a family together or children by the river",
+      "pedagogical_constraint": "Shown on the word card for Indigenous peoples: real people living their own everyday lives today, not people posed in costume for visitors.",
+      "teaching_requirement": "Children see that Indigenous peoples are real people who live in the Amazon now.",
+      "load_bearing_evidence": [
+        "Indigenous people of the Amazon",
+        "an everyday scene in their own village"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/amazon-indigenous-people-everyday.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A made picture of Indigenous people would invent how a real people look and live; without a real photograph the card shows the word on its own.",
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-003",
+      "subject": "The city of Manaus in Brazil, in the middle of the Amazon rainforest, seen from above with its tall buildings and the wide river beside it",
+      "pedagogical_constraint": "This shows that people also live in a big city in the rainforest, so it must look like a large modern city.",
+      "teaching_requirement": "Children see that not everyone in the Amazon lives in a village: some live in towns and in this big city.",
+      "load_bearing_evidence": [
+        "many tall buildings of a large city",
+        "a wide river beside the city"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "wikimedia/manaus-city-from-above.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A made Manaus would be a lie about a real city; without a real photograph the slide says it in words beside the village.",
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-004",
+      "subject": "A wooden canoe or small boat with people travelling along a river in the Amazon rainforest, with forest on both banks",
+      "pedagogical_constraint": "This shows the river being used as a road through the forest, so the boat must be travelling along the river with forest on the banks.",
+      "teaching_requirement": "Children see that people travel by boat along the river because there are no roads through the forest.",
+      "load_bearing_evidence": [
+        "a canoe or small boat on a river",
+        "people in it, travelling",
+        "rainforest on the banks"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/amazon-river-canoe.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A long wooden canoe with two people paddling along a wide brown river, thick green rainforest on both banks, daylight.",
+        "must_avoid": [
+          "tourists in life jackets",
+          "people posed in costume",
+          "a road or bridge"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A wide view of the river with the canoe clearly visible in the middle distance and the people small."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-005",
+      "subject": "A person fishing with a net or a line from a canoe or the bank of a river in the Amazon rainforest",
+      "pedagogical_constraint": "This shows the river giving the village its food, so the fishing must be clear.",
+      "teaching_requirement": "Children see that people catch fish in the river to eat.",
+      "load_bearing_evidence": [
+        "a person fishing with a net or a line",
+        "a river",
+        "rainforest behind"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/amazon-river-fishing.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A person standing in a canoe throwing a round fishing net over a calm brown river, with rainforest on the bank behind, daylight.",
+        "must_avoid": [
+          "tourists",
+          "people posed in costume",
+          "a fishing boat with an engine filling the frame"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A wide view with the person small and the net clearly visible over the water."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-006",
+      "subject": "The Amazon rainforest seen from high above: thick, unbroken forest with one river winding through it, and no village, roads or clearings",
+      "pedagogical_constraint": "Two places are marked on it, one on the river bank and one deep in the trees, so it needs wide areas of forest a long way from the river, and no houses, roads or clearings that would decide the answer.",
+      "teaching_requirement": "Children judge where a family should build a home from where the river is.",
+      "load_bearing_evidence": [
+        "thick unbroken rainforest seen from above",
+        "one river winding through it",
+        "large areas of forest well away from the river",
+        "no houses, roads or clearings"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/amazon-rainforest-river-aerial.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "Thick green rainforest seen from high above, with a single brown river winding across part of the picture and wide stretches of unbroken forest away from it.",
+        "must_avoid": [
+          "houses or villages",
+          "roads or cleared land",
+          "more than one river"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A top-down aerial view, landscape, with the river crossing one side and plenty of forest on the other."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-007",
+      "subject": "A house in an Amazon rainforest village with wooden posts and a roof made of palm leaves",
+      "pedagogical_constraint": "The board says the posts are tree trunks and the roof is woven palm leaves, so both must be clear.",
+      "teaching_requirement": "Children see that a home is built from wood and leaves from the forest around it.",
+      "load_bearing_evidence": [
+        "a roof made of dried palm leaves",
+        "wooden posts or walls",
+        "rainforest trees nearby"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/amazon-house-palm-leaf-roof.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A single house with a thick roof of dried palm leaves on wooden posts, standing in a clearing with rainforest trees behind, daylight.",
+        "must_avoid": [
+          "a metal roof",
+          "concrete walls",
+          "people posed in costume"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "The whole house in view, from the side, with the roof and posts clear."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-008",
+      "subject": "A Brazil nut pod cracked open, showing the Brazil nuts packed inside",
+      "pedagogical_constraint": "The board says the pods fall from the tall trees and people collect the nuts inside, so the nuts inside must show.",
+      "teaching_requirement": "Children see the hard pod and the nuts people collect from it.",
+      "load_bearing_evidence": [
+        "a round, hard, woody pod",
+        "cracked open",
+        "the nuts inside it visible"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/brazil-nut-pod-open.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A round brown woody Brazil nut pod broken open on the forest floor, with the nuts in their shells packed inside.",
+        "must_avoid": [
+          "nuts in a shop bag or packet",
+          "a kitchen counter"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A close-up of the open pod, filling most of the frame."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-009",
+      "subject": "Leafy green plants growing on the floor of the Amazon rainforest, the kind of plants people pick",
+      "pedagogical_constraint": "Shown beside the line about making medicine from plants: just plants growing in the forest, with no bottles, pills or a shop.",
+      "teaching_requirement": "Children see the forest plants that Indigenous peoples know how to make medicine from.",
+      "load_bearing_evidence": [
+        "leafy green rainforest plants, close up",
+        "growing in the forest"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/rainforest-plants-forest-floor.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "Close-up of leafy green plants with large leaves growing on a damp, shady rainforest floor.",
+        "must_avoid": [
+          "medicine bottles or pills",
+          "a shop or market stall",
+          "flowers in a vase"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A close view of the plants filling the frame."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-010",
+      "subject": "A different Indigenous village in the Amazon rainforest beside a river, seen from the river or from above, with its houses, the river bank and the forest behind",
+      "pedagogical_constraint": "Children describe how this village uses the rainforest from what they can see, so the river must be right beside the houses and the forest must be in view; it must be a different village from the one at the start of the lesson.",
+      "teaching_requirement": "Children describe how a village they have not seen uses the river and the forest, pointing at what the photograph shows.",
+      "load_bearing_evidence": [
+        "houses of a village",
+        "a river right beside the houses",
+        "rainforest around or behind the village"
+      ],
+      "use": "both",
+      "essential": true,
+      "filename": "wikimedia/amazon-village-river-second.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "A made picture would invent how a real Indigenous community lives; without a real photograph the task is answered from what the lesson taught and the steps.",
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    }
+  ]
+}

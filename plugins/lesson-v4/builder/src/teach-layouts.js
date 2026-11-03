@@ -233,8 +233,9 @@ function pictureSlot(value, where) {
     }
     if (inside.length > 1 && inside.every((x) => !CONTAINER_TYPES.has(x.type))) {
       fail(where, `this "${value.type}" wraps ${inside.length} pictures. Give each picture its own ` +
-        'entry in "pictures" on a layout that takes that many: two-pictures-captions, zigzag, ' +
-        'compare-pictures (2) or three-pictures-captions (3).');
+        'entry in "pictures" on a layout that takes that many: "flexible" holds up to four with ' +
+        'any words, and two-pictures-captions, zigzag, compare-pictures (2) and ' +
+        'three-pictures-captions (3) are the named shapes.');
     }
     fail(where, `"${value.type}" is words, not a picture; words go in lines, lead, question or sticky` +
       ', and a person speaking goes in "speakers" (speaker-lines holds a speaker with the explanation).');
@@ -347,8 +348,28 @@ const WIDE_LEAD_WEIGHT = 0.72;
 const WIDE_PICTURE_WEIGHT = 3.83;
 const WIDE_CARDS_WEIGHT = 1.9;
 
+// The share of the slide a speaker's pictures and words take when they stand
+// beside the person: the pictures are what the class is looking at.
+const BOARD_BESIDE_SPEAKER = 0.72;
+
 function withWeight(visual, weight) {
   return Object.assign({}, visual, { weight });
+}
+
+// Pictures, words and a panel as one board, arranged at the draw when the
+// pictures' real shapes are known (content/board.js). A caption stays with its
+// picture.
+function board(s, cards) {
+  const captions = s.captions || [];
+  const visuals = s.pictures.map((picture, i) => (captions[i]
+    ? { type: 'stack', boardCell: true, items: [picture, toText(captions[i], 'line')] }
+    : picture));
+  return {
+    type: 'stack',
+    board: true,
+    items: (s.lead && !s.leadIsCard ? [Object.assign(toText(s.lead, 'lead'), { boardLead: true })] : [])
+      .concat(visuals, cards, s.criteria ? [s.criteria] : [])
+  };
 }
 
 // ─── the catalogue ────────────────────────────────────────────
@@ -403,18 +424,7 @@ const LAYOUTS = {
     use: 'Two pictures compared, each line directly under its own picture, one idea joining them along the bottom.',
     slots: { pictures: [2, 2], captions: [2, 2], sticky: [0, 1], lead: [0, 1] },
     oneOf: ['sticky', 'lead'],
-    build: (s) => ({
-      template: 'split-v-80-20', primarySide: 'top',
-      primary: {
-        type: 'row',
-        items: s.pictures.map((picture, i) => ({
-          type: 'stack',
-          items: [withWeight(picture, 3),
-            card(toText(s.captions[i], 'line'), 'captions', { weight: 1 })]
-        }))
-      },
-      secondary: bar(s)
-    })
+    build: (s) => ({ template: 'body-full', body: board(Object.assign({}, s, { leadIsCard: true }), [bar(s)]) })
   },
   'question-lines-picture': {
     use: 'The question in a band across the top, then the explanation beside the picture that answers it.',
@@ -469,11 +479,7 @@ const LAYOUTS = {
   'three-pictures-captions': {
     use: 'One idea shown three ways, or three parts: three pictures in a row, each line directly under its picture.',
     slots: { pictures: [3, 3], captions: [3, 3] },
-    build: (s) => ({
-      template: 'split-v-60-40', primarySide: 'top',
-      primary: { type: 'row', items: s.pictures },
-      secondary: cardRow(s.captions.map((c) => toText(c, 'line')), 'captions')
-    })
+    build: (s) => ({ template: 'body-full', body: board(s, []) })
   },
   'zigzag': {
     use: 'Two steps or a before and after: picture then words on the top row, words then picture on the bottom row.',
@@ -589,6 +595,20 @@ const LAYOUTS = {
     build: (s) => ({ template: 'speech-bubbles-2', statement: toText(s.statement, 'lead'), speakers: s.speakers })
   },
 
+  // What a slide holds decides its arrangement, for the slides no named shape
+  // fits: see content/board.js. A named layout that fits is still the first
+  // choice, because a deck built all on this one would read as one slide repeated.
+  'flexible': {
+    use: 'One to four pictures, a map among them if it helps, with whatever else the slide needs: a line across the top, a person speaking, cards, a question, a task, a line to remember, the success criteria. Pictures take the same size and the room left by the words.',
+    slots: { lead: [0, 1], pictures: [1, 4], captions: [0, 4], lines: [0, 3], question: [0, 1], task: [0, 1], sticky: [0, 1], speakers: [0, 1], criteria: [0, 1] },
+    column: [0, 4],
+    build: (s) => {
+      const body = board(s, s.columnItems);
+      if (!s.speakers.length) return { template: 'body-full', body };
+      return { template: 'speech-bubbles-1', statementSide: 'right', statementRatio: BOARD_BESIDE_SPEAKER, statement: body, speakers: s.speakers };
+    }
+  },
+
   // ── without pictures ──
   'statement-support-sticky': {
     use: 'One big statement, a supporting line under it, and the line to remember along the bottom.',
@@ -701,6 +721,7 @@ function compareSide(side, withPicture) {
   if (!withPicture) return card(text, 'compare', { fontSize: 36 });
   return {
     type: 'stack',
+    boardSide: true,
     items: [withWeight(side.picture, 2.4), card(text, 'compare', { weight: 1 })]
   };
 }
@@ -849,6 +870,10 @@ function expandSlide(slide, slideNumber) {
     s.headingRole = slide.headingRole;
   }
 
+  if (name === 'flexible' && s.captions.length && s.captions.length !== s.pictures.length) {
+    fail(at, `takes one caption for each picture, or none; found ${s.captions.length} for ${s.pictures.length}.`);
+  }
+
   if (def.labelled && s.pictures[0].type !== 'label-diagram') {
     fail(at, 'this layout is for a picture with its parts labelled; its picture must be a "label-diagram".');
   }
@@ -872,6 +897,10 @@ function expandSlide(slide, slideNumber) {
       fail(at, `the cards with the picture take ${want} lines in total (lines, question, task and ` +
         `line to remember together); found ${s.columnItems.length}.`);
     }
+  }
+
+  if (name === 'flexible' && !s.speakers.length && !s.criteria && !s.lead && !s.captions.length && !s.columnItems.length) {
+    fail(at, 'has pictures and nothing to say about them. Give it the words the slide needs, or use "picture-with-statement".');
   }
 
   const expanded = def.build(s);

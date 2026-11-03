@@ -721,8 +721,8 @@ For every answer whose `kind` is not `none`, the slide-designer composes the str
 
 Settle what the beat develops before anything else (`preferences.md` → `A Do makes the child better at the subject`, `Choose Do activities for the learning`) and write it in `use.develops`. For practice of an action, use the `practice` branch below and judge the attempt, support and feedback. Where a Do uses an idea on a case, these checks keep it honest. They are the floor under the beat, so they come after `develops`, never in place of it:
 
-1. **Name the wrong answer first.** What would a child who understood say, what would a child who did not say, and what is that second child thinking? The two answers differ, and the second is one a real child gives.
-2. **Put it where it can pull.** The wrong idea is in the question itself: a named child says it, it is an option a child would choose, or it is the natural reading of the situation. Left in your notes it pulls nobody.
+1. **Know the likely wrong answer.** What would a child who understood say, what would a child who did not say, and what is that second child thinking? The two answers differ, and the second is one a real child gives.
+2. **When a wrong idea would help them think, let it pull.** It goes in the question: a named child says it, it is an option a child would choose, or it is the natural reading of the situation. This is one good move among many, and a named child can as well be right.
 3. **Start from a real case.** Something the class could meet that the lesson did not show, or a named child saying what a real child might think; never an invented `imagine if`.
 4. **Read it from the surface.** A child who was not listening should not get it right from the words on the page: a give-away word, the only option that makes sense, a hint that says where to look. Where there are options or cards, give the wrong ones the same key words as the right ones, used wrongly, so the words cannot do the choosing.
 5. **One ask.** One thing to decide, with its reason where the reason is the evidence, and the reading easier than the thinking.
@@ -1193,6 +1193,7 @@ Use `[]` when nothing exceptional remains.
 
 Put a concise string here only for:
 
+- a lesson that runs past 50 minutes when honestly timed: how many minutes and why it stays that long;
 - an unmet direct teacher requirement or departure from the supplied plan's curriculum coverage, with the reason; declined suggestions need no flag;
 - a contradiction or gap in the brief that the designer had to route around;
 - a subject/reference clash that cannot be silently settled;

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "structure": "Content-based",
+  "yearGroup": 4,
+  "subject": "Geography",
+  "vocabularyCount": 2,
+  "vocabularyIntroductionCount": 1,
+  "trimmedVocabularyCount": 1,
+  "representations": [
+    { "configurations": [ { "id": "starter-blank", "loadBearing": true } ] },
+    { "configurations": [ { "id": "two-places", "loadBearing": true } ] }
+  ],
+  "successCriteriaCount": 1,
+  "stickyKnowledgeCount": 1,
+  "misconceptionCount": 2,
+  "concepts": [],
+  "teachingSequence": [
+    { "kind": "teach", "conceptIndex": null },
+    { "kind": "do", "conceptIndex": null },
+    { "kind": "teach", "conceptIndex": null },
+    { "kind": "do", "conceptIndex": null },
+    { "kind": "teach", "conceptIndex": null },
+    { "kind": "practise", "conceptIndex": null }
+  ],
+  "endingIncluded": false,
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "sheetShape": "question-set"
+  },
+  "photoCount": 11
+}

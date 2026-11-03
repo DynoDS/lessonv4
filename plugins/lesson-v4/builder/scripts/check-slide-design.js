@@ -1961,11 +1961,15 @@ function teachLayoutWarnings(lesson, jsonPath) {
     });
   }
 
+  // A flexible slide takes its arrangement from what it holds, so two of them in
+  // a row only look alike when they hold the same things.
+  const lookOf = (slideData) => (slideData.layout !== 'flexible' ? slideData.layout :
+    ['flexible', (slideData.pictures || []).length, !!slideData.speakers, !!slideData.criteria].join('/'));
   let previous = null;
   slides.forEach((slideData, index) => {
     if (!slideData || slideData.template !== 'teach-layout') return;
     const units = slideUnitIds(slideData);
-    if (previous && previous.layout === slideData.layout &&
+    if (previous && previous.look === lookOf(slideData) &&
         !(units.length && units.some((id) => previous.units.includes(id)))) {
       warnings.push({
         slide: index + 1,
@@ -1978,7 +1982,7 @@ function teachLayoutWarnings(lesson, jsonPath) {
           'set of words and pictures. Slides that carry the same unit may share one.'
       });
     }
-    previous = { layout: slideData.layout, units, slide: index + 1 };
+    previous = { look: lookOf(slideData), layout: slideData.layout, units, slide: index + 1 };
   });
   return warnings;
 }

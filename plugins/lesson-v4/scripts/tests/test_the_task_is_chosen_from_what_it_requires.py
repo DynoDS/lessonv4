@@ -151,8 +151,8 @@ class TheContrastsReachBothAgentsTests(unittest.TestCase):
         )
         self.assertIn("REFERENCE_READ_OK", result.stdout)
         for point in (
-            "Name the wrong answer first.",
-            "Put it where it can pull.",
+            "Know the likely wrong answer.",
+            "When a wrong idea would help them think, let it pull.",
             "Start from a real case.",
             "never an invented `imagine if`",
             "Read it from the surface.",

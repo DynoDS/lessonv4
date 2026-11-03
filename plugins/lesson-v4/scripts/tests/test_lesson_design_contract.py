@@ -2816,7 +2816,7 @@ def test_a_lesson_whose_beats_do_not_fit_the_slot_is_refused():
     def mutate(design, photos):
         for unit in design["teachingSequence"]:
             unit["minutes"] = 16
-    assert_invalid(mutate, "over the 50 a lesson can run to")
+    assert_invalid(mutate, "over the 55 a lesson can run to")
 
 
 def test_the_five_minutes_no_beat_plans_count_towards_the_fifty():
@@ -2845,7 +2845,16 @@ def test_the_five_minutes_no_beat_plans_count_towards_the_fifty():
     design, photos = valid_contract()
     set_total(design, 45)
     module.validate_design(design, photos)
-    assert_invalid(lambda design, photos: set_total(design, 46), "that is 51, over the 50 a lesson can run to")
+    # Past 50 the designer looks again; a lesson that is right as it is stays with a
+    # line to the teacher (3 November 2026). Past 55 it is refused.
+    assert_invalid(lambda design, photos: set_total(design, 46), "past the usual 50")
+    def flagged(design, wanted):
+        set_total(design, wanted)
+        design["flagsForTeacher"] = ["This lesson runs about 53 minutes because the second cycle needs its own model."]
+    design, photos = valid_contract()
+    flagged(design, 48)
+    module.validate_design(design, photos)
+    assert_invalid(lambda design, photos: flagged(design, 51), "that is 56, over the 55 a lesson can run to")
 
 
 def test_the_refusal_names_the_longest_beats_to_cut():

@@ -27,7 +27,7 @@ def test_default_boundary_keeps_five_unplanned_minutes():
     with pytest.raises(validator.ContractError):
         validator.validate_lesson_fits_the_slot(design(46))
 
-@pytest.mark.parametrize('lesson', [design(46), design(1,800)])
+@pytest.mark.parametrize('lesson', [design(46), design(1,800), design(51), design(1,900)])
 def test_both_refusal_paths_route_to_whole_lesson_judgement(lesson):
     with pytest.raises(validator.ContractError) as error:
         validator.validate_lesson_fits_the_slot(lesson)

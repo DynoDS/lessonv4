@@ -627,9 +627,11 @@ class TheFormHasASlotForEverythingTheRulesAskForTests(unittest.TestCase):
         self.assertIn("the task slide keeps the case as well", preferences)
         # The rule names where it does not apply, so it is not read as "always
         # add a slide": the agreement launch has no case to set.
-        self.assertIn("only when the product is the class's own work", preferences)
+        self.assertIn("fits when there is no case to set", preferences)
+        # Never a case invented to fill the line (3 November 2026).
+        self.assertIn("a person or situation invented only to fill it stays out", preferences)
         for route in (CONTENT_BASED, ROOT / "references" / "teaching-sequence-task-centred.md"):
-            self.assertIn("`established` sets the case, not a recap", flat(route))
+            self.assertIn("`established` sets the case when there is one, and never invents one", flat(route))
         self.assertIn(
             "the model means nothing to a child with no question in mind",
             flat(ROOT / "references" / "slide-composition-playbook.md"),

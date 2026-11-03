@@ -1,0 +1,153 @@
+{
+  "schema_version": 2,
+  "lesson_name": "Where in the world are tropical rainforests?",
+  "photos": [
+    {
+      "id": "photo-001",
+      "subject": "A park or open woodland in Britain with large oak trees and grass, on an ordinary day",
+      "pedagogical_constraint": "This is our own kind of place, the British weather the lesson starts from; it must look like Britain, not somewhere tropical.",
+      "teaching_requirement": "Children see the kind of trees that grow in Britain's weather, as the starting point for the idea that weather decides what grows.",
+      "load_bearing_evidence": [
+        "large oak or similar broadleaf trees",
+        "grass",
+        "an ordinary British park or woodland scene"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/british-park-oak-trees.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A British park with large oak trees in full leaf and grass, mild daylight.",
+        "must_avoid": [
+          "palm trees or tropical plants",
+          "people's faces close up",
+          "buildings filling the frame"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A wide landscape view of the park with the trees clearly visible."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-002",
+      "subject": "A hot sandy desert such as the Sahara, with bare sand and only a few small, tough plants",
+      "pedagogical_constraint": "The desert is shown as a biome where it hardly ever rains, so it must look dry, with almost no plants.",
+      "teaching_requirement": "Children see that very little can grow where it hardly ever rains, the contrast that shows weather decides what grows.",
+      "load_bearing_evidence": [
+        "dry sand or rocky ground",
+        "very few, small plants or none",
+        "clear dry sky"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/hot-desert-sand.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A hot sandy desert under a clear sky, with bare dunes and one or two small dry shrubs.",
+        "must_avoid": [
+          "an oasis with palm trees",
+          "snow",
+          "camels or people filling the frame"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A wide landscape view of the desert."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-003",
+      "subject": "Inside or at the edge of a dense tropical rainforest, with huge tall trees packed close together and thick green leaves",
+      "pedagogical_constraint": "Shown beside the desert as the other biome, and on the word card for biome: it must look hot, wet and crowded with tall green trees.",
+      "teaching_requirement": "Children see that where it is hot and rains nearly every day, huge trees grow close together and stay green.",
+      "load_bearing_evidence": [
+        "tall trees growing close together",
+        "thick green leaves everywhere",
+        "a damp, misty or wet look"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/tropical-rainforest-trees.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A dense tropical rainforest with very tall trees close together, thick green leaves and a little mist.",
+        "must_avoid": [
+          "a single tree on its own",
+          "autumn colours",
+          "people or buildings"
+        ],
+        "text_rule": "no readable text, labels, logos or branding",
+        "composition": "A landscape view showing the height and closeness of the trees."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-004",
+      "subject": "A clear illustration of the Sun's rays reaching the Earth: rays hit the middle of the globe straight on and reach the top and bottom at a slant, spread out",
+      "pedagogical_constraint": "Shows it happening: the Sun's rays hitting the middle of the Earth straight on and spreading out at a slant towards the top and the bottom, so the middle gets the strongest sunshine.",
+      "teaching_requirement": "Children see why it is hot all year near the Equator: the sunshine there is the most direct and strongest.",
+      "load_bearing_evidence": [
+        "the Sun on one side with parallel rays coming from it",
+        "rays hitting the middle of the Earth straight on",
+        "rays reaching the top and bottom of the Earth at a slant and spread over a wider area",
+        "the Earth drawn as a globe with land and sea"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "made/sun-rays-equator.png",
+      "acquisition_mode": "controlled-ai",
+      "source_profile": "none",
+      "fallback_action": "unsatisfied",
+      "fallback_note": "If no picture can be made, the slide shows the rainforest photograph as a stand-in and the teacher is told; a torch shone at a ball shows the same thing live.",
+      "generation_prompt": {
+        "physical_state": "Parallel rays travel from the Sun to the Earth; the band around the middle of the Earth faces the rays directly, while the rays reach the top and bottom at a shallow angle and spread out.",
+        "must_avoid": [
+          "readable text, letters or labels",
+          "photographic realism",
+          "the Sun drawn touching or overlapping the Earth",
+          "rays bending or curving"
+        ],
+        "text_rule": "no readable text, letters or labels",
+        "composition": "A simple, clear science illustration on a plain background, landscape, with the Sun on the left and the Earth as a globe on the right."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-005",
+      "subject": "The Amazon rainforest in Brazil seen from above, with the Amazon River or one of its big branches winding through endless forest",
+      "pedagogical_constraint": "This is the real Amazon, shown on the slide that locates it; it must be a real photograph of the Amazon.",
+      "teaching_requirement": "Children see how huge the Amazon rainforest is, with its river winding through it, while they learn where it is.",
+      "load_bearing_evidence": [
+        "forest stretching as far as the eye can see",
+        "a wide river winding through the forest"
+      ],
+      "use": "slide",
+      "essential": false,
+      "filename": "wikimedia/amazon-rainforest-from-above.jpg",
+      "acquisition_mode": "authentic-real",
+      "source_profile": "wikimedia-then-unsplash",
+      "fallback_action": "omit",
+      "fallback_note": "A made picture would claim to show the real Amazon when it does not. Without the photograph, the map on the same slide still shows where the Amazon is.",
+      "generation_prompt": null,
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    }
+  ]
+}

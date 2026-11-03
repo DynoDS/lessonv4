@@ -86,6 +86,18 @@ function tallestPanel(zone, ctx) {
   return (MAX_SLIDE_SHARE * SLIDE_W * SLIDE_H) / zone.w;
 }
 
+// The height the box takes in this zone: where its last step ends, or the whole
+// zone for anything that is not a list of steps.
+function huggedHeight(zone, criteria, ctx) {
+  if (!criteria || criteria.type !== 'steps' || Number.isFinite(zone.measureFloorPt)) return zone.h;
+  const reach = lowestStep({
+    x: zone.x + PAD, y: zone.y + PAD + LABEL_H, w: zone.w - 2 * PAD, h: zone.h - 2 * PAD - LABEL_H,
+    class: zone.class || 'C', sourceAuthoredText: true, criteriaPanel: true,
+    widestPracticePanel: !!zone.widestPracticePanel, compactCards: true
+  }, criteria.heading ? Object.assign({}, criteria, { heading: undefined }) : criteria, ctx);
+  return reach > zone.y ? Math.min(zone.h, reach - zone.y + PAD) : zone.h;
+}
+
 function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
   const { drawContent } = require('./content');
   const criteria = data.criteria || data.content;
@@ -124,15 +136,7 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
   // not blown up to fill the room instead: he called that overfilled on
   // 17 September. Only a list of steps is hugged; a table or a row of figures
   // keeps the zone it was given.
-  let panelH = zone.h;
-  if (criteria && criteria.type === 'steps' && !Number.isFinite(zone.measureFloorPt)) {
-    const reach = lowestStep({
-      x: zone.x + PAD, y: zone.y + PAD + LABEL_H, w: zone.w - 2 * PAD, h: zone.h - 2 * PAD - LABEL_H,
-      class: zone.class || 'C', sourceAuthoredText: true, criteriaPanel: true,
-      widestPracticePanel: !!zone.widestPracticePanel, compactCards: true
-    }, criteria.heading ? Object.assign({}, criteria, { heading: undefined }) : criteria, ctx);
-    if (reach > zone.y) panelH = Math.min(zone.h, reach - zone.y + PAD);
-  }
+  const panelH = huggedHeight(zone, criteria, ctx);
 
   slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
     x: zone.x, y: zone.y, w: zone.w, h: panelH,
@@ -270,4 +274,5 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
 // What the panel's heading and edges take before its content is drawn.
 const PANEL_FRAME_H = 2 * PAD + LABEL_H;
 
-module.exports = { drawSuccessCriteriaPanel, tallestPanel, PANEL_FRAME_H };
+module.exports = {
+  huggedHeight, drawSuccessCriteriaPanel, tallestPanel, PANEL_FRAME_H };

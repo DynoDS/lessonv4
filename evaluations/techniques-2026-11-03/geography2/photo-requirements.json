@@ -1,0 +1,333 @@
+{
+  "schema_version": 2,
+  "lesson_name": "What is the Amazon rainforest like?",
+  "photos": [
+    {
+      "id": "photo-001",
+      "subject": "A tropical rainforest seen from above, a wide view across the tops of the trees, with a few emergent trees standing above the canopy",
+      "pedagogical_constraint": "The class sees the canopy as one continuous roof of treetops, with a few taller trees rising above it.",
+      "teaching_requirement": "Children see the canopy as a roof of touching treetops and the emergent trees poking out above it, and the vegetation of a rainforest as a whole.",
+      "load_bearing_evidence": [
+        "an unbroken roof of touching treetops filling most of the frame",
+        "at least one or two taller trees whose crowns rise clearly above the roof"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/rainforest-canopy-from-above.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A dense tropical rainforest seen from above in daylight, the treetops touching into a continuous green roof, with two or three taller emergent trees rising above it.",
+        "must_avoid": [
+          "rivers or clearings filling the frame",
+          "buildings or roads",
+          "a temperate forest of conifers"
+        ],
+        "text_rule": "no readable text, labels, letters, logos or branding",
+        "composition": "A wide landscape view across the top of the forest."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-002",
+      "subject": "A tropical rainforest seen from above or from a high viewpoint, where at least two emergent trees stand clearly above an unbroken canopy",
+      "pedagogical_constraint": "Children decide which lettered trees are emergent, so at least two tree crowns must rise clearly above the canopy roof, and the canopy between them must plainly be one continuous roof. Letters are added by the slide, so the photo carries none.",
+      "teaching_requirement": "Children tell emergent trees from the canopy on a photo the lesson has not shown.",
+      "load_bearing_evidence": [
+        "at least two separate tree crowns rising clearly above the canopy",
+        "a continuous roof of touching treetops between and around them"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/rainforest-emergent-trees.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A tropical rainforest from a high viewpoint in clear daylight, two or three emergent tree crowns standing well above a continuous canopy of touching treetops.",
+        "must_avoid": [
+          "only an even canopy with no taller trees",
+          "mist hiding the treetops",
+          "the same view as a wide aerial overview with no clear emergent crowns"
+        ],
+        "text_rule": "no readable text, labels, letters, logos or branding",
+        "composition": "A landscape view where each emergent crown is large enough to carry a letter."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-003",
+      "subject": "A big leafy tree in a British park on a hot sunny day, with a dark patch of shade on the grass underneath it",
+      "pedagogical_constraint": "This is the familiar way in: the contrast between bright sun on the grass and the shade under the leaves must be easy to see.",
+      "teaching_requirement": "Children see that leaves stop sunlight reaching the ground, which the lesson then carries up into the rainforest canopy.",
+      "load_bearing_evidence": [
+        "one big leafy tree in full leaf",
+        "bright sunshine on the grass around it",
+        "a clear dark patch of shade under the tree"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/park-tree-shade-sunny-day.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A single large leafy tree in a British park on a bright summer day, a dark pool of shade on the grass under it and sunlit grass all around.",
+        "must_avoid": [
+          "tropical trees or palms",
+          "an overcast day with no shadow",
+          "faces close up"
+        ],
+        "text_rule": "no readable text, labels, letters, logos or branding",
+        "composition": "A wide view showing the whole tree and its shade on the grass."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-004",
+      "subject": "The floor of a tropical rainforest: dim light, the ground covered in dead brown leaves, tree trunks, and very few small plants",
+      "pedagogical_constraint": "The forest floor must look dim and nearly bare of plants, because the teaching says hardly anything grows there.",
+      "teaching_requirement": "Children see that the forest floor is dark and covered in dead leaves, with very few plants.",
+      "load_bearing_evidence": [
+        "the ground covered in dead brown leaves",
+        "dim light under the trees",
+        "very few small plants on the ground",
+        "tree trunks rising out of the frame"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/rainforest-floor-dead-leaves.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "The floor of a tropical rainforest in dim light, a carpet of dead brown leaves, a few thin tree trunks and only one or two small plants.",
+        "must_avoid": [
+          "thick green plants covering the ground",
+          "bright sunlight across the ground",
+          "a path or boardwalk filling the frame"
+        ],
+        "text_rule": "no readable text, labels, letters, logos or branding",
+        "composition": "A landscape view at about standing height, looking across the ground."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-005",
+      "subject": "The understorey of a tropical rainforest: young trees and bushes with very large leaves growing in dim green light under tall trees",
+      "pedagogical_constraint": "The large leaves and the dim light are what the teaching points at.",
+      "teaching_requirement": "Children see the understorey's young trees and their huge leaves growing in dim light.",
+      "load_bearing_evidence": [
+        "young trees or bushes with very large leaves",
+        "dim green light",
+        "taller trunks behind them"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/rainforest-understorey-big-leaves.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "The understorey of a tropical rainforest in dim green light, young trees and bushes with very large broad leaves beneath tall tree trunks.",
+        "must_avoid": [
+          "bright open sky",
+          "a houseplant indoors",
+          "a garden setting"
+        ],
+        "text_rule": "no readable text, labels, letters, logos or branding",
+        "composition": "A landscape view at about head height among the plants."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-006",
+      "subject": "A large fallen tree lying on the floor of a tropical rainforest, with sunlight coming down through the gap it has left in the canopy",
+      "pedagogical_constraint": "Children predict what will happen here, so the ground under the gap should not yet be thick with young plants, which would give the answer.",
+      "teaching_requirement": "Children see a hole a fallen tree has left in the canopy, with light now reaching the ground, and predict what will happen.",
+      "load_bearing_evidence": [
+        "a large fallen tree trunk lying on the rainforest floor",
+        "light coming down onto the ground through a gap above"
+      ],
+      "use": "slide",
+      "essential": true,
+      "filename": "unsplash/rainforest-fallen-tree-gap.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A large tree trunk freshly fallen across the floor of a tropical rainforest, sunlight shining down onto the bare ground through the gap above.",
+        "must_avoid": [
+          "the gap already filled with thick young plants",
+          "people or machinery",
+          "a cut stump from logging"
+        ],
+        "text_rule": "no readable text, labels, letters, logos or branding",
+        "composition": "A landscape view showing the fallen trunk and the light coming down."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-007",
+      "subject": "A kapok tree standing far taller than the rainforest trees around it",
+      "pedagogical_constraint": "One of five sort cards; the tree must clearly tower over the forest around it.",
+      "teaching_requirement": "Children place the kapok tree in the emergent layer from what its card says.",
+      "load_bearing_evidence": [
+        "one very tall tree whose crown rises well above the trees around it"
+      ],
+      "use": "both",
+      "essential": true,
+      "filename": "unsplash/kapok-tree-towering.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A single giant kapok tree rising far above the surrounding rainforest canopy, its wide crown clear against the sky.",
+        "must_avoid": [
+          "a tree standing alone in a field",
+          "a different, short tree"
+        ],
+        "text_rule": "no readable text, labels, letters, logos or branding",
+        "composition": "A near-square view showing the whole height of the tree above the forest."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-008",
+      "subject": "A harpy eagle perched on a branch",
+      "pedagogical_constraint": "One of five sort cards; the bird must be recognisable at small card size.",
+      "teaching_requirement": "Children place the harpy eagle in the emergent layer from what its card says.",
+      "load_bearing_evidence": [
+        "one harpy eagle, clearly seen, perched on a branch"
+      ],
+      "use": "both",
+      "essential": true,
+      "filename": "unsplash/harpy-eagle-perched.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A harpy eagle perched on a thick branch, its grey head and crest clearly visible.",
+        "must_avoid": [
+          "a zoo enclosure or wire in view",
+          "a different eagle species"
+        ],
+        "text_rule": "no readable text, labels, letters, logos or branding",
+        "composition": "A near-square view with the eagle filling most of the frame."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-009",
+      "subject": "A howler monkey among the leaves of a rainforest tree",
+      "pedagogical_constraint": "One of five sort cards; the monkey must be recognisable at small card size, among leaves.",
+      "teaching_requirement": "Children place the howler monkey in the canopy from what its card says.",
+      "load_bearing_evidence": [
+        "one howler monkey, clearly seen",
+        "leaves around it"
+      ],
+      "use": "both",
+      "essential": true,
+      "filename": "unsplash/howler-monkey-leaves.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A howler monkey sitting on a branch among thick green leaves.",
+        "must_avoid": [
+          "a zoo enclosure or wire in view",
+          "a monkey on the ground"
+        ],
+        "text_rule": "no readable text, labels, letters, logos or branding",
+        "composition": "A near-square view with the monkey filling most of the frame."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-010",
+      "subject": "A young rainforest tree or plant with very large leaves, growing in dim light under big trees",
+      "pedagogical_constraint": "One of five sort cards; the very large leaves are the clue on the card, and the photo should not be the same picture as the understorey photo the Teach shows.",
+      "teaching_requirement": "Children place the young tree in the understorey from what its card says.",
+      "load_bearing_evidence": [
+        "one young plant or small tree with very large leaves",
+        "dim light around it"
+      ],
+      "use": "both",
+      "essential": true,
+      "filename": "unsplash/young-tree-huge-leaves.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A young rainforest tree with a few very large broad leaves, growing in dim light under tall trees.",
+        "must_avoid": [
+          "a houseplant in a pot",
+          "a garden setting"
+        ],
+        "text_rule": "no readable text, labels, letters, logos or branding",
+        "composition": "A near-square view with the plant filling most of the frame."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    },
+    {
+      "id": "photo-011",
+      "subject": "Fungi (mushrooms) growing on dead leaves or rotting wood on a rainforest floor",
+      "pedagogical_constraint": "One of five sort cards; the fungus must be recognisable at small card size, on dead leaves or wood.",
+      "teaching_requirement": "Children place the fungus on the forest floor from what its card says.",
+      "load_bearing_evidence": [
+        "fungi or mushrooms clearly seen",
+        "dead leaves or rotting wood under them"
+      ],
+      "use": "both",
+      "essential": true,
+      "filename": "unsplash/fungus-rotting-leaves.jpg",
+      "acquisition_mode": "ordinary-real",
+      "source_profile": "unsplash-then-wikimedia",
+      "fallback_action": "ai",
+      "fallback_note": null,
+      "generation_prompt": {
+        "physical_state": "A cluster of mushrooms growing out of rotting wood and dead leaves on a dim forest floor.",
+        "must_avoid": [
+          "mushrooms in a shop or on a plate",
+          "a grassy lawn"
+        ],
+        "text_rule": "no readable text, labels, letters, logos or branding",
+        "composition": "A near-square close view with the fungi filling most of the frame."
+      },
+      "coherent_group": null,
+      "coherent_mode": "none",
+      "coherent_visual_invariants": []
+    }
+  ]
+}

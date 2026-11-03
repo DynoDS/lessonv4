@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "structure": "Content-based",
+  "yearGroup": 4,
+  "subject": "Geography",
+  "vocabularyCount": 4,
+  "vocabularyIntroductionCount": 2,
+  "trimmedVocabularyCount": 5,
+  "representations": [
+    {
+      "configurations": [
+        {
+          "id": "light",
+          "loadBearing": true
+        },
+        {
+          "id": "reference",
+          "loadBearing": true
+        },
+        {
+          "id": "vocab-canopy",
+          "loadBearing": false
+        },
+        {
+          "id": "vocab-emergent",
+          "loadBearing": false
+        },
+        {
+          "id": "vocab-understorey",
+          "loadBearing": false
+        }
+      ]
+    },
+    {
+      "configurations": [
+        {
+          "id": "letters",
+          "loadBearing": true
+        }
+      ]
+    }
+  ],
+  "successCriteriaCount": 1,
+  "stickyKnowledgeCount": 1,
+  "misconceptionCount": 2,
+  "concepts": [],
+  "teachingSequence": [
+    {
+      "kind": "teach",
+      "conceptIndex": null
+    },
+    {
+      "kind": "do",
+      "conceptIndex": null
+    },
+    {
+      "kind": "teach",
+      "conceptIndex": null
+    },
+    {
+      "kind": "do",
+      "conceptIndex": null,
+      "taskStructure": "sort"
+    },
+    {
+      "kind": "teach",
+      "conceptIndex": null
+    },
+    {
+      "kind": "do",
+      "conceptIndex": null
+    },
+    {
+      "kind": "practise",
+      "conceptIndex": null
+    }
+  ],
+  "endingIncluded": false,
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "sheetShape": "question-set"
+  },
+  "photoCount": 11
+}

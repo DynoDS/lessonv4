@@ -325,7 +325,7 @@ def child_seat(design: dict) -> list[str]:
     honest, _rows = taught_time.honest_minutes(design)
     lines.append(f"  Taught by asking rather than read out (what the slides show, at about {taught_time.BOARD_WORDS_A_MINUTE} "
                  f"words a minute, a cover teacher's pace on 20 October 2026), the beats take about {honest} minutes, "
-                 f"{honest + 5} with books out and moving about. The design check refuses more than 50.")
+                 f"{honest + 5} with books out and moving about. Past 50 the design check asks you to look again and say why; past 55 it refuses.")
     if stretches:
         longest = max(stretches, key=lambda run: sum(count for _name, count in run))
         words_in = sum(count for _name, count in longest)
@@ -353,12 +353,12 @@ def child_seat(design: dict) -> list[str]:
                      "and adds one to that count, which this list cannot see.")
         lines.append(f"  Chunks of teaching before the main work, each ended by a quick Do or a task: "
                      f"{chunks_before_main}. Usually one or two, then a short lead-in and the final task "
-                     f"(`preferences.md` -> `Judge the workload of Dos and the final task`); "
-                     f"a third is the sign to look again at what the objective needs, never a cap. This number "
-                     f"is not argued down: teaching closed by a task of its own is its own chunk whatever the "
-                     f"design calls it, and only a set of names checked by quick Dos as it arrives stays one. "
-                     f"At three, go back to fewer things or say in the closing decisions' Amount line why this "
-                     f"objective needs the third. A skill lesson's My Turn cycles keep their own shape.")
+                     f"(`preferences.md` -> `Judge the workload of Dos and the final task`). "
+                     f"This number is something to look at, never a pass or fail. Ask what is really reaching the "
+                     f"children: would they forget an idea if you moved on, is it simple enough to carry into the "
+                     f"next, would these overload them together, how much is only you explaining? Teaching with "
+                     f"no Do after it still counts as teaching. Say in the closing decisions' Amount line why any "
+                     f"third stays. In a skill lesson ask of each further cycle whether it is a new step or the same method again.")
         if lead_in:
             judged = ("If it only ties together what was taught, it is the lead-in; if it teaches the next "
                       "part of the story, it is a chunk of its own and adds one to that count.")
@@ -379,6 +379,7 @@ DO_KINDS_IN_A_CYCLE = {"our-turn", "your-turn"}
 # enforced, by the design check.
 UNPLANNED_MINUTES = 5
 LESSON_MOST_MINUTES = 50
+LESSON_REFUSED_MINUTES = 55
 WORKSHEET_ABOUT_MINUTES = 15
 WORKSHEET_SHORT_MINUTES = 10
 TASKS_SPENT_MINUTES = 15
@@ -432,10 +433,14 @@ def room(design: dict, order: list[tuple[str, dict]], planned: float) -> list[st
         f"teaching; a quick task 2 to 3 and a longer one 5 to 10, as the task needs; about "
         f"{WORKSHEET_ABOUT_MINUTES} for a worksheet when the lesson ends on one.",
     ]
-    if whole > LESSON_MOST_MINUTES:
-        lines.append(f"  THE DESIGN CHECK WILL REFUSE THIS: {whole:g} is past {LESSON_MOST_MINUTES}. Reconsider "
+    if whole > LESSON_REFUSED_MINUTES:
+        lines.append(f"  THE DESIGN CHECK WILL REFUSE THIS: {whole:g} is past {LESSON_REFUSED_MINUTES}. Reconsider "
                      "the whole allocation using preferences.md, Classroom Norms, Time; change the work, "
                      "then estimate it honestly.")
+    elif whole > LESSON_MOST_MINUTES:
+        lines.append(f"  LOOK AGAIN: {whole:g} is past the usual {LESSON_MOST_MINUTES}. Read how it will feel to teach "
+                     "(preferences.md, Classroom Norms, Time). If it is right as it is, keep it and say how many "
+                     "minutes it runs and why in flagsForTeacher.")
     if late_teach:
         label, spent = late_teach
         lines.append(

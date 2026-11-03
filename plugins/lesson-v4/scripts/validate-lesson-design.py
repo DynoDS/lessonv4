@@ -323,7 +323,12 @@ PRINTED_PER = {"child", "pair", "group"}
 # and that total is the only line with teeth; the rest of his picture is for
 # judging (`preferences.md` -> Classroom Norms, Time; `do-beats-in-a-row.py`).
 LESSON_MINUTES_AIM = 45
-LESSON_MINUTES_MAX = 50
+# Past USUAL the check asks for a second look and a line to the teacher; past
+# MAX it refuses, because the lesson will not fit (the teacher, 3 November 2026:
+# a lesson of 52 should not be refused, and the feel of a lesson matters more
+# than its minutes, so the clock is only a backstop).
+LESSON_MINUTES_USUAL = 50
+LESSON_MINUTES_MAX = 55
 LESSON_MINUTES_UNPLANNED = 5
 # Clearer wording added after the design (the voice edit, or the teacher's own
 # words) may take the lesson up to this much past its limit, when the design it
@@ -333,6 +338,7 @@ LESSON_MINUTES_UNPLANNED = 5
 WORDING_ALLOWANCE_MINUTES = 1
 DESIGN_BEFORE_WORDING = "lesson-design.before-voice.json"
 _wording_allowance = 0
+_design_minutes_before_wording = 0
 LESSON_MINUTES_MIN = 30
 BEAT_MINUTES_MAX = 25
 
@@ -4331,7 +4337,24 @@ def validate_lesson_fits_the_slot(root: dict[str, Any]) -> None:
         # (`taught_time.py`: a 17-minute plan took a cover teacher 40), so a
         # lesson can fit on paper and still not fit in the room.
         honest, rows = taught_time.honest_minutes(root)
-        if honest + LESSON_MINUTES_UNPLANNED <= LESSON_MINUTES_MAX + _wording_allowance:
+        whole = honest + LESSON_MINUTES_UNPLANNED
+        if whole <= LESSON_MINUTES_USUAL + _wording_allowance:
+            return
+        if whole <= LESSON_MINUTES_MAX + _wording_allowance:
+            if _wording_allowance and whole <= _design_minutes_before_wording + _wording_allowance:
+                return  # clearer wording may add its minute without justifying itself
+            flags = root.get("flagsForTeacher") or []
+            if any(isinstance(flag, str) and re.search(r"\d+ minutes", flag) for flag in flags):
+                return
+            expect(
+                False,
+                f"taught by asking rather than read out, this lesson runs to about {whole} minutes with the "
+                f"{LESSON_MINUTES_UNPLANNED} no beat plans, past the usual {LESSON_MINUTES_USUAL}. Look again at how "
+                "it will feel to teach (preferences.md, Classroom Norms, Time and How long a lesson feels). When it "
+                "should come down, change the teaching or pupil work where that best preserves the objective, weighing "
+                "what these children would lose by each cut, and estimate the revised work honestly. When it is right as it is, keep "
+                "it and add one line to flagsForTeacher saying how many minutes it runs and why",
+            )
             return
         heavy = sorted((row for row in rows if row[2] > row[1]), key=lambda row: row[2] - row[1], reverse=True)[:3]
         named = "; ".join(f"{label}: planned {planned}min, its slides take about {taught}min to teach"
@@ -4345,7 +4368,7 @@ def validate_lesson_fits_the_slot(root: dict[str, Any]) -> None:
             f"{LESSON_MINUTES_MAX} a lesson can run to. Where the time goes: {named}. Reconsider the whole "
             "allocation using preferences.md, Classroom Norms, Time. Change the teaching or pupil work "
             "where that best preserves the objective, then estimate the revised work honestly; do not "
-            "merely lower minutes, clip explanations or move them into notes",
+            "merely lower minutes, and never cut something only to pass this check",
         )
         return
     longest = sorted(beats, key=lambda pair: pair[1], reverse=True)[:3]
@@ -4357,8 +4380,8 @@ def validate_lesson_fits_the_slot(root: dict[str, Any]) -> None:
         f"{total + LESSON_MINUTES_UNPLANNED}, over the {LESSON_MINUTES_MAX} a lesson can "
         f"run to. The longest beats are: {named}. Reconsider the whole allocation using preferences.md, "
         "Classroom Norms, Time. Change the teaching or pupil work where that best preserves the "
-        "objective, then estimate the revised work honestly; do not merely lower minutes, clip "
-        "explanations or move them into notes",
+        "objective, then estimate the revised work honestly; do not merely lower minutes, and "
+        "never cut something only to pass this check",
     )
 
 
@@ -5352,7 +5375,9 @@ def wording_allowance(design_path: Path) -> int:
         honest, _rows = taught_time.honest_minutes(json.loads(before.read_text(encoding="utf-8")))
     except (OSError, json.JSONDecodeError):
         return 0
-    return WORDING_ALLOWANCE_MINUTES if honest + LESSON_MINUTES_UNPLANNED <= LESSON_MINUTES_MAX else 0
+    global _design_minutes_before_wording
+    _design_minutes_before_wording = honest + LESSON_MINUTES_UNPLANNED
+    return WORDING_ALLOWANCE_MINUTES if _design_minutes_before_wording <= LESSON_MINUTES_MAX else 0
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -202,6 +202,8 @@ function canUseMoreHeight(item) {
 //
 // Same honesty rule as a row: if any item cannot be measured, say nothing.
 function measureStack(zone, data, ctx) {
+  if (require('./board').isBoard(data)) return null;
+
   const items = bankBesideItsTask(Array.isArray(data.items) ? data.items : [], zone);
   if (items.length === 0) return null;
 
@@ -1168,6 +1170,9 @@ function weightThatWouldFit(entry, neededH) {
 }
 
 function drawStack(pptx, slide, zone, data, ctx) {
+  const { isBoard, drawBoard } = require('./board');
+  if (isBoard(data)) return drawBoard(pptx, slide, zone, data, ctx);
+
   const layout = stackLayout(zone, data, ctx);
   if (layout.length === 0) return;
 
@@ -1228,6 +1233,7 @@ function drawStack(pptx, slide, zone, data, ctx) {
 
 module.exports = {
   textNeed,
+  panelNeed,
   columnAccount,
   columnSentence,
   drawStack,

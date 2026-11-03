@@ -1,0 +1,3 @@
+This run builds lesson 35 of the Year 4 maths long-term plan supplied as LESSON_PLAN_INPUT: the row numbered 35, "LO: Find a missing part (+ and −)" (Addition and Subtraction unit, Missing number problems). The surrounding rows (lessons 34, 36, 37) are context for what comes before and after, not a script for this lesson.
+
+Year 4, maths. The teacher asked for it to be saved to Autumn 2 > Week 1 > Maths > Tuesday. It is the second lesson of a two-lesson set (lessons 34 and 35) being built side by side; lesson 34 ("Column subtraction across zeros", practise the chain) is the lesson before this one in the plan and may still be being built while this one runs.

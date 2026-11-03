@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "structure": "Content-based",
+  "yearGroup": 4,
+  "subject": "Geography",
+  "vocabularyCount": 2,
+  "vocabularyIntroductionCount": 2,
+  "trimmedVocabularyCount": 0,
+  "representations": [
+    {
+      "configurations": [
+        { "id": "continents", "loadBearing": true },
+        { "id": "rainforest-pattern", "loadBearing": true },
+        { "id": "places-check", "loadBearing": true },
+        { "id": "vocabulary", "loadBearing": false }
+      ]
+    },
+    {
+      "configurations": [
+        { "id": "amazon-located", "loadBearing": true }
+      ]
+    }
+  ],
+  "successCriteriaCount": 1,
+  "stickyKnowledgeCount": 1,
+  "misconceptionCount": 2,
+  "concepts": [],
+  "teachingSequence": [
+    { "kind": "teach", "conceptIndex": null },
+    { "kind": "do", "conceptIndex": null },
+    { "kind": "teach", "conceptIndex": null },
+    { "kind": "do", "conceptIndex": null },
+    { "kind": "teach", "conceptIndex": null },
+    { "kind": "practise", "conceptIndex": null }
+  ],
+  "endingIncluded": false,
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "sheetShape": "question-set"
+  },
+  "photoCount": 5
+}

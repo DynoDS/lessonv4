@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "structure": "Content-based",
+  "yearGroup": 4,
+  "subject": "History",
+  "vocabularyCount": 2,
+  "vocabularyIntroductionCount": 1,
+  "trimmedVocabularyCount": 8,
+  "representations": [],
+  "successCriteriaCount": 1,
+  "stickyKnowledgeCount": 2,
+  "misconceptionCount": 2,
+  "concepts": [],
+  "teachingSequence": [
+    {"kind": "teach", "conceptIndex": null},
+    {"kind": "do", "conceptIndex": null, "taskStructure": "sort"},
+    {"kind": "teach", "conceptIndex": null},
+    {"kind": "do", "conceptIndex": null, "taskStructure": "sort"},
+    {"kind": "teach", "conceptIndex": null},
+    {"kind": "practise", "conceptIndex": null}
+  ],
+  "endingIncluded": false,
+  "worksheet": {
+    "status": "generated",
+    "resourceMode": "per-child",
+    "use": "separate-fresh-worksheet",
+    "sheetShape": "question-set"
+  },
+  "photoCount": 8
+}
