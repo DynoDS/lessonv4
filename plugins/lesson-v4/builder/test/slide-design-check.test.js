@@ -2007,6 +2007,21 @@ test('a word card straight after the answer, or straight before the question, is
   assert.deepStrictEqual(vocabCardBeforeItsWord(fencesPair(1)), [], 'before the question');
 });
 
+// 3 November 2026: a rainforest deck asked "What do you think it's like under
+// the canopy?" on a Teach board and put the understorey card before the answer.
+test('a word card after a Teach board that asks the class a question is sent to one side', () => {
+  const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
+  const unit = 'lesson-section/teaching-sequence/unit-003';
+  const lesson = { slides: [
+    { template: 'teach-layout', designUnitId: unit, title: 'What is it like under the canopy?', question: "What do you think it's like under the canopy?" },
+    { template: 'key-vocabulary', words: [{ word: 'understorey', definition: 'The layer just under the canopy.' }] },
+    { template: 'teach-layout', designUnitId: unit, lead: 'Under the canopy is the understorey. It is dim and still.' }
+  ] };
+  const found = vocabCardBeforeItsWord(lesson);
+  assert.strictEqual(found.length, 1);
+  assert.strictEqual(found[0].signal, 'VOCAB_CARD_BETWEEN_A_QUESTION_AND_ITS_ANSWER');
+});
+
 test('a card inside an ordinary run of teaching slides keeps the old rule', () => {
   const { vocabCardBeforeItsWord } = require('../scripts/check-slide-design');
   const unit = 'lesson-section/teaching-sequence/unit-001';

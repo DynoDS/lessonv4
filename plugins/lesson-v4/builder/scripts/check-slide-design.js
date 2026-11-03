@@ -825,6 +825,10 @@ function vocabCardBeforeItsWord(lesson) {
   const asksTheChild = (slideData) => {
     if (!slideData || typeof slideData !== 'object') return false;
     if (slideData.task) return true;
+    // A Teach board's question to the class is answered by the next slide of
+    // its unit too: a rainforest deck asked "What do you think it's like under
+    // the canopy?" and put the understorey card before the answer (3 November 2026).
+    if (typeof slideData.question === 'string' && slideData.question.trim()) return true;
     let asks = false;
     const visit = (node) => {
       if (asks || !node || typeof node !== 'object') return;

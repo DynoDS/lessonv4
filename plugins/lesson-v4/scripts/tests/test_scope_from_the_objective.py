@@ -188,7 +188,10 @@ class TheBuiltDecksOf18October(unittest.TestCase):
 
     def test_two_chunks_never_means_cramming(self) -> None:
         rhythm = section_by_heading(PREFS, "## The Teach → Do → Teach → Do Rhythm", 0)
-        self.assertIn("so two is never a reason to pack the set into one telling", rhythm)
+        # A set counts as one chunk and each member is still used as it
+        # arrives (3 November 2026: a rainforest lesson paired its layers).
+        self.assertIn("so the grouping changes the count and never the rhythm", rhythm)
+        self.assertIn("joining them in pairs so the lesson looks like one or two", rhythm)
         self.assertIn("the answer is fewer things, never bigger chunks", rhythm)
         self.assertIn("more new things are never folded into one telling to keep the number low", DESIGNER)
 

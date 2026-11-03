@@ -352,7 +352,9 @@ def child_seat(design: dict) -> list[str]:
         lines.append("  A written piece children start once a sort or an order is done is a task of its own "
                      "and adds one to that count, which this list cannot see.")
         lines.append(f"  Chunks of teaching before the main work, each ended by a quick Do or a task: "
-                     f"{chunks_before_main}. Usually one or two, then a short lead-in and the final task "
+                     f"{chunks_before_main}. Usually one or two substantial ones, then a short lead-in and the final task; "
+                     f"when the objective names several unfamiliar things to describe, short pieces each used as "
+                     f"it arrives are the rhythm working, never a reason to join them "
                      f"(`preferences.md` -> `Judge the workload of Dos and the final task`). "
                      f"This number is something to look at, never a pass or fail. Ask what is really reaching the "
                      f"children: would they forget an idea if you moved on, is it simple enough to carry into the "
@@ -582,6 +584,14 @@ def main(argv: list[str]) -> int:
             print(f"  the teaching said: \"{row.taught_sentence}\"")
             print(f"  the answer it expects: \"{row.answer}\"")
             print(f"  words of that answer the teaching already said: {row.repeated} of {row.total}")
+            if unit.get("doMode") == "deeper" and row.repeated * 2 > row.total:
+                # A Year 4 river-or-forest choice (3 November 2026) printed 14 of 23
+                # and a look-again, was read past, and the teacher found it a
+                # discussion question, not deeper work.
+                print("  MARKED DEEPER, BUT MOST OF ITS ANSWER IS THE TEACHING JUST GIVEN: a choice whose "
+                      "answer the board has just said is a quick check at most. Give children a decision "
+                      "the teaching prepared them for but did not make, or mark it quick "
+                      "(`preferences.md` -> `Choose Do activities for the learning`).")
             if row.declares:
                 print(f"  {row.declaration_line()}")
                 print("  Nobody reads the answers: is the child better at the subject when this "
