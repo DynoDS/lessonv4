@@ -52,3 +52,10 @@ test('skipping anchors does not skip the numbers that matter', () => {
   );
   assert.deepEqual(sixSevenNumbers({ anchorNote: 'Start at 67 on the number line.' }), ['67']);
 });
+
+test("a picture's pixel size is not a number a child reads", () => {
+  // 3 November 2026: the worksheet preflight inlined two photos 1672 px wide
+  // and refused a geography sheet whose words held no 6-7 at all.
+  assert.deepEqual(sixSevenNumbers({ image: { imageWidth: 1672, imageHeight: 1167 } }), []);
+  assert.deepEqual(sixSevenNumbers({ image: { imageWidth: 1672 }, caption: 'About 1,672 people live here.' }), ['1,672']);
+});

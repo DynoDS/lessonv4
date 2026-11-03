@@ -28,7 +28,7 @@
 // one, and a number square on every classroom wall has never been the trigger.
 
 const SKIPPED_STRING_KEYS = /(^id$|Id$|Ids$|Ref$|Refs$|path|Path|url|Url|^src$|[Hh]ref$|sha|Sha|[Ff]ile|[Cc]olou?r|^fill$|[Ss]lug|^layout$|^template$|^kind$)/;
-const SKIPPED_NUMBER_KEYS = /^(fontSize|headingFontSize|weight|rotation|transparency|x|y|w|h|width|height|anchor|label_at|maxRows|blankChars|classSize|dpi|radius|lineW|pad|gap|minFont|maxFont|version|schemaVersion|lon|lat|longitude|latitude)$/;
+const SKIPPED_NUMBER_KEYS = /^(fontSize|headingFontSize|weight|rotation|transparency|x|y|w|h|width|height|imageWidth|imageHeight|anchor|label_at|maxRows|blankChars|classSize|dpi|radius|lineW|pad|gap|minFont|maxFont|version|schemaVersion|lon|lat|longitude|latitude)$/;
 const NUMBER_TOKEN = /(?<![\p{L}\p{N}_/\\.#-])(\d{1,3}(?:,\d{3})+|\d+)(?![\p{N}_/\\]|\.\d|-\d|,\d{3})/gu;
 
 function offends(digits, writtenWithComma) {

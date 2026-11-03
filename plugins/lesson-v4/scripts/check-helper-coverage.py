@@ -127,6 +127,9 @@ FIGURE_HELPERS: dict[str, dict[str, tuple[str, ...]]] = {
     "ten-frame": {s: ("ten-frame",) for s in ("slides", "worksheets", "wall", "stick-in")},
     "tens frame": {s: ("ten-frame",) for s in ("slides", "worksheets", "wall", "stick-in")},
     "concept map": {s: ("concept-map",) for s in ("slides", "worksheets", "wall", "stick-in")},
+    # A class's "mind map" is a concept map, not a geographical one (Year 4
+    # geography, 3 November 2026: the class's list of needs as a mind map).
+    "mind map": {s: ("concept-map",) for s in ("slides", "worksheets", "wall", "stick-in")},
     "fishbone": {s: ("fishbone",) for s in ("slides", "worksheets", "wall", "stick-in")},
     "map": {s: ("map", "grid-map") for s in ("slides", "worksheets", "wall", "stick-in")},
 }

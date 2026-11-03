@@ -224,6 +224,24 @@ class HelperCoverageTests(unittest.TestCase):
         result = self.verdict()
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_a_mind_map_is_not_mistaken_for_a_map(self):
+        """A class's mind map is drawn by the concept map, never a world map."""
+        self.timeline_design(
+            "Our list: what a home needs every day",
+            "The class's list as a mind map: the question in the middle and five needs round it",
+        )
+        self.write_verdict(
+            {
+                "representationId": "rep-001",
+                "configuration": "blank",
+                "requiredSurface": "slides",
+                "decision": "covered",
+                "helperKey": "concept-map",
+            }
+        )
+        result = self.verdict()
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_a_build_left_standing_fails(self):
         """`build` is a job, not an outcome.
 
