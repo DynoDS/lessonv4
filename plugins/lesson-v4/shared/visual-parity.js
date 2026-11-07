@@ -218,7 +218,9 @@ const PRIMITIVES = [
   { id: 'place-value-chart', depicts: 'data', slides: 'place-value-chart', worksheets: ['place-value-chart', 'place-value-counter-chart'], wall: 'place-value-chart', stickin: 'place-value-chart',
     geometrySource: 'shared/visuals/place-value-chart-svg.js',
     successCriteriaHelpers: [
-      { key: 'one-per-column', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', method: 'onePerColumnCueSvg', spec: {} } }
+      { key: 'one-per-column', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', method: 'onePerColumnCueSvg', spec: {} } },
+      { key: 'exchange-subtract', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', method: 'exchangeSubtractCueSvg', spec: {} } },
+      { key: 'exchange-add', mode: 'SC-inline', fullSize: null, inline: { treatment: 'simplified', method: 'exchangeAddCueSvg', spec: {} } }
     ],
     note: 'One drawing on every surface since 13 September 2026 (shared/visuals/place-value-chart-svg.js). History worth keeping: the per-cell `highlight` and per-row `label` are what earned it the wall, because a ring round the digit that changed answers WHICH column moved from across the room. The `pair` form (start chart, labelled arrow, result chart, "same" under each unchanged column, title read off the `to` cells, changed column derived and never declared) was first built slide-only; Daniel overruled that, because a child who meets the pair on the board and a stacked chart on the wall is shown two dialects of one picture. The counter band reached the wall in 4.2.93 after a card headed "Count each column\'s counters" printed an empty grid. Until 13 September the board drew PowerPoint tables and the sheet drew a CSS grid (no column colours, orange digits, a blue ring) plus a counter chart in purple and red; both now place the shared drawing, the sheet\'s `place-value-counter-chart` spelling included. The board chart is now one picture, so a teacher can no longer type into its cells in PowerPoint.' },
   { id: 'place-value-mini', depicts: 'data', slides: 'place-value-mini', worksheets: 'place-value-mini', wall: 'place-value-mini', stickin: 'place-value-mini',
@@ -274,8 +276,9 @@ const PRIMITIVES = [
     geometrySource: 'shared/visuals/fishbone-svg.js' },
   { id: 'number-network', depicts: 'data', slides: 'number-network', worksheets: 'number-network', wall: 'number-network', stickin: 'number-network',
     geometrySource: 'shared/visuals/number-network-svg.js' },
-  { id: 'concept-matching', depicts: 'data', slides: 'matching',       worksheets: false, wall: false, stickin: false,
-    note: 'slide-only sorting/matching activity (draws connector affordances), done live on the board.' },
+  { id: 'concept-matching', depicts: 'data', slides: 'matching',       worksheets: false, wall: false, stickin: 'match',
+    geometrySource: 'shared/visuals/match-svg.js',
+    note: 'A draw-lines-to-match task: two columns of boxes joined by lines. The board lays it out as its own boxes and lines (builder matching), so a teacher can edit the words. The stick-in pack prints the pupil copy from shared/visuals/match-svg.js, from the `match` in the lesson design (left, right, togetherPair): a dot on each facing edge, only the pair done with the class joined, no answer lines. worksheets:false because a sheet prints its own `match-up` typed layout; wall:false because a set of unjoined boxes is not a finished unit reference.' },
   { id: 'mult-grid', depicts: 'data',       slides: 'mult-grid',       worksheets: 'times-table-grid', wall: 'mult-grid', stickin: 'mult-grid',
     geometrySource: 'shared/visuals/mult-grid-svg.js',
     note: 'The SATs multiplication-facts grid. The board (`mult-grid`) and the sheet (`times-table-grid`, which reads `operator` for `corner`) drew it separately until 13 September 2026; both now place shared/visuals/mult-grid-svg.js, with square cells, grey headers and green `||` answers, and paper cells held to the 12mm a written product needs.' },

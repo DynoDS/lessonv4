@@ -1,12 +1,12 @@
 # Image Scout Stand-in
 
-Read this reference only when the assignment is marked `image_generation: unavailable`. On that host nothing can be generated, so a picture the search does not find is a blank on the teacher's slide.
+Read this reference only when the assignment is marked `image_generation: unavailable`, or when the generator has answered that its usage is used up (the generation reference sends you here). Either way nothing more can be generated in this run, so a picture the search does not find is a blank on the teacher's slide. After a spent usage, "every compiled step" below means the entry's `search_schedule` and its `usage_spent_schedule` together.
 
 ## A plainer photograph beats a blank
 
 When every compiled step has been walked and no candidate is faithful, an `ordinary-real` entry may still be `sourced` as a stand-in: a plainer photograph of the subject itself. The teacher would rather have a dry kitchen sponge beside the word "permeable" than an empty card, because they can say the rest aloud. A lesson went out with that card blank while a large, free photograph of a sponge sat refused in the work folder.
 
-So where your agent file and the search reference say to report what the search found, look for a stand-in first, and report `no_faithful_real_match` or `real_source_unavailable` only when there is none to take.
+So where your agent file and the search reference say to report what the search found, look for a stand-in first, and report `no_faithful_real_match` or `real_source_unavailable` (after a spent usage, `imagegen_usage_spent`) only when there is none to take.
 
 A stand-in shows the thing the subject names, recognisable at its use size. It may lack the state, action or setting the evidence asked for: the water on the sponge, the roots lifted out of the soil, the moon over the tree. Every other acceptance check in your agent file still applies in full.
 
@@ -14,7 +14,7 @@ An `authentic-real` entry never takes a stand-in, because it names one particula
 
 ## The one kind to refuse
 
-Refuse a stand-in that would make children's answers wrong. When the teaching job or the pedagogical constraint has children take their answers from the picture (they describe it, count in it, choose words that are true of it), look at what the plainer photograph would lead them to say. A lone tree at midday, where the answers are "dark" and "starry", teaches the opposite of the lesson and is worse than nothing, so report the ordinary no-file reason. A picture children only look at or talk about has no answers to spoil.
+Refuse a stand-in that would make children's answers wrong. When the teaching job or the pedagogical constraint has children take their answers from the picture (they describe it, count in it, choose words that are true of it), look at what the plainer photograph would lead them to say. A lone tree at midday, where the answers are "dark" and "starry", teaches the opposite of the lesson and is worse than nothing, so report the ordinary no-file reason (after a spent usage, `imagegen_usage_spent`, which gives the teacher a labelled grey box). A picture children only look at or talk about has no answers to spoil.
 
 ## Finding the plain thing
 

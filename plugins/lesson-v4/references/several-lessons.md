@@ -42,6 +42,14 @@ the teacher anything, so a question left for it becomes a guess.
 
 ## 2. Choose how the lessons are built
 
+**Inside T3 Code** (its thread tools, such as `t3_thread_launch`, are
+available to you), each lesson runs as its own T3 thread, which the teacher can
+open and watch in the sidebar rather than a hidden background session. Skip
+`route` and `agree`: a thread needs no command-line session and no separate
+consent, because it runs with the same permissions as this chat. Run the setup
+check below, do steps 3 and 4 as written, then follow "Starting the lessons as
+T3 threads" in place of step 5. Everywhere else, carry on here.
+
 Run `lesson-batch.py route`.
 
 - `BATCH_ROUTE=in-chat`: the selected host's command or automatic approval
@@ -183,6 +191,44 @@ Read `status`, never a session's log, when you need the state: a log is a
 whole lesson run, and reading several of them is the memory problem this
 route exists to avoid.
 
+### Starting the lessons as T3 threads
+
+The teacher asked for the set and then gets on with their day, so from here
+it runs as if they were not there: no questions, only news.
+
+Run `lesson-batch.py t3-prepare --output "[OUTPUT_DIR]"` (add
+`--without-thread` where step 4 says to launch without one). It prints one
+`T3_MESSAGE <tag>: <file>` per lesson ready to start, and holds back a lesson
+whose thread is missing exactly as `launch` does. The message file is the
+lesson's whole opening message: the teacher's brief, marked as theirs, and the
+notes that tell the lesson where to build and how to pick up what the set
+agreed. Start each one, all at once, with `t3_thread_launch` in this project,
+titled "Lesson: <tag>", passing the file's text unchanged, because the lesson
+can only find the set's agreed steps through the line that names its handover
+file. Record each thread with
+`lesson-batch.py t3-thread --output "[OUTPUT_DIR]" --tag "<tag>" --thread "<thread id>"`,
+so a later chat can find it, and give the teacher one line naming the lessons
+and their thread links.
+
+Then watch every thread yourself with `t3_thread_wait`, with
+`untilDelegatedWorkSettled` on: a lesson's thread goes quiet between steps while
+its helpers work, so a plain wait reports it finished long before it is. When
+a lesson's thread has settled, run
+`lesson-batch.py t3-ended --output "[OUTPUT_DIR]" --tag "<tag>"` and act on its
+first line:
+
+- `FINISHED` or `NOT_SAVED`: report it as step 5 describes.
+- `T3_CARRY_ON <tag>: <message>`: the lesson stopped before saving. Send that
+  message to the lesson's own thread with `t3_thread_send`, never a new
+  thread, since a second run on one lesson overwrites the first one's files.
+  Say nothing to the teacher unless it stops again.
+- `STOPPED`: say which lesson, its last words (its thread's final message),
+  and that the others carry on.
+
+When `t3-ended` prints `BATCH_DONE`, finish as step 6 describes, taking each
+lesson's report from its thread's final message, since these lessons keep no
+session log for `status --final` to read.
+
 ## 6. Finish
 
 When `watch` prints `BATCH_DONE`, run
@@ -207,3 +253,7 @@ lesson that `STOPPED` or another that has not finished, run
 still running and lessons waiting for the limit are left alone (`LEFT`,
 `WAITING`), and each other one carries on from where it stopped. Then watch and
 report as in step 5.
+
+A set started as T3 threads has no keeper. `status` lists each lesson's
+thread; carry on an unfinished one by sending to that thread as above, and
+`resume` leaves those lessons alone (`LEFT`).

@@ -274,8 +274,8 @@ function validateSignals(slide, n, errors, warnings) {
   const names = [...TASK_SIGNALS].join(', ');
   // Rendered badge values: quick = lightning, sheet = the existing deeper-work
   // book/sheet drawing. Source doMode chooses them independently of printing.
-  if (slide.doSign !== undefined && slide.doSign !== 'quick' && slide.doSign !== 'sheet') {
-    errors.push(`slide ${n}: doSign ${JSON.stringify(slide.doSign)} is not a badge the deck draws; use "quick" or "sheet".`);
+  if (slide.doSign !== undefined && slide.doSign !== 'quick' && slide.doSign !== 'sheet' && slide.doSign !== 'final') {
+    errors.push(`slide ${n}: doSign ${JSON.stringify(slide.doSign)} is not a badge the deck draws; use "quick", "sheet" or "final".`);
   }
   if (slide.doSign !== undefined && slide.headerStyle === 'starter') {
     warnings.push(`slide ${n}: a starter header has no badge spot, so doSign ${JSON.stringify(slide.doSign)} will not appear.`);

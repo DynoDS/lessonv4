@@ -962,6 +962,14 @@ def append_review_unit(
     lines.append("")
 
     append_review_json(lines, "Content", review_content(unit))
+    board = unit.get("board")
+    if isinstance(board, dict):
+        # Every board string is printed in the class view; this names which
+        # parts the design filled, so an empty `context` or no stem is seen.
+        append_review_json(lines, "Board", {
+            key: (IN_CLASS_VIEW if class_view_prints(board.get(key)) else board.get(key))
+            for key in ("context", "goal", "actions", "stems")
+        })
     if unit.get("taskStructure") is not None:
         append_review_json(lines, "Task structure", unit["taskStructure"])
 
@@ -1045,6 +1053,28 @@ def class_view_criteria(ref: str, criteria: dict[str, dict], out: list[str]) -> 
             out.append(f"{label}: {text}" if text else label)
 
 
+TABLE_BLANK = "______"
+
+
+def class_view_table(task: dict, out: list[str]) -> None:
+    """A table as the child sees it: the heading row, then each row with a
+    blank where the child writes, then the words each choice column circles.
+    The cells are joined with ` | `, which `check-voice-edit.py` splits back
+    into the cells, so every cell and every choice is in the voice lane."""
+    columns = [column for column in task.get("columns") or [] if isinstance(column, dict)]
+    if columns:
+        out.append(" | ".join(str(column.get("label") or "") for column in columns))
+    for row in task.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        cells = row.get("cells") or []
+        out.append(" | ".join(TABLE_BLANK if cell is None else str(cell) for cell in cells))
+    for column in columns:
+        choices = [str(choice) for choice in column.get("choices") or [] if str(choice).strip()]
+        if choices:
+            out.append(f"{column.get('label')} (circle one): " + " | ".join(choices))
+
+
 def class_view_answer(unit: dict, out: list[str]) -> None:
     answer = unit.get("answer") or {}
     if answer.get("delivery") not in {"answer-slide", "visible-in-unit"}:
@@ -1063,6 +1093,14 @@ def class_view_answer(unit: dict, out: list[str]) -> None:
             out.append(
                 f"{items.get(placement.get('itemRef'), placement.get('itemRef'))}: "
                 f"{groups.get(placement.get('groupRef'), placement.get('groupRef'))}"
+            )
+    elif structure.get("kind") == "match":
+        left = {row["id"]: row.get("label", "") for row in task.get("left") or []}
+        right = {row["id"]: row.get("label", "") for row in task.get("right") or []}
+        for pair in structure.get("pairs") or []:
+            out.append(
+                f"{left.get(pair.get('leftRef'), pair.get('leftRef'))}: "
+                f"{right.get(pair.get('rightRef'), pair.get('rightRef'))}"
             )
     elif structure.get("kind") == "evidence-classification":
         fields = {row["id"]: row.get("label", "") for row in task.get("fields") or []}
@@ -1121,6 +1159,13 @@ def class_view_unit(
     """Every string on this unit a child reads or hears, in the order they meet it."""
     out: list[str] = []
     content = unit.get("content") or {}
+    board = unit.get("board") if isinstance(unit.get("board"), dict) else {}
+    # A Do's board reads in the order the slide shows it: the case and what
+    # the class is going to do, then the question, then the action cards and
+    # the stems, then the material (`preferences.md` -> `A Do slide makes
+    # sense on its own`).
+    class_view_strings(board.get("context"), out)
+    class_view_strings(board.get("goal"), out)
     if activity_is_child_facing(unit):
         class_view_strings(content.get("activity"), out)
     for key in CHILD_FACING_CONTENT_KEYS:
@@ -1148,6 +1193,8 @@ def class_view_unit(
         class_view_strings(rehearsal.get("sayIt"), out)
         class_view_strings(rehearsal.get("partnerAsks"), out)
     class_view_strings(unit.get("pupilInstruction"), out)
+    class_view_strings(board.get("actions"), out)
+    class_view_strings(board.get("stems"), out)
     task = unit.get("taskStructure")
     if isinstance(task, dict):
         for row in task.get("groups") or []:
@@ -1157,6 +1204,11 @@ def class_view_unit(
         for row in task.get("items") or []:
             class_view_strings(row.get("label"), out)
             class_view_strings(row.get("detail"), out)
+        if task.get("kind") == "table":
+            class_view_table(task, out)
+        for side in ("left", "right"):
+            for row in task.get(side) or []:
+                class_view_strings(row.get("label"), out)
     class_view_drawings(unit.get("representationRefs"), drawings, out)
     for ref in unit.get("successCriteriaRefs") or []:
         class_view_criteria(ref, criteria, out)
@@ -1878,9 +1930,11 @@ def build_do_beside_teach(design: dict) -> list[str]:
         shown, pupil = row.shown, row.pupil
         answer = row.answer
         content = pupil.get("content") or {}
+        board = pupil.get("board") if isinstance(pupil.get("board"), dict) else {}
         asked = (
             pupil.get("pupilInstruction")
             or content.get("task")
+            or " ".join(str(line) for line in board.get("actions") or [])
             or content.get("discussionQuestion")
             or content.get("question")
             or content.get("example")
@@ -1895,11 +1949,20 @@ def build_do_beside_teach(design: dict) -> list[str]:
         else:
             names = ", ".join(f"`{unit['label']}`" for unit in before)
             lines.append(f"### {pupil['label']} (after {names})")
-        if pupil.get("doMode") in {"quick", "deeper"}:
+        if pupil.get("doMode") in {"quick", "deeper", "record"}:
             lines.append(f"- Designer-selected Do scope: {pupil['doMode']}; judge the work under "
                          "`preferences.md` → `Choose Do activities for the learning`, "
                          "not its duration or printing.")
         lines.append(f"- Asked: {asked}")
+        if board:
+            if board.get("context"):
+                lines.append("- The case on the board: " + " ".join(str(line) for line in board["context"]))
+            if board.get("goal"):
+                lines.append(f"- What the class is going to do: {board['goal']}")
+            if board.get("actions") and pupil.get("pupilInstruction") is None and content.get("task"):
+                lines.append("- Action cards: " + " | ".join(str(line) for line in board["actions"]))
+            if board.get("stems"):
+                lines.append("- Stems: " + " | ".join(str(line) for line in board["stems"]))
         structure = pupil.get("taskStructure") or {}
         items = [entry.get("label", "") for entry in structure.get("items") or [] if entry.get("label")]
         if items and structure.get("kind") == "option-bank":
@@ -1907,6 +1970,14 @@ def build_do_beside_teach(design: dict) -> list[str]:
         elif items and structure.get("kind") == "sort":
             groups = [entry.get("label", "") for entry in structure.get("groups") or []]
             lines.append("- Cards: " + " | ".join(items) + "; groups: " + " | ".join(groups))
+        elif structure.get("kind") == "table":
+            table: list[str] = []
+            class_view_table(structure, table)
+            lines.append("- Table: " + " / ".join(table))
+        elif structure.get("kind") == "match":
+            left = [str(entry.get("label", "")) for entry in structure.get("left") or []]
+            right = [str(entry.get("label", "")) for entry in structure.get("right") or []]
+            lines.append("- Join with lines: " + " | ".join(left) + "; to: " + " | ".join(right))
         if row.total and row.taught_sentence:
             lines.append(f"- The teaching said: {row.taught_sentence}")
         lines.append(f"- Expected answer: {answer or '(none written)'}")

@@ -3,7 +3,10 @@
 // A criteria box takes the width its words need, and the work beside it the
 // rest (the teacher, 16 October 2026, of a Year 3 RE slide: the narrower box
 // "looks way better and there's more space for everything else", because its
-// lines fill their cards with hardly any dead space).
+// lines fill their cards with hardly any dead space). Since 6 November 2026 it
+// takes the narrowest width at which its steps stay at 20pt with no word left
+// alone, not only the width that saves white at the line ends: the criteria
+// are "not the thing on the slides that needs the most space".
 
 const assert = require('node:assert/strict');
 const test = require('node:test');
@@ -55,9 +58,10 @@ test('a box whose lines leave white at their ends narrows, and the work takes th
   assert.ok(now.workW > 7.5, `the work side is only ${now.workW}in`);
 });
 
-test('a box whose lines already fill their cards keeps its width', () => {
+test('a long list narrows only as far as its steps stay at 20pt', () => {
   const now = drawn(split(ADVERBIALS));
-  assert.ok(now.w > 5.0, `the adverbials box narrowed to ${now.w.toFixed(2)}in`);
+  assert.ok(now.font >= 20, `the adverbials came out at ${now.font}pt`);
+  assert.ok(now.w <= 5.08, `the adverbials box grew to ${now.w.toFixed(2)}in`);
 });
 
 test('a box holding a table as well as steps is left as wide as it was given', () => {
@@ -72,6 +76,20 @@ test('a box holding a table as well as steps is left as wide as it was given', (
 });
 
 test('a live-drawing cue keeps the room it needs beside the heading', () => {
-  const now = drawn(split(DIWALI, { secondary: { type: 'sc-panel', flipchart: true, content: { type: 'steps', steps: DIWALI } } }));
-  assert.ok(now.w >= 4.4, `a box with the easel narrowed to ${now.w.toFixed(2)}in`);
+  // The heading may go down to 22pt as the box narrows, and it always ends
+  // before the easel in the corner.
+  const pptx = new PptxGenJS();
+  const slide = pptx.addSlide();
+  withoutRecording(() => drawSlide(pptx, slide,
+    split(DIWALI, { secondary: { type: 'sc-panel', flipchart: true, content: { type: 'steps', steps: DIWALI } } }),
+    { slideIndex: 0, cardLook: true, lesson: { subject: 're' }, imageDims: {} }));
+  const objects = slide._slideObjects;
+  const heading = objects.find((o) => (o.options || {}).objectName === 'NOFIT_criteria-heading');
+  const easel = objects.find((o) => o._type === 'image' && /flipchart/.test(String(o.image || o.path || (o.options && o.options.path) || '')));
+  assert.ok(heading, 'the heading is drawn');
+  assert.ok(heading.options.fontSize >= 22, `the heading went down to ${heading.options.fontSize}pt`);
+  if (easel) {
+    const ex = easel.options ? easel.options.x : easel.x;
+    assert.ok(heading.options.x + heading.options.w <= ex, 'the heading runs under the easel');
+  }
 });

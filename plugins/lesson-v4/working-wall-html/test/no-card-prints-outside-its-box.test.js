@@ -125,7 +125,16 @@ function savedWalls() {
   const found = [];
   const walk = (dir, depth) => {
     if (depth > 6) return;
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    // A folder this user cannot open (a sandboxed run can leave one behind in
+    // evaluations/) holds no wall we could read anyway, so it is stepped past.
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch (err) {
+      if (err.code === "EPERM" || err.code === "EACCES") return;
+      throw err;
+    }
+    for (const entry of entries) {
       if (entry.name.startsWith(".") || entry.name === "node_modules") continue;
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) walk(full, depth + 1);

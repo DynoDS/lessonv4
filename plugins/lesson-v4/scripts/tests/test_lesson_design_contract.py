@@ -2146,7 +2146,7 @@ def test_slide_designer_protects_child_facing_content_beyond_pupil_instruction()
     assert "Any string already authored in source-unit `content` that is rendered as pupil-facing" in text
     # S1 (17 Oct 2026): the role says it once, in its list of what the Slide
     # Designer may choose.
-    assert "- physical navigation and presentation headings;" in text
+    assert "- physical navigation and presentation headings, including the title of a slide its unit's label does not fit" in text
 
 
 def test_adaptation_photo_merge_happens_before_worksheet_snapshot_and_spawn():

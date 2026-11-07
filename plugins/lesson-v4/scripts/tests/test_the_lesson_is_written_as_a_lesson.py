@@ -175,7 +175,7 @@ class VocabularyArrivesWhenItIsNeeded(unittest.TestCase):
 class TheDesignsLabelIsTheTitle(unittest.TestCase):
     def test_the_headings_rule_no_longer_hands_out_slot_names(self) -> None:
         preferences = flat(PREFERENCES)
-        self.assertIn("The design's label is the slide's title", preferences)
+        self.assertIn("The design's label is the unit's title, and each slide checks it fits", preferences)
         # The warm titles survive only as the fallback for an internal label.
         self.assertIn("are for that case alone", preferences)
         self.assertNotIn('can be titled "Your Practice"', preferences)
@@ -183,7 +183,18 @@ class TheDesignsLabelIsTheTitle(unittest.TestCase):
         self.assertIn("Read the titles alone, in order: they should tell the lesson's story", preferences)
 
     def test_the_slide_designer_keeps_a_label_that_names_the_move(self) -> None:
-        self.assertIn("The source unit's label is the title unless it is an internal slot name", flat(SLIDE_DESIGNER))
+        self.assertIn("The source unit's label is the title of each of its slides where it fits that slide", flat(SLIDE_DESIGNER))
+
+    def test_a_title_fits_the_slide_it_is_over(self) -> None:
+        """A unit's label is read over each slide it becomes. The rule that kept a
+        question title over the launch slides that had not set it up yet is gone,
+        and the standard each title meets is written once, in the headings."""
+        preferences = flat(PREFERENCES)
+        self.assertIn("**What a title is for.** The class reads the title first", preferences)
+        self.assertIn("but only a question the board has already set up", preferences)
+        self.assertIn("It stays only where both answers are yes", preferences)
+        self.assertNotIn("the launch that sets the question up and a rehearsal before the writing, keep the question as their title", preferences)
+        self.assertIn("title that slide yourself by the section's `What a title is for`", flat(SLIDE_DESIGNER))
 
 
 class ATeachSlideLandsItsSentenceOnce(unittest.TestCase):
@@ -308,6 +319,21 @@ def test_a_statement_that_repeats_a_question_headline_is_still_refused():
     teach["content"]["explanation"] = "Look at the front teeth in the picture.\nIncisors cut food and canines tear food."
     teach["content"]["takeaway"] = None
     assert_invalid_contract(design, photos, "lands its sentence once")
+
+
+def test_a_question_asked_on_the_way_and_the_line_that_answers_it_are_not_a_repeat():
+    # The route asks the class a step they can reach, and the next line says
+    # it; the two share most of their words and are not the sentence twice.
+    design, photos = valid_content_contract()
+    teach = first_teach(design)
+    teach["content"]["headline"] = "The front teeth and the pointed teeth do different jobs."
+    teach["content"]["explanation"] = (
+        "Look at the front teeth in the picture.\n"
+        "What do you think incisors and canines do to food?\n"
+        "Incisors cut food and canines tear food."
+    )
+    teach["content"]["takeaway"] = None
+    module.validate_design(design, photos)
 
 
 def test_an_explanation_that_adds_what_the_board_cannot_show_is_allowed():

@@ -55,7 +55,9 @@ test('the face never shrinks past being a face', () => {
   const huge = render('Something quite long to say. '.repeat(20));
   const short = render(SHORT);
   assert.ok(huge.picture.h > 0.9, `the face came to ${huge.picture.h}in`);
-  assert.ok(huge.picture.h >= short.picture.h * 0.5);
+  // Measured against a short line's face, which grew when the ceiling rose from
+  // 0.46 to 0.6 of the column (6 November 2026); the floor did not move.
+  assert.ok(huge.picture.h >= short.picture.h * 0.4);
 });
 
 test('a hard break is a line the bubble has to hold', () => {

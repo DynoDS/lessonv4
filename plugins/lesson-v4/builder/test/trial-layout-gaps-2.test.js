@@ -141,6 +141,9 @@ const CHLOE_LIST = { type: 'sc-panel', content: { type: 'steps', steps: [
   'Find the groups the day has <<nothing from>>.',
   'Say which job each missing group does for your body.',
   'Choose a food from that group and say how it would help.',
+  // Added 6 November 2026: with the numbers on the cards' corners the words
+  // have more width, and the four steps above now fit the 30% column.
+  'Tell your partner which food you chose and why.',
   '✨ A {{balanced diet}} has food from every {{food group}}, because each group does a different job in your body.'
 ] } };
 

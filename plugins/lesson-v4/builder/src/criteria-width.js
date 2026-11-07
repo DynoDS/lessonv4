@@ -24,7 +24,7 @@
 // fill their cards keeps its width, and the room any box gives back goes to the
 // work beside it.
 
-const { lineWidthIn, usableWidth } = require('./content/steps');
+const { lineWidthIn, usableWidth, CORNER_STEP_IN } = require('./content/steps');
 const { textWidthEm, RENDER_SAFETY } = require('../../shared/text/comic-glyph-width');
 
 // A line's width in the weight it prints in: the points under a step print in
@@ -33,11 +33,13 @@ const widthIn = (text, pt, bold) => (textWidthEm(text, bold !== false) / RENDER_
 const { signalWidth } = require('./signals');
 const { withoutRecording } = require('./warnings');
 const requireGlobal = require('./require-global');
+const { HEADING_NAME } = require('./success-criteria-panel');
 
 const STEP = 0.05;
 const READ_BEST_PT = 20;
 // The heading prints at 28pt, inside the panel's 0.15in edges.
 const LABEL_PT = 28;
+const LABEL_FLOOR_PT = 22;
 const PANEL_PAD = 0.15;
 const LABEL_SPARE = 0.10;
 // Narrowing that saves less white than this is not worth moving the work for.
@@ -57,7 +59,9 @@ function lookAt(draw, zone) {
     get(target, prop) {
       if (prop === 'addText') return (content, opts) => {
         if (isStepText(opts)) texts.push({ content, opts });
-        else if (opts && opts.fontSize === LABEL_PT && opts.bold) labels.push(String(content));
+        // The heading by its name: beside the draw-live easel it may be drawn
+        // smaller than 28pt, and it is measured at 28pt below whatever it printed at.
+        else if (opts && (opts.objectName === HEADING_NAME || (opts.fontSize === LABEL_PT && opts.bold))) labels.push(String(content));
         return target.addText(content, opts);
       };
       const value = target[prop];
@@ -90,14 +94,18 @@ function lookAt(draw, zone) {
       });
     });
     const width = usableWidth(opts.w);
-    paragraphs.filter((p) => p.text.trim()).forEach((p) => {
+    // A criteria card's first line steps in for the number on its corner
+    // (steps.js), so it holds fewer words than the lines under it.
+    const firstStepIn = CORNER_STEP_IN;
+    paragraphs.filter((p) => p.text.trim()).forEach((p, at) => {
       smallest = Math.min(smallest, p.pt);
       const wrap = (room) => {
         let line = '';
         const lines = [];
         p.text.split(/\s+/).filter(Boolean).forEach((word) => {
           const candidate = line ? `${line} ${word}` : word;
-          if (!line || widthIn(candidate, p.pt, p.bold) <= room) line = candidate;
+          const here = at === 0 && lines.length === 0 ? room - firstStepIn : room;
+          if (!line || widthIn(candidate, p.pt, p.bold) <= here) line = candidate;
           else { lines.push(line); line = word; }
         });
         if (line) lines.push(line);
@@ -139,27 +147,76 @@ function hasFlipchart(data) {
 // The width a criteria side takes, from `zone.w` down. `draw(pptx, slide,
 // zone)` draws it exactly as the real slide will. Returns the zone's own width
 // whenever narrowing would not help.
+//
+// The box takes the narrowest width at which its words still read well, not
+// only the width that leaves the least white. The criteria matter, the teacher
+// said of a Year 4 area deck (6 November 2026), "but it's not the thing on the
+// slides that needs the most space": the room they do not need goes to the
+// work, so the shape, the question and the modelling can be bigger. Once the
+// numbers stopped taking a column of their own (steps.js, corner numbers) the
+// words had more room than they needed at full width, and the old measure,
+// which narrowed only to save white at the line ends, left the box as wide as
+// before with bigger words in it.
+//
+// The same list keeps one width on every slide of the lesson: a box that
+// changed size slide to slide was one of his faults (self-respect, Area). The
+// layout preflight draws every slide before the real build, so by the real
+// pass each list knows the width every slide it is on needs, and takes the
+// widest of them, which reads well on all of them.
+const LESSON_WIDTHS = new WeakMap();
+
+function listKey(data) {
+  const panel = data && data.type === 'stack' ? data.items : [data];
+  return JSON.stringify((panel || []).map((p) => {
+    const content = p && (p.criteria || p.content);
+    return [p && (p.criteriaLabel || p.label), content && content.steps];
+  }));
+}
+
 function snugCriteriaWidth(zone, data, draw, opts = {}) {
+  const own = narrowestReadableWidth(zone, data, draw, opts);
+  const ctx = opts.ctx;
+  if (!ctx || !ctx.lesson || typeof ctx.lesson !== 'object') return own;
+  if (!LESSON_WIDTHS.has(ctx.lesson)) LESSON_WIDTHS.set(ctx.lesson, new Map());
+  const widths = LESSON_WIDTHS.get(ctx.lesson);
+  const key = listKey(data);
+  // A slide whose box cannot narrow at all (its words already need every inch)
+  // keeps its own width and sets nobody else's: the others would only grow to
+  // match a cramped slide (the teacher agreed, 6 November 2026, that such a
+  // slide keeps its own size and the rest do not follow it).
+  if (own >= zone.w - 1e-9) return own;
+  const shared = Math.max(own, widths.get(key) || 0);
+  // A trial (a panel tried at another size) records nothing.
+  if (require('./warnings').recording()) widths.set(key, shared);
+  return Math.min(zone.w, shared);
+}
+
+function narrowestReadableWidth(zone, data, draw, opts) {
   const full = lookAt(draw, zone);
   if (!full || !full.sizes.every(Number.isFinite)) return zone.w;
   const cue = hasFlipchart(data) ? signalWidth('flipchart', 0.58) + 0.20 : 0;
-  const least = Math.max(opts.least || 0, full.label + 2 * PANEL_PAD + LABEL_SPARE + cue);
+  // The heading goes smaller with the box, down to 22pt, still a size above
+  // the steps under it (success-criteria-panel.js draws it to fit its room):
+  // at its full 28pt, "Success Criteria" alone needed 4.2in and held every box
+  // at the practice panel's 4.60.
+  const least = Math.max(opts.least || 0, full.label * LABEL_FLOOR_PT / LABEL_PT + 2 * PANEL_PAD + LABEL_SPARE + cue);
   // Each step and sticky line keeps the 20pt it is read best at, or the size it
   // had at full width when that was already less.
   const floors = full.sizes.map((pt) => Math.min(pt, READ_BEST_PT));
 
-  let best = { w: zone.w, dead: full.dead };
+  let best = zone.w;
   for (let w = zone.w - STEP; w >= least - 1e-9; w -= STEP) {
     const seen = lookAt(draw, Object.assign({}, zone, { w }));
     // A width that cannot draw the list, or draws it smaller than it may go,
     // ends the search: nothing narrower does better.
     if (!seen || seen.count !== full.count || seen.sizes.some((pt, i) => pt < floors[i])) break;
-    // A narrower width must leave clearly less white to be worth taking, and
-    // may not leave a word alone on a line where the full width did not.
+    // A width that leaves a word alone on a line ("row." under "Count each
+    // square once, row by") is passed over: a narrower one may break the step
+    // somewhere better.
     if (seen.lonely > full.lonely) continue;
-    if (seen.dead < best.dead - 0.005) best = { w, dead: seen.dead };
+    best = w;
   }
-  return full.dead - best.dead >= LEAST_GAIN ? best.w : zone.w;
+  return zone.w - best >= LEAST_GAIN ? best : zone.w;
 }
 
 // Only lists of steps are narrowed. A table or a figure in the box is measured
@@ -193,7 +250,7 @@ function snugSplitCriteria(zoneA, dataA, zoneB, dataB, ctx) {
         ctx._containerType = container;
       }
     };
-    const w = snugCriteriaWidth(crit, critData, draw);
+    const w = snugCriteriaWidth(crit, critData, draw, { ctx });
     const spare = crit.w - w;
     if (spare <= 0) return;
     if (crit.x > other.zone.x) crit.x += spare; else other.zone.x -= spare;
@@ -204,4 +261,4 @@ function snugSplitCriteria(zoneA, dataA, zoneB, dataB, ctx) {
   settle(zoneA, dataA, { zone: zoneB, data: dataB });
 }
 
-module.exports = { snugCriteriaWidth, snugSplitCriteria };
+module.exports = { snugCriteriaWidth, snugSplitCriteria, lookAt };

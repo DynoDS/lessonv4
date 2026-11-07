@@ -95,3 +95,21 @@ test('the speech text is placed inside the hugged bubble', () => {
   assert.ok(speechText.options.y >= bubble.y);
   assert.ok(speechText.options.y + speechText.options.h <= bubble.y + bubble.h + 1e-6);
 });
+
+test('a short remark is drawn the size of its words, centred; a long one keeps the column and reads from the left', () => {
+  const short = draw('Football again!');
+  const long = draw('Clouds are made of invisible water vapour, and the vapour stays invisible even when it cools.');
+  const sum = draw('1,820 + 240 = 2,060.\nThen 1,820 - 530 = 1,290.');
+  const shortBubble = bubbleOf(short);
+  const longBubble = bubbleOf(long);
+  const tail = tailOf(short);
+  assert.ok(shortBubble.w < longBubble.w,
+    `"Football again!" (${shortBubble.w}) should be narrower than a wrapping sentence's bubble (${longBubble.w})`);
+  assert.ok(Math.abs(shortBubble.x + shortBubble.w / 2 - (tail.x + tail.w / 2)) < 1e-6,
+    'the short bubble sits centred over its tail');
+  const textOf = (slide, words) => slide.texts.find((t) => JSON.stringify(t.value).includes(words)).options;
+  assert.equal(textOf(short, 'Football').align, 'center');
+  assert.equal(textOf(long, 'Clouds').align, 'left');
+  assert.equal(textOf(sum, '1,820').align, 'left');
+  assert.equal(bubbleOf(sum).w, longBubble.w, 'a remark written on two lines keeps the full width');
+});

@@ -19,7 +19,7 @@ Read the `FOCUSED REPAIR` block before touching the resource.
 
 Repair only `Finding` at `Location` and anything genuinely consequential to `What must change`. Preserve everything under `Already passed — leave unchanged`. Treat `Potential cross-resource impact` and `Existing build diagnostic` as binding evidence, not invitations to reopen unrelated work.
 
-You own the stick-in resource decision and faithful physical realisation of already-settled write-on moments. You do not own new pedagogy, new questions or new task moments. When a piece corresponds to a figure shown on the board, its figure remains a field-for-field copy of the matching figure in `lesson.json`; do not redraw or reinterpret it from prose.
+You own the stick-in resource decision and faithful physical realisation of already-settled write-on moments. You do not own new pedagogy, new questions or new task moments. When a piece corresponds to a figure shown on the board, its figure remains a field-for-field copy of the matching figure in `lesson.json`; do not redraw or reinterpret it from prose. That holds hardest for a design's `table` or `match` material: the piece is that material exactly, its row done together and its circle-one cells included, because the board and the paper are one task, so a repair that runs out of room changes the piece's size or page, never its rows, columns or choices.
 
 ## Start narrow
 
@@ -56,10 +56,8 @@ Require `REPAIR_SCOPE_OK` and return that line with your repair-impact fields.
 `REPAIR_SCOPE_FAILED` names a content object that arrived and did not leave. You
 may move one, split it across pages or slides, hand it a different template or
 rebuild the layout around it; what you may not do is finish with fewer of the
-things children read, work from or write into than you were handed. A slide
-asking children to compare two objects went into a repair carrying a two-row
-recording table and came out carrying one column of boxes: every check passed,
-because what was left fitted beautifully, and the comparison was gone.
+things children read, work from or write into than you were handed. For example, replacing a two-row recording table for comparing two objects
+with one column of boxes can pass every fit check while losing the comparison.
 
 Put back what went missing and repair the presentation around it. If the honest
 repair really does change what children are asked to do, that is the lesson

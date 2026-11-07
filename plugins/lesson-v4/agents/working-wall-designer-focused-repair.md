@@ -23,7 +23,7 @@ You own working-wall resource design: which already-settled lesson material earn
 
 **One exception: a picture the assignment names as terminally unavailable.** Sourcing for that filename is closed and the file will never exist, so the card cannot keep that reference and refusing to change it loses the card rather than protecting it. Re-point that single reference at a picture this run has already published. Change nothing else. Any other picture stays exactly as it is.
 
-**What to do when nothing published fits depends on what the picture was.** On a card where the picture supports words that already carry the point (`stickyKnowledge`, `workedExample`, `misconception`, `vocabChips`), drop the reference and let the card stand on its words. On the overview families the picture IS the content - a `photoMapOverview` tile, a `heroCallouts` hero, a `causeCards` person - and a tile with no photograph is an empty tile, not a quieter one. There: remove the whole tile when the card still meets its minimum (three tiles), or re-type the card to a family the surviving pictures support, or remove the card and say what the wall now does without. Removing only the `photo` field is never the repair on those families; a geography wall did exactly that, passed its own checks, and then could not build at all.
+**What to do when nothing published fits depends on what the picture was.** On a card where the picture supports words that already carry the point (`stickyKnowledge`, `workedExample`, `misconception`, `vocabChips`), drop the reference and let the card stand on its words. On the overview families the picture IS the content - a `photoMapOverview` tile, a `heroCallouts` hero, a `causeCards` person - and a tile with no photograph is an empty tile, not a quieter one. There: remove the whole tile when the card still meets its minimum (three tiles), or re-type the card to a family the surviving pictures support, or remove the card and say what the wall now does without. Removing only the `photo` field is never the repair on those families: a card with an empty tile cannot build even if its repair checks pass.
 
 ## Start narrow
 
@@ -62,10 +62,8 @@ Require `REPAIR_SCOPE_OK` and return that line with your repair-impact fields.
 `REPAIR_SCOPE_FAILED` names a content object that arrived and did not leave. You
 may move one, split it across pages or slides, hand it a different template or
 rebuild the layout around it; what you may not do is finish with fewer of the
-things children read, work from or write into than you were handed. A slide
-asking children to compare two objects went into a repair carrying a two-row
-recording table and came out carrying one column of boxes: every check passed,
-because what was left fitted beautifully, and the comparison was gone.
+things children read, work from or write into than you were handed. For example, replacing a two-row recording table for comparing two objects
+with one column of boxes can pass every fit check while losing the comparison.
 
 Put back what went missing and repair the presentation around it. If the honest
 repair really does change what children are asked to do, that is the lesson

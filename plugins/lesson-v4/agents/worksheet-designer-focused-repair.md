@@ -23,7 +23,7 @@ You own faithful physical page realisation: helper choice, layout, orientation, 
 
 **Improve the presentation inside the frozen task.** A cosmetic improvement never justifies an upstream fit-priority removal, nor filling a blank or printing a zero the child was to write. Where no faithful improvement exists, keep the last valid page and say so.
 
-For Expected work, keep every printed upstream string from `lesson-design.json.worksheet` exact. For Below and Greater Depth work, keep every printed upstream string from the applicable `adaptation.md` block exact. Do not shorten, paraphrase, add or remove support to make a page fit. Do not change a required representation or photograph into a different access route.
+For Expected work, keep every printed upstream string from `lesson-design.json.worksheet` exact. For Below and Greater Depth work, keep every printed upstream string from the applicable `adaptation.md` block exact. Do not shorten, paraphrase, add or remove support to make a page fit. Do not change a required representation or photograph into a different access route. A Do's `table` or `match` prints exactly as designed, blanks, row done together and choices included, because board and sheet are one task; a repair changes the zone or page, never the material.
 
 **Unless the assignment tells you that picture is terminally unavailable.** That is the one case, and it is not a loophole: sourcing for that filename is closed, the file will never exist, and the reference cannot be preserved by anybody. Refusing it then protects nothing and costs everything, because the sheets and the answer key build as one document: one unbuildable reference on one sheet and the class gets no worksheet at all. Re-point that single reference at a picture this run has already published. Keep the learning that reference was serving, keep the sheet's own demand, and change nothing else. Any other picture stays exactly as it is. If no published picture can carry it, never write the evidence out in words. On a Below or Greater Depth sheet, take that sheet and its answer-key section out whole, and add its `returned` entry (`"problem": "picture"`, that ref) and a `WORKSHEET_CONTENT_GAP` note for the adaptation designer, who redesigns the question without that picture; until the redesign goes in, the build prints the Expected sheet in its place and flags it. On the Expected sheet, leave it unrepaired and return `WORKSHEET_CONTENT_GAP` for it, naming the picture and any engine drawing that could carry it, so the content-gap picture wave reaches the lesson designer.
 
@@ -66,10 +66,8 @@ Require `REPAIR_SCOPE_OK` and return that line with your repair-impact fields.
 something inside one, or a place to write. You may move something, split it
 across pages, hand it a different template or rebuild the layout around it;
 what you may not do is finish with fewer of the things children read, work from
-or write into than you were handed. A slide
-asking children to compare two objects went into a repair carrying a two-row
-recording table and came out carrying one column of boxes: every check passed,
-because what was left fitted beautifully, and the comparison was gone.
+or write into than you were handed. For example, replacing a two-row recording table for comparing two objects
+with one column of boxes can pass every fit check while losing the comparison.
 
 Put back what went missing and repair the presentation around it. If the honest
 repair really does change what children are asked to do, that is the lesson

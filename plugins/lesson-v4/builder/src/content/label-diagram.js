@@ -23,6 +23,8 @@
 //              see the shared module for the full field meaning. `given:true`
 //              prints the label (answer/handed part); absent draws a blank line.
 //   caption    optional line under the diagram (e.g. "Label the parts of the river").
+//   marks      optional lines, rings and arrows drawn on the picture itself, in the
+//              anchors' percentages (the shared module's 'Marks drawn on the picture').
 //   layout, marginXRatio, marginYRatio, labelMaxChars, arrow, labelColour
 //              optional presentation flags forwarded to the shared geometry.
 //              `layout:"sides"` is the poster form for a PHOTO: the part names
@@ -190,6 +192,8 @@ function labelDiagramKey(data) {
     // A diagram pointing at one part is a different picture from the same
     // diagram pointing at nothing; one pointing at nothing keeps its old key.
     ...(data.highlight != null && data.highlight !== false ? [`highlight:${JSON.stringify(data.highlight)}`] : []),
+    // A picture with a line or ring drawn on it is a different picture too.
+    ...(Array.isArray(data.marks) && data.marks.length ? [`marks:${JSON.stringify(data.marks)}`] : []),
   ].join('|');
 }
 

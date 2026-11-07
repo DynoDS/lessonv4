@@ -18,6 +18,13 @@ asking chat only to plan, start and report.
     python lesson-batch.py status --output <OUTPUT_DIR> [--final]
     python lesson-batch.py resume --output <OUTPUT_DIR>
     python lesson-batch.py keep --output <OUTPUT_DIR> [--once]
+    python lesson-batch.py t3-prepare --output <OUTPUT_DIR> [--tag <tag>] [--without-thread]
+    python lesson-batch.py t3-thread --output <OUTPUT_DIR> --tag <tag> --thread <thread id>
+    python lesson-batch.py t3-ended --output <OUTPUT_DIR> --tag <tag>
+
+Inside T3 Code, t3-prepare stands in for launch: it writes each lesson's opening
+message for the asking chat to start as a T3 thread, and t3-ended reads where a
+lesson stands once its thread stops. The keeper leaves those lessons alone.
 
 `plan.json` is {"lessons": [{"tag", "year", "subject", "brief"}, ...]} in the
 order the teacher listed them. The batch is kept in
@@ -548,6 +555,152 @@ def next_log(folder: Path) -> str:
     return f"run-{n}.jsonl"
 
 
+def set_values(lesson: dict) -> dict:
+    """What the set agreed for this lesson, as the LESSON_SET_ values resolve-filing.py reads."""
+    values = {}
+    # The set's thread reaches the lesson through resolve-filing.py, which
+    # writes it into filing.txt beside PREVIOUS_LESSON.
+    if lesson.get("threadFile"):
+        values.update(LESSON_SET_THREAD=lesson["threadFile"], LESSON_SET_LESSON=lesson["key"])
+    # Every lesson in a set takes the lesson before the set as its previous
+    # lesson, never a sibling: a sibling that has started writing its design
+    # by the time this one looks is half-written, and copying one is how a
+    # week came to word one step several ways (15 October 2026).
+    if "setPrevious" in lesson:
+        values.update(LESSON_SET_PREVIOUS=lesson["setPrevious"] or resolve_filing.NO_LESSON,
+                      LESSON_SET_EARLIER=" | ".join(lesson.get("setEarlier") or []))
+    return values
+
+
+# ---------------------------------------------------------------------------
+# Lessons as T3 Code threads
+#
+# Inside T3 Code each lesson of a set can run as its own thread, which the
+# teacher can open and watch, instead of a hidden background session (6
+# November 2026). The asking chat starts the threads with T3's own tools; this
+# script only prepares each one's opening message and reads the result. A
+# thread cannot be given environment values, so what the set agreed travels in
+# a file the lesson hands to resolve-filing.py (--set-handover). The keeper
+# never touches these lessons: their status is "in thread", and the asking
+# chat watches the threads itself.
+
+T3_STATUS = "in thread"
+
+T3_NOTE = (
+    "This lesson is one of several the teacher asked for together, and nobody"
+    " is watching this thread while it runs. Where a single run would stop to"
+    " ask, make the choice a thoughtful teacher would most likely make, carry"
+    " on, and name the choice under Teacher flags in the final report, because"
+    " a run that ends its turn to ask a question simply stops, and the teacher"
+    " gets no lesson."
+)
+
+# Added only when the set planned this lesson a save slot.
+T3_SLOT_NOTE = (
+    "The save destination in the teacher's message was planned for the whole set"
+    " so that lessons in one subject land on consecutive days instead of all on"
+    " the first free one: treat it as a day the teacher named."
+)
+
+T3_CARRY_ON = (
+    "This lesson run stopped before its files were saved. Carry on from where it"
+    " stopped. A helper that was stopped part-way keeps its work: send it a message"
+    " (SendMessage, to its agent id) asking it to carry on its own job, instead of"
+    " starting that step again. Start a step again only when its helper cannot be"
+    " woken, from the latest checkpoint whose check still passes. Do not archive the"
+    " working folder. Everything else about the run is as before."
+)
+
+
+def t3_message(output: Path, lesson: dict, handover: Path) -> str:
+    teacher = message_for(lesson)[len(skill_command()) + 1:]
+    return (
+        f"Use the make-lesson skill from this plugin ({skill_command()}) for this request. It is one lesson"
+        " of a set the teacher asked for together, running in its own thread.\n\n"
+        "TEACHER'S MESSAGE (save exactly this, and only this, as teacher-brief.txt):\n"
+        f"{teacher}\n\n"
+        "ORCHESTRATOR NOTES (from the chat running the set; not the teacher's words, so never put them"
+        " in teacher-brief.txt or a worker prompt):\n"
+        f"- OUTPUT_DIR: {output}\n"
+        f"- When you run resolve-filing.py, add --set-handover \"{handover}\" to its command. That file"
+        " carries what the set agreed for this lesson: the lesson before the set and, when the set shares"
+        " one, its agreed steps.\n"
+        f"- {T3_NOTE}\n"
+        + (f"- {T3_SLOT_NOTE}\n" if destination_line(lesson) else "")
+    )
+
+
+def prepare_t3(output: Path, lesson: dict) -> Path:
+    """Write the lesson's handover and opening message; the asking chat starts the thread."""
+    folder = batch_dir(output) / lesson["key"]
+    folder.mkdir(parents=True, exist_ok=True)
+    handover = folder / "set-handover.json"
+    handover.write_text(json.dumps(set_values(lesson), indent=2), encoding="utf-8")
+    message = folder / "t3-message.txt"
+    message.write_text(t3_message(output, lesson, handover), encoding="utf-8")
+    now = datetime.now().isoformat(timespec="seconds")
+    lesson.update(host="t3", status=T3_STATUS, started=now)
+    lesson.setdefault("firstStarted", now)
+    return message
+
+
+def find_lesson(batch: dict, tag: str) -> dict | None:
+    return next((l for l in batch.get("lessons", []) if tag in (l["tag"], l["key"])), None)
+
+
+def t3_thread(args: list[str]) -> int:
+    """Record the T3 thread a lesson runs in, so a later chat can find it."""
+    output = Path(option(args, "--output") or ".").resolve()
+    with batch_lock(output):
+        batch = read_batch(output)
+        lesson = find_lesson(batch, option(args, "--tag")) if batch else None
+        if lesson is None:
+            return fail("no such lesson in this set")
+        lesson["t3Thread"] = option(args, "--thread")
+        write_batch(output, batch)
+    print(f"T3_THREAD {lesson['tag']}: {lesson['t3Thread']}")
+    return 0
+
+
+def t3_ended(args: list[str]) -> int:
+    """A lesson's thread has stopped: finished, made but not saved, one more go, or stopped."""
+    output = Path(option(args, "--output") or ".").resolve()
+    with batch_lock(output):
+        batch = read_batch(output)
+        lesson = find_lesson(batch, option(args, "--tag")) if batch else None
+        if lesson is None:
+            return fail("no such lesson in this set")
+        if lesson.get("host") != "t3":
+            return fail(f"{lesson['tag']} does not run in a T3 thread")
+        tag = lesson["tag"]
+        ended = datetime.now().isoformat(timespec="seconds")
+        state, detail = saved_files(output, lesson)
+        if state == "saved":
+            lesson.update(status="finished", ended=ended, savedTo=detail)
+            line = f"FINISHED {tag}: saved to {detail}"
+        elif state == "not saved":
+            lesson.update(status="not saved", ended=ended, why=detail)
+            line = f"NOT_SAVED {tag}: made, but not saved ({detail}); its files are in {output}"
+        elif batch.get("delivery") == "none" and local_artifacts_checked(output, lesson):
+            # Nothing is saved anywhere else: the files stay where they were built.
+            lesson.update(status="finished", ended=ended, savedTo=str(output))
+            line = f"FINISHED {tag}: its files are in {output}"
+        elif lesson.get("retries", 0) < UNEXPLAINED_RETRIES:
+            lesson["retries"] = lesson.get("retries", 0) + 1
+            line = f"T3_CARRY_ON {tag}: {T3_CARRY_ON}"
+        else:
+            lesson.update(status="stopped", ended=ended)
+            line = f"STOPPED {tag}: stopped twice before saving"
+        write_batch(output, batch)
+        print(line)
+        print(summary_line(batch))
+        if not any(l.get("status") in (T3_STATUS, "not started") for l in batch["lessons"]):
+            print("BATCH_DONE")
+    if not line.startswith("T3_CARRY_ON"):
+        write_run_record(output, lesson)
+    return 0
+
+
 def start_session(output: Path, lesson: dict, message: str, note: str, resume_session: str = "") -> None:
     host = lesson.setdefault("host", read_batch(output).get("host", "claude"))
     session_output = Path(lesson.setdefault("sessionOutput", str(output / "lessons" / lesson["key"]))) if host == "codex" else output
@@ -598,17 +751,7 @@ def start_session(output: Path, lesson: dict, message: str, note: str, resume_se
     # changes, and the snapshot held each lesson's setup check for 20 seconds
     # to 4 minutes (17 October 2026), so it is switched off here.
     extra["env"] = dict(os.environ, CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS="0", CLAUDE_CODE_BASH_EDIT_DIFF="0")
-    # The set's thread reaches the lesson through resolve-filing.py, which
-    # writes it into filing.txt beside PREVIOUS_LESSON.
-    if lesson.get("threadFile"):
-        extra["env"].update(LESSON_SET_THREAD=lesson["threadFile"], LESSON_SET_LESSON=lesson["key"])
-    # Every lesson in a set takes the lesson before the set as its previous
-    # lesson, never a sibling: a sibling that has started writing its design
-    # by the time this one looks is half-written, and copying one is how a
-    # week came to word one step several ways (15 October 2026).
-    if "setPrevious" in lesson:
-        extra["env"].update(LESSON_SET_PREVIOUS=lesson["setPrevious"] or resolve_filing.NO_LESSON,
-                            LESSON_SET_EARLIER=" | ".join(lesson.get("setEarlier") or []))
+    extra["env"].update(set_values(lesson))
     prompt_input = open(prompt_file, "rb") if host == "codex" else subprocess.DEVNULL
     try:
         process = subprocess.Popen(command, cwd=str(session_output), stdin=prompt_input,
@@ -631,7 +774,7 @@ def start_session(output: Path, lesson: dict, message: str, note: str, resume_se
     lesson.pop("resumeAt", None)
 
 
-def launch(args: list[str], already_started: int = 0) -> int:
+def launch(args: list[str], already_started: int = 0, t3: bool = False) -> int:
     output = Path(option(args, "--output") or ".").resolve()
     only = option(args, "--tag")
     without_thread = "--without-thread" in args
@@ -640,7 +783,7 @@ def launch(args: list[str], already_started: int = 0) -> int:
         if not batch:
             return fail("no batch is planned in this folder")
         host = batch.get("host", "claude")
-        if not (codex_command() if host == "codex" else claude_command()):
+        if not t3 and not (codex_command() if host == "codex" else claude_command()):
             return fail(f"no {host} command on this computer")
         usable = {key: not thread_faults(output, batch, key)
                   for key in {l["thread"] for l in batch["lessons"] if l.get("thread")}}
@@ -664,6 +807,12 @@ def launch(args: list[str], already_started: int = 0) -> int:
             elif key and not without_thread:
                 print(f"THREAD_MISSING {lesson['tag']}: write and check thread {key} first, or launch --without-thread")
                 continue
+            if t3:
+                message = prepare_t3(output, lesson)
+                write_batch(output, batch)
+                print(f"T3_MESSAGE {lesson['tag']}: {message}")
+                started += 1
+                continue
             start_session(output, lesson, message_for(lesson), UNATTENDED_NOTE)
             # Written after every start, so a fault on a later lesson cannot
             # lose the record of a session already running.
@@ -671,9 +820,16 @@ def launch(args: list[str], already_started: int = 0) -> int:
             print(f"STARTED {lesson['tag']}")
             started += 1
         write_batch(output, batch)
+    if t3:
+        print(f"T3_READY={started}")
+        return 0
     ensure_keeper(output)
     print(f"BATCH_STARTED={started}")
     return 0
+
+
+def t3_prepare(args: list[str]) -> int:
+    return launch(args, t3=True)
 
 
 def alive(pid: int) -> bool:
@@ -1049,6 +1205,12 @@ def keep_once(output: Path) -> bool:
     return still
 
 
+def run_record_host(output: Path, lesson: dict) -> str:
+    host = lesson.get("host", read_batch(output).get("host", "claude"))
+    # A T3 thread runs Claude Code underneath.
+    return "claude" if host == "t3" else host
+
+
 def write_run_record(output: Path, lesson: dict) -> None:
     """Refresh the lesson's run record whenever its session finishes, pauses or stops.
 
@@ -1061,7 +1223,7 @@ def write_run_record(output: Path, lesson: dict) -> None:
         return
     try:
         subprocess.run([sys.executable, str(Path(__file__).with_name("run-record.py")),
-                        "--working-dir", str(folder), "--host", lesson.get("host", read_batch(output).get("host", "claude"))],
+                        "--working-dir", str(folder), "--host", run_record_host(output, lesson)],
                        capture_output=True, timeout=120, check=False)
     except Exception:  # a missing record is a gap to report, never a stopped set
         pass
@@ -1146,6 +1308,11 @@ def status(args: list[str]) -> int:
         if state == "paused" and lesson.get("resumeAt"):
             state += f" for the usage limit, carrying on at {clock(lesson['resumeAt'])}"
         print(f"LESSON {lesson['tag']}: {state}; {destination_line(lesson) or 'no planned slot'}")
+        if lesson.get("host") == "t3":
+            print(f"T3_THREAD {lesson['tag']}: {lesson.get('t3Thread') or 'not recorded'}")
+            if final:
+                print(f"REPORT_IN_THREAD {lesson['tag']}: read its final message in its T3 thread")
+            continue
         if final and lesson.get("status") in ("finished", "not saved", "stopped"):
             report = read_session(output, lesson)["report"]
             print(f"REPORT {lesson['tag']}:\n{report}\nEND_REPORT")
@@ -1183,6 +1350,10 @@ def resume(args: list[str]) -> int:
             return fail("no batch is planned in this folder")
         for lesson in batch["lessons"]:
             state = lesson.get("status")
+            if lesson.get("host") == "t3" and state != "finished":
+                # Carried on by sending to its own thread, never as a second session.
+                print(f"LEFT {lesson['tag']}: runs in its own T3 thread {lesson.get('t3Thread', '')}".rstrip())
+                continue
             if state == "finished" or alive(lesson.get("pid", 0)):
                 print(f"LEFT {lesson['tag']}: {'finished' if state == 'finished' else 'still running'}")
                 continue
@@ -1216,7 +1387,8 @@ def main(argv: list[str] | None = None) -> int:
     handlers = {"route": lambda a: route(), "agree": lambda a: agree(), "plan": plan,
                 "set-destination": set_destination, "thread-brief": thread_brief,
                 "thread-check": thread_check, "launch": launch, "watch": watch,
-                "status": status, "resume": resume, "keep": keep}
+                "status": status, "resume": resume, "keep": keep,
+                "t3-prepare": t3_prepare, "t3-thread": t3_thread, "t3-ended": t3_ended}
     if command not in handlers:
         return fail(f"unknown command {command!r}")
     return handlers[command](args)

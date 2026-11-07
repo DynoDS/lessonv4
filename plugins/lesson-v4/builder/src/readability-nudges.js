@@ -77,8 +77,8 @@ function readabilityWarnings(slide, n, warnings) {
     if ((sentences >= 3 || wordCount(text) >= 30) && !coloured(card, text) && !model) {
       warnings.push(`slide ${n}: the card beginning "${opening(text)}" has no emphasis for its main idea (${sentences} sentence${sentences === 1 ? '' : 's'}, ${wordCount(text)} words). ` +
         'Review its main meaning: an exact key phrase or sentence can take role "key-line" in orange and bold while taught words remain green. Separate cards may each carry that emphasis. ' +
-        'A case or quotation the task runs on is supplied orange as a whole (<< >>). ' +
-        'Leave the card black only where its lines are equals with no line that carries the rest: a poem, a list, the steps of a sequence.');
+        'A case or quotation the task runs on is supplied orange as a whole (<< >>), unless a set of cases fills the slide, where each stays black in its own card. ' +
+        'Otherwise leave the card black only where its lines are equals with no line that carries the rest: a poem, a list, the steps of a sequence.');
     }
   }
 }

@@ -26,11 +26,13 @@ When the source carries its own judging question, that question is the title: `I
 
 ## The named characters
 
-The class characters are six children and a dog: `boy-1`, `boy-2`, `boy-3`, `girl-1`, `girl-2`, `girl-3` and `bailey`, and the grown-ups and a baby in a lesson's story: `man-1`, `man-2`, `woman-1`, `woman-2` (a teacher, a parent, any adult), `old-man`, `old-woman` (a grandparent) and `baby`. An adult who speaks or has feelings the class judges (the teacher in a social story, a parent giving a reason) takes one of these faces, like any invented child. Every speaker is one of them, carrying the lesson-designer's name for the person in `speaker.name`. Never relabel a speaker "You", which points the claim back at the reader instead of at a character.
+The class characters are six children and a dog: `boy-1`, `boy-2`, `boy-3`, `girl-1`, `girl-2`, `girl-3` and `bailey`, and the grown-ups and a baby in a lesson's story: `man-1`, `man-2`, `woman-1`, `woman-2` (a teacher, a parent, any adult), `old-man`, `old-woman` (a grandparent) and `baby`. An adult who speaks or has feelings the class judges (the teacher in a social story, a parent giving a reason) takes one of these faces, like any invented child. Every speaker drawn as a portrait is one of them, carrying the lesson-designer's name for the person in `speaker.name`. Never relabel a speaker "You", which points the claim back at the reader instead of at a character.
 
 **Choose a face that fits the person, and share the faces round.** The keys say what each picture is: three boys, three girls and Bailey, the class dog. Give a named child a face that fits them (a girl's name takes a girl's face), and choose among the three rather than always the first, so the same face is not every lesson's speaker and two children on one slide never share a face. Bailey is a character like the others, not a spare: Bailey can say anything a child in the lesson could say (a wrong idea to put right, a question a child might be too shy to ask, a claim to judge), and the teacher likes a talking dog (28 September 2026: "Dogs can talk on my ppt, just because it's an animal doesn't mean anything"). Before the dog was used only when three speakers were needed, and no deck had ever shown it. When the lesson's speaker is not a particular person the class must picture (a voiced misconception, a partner's prompt), Bailey is often the better choice than an invented child. Set `speaker.name` to the lesson's own name for a child, and leave Bailey as Bailey.
 
 **A recurring character keeps one face as well as one name.** When a child speaks on more than one slide, give them the same portrait each time. A name that arrives on a different face is a different person to the class, and the comparison a later slide is building on quietly comes apart.
+
+**A person the lesson photographs is not drawn as well.** Read `photo-requirements.json` before giving anyone a portrait: when a picture's `pedagogical_constraint` says it shows a named person, that photograph is how the class sees them, on every slide they are in. Put their words in a card beside the photograph rather than a bubble over a portrait, and when the photograph holds more than one person, label each with their name so children know who is speaking. A drawing beside a photograph of the same child reads as two children, and a drawn girl beside a photographed boy under one name reads as a mistake. People in one scene are shown the same way, so a friend who shares that scene with a photographed child is not given a portrait either; a drawn speaker outside the scene, making a claim about the photographed child, keeps a portrait, because they are not in it together. A speech bubble drawn over the photograph itself is not something the engine does; the card is the way.
 
 ## Each voice in its own bubble, lines verbatim
 
@@ -48,15 +50,31 @@ This decomposition is a sanctioned mechanical transformation, like automatic que
 
 **A Teach explanation is decomposed the same way.** When a story beat's `explanation` line gives an invented child's own words (`Inside his head, George says: "I'm rubbish at maths."`, `The next time he was stuck, George told himself: "This is easy!"`), the quoted words go in that child's bubble on `speaker-lines`, the lead-in that only attributes them (`Inside his head, George says:`) is carried by the portrait and not printed, and the rest of the line stays a card. Keep the beat's picture: `speaker-lines` takes one in `pictures`, above the cards, so the class sees the child and the thing they are talking about together. A Year 4 PSHE deck (20 October 2026) printed George's words as plain lines beside his maths book on six slides, and when they were moved into bubbles the book had nowhere to go until this slot existed. This is for a child the lesson invents; a quotation from a source or a real person stays in the lines or the extract, and an example phrase the teacher names (`"I'm rubbish" is negative self-talk`) is not a character speaking.
 
-**Then put that task line after the claim, not before it.** Children read left to
-right, so a column carrying "Is Dev right? Explain." to the left of Dev's bubble
+**Then put that task line after the claim, not before it, and the situation before
+both.** Children read left to right, so the side a column takes decides what they
+meet first. A column carrying "Is Dev right? Explain." to the left of Dev's bubble
 asks the question before its subject exists. On the speech-bubble templates set
 `statementSide: "right"` for this shape, so a child meets the claim, then the
 question about it. The default `left` is for the other shape, where the statement
 is the thing being judged (the Carroll diagram, the parallelogram, the plotted
 point) and the character responds to it: there the statement genuinely is what
-they read first. The test is what a child has to have read before the other half
-makes sense, never which slot the wording arrived in.
+they read first. A situation is that shape too. When the column says what is
+happening (a child stuck on a maths question, the problem a character has worked, a friend
+choosing the game again), a child cannot weigh the words until they know it, so
+it goes first. When one column holds both the situation and the judging
+question, the situation decides the side: carry the question in the title, as
+above, and the column keeps the situation and a short task line.
+
+The Teach layouts that stand a person beside a board, `speaker-lines` and
+`flexible`, make the same choice with `speakerSide`. The person stands left by
+default, which suits cards that explain what they said (their words, then what
+the words tell us); `"right"` puts the board first when it holds the situation
+the words are about. The person also comes first when their words are the whole
+situation (a claim with nothing else to know), when the slide before has just
+set the moment up and this one carries it on, or when a lesson opens on
+someone's words to hook the class, with the situation straight after. The test
+is what a child has to have read before the other half makes sense, never which
+slot the wording arrived in.
 
 ## When the debated statement is a diagram
 

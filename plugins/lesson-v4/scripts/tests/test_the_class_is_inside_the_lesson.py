@@ -277,8 +277,8 @@ class ALightLineCompetesForTheBoard(unittest.TestCase):
 
     def test_the_placement_rule_it_protects_is_still_there(self) -> None:
         voice = flat(VOICE)
-        self.assertIn("A light line can sit on the slide where children read it themselves", voice)
-        self.assertIn("There is no fixed home", voice)
+        self.assertIn("so it goes on the board inside the sentence that carries the step", voice)
+        self.assertIn("There is no fixed home beyond its step", voice)
 
 
 class LookHarderWithoutLoweringTheBar(unittest.TestCase):

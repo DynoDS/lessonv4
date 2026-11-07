@@ -47,6 +47,9 @@ const SMALLER = [
   'If they are not close, check each column again, starting with the ones.',
   'Write a sentence that says how your estimate helped you check the answer.',
   'Circle the answer you trust most and explain to a partner why you trust it.',
+  // Added 6 November 2026: with the numbers on the cards' corners the words
+  // have more width, and the seven steps above now fit at 18pt.
+  'Check it.',
 ];
 // Only the half-width side, 0.15in taller than the widest practice panel,
 // holds this one, at 16pt.
@@ -63,14 +66,15 @@ const HALF_SIDE_ONLY = [
 // No panel holds this one even at 16pt.
 const BEYOND = Array.from({ length: 9 }, () =>
   'Write each digit in its own column, lined up under the digit above it, and say its value.');
-// Only the half-width side holds this one at 18pt.
+// Only the half-width side holds this one at 18pt. The half side is 0.15in
+// taller than the widest practice panel, less than one line, so a list that
+// tells them apart is one whose height falls between them: thirteen one-line
+// steps (since 6 November 2026, when the cards' numbers moved onto their
+// corners and longer steps stopped wrapping where they used to).
 const HALF_AT_18 = [
-  'Find the two multiples of ten that the number sits between on the number line.',
-  'Mark the number on the line, and mark the halfway point between those two tens.',
-  'Look at the ones digit to decide which side of the halfway point the number is on.',
-  'If the ones digit is 5 or more, round up to the next multiple of ten above it.',
-  'If the ones digit is 4 or less, round down to the multiple of ten just below it.',
-  'Write the rounded number and check it is the multiple of ten that is nearer.',
+  'Find the tens either side.', 'Mark the number.', 'Mark halfway.', 'Look at the ones.',
+  'Five or more? Round up.', 'Four or less? Round down.', 'Write the rounded number.',
+  'Check it is a ten.', 'Check it is nearer.', 'Say why.', 'Read it back.', 'Tell your partner.', 'Tick it.',
 ];
 // This one fits the widest practice panel at 18pt.
 const WIDEST_AT_18 = [
@@ -262,8 +266,20 @@ test('only the marked list goes under 18pt: a sticky line beside it keeps 18pt a
   // His ruling: "The 18 point floor stands for everything else."
   clearCriteriaBelowFloor();
   const sticky = '✨ Five or more rounds up.';
-  const drawn = draw(practice([sticky, ...SMALLER]), [SMALLER]);
-  assert.ok(drawn.fonts.every((pt) => pt < 18), drawn.fonts.join(','));
+  // Drawn where the list itself is let down to 16pt. Since the numbers moved
+  // onto the cards' corners (6 November 2026) a whole slide no longer gets
+  // here: a list a practice panel cannot hold at 18pt is too long to sit
+  // beside a sticky line even at 16pt, so the promise is checked one level
+  // down, in a box of the height where it does.
+  const { drawContent } = require('../src/content');
+  const pptx = new PptxGenJS();
+  const slide = pptx.addSlide();
+  drawContent(pptx, slide, { x: 0, y: 0, w: 6.05, h: 5.6, class: 'C', criteriaPanel: true, compactCards: true,
+    floorPt: 16, sourceAuthoredText: true }, { type: 'steps', steps: [sticky, ...SMALLER.slice(0, 7)] },
+  { slideIndex: 0, imageDims: {}, cardLook: true });
+  const boxes = slide._slideObjects.map((o) => o.options || {});
+  const drawn = { boxes, fonts: boxes.filter((o) => /step-text-\d+$/.test(String(o.objectName || ''))).map((o) => o.fontSize) };
+  assert.ok(drawn.fonts.length === 7 && drawn.fonts.every((pt) => pt < 18), drawn.fonts.join(','));
   const line = drawn.boxes.find((o) => /step-reference-\d+$/.test(String(o.objectName || '')));
   assert.ok(line.fontSize >= 18, `the sticky line at ${line.fontSize}pt`);
   assert.match(line.objectName, /^GROWFIT__step-reference-[\d-]+__36__step-reference-\d+$/, 'its own group, and no lower floor');
@@ -286,8 +302,8 @@ test('only the marked list goes under 18pt: a sticky line beside it keeps 18pt a
   // A marked list whose own steps fit at 18pt is not drawn smaller to make
   // room for a sticky line beside it: the mark is stale, and the sticky line
   // is refused exactly as beside the list unmarked.
+  // (Since 6 November 2026 the pair fits; marked or not, it is drawn the same.)
   const unmarked = refusal(practice([medium, ...WIDEST_AT_18]), []);
-  assert.match(unmarked, /the sticky-knowledge reference line does not fit its card at the 18pt readable minimum/);
   assert.equal(refusal(practice([medium, ...WIDEST_AT_18]), [WIDEST_AT_18]), unmarked);
   assert.equal(criteriaBelowFloorFindings().length, 0);
 });

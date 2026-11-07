@@ -101,6 +101,26 @@ class FromAChildsSeatTests(unittest.TestCase):
         self.assertIn("  The longest listening stretch is 360 words, about 3 minutes to say: "
                       "word card: Nativity; The story.", self.seat)
 
+    def test_a_stretch_of_many_boards_is_looked_at_again_however_few_its_words(self) -> None:
+        # 3 November 2026: 366 words read as three minutes, but the river Teach
+        # walked water, fish and the road over six slides with nothing to do.
+        # The slides follow the things to look at: four photos and a map made
+        # it six slides with its word card. The same four lines about one
+        # picture build as two or three boards (6 November 2026 decks), and a
+        # question line closes its slide.
+        def with_lines(count: int, pictures: int = 0, end: str = ".") -> str:
+            design = json.loads(json.dumps(SEAT))
+            design["teachingSequence"][0]["content"] = {
+                "headline": "The river gives the Tikuna their water, their food and their road.",
+                "explanation": "\n".join(f"Line {n}{end}" for n in range(count)),
+            }
+            design["teachingSequence"][0]["photoRefs"] = [f"photo-{n}" for n in range(pictures)]
+            return run_design(design).stdout
+        self.assertIn("LOOK AGAIN: one stretch puts about 6 boards", with_lines(4, pictures=5))
+        self.assertNotIn("LOOK AGAIN: one stretch", with_lines(4, pictures=1))
+        self.assertNotIn("LOOK AGAIN: one stretch", with_lines(6))
+        self.assertIn("LOOK AGAIN: one stretch puts about 6 boards", with_lines(5, end="?"))
+
     def test_all_the_talk_is_counted_including_the_talk_on_task_slides(self) -> None:
         # The starter says 3 words; word card 60, Teach 300 and 100; the Dos
         # and the main work say nothing in this design.
@@ -141,6 +161,26 @@ class FromAChildsSeatTests(unittest.TestCase):
         lines = run_design(design).stdout.splitlines()
         self.assertTrue(any(line.startswith("  do ") and "True or false" in line for line in lines), lines)
         self.assertTrue(any("True or false" in line and "printed task sheet" in line for line in lines), lines)
+
+    def test_a_short_book_task_is_looked_at_again(self) -> None:
+        # 5 November 2026: a one-find map task given the book and three
+        # minutes is a quick check wearing the book; the note asks for the
+        # minute-two and minute-six picture, and never refuses.
+        def lesson(do_minutes: int, mode: str) -> str:
+            return run_design({
+                "lesson": {"durationMinutes": 45},
+                "starter": {"kind": "starter", "minutes": 4},
+                "teachingSequence": [
+                    {"kind": "teach", "label": "What did John Snow think?", "minutes": 5},
+                    {"kind": "do", "label": "Which pump?", "minutes": do_minutes, "doMode": mode},
+                    {"kind": "practise", "label": "Why did the handle work?", "minutes": 12, "doMode": "deeper"},
+                ],
+            }).stdout
+        self.assertIn('LOOK AGAIN: "Which pump?" carries the book (doMode deeper) and is planned at 3 minutes',
+                      lesson(3, "deeper"))
+        self.assertNotIn("carries the book", lesson(3, "quick"))
+        self.assertNotIn("carries the book", lesson(8, "deeper"))
+        self.assertNotIn("WILL REFUSE", lesson(3, "deeper"))
 
     def test_a_quick_check_after_the_main_work_is_not_a_task(self) -> None:
         # The 20-lesson test, Year 6 staying safe online: a two-minute check

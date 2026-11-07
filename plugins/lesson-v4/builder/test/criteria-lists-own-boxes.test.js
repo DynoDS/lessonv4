@@ -115,7 +115,12 @@ test('two headed lists draw as two boxes under their own headings, with numbers 
 });
 
 test('criteria that need the room rise beside the title; criteria that fit, or a header with a task line, stay put', async (t) => {
-  const two = { type: 'stack', items: [panel(SUBTRACT, { criteriaRef: 'sc-001' }), panel(EXCHANGE, { criteriaRef: 'sc-002' })] };
+  // Two lists long enough to need the room. Since the numbers moved onto the
+  // cards' corners (6 November 2026) the two lists above fit under the title,
+  // so the first list's second step says a little more here.
+  const longerSubtract = Object.assign({}, SUBTRACT, {
+    steps: [SUBTRACT.steps[0], 'Write the symbol. Say why to your partner.', SUBTRACT.steps[2]] });
+  const two = { type: 'stack', items: [panel(longerSubtract, { criteriaRef: 'sc-001' }), panel(EXCHANGE, { criteriaRef: 'sc-002' })] };
   const dir = build(t, [
     slide(two),
     slide(panel({ type: 'steps', steps: SUBTRACT.steps }, { criteriaRef: 'sc-001' })),

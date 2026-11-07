@@ -334,7 +334,9 @@ def breakable_words(text):
     return [w for w in _BREAKABLE_WS.split(text or '') if w]
 
 
-def wrap_paragraph(text, width_emu, pt, font_file):
+def wrap_paragraph(text, width_emu, pt, font_file, first_offset=0):
+    """`first_offset` is room the first line gives up at its start: a paragraph
+    whose first line steps in to clear a criteria card's corner number."""
     if not text.strip():
         return 1
     words = breakable_words(text)
@@ -343,7 +345,10 @@ def wrap_paragraph(text, width_emu, pt, font_file):
     for w in words:
         trial = w if not current else current + " " + w
         cx, _ = _rendered_size(trial, pt, font_file)
-        if cx <= width_emu:
+        offset = first_offset if lines == 0 else 0
+        # The first word stays on the first line however little room the step
+        # in leaves it: PowerPoint never starts a paragraph on its second line.
+        if cx + offset <= width_emu or (not current and lines == 0 and cx <= width_emu):
             current = trial
         else:
             if current:
@@ -357,7 +362,7 @@ def wrap_paragraph(text, width_emu, pt, font_file):
     return max(lines, 1)
 
 
-def wrap_runs(runs, width_emu, pt):
+def wrap_runs(runs, width_emu, pt, first_offset=0):
     """Line count for a paragraph whose runs may differ in weight/style.
 
     `runs` is a list of (text, font_file). When every run shares one font this
@@ -371,7 +376,7 @@ def wrap_runs(runs, width_emu, pt):
     joined = "".join(t for t, _ in runs)
     if len(fonts) <= 1:
         only = next(iter(fonts)) if fonts else FONT_REGULAR
-        return wrap_paragraph(joined, width_emu, pt, only)
+        return wrap_paragraph(joined, width_emu, pt, only, first_offset)
     if not joined.strip():
         return 1
     # Per-word widths, each in its own run's font; a single space joins words.
@@ -388,7 +393,8 @@ def wrap_runs(runs, width_emu, pt):
     cur = 0
     for i, ww in enumerate(tokens):
         add = ww if cur == 0 else space_w + ww
-        if cur + add <= width_emu:
+        offset = first_offset if lines == 1 else 0
+        if cur + add + offset <= width_emu or (i == 0 and ww <= width_emu):
             cur += add
         else:
             lines += 1
@@ -442,13 +448,14 @@ def best_fit_size(paragraphs_info, width_emu, height_emu, font_file, max_pt, flo
         base_line_h = _real_line_height_emu(font_file, pt)
         fraction_extra = int(pt * fraction_extra_em(_measuring_scale) / 72.0 * 914400)
         total_h = 0
-        for lines, ls, spacing_pt in paragraphs_info:
+        for lines, ls, spacing_pt, step_in, stop_short in paragraphs_info:
             n = 0
             taller = 0
-            for runs in lines:
-                if widest_unbroken_word(runs, pt) > usable_w:
+            width = max(usable_w - stop_short / WIDTH_SAFETY, 1)
+            for k, runs in enumerate(lines):
+                if widest_unbroken_word(runs, pt) > width:
                     return None
-                n += wrap_runs(runs, usable_w, pt)
+                n += wrap_runs(runs, width, pt, step_in / WIDTH_SAFETY if k == 0 else 0)
                 taller += fraction_lines(runs, usable_w, pt)
             n = max(n, 1)
             # A paragraph holding a bigger fraction is drawn looser, every line of it.
@@ -840,6 +847,27 @@ def text_budget(shape, floor_pt, text):
     )
 
 
+def first_line_step_in(paragraph):
+    """How far this paragraph's first line starts in from the box's left edge
+    (a positive `indent`), in EMU; 0 for an ordinary or hanging paragraph."""
+    pPr = paragraph._p.pPr
+    try:
+        return max(0, int(pPr.get("indent") or 0)) if pPr is not None else 0
+    except ValueError:
+        return 0
+
+
+def right_margin(paragraph):
+    """How far this paragraph's lines stop short of the box's right edge (its
+    `marR`), in EMU: a criteria step's lines beside a picture tucked into the
+    card's corner."""
+    pPr = paragraph._p.pPr
+    try:
+        return max(0, int(pPr.get("marR") or 0)) if pPr is not None else 0
+    except ValueError:
+        return 0
+
+
 def measure_shape(shape, ceiling, floor_pt):
     tf = shape.text_frame
     max_size, bold, italic = inspect_runs(tf)
@@ -854,6 +882,8 @@ def measure_shape(shape, ceiling, floor_pt):
             if isinstance(paragraph.line_spacing, float)
             else DEFAULT_LINE_SPACING,
             paragraph_spacing_pt(paragraph),
+            first_line_step_in(paragraph),
+            right_margin(paragraph),
         )
         for paragraph in tf.paragraphs
     ]
@@ -868,7 +898,7 @@ def measure_shape(shape, ceiling, floor_pt):
             _measuring_scale = FRACTION_SCALES[-1]
 
     holds_fraction = any(
-        has_fraction(text) for lines, _, _ in paragraphs_info for runs in lines for text, _ in runs
+        has_fraction(text) for lines, _, _, _, _ in paragraphs_info for runs in lines for text, _ in runs
     )
     if not holds_fraction:
         best, hit_floor, fill = at(0)
@@ -992,8 +1022,9 @@ CARD_SIGN_SPANS = 0.7
 CARD_SIGN_REACH =Emu(int(0.06 * 914400))
 
 
-def first_line_width(runs, width_emu, pt):
-    """Width of the first line these runs wrap to, each word in its own font."""
+def line_widths(runs, width_emu, pt):
+    """Width of each line these runs wrap to, each word in its own font."""
+    widths = []
     cur = 0
     for text, font_file in runs:
         use = font_file or FONT_REGULAR
@@ -1002,13 +1033,24 @@ def first_line_width(runs, width_emu, pt):
             word_w, _ = _rendered_size(word, pt, use)
             add = word_w if cur == 0 else space_w + word_w
             if cur and cur + add > width_emu:
-                return cur
+                widths.append(cur)
+                cur = word_w
+                continue
             cur += add
-    return cur
+    if cur:
+        widths.append(cur)
+    return widths
+
+
+def first_line_width(runs, width_emu, pt):
+    """Width of the first line these runs wrap to, each word in its own font."""
+    widths = line_widths(runs, width_emu, pt)
+    return widths[0] if widths else 0
 
 
 def text_block(shape):
-    """(height of the whole text, width of its first line, one line's height)."""
+    """(height of the whole text, width of its first line, one line's height,
+    and each printed line as (its top below the text's top, its width))."""
     tf = shape.text_frame
     pt, bold, italic = inspect_runs(tf)
     if pt <= 0:
@@ -1018,18 +1060,26 @@ def text_block(shape):
     line_h = _real_line_height_emu(font_file, pt)
     total_h = 0
     first_w = None
+    lines = []
     for paragraph in tf.paragraphs:
         spacing = paragraph.line_spacing if isinstance(paragraph.line_spacing, float) else DEFAULT_LINE_SPACING
+        step = int(line_h * spacing)
         n = 0
-        for runs in paragraph_lines(paragraph, font_file):
+        step_in = first_line_step_in(paragraph) / WIDTH_SAFETY
+        room = max(usable_w - right_margin(paragraph) / WIDTH_SAFETY, 1)
+        for k, runs in enumerate(paragraph_lines(paragraph, font_file)):
+            offset = step_in if k == 0 else 0
             if first_w is None and "".join(t for t, _ in runs).strip():
-                first_w = first_line_width(runs, usable_w, pt)
-            n += wrap_runs(runs, usable_w, pt)
+                first_w = first_line_width(runs, room, pt)
+            for i, width in enumerate(line_widths(runs, room, pt)):
+                lines.append((total_h + (n + i) * step, width))
+            # The line count stays the one the fitter sized the box by.
+            n += wrap_runs(runs, room, pt, offset)
         n = max(n, 1)
-        total_h += line_h + (n - 1) * int(line_h * spacing) + points_to_emu(paragraph_spacing_pt(paragraph))
+        total_h += line_h + (n - 1) * step + points_to_emu(paragraph_spacing_pt(paragraph))
     if not first_w:
         return None
-    return total_h, first_w, line_h
+    return total_h, first_w, line_h, lines
 
 
 def sign_text_shape(slide, sign):
@@ -1059,9 +1109,12 @@ def place_card_signs(prs):
                 block = text_block(shape) if shape is not None else None
                 if block is None:
                     continue
-                total_h, first_w, line_h = block
+                total_h, first_w, line_h, lines = block
                 edge = sign.left
                 tf = shape.text_frame
+                text_top = shape.top
+                if tf.vertical_anchor != MSO_ANCHOR.TOP:
+                    text_top = shape.top + max(0, (shape.height - total_h) // 2)
                 # A sign about as tall as all its words already sits beside
                 # them: one or two lines of small type with a pencil the height
                 # of both. It keeps its size and its place halfway down (the
@@ -1073,14 +1126,19 @@ def place_card_signs(prs):
                     if sign.height > line_h:
                         sign.width = Emu(int(sign.width * line_h / sign.height))
                         sign.height = Emu(int(line_h))
-                    top = shape.top
-                    if tf.vertical_anchor != MSO_ANCHOR.TOP:
-                        top = shape.top + max(0, (shape.height - total_h) // 2)
-                    sign.top = Emu(int(max(shape.top, min(top + (line_h - sign.height) // 2,
+                    sign.top = Emu(int(max(shape.top, min(text_top + (line_h - sign.height) // 2,
                                                            shape.top + shape.height - sign.height))))
                 first = next((p for p in tf.paragraphs if p.text.strip()), tf.paragraphs[0])
                 if first.alignment == PP_ALIGN.CENTER:
-                    start = shape.left + (shape.width - first_w) // 2
+                    # Centred lines start at different places, and the sign has
+                    # to clear every line it sits level with, not only the first:
+                    # a pencil halfway down two lines, placed by a short first
+                    # line, sat on the blank that starts a longer second one
+                    # (Year 4 area, 28 October 2026).
+                    beside = [w for top, w in lines
+                              if text_top + top < sign.top + sign.height and
+                              text_top + top + line_h > sign.top] or [first_w]
+                    start = shape.left + (shape.width - max(beside)) // 2
                     sign.left = Emu(int(max(edge, start - CARD_SIGN_TUCK - sign.width)))
                 elif first.alignment in (None, PP_ALIGN.LEFT):
                     sign.left = Emu(int(shape.left - CARD_SIGN_GAP - sign.width))
@@ -1090,9 +1148,219 @@ def place_card_signs(prs):
     return moved
 
 
+# A criteria card's number stands on the card's top-left corner and only the
+# first line of its words steps in to clear it (builder/src/content/steps.js,
+# the teacher's choice of 6 November 2026). The builder cannot write a first
+# line's step-in, so it is written here, before the fit measures the box, so the
+# fit measures the lines PowerPoint will draw. The words are found by where they
+# sit: the builder draws the number a little up and left of its card's corner,
+# and the card's text box starts at the card's edge just inside it. A line under
+# the step (`Leave no gaps or overlaps.`) arrives as a break inside the step's
+# paragraph, and PowerPoint steps in after every such break, so each becomes a
+# paragraph of its own that starts at the edge.
+CORNER_MARK_NAME = "NOFIT_corner-mark"
+CRITERIA_PICTURE_NAME = "NOFIT_criteria-picture"
+CORNER_OUT = Emu(int(0.08 * 914400))    # steps.js CORNER_OUT
+CORNER_GAP = Emu(int(0.08 * 914400))    # steps.js CORNER_GAP
+CORNER_SLACK = Emu(int(0.06 * 914400))
+# The step-in the builder measured every criteria card's first line with
+# (steps.js CORNER_STEP_IN: the full circle, less the card's padding). A circle
+# drawn smaller for a short card still gets this step-in, so the final fit and
+# the layout measure the same lines and never disagree about a size.
+CORNER_STEP_IN = Emu(int((0.44 - 0.08 + 0.08 - 0.05) * 914400))
+NEWLINE = chr(10)
+
+
+def corner_pairs(slide):
+    """Each corner number with the words of the card it numbers, as drawn."""
+    texts = [s for s in slide.shapes if s.has_text_frame and s.name != CORNER_MARK_NAME
+             and s.text_frame.text.strip()]
+    pairs = []
+    for mark in [s for s in slide.shapes if s.name == CORNER_MARK_NAME]:
+        near = [t for t in texts
+                if abs((t.top - mark.top) - CORNER_OUT) <= CORNER_SLACK
+                and mark.left < t.left < mark.left + mark.width]
+        if near:
+            pairs.append((mark, min(near, key=lambda t: t.left)))
+    return pairs
+
+
+def split_breaks_into_paragraphs(tf):
+    from pptx.oxml.ns import qn
+    import copy
+    for paragraph in list(tf.paragraphs):
+        p = paragraph._p
+        runs = list(p.findall(qn("a:r")))
+        if not any(NEWLINE in (r.findtext(qn("a:t")) or "") for r in runs):
+            continue
+        end = p.find(qn("a:endParaRPr"))
+        current = p
+        for r in runs:
+            t = r.find(qn("a:t"))
+            pieces = (t.text or "").split(NEWLINE)
+            for k, piece in enumerate(pieces):
+                if k > 0:
+                    fresh = copy.deepcopy(p)
+                    for child in list(fresh):
+                        if child.tag != qn("a:pPr"):
+                            fresh.remove(child)
+                    current.addnext(fresh)
+                    current = fresh
+                if piece == "" and len(pieces) > 1:
+                    continue
+                run = copy.deepcopy(r)
+                run.find(qn("a:t")).text = piece
+                current.append(run)
+            p.remove(r)
+        if end is not None:
+            p.remove(end)
+            current.append(end)
+
+
+def prepare_corner_steps(prs):
+    for slide in prs.slides:
+        pictures = [s for s in slide.shapes if s.name == CRITERIA_PICTURE_NAME]
+        for mark, shape in corner_pairs(slide):
+            step_in = CORNER_STEP_IN
+            right = shape.left + shape.width
+            # A picture tucked into this card's top-right corner: the step's own
+            # line or lines stop short of it, and the lines under them run the
+            # card's full width beneath it.
+            beside = [p for p in pictures
+                      if shape.left < p.left < right
+                      and shape.top - CORNER_SLACK <= p.top <= shape.top + shape.height]
+            stop_short = max(0, right - min(p.left for p in beside) + CORNER_GAP) if beside else 0
+            tf = shape.text_frame
+            split_breaks_into_paragraphs(tf)
+            for k, paragraph in enumerate(tf.paragraphs):
+                pPr = paragraph._p.get_or_add_pPr()
+                pPr.set("marL", "0")
+                pPr.set("indent", str(int(step_in)) if k == 0 else "0")
+                if k == 0 and stop_short:
+                    pPr.set("marR", str(int(stop_short)))
+
+
+def wrap_under_pictures(prs):
+    """A step that stops short of a corner picture is one paragraph, and
+    PowerPoint stops every line of a paragraph short, not only the lines beside
+    the picture; so once the step has its final size it is split where its
+    lines pass the picture's foot, and what follows runs the card's full width
+    underneath, the way words wrap round a picture in a Word document. The
+    picture then moves level with the step's first line."""
+    import copy
+    from pptx.oxml.ns import qn
+    from pptx.enum.text import MSO_ANCHOR
+    for slide in prs.slides:
+        pictures = [s for s in slide.shapes if s.name == CRITERIA_PICTURE_NAME]
+        for mark, shape in corner_pairs(slide):
+            tf = shape.text_frame
+            first = tf.paragraphs[0]
+            stop_short = right_margin(first)
+            right = shape.left + shape.width
+            beside = [p for p in pictures if shape.left < p.left < right
+                      and shape.top - CORNER_SLACK <= p.top <= shape.top + shape.height]
+            if not stop_short or not beside:
+                continue
+            picture = min(beside, key=lambda p: p.left)
+            pt, bold, italic = inspect_runs(tf)
+            if pt <= 0:
+                continue
+            line_h = _real_line_height_emu(pick_font_file(bold, italic), pt)
+            spacing = first.line_spacing if isinstance(first.line_spacing, float) else DEFAULT_LINE_SPACING
+            beside_lines = max(1, -(-(picture.height - line_h) // int(line_h * spacing)) + 1)
+            usable = max((shape.width - PAD_W) / WIDTH_SAFETY, 1)
+            room = max(usable - stop_short / WIDTH_SAFETY, 1)
+            step_in = first_line_step_in(first) / WIDTH_SAFETY
+            # Walk the words in order, run by run, filling the short lines.
+            runs = [r for r in first._p.findall(qn("a:r"))]
+            line, cur, cut = 1, 0, None
+            for ri, r in enumerate(runs):
+                rPr = r.find(qn("a:rPr"))
+                use = pick_font_file(rPr is not None and rPr.get("b") == "1", rPr is not None and rPr.get("i") == "1")
+                text = r.findtext(qn("a:t")) or ""
+                space_w, _ = _rendered_size(" ", pt, use)
+                for m in re.finditer(r"\S+", text):
+                    word_w, _ = _rendered_size(m.group(0), pt, use)
+                    offset = step_in if line == 1 else 0
+                    add = word_w if cur == 0 else space_w + word_w
+                    if cur and cur + add + offset > room:
+                        line += 1
+                        cur = word_w
+                        if line > beside_lines:
+                            cut = (ri, m.start())
+                            break
+                    else:
+                        cur += add
+                if cut:
+                    break
+            if not cut:
+                continue
+            ri, at = cut
+            rest = copy.deepcopy(first._p)
+            for child in list(rest):
+                if child.tag != qn("a:pPr"):
+                    rest.remove(child)
+            pPr = rest.find(qn("a:pPr"))
+            if pPr is not None:
+                pPr.set("indent", "0")
+                pPr.set("marR", "0")
+            head_run = runs[ri]
+            tail_run = copy.deepcopy(head_run)
+            head_t, tail_t = head_run.find(qn("a:t")), tail_run.find(qn("a:t"))
+            full = head_t.text or ""
+            head_t.text = full[:at].rstrip()
+            tail_t.text = full[at:]
+            if not head_t.text:
+                first._p.remove(head_run)
+            rest.append(tail_run)
+            for r in runs[ri + 1:]:
+                first._p.remove(r)
+                rest.append(r)
+            end = first._p.find(qn("a:endParaRPr"))
+            if end is not None:
+                rest.append(copy.deepcopy(end))
+            first._p.addnext(rest)
+            # The picture sits level with the step's first line.
+            block = text_block(shape)
+            if block is not None:
+                total_h = block[0]
+                text_top = shape.top
+                if tf.vertical_anchor != MSO_ANCHOR.TOP:
+                    text_top = shape.top + max(0, (shape.height - total_h) // 2)
+                picture.top = Emu(int(text_top))
+
+
+def place_corner_marks(prs):
+    """Each corner number (or star) is drawn on its card's corner. In a card
+    taller than its words, the words sit lower, centred, and a number left at
+    the corner floats above them; so it comes down level with the first line,
+    never above the corner it was drawn at, and keeps its place across."""
+    from pptx.enum.text import MSO_ANCHOR
+    moved = 0
+    for slide in prs.slides:
+        for mark, shape in corner_pairs(slide):
+            try:
+                block = text_block(shape)
+            except Exception as error:  # a number left on its corner is still a number
+                print(f"  CORNER_MARK_NOT_MOVED: {error}", file=sys.stderr)
+                continue
+            if block is None:
+                continue
+            total_h, _, line_h, _ = block
+            text_top = shape.top
+            if shape.text_frame.vertical_anchor != MSO_ANCHOR.TOP:
+                text_top = shape.top + max(0, (shape.height - total_h) // 2)
+            level = text_top + (line_h - mark.height) // 2
+            if level > mark.top:
+                mark.top = Emu(int(level))
+                moved += 1
+    return moved
+
+
 def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
     prs = Presentation(path)
     _shape_scales.clear()
+    prepare_corner_steps(prs)
     grown = 0
     shrunk = 0
     unchanged = 0
@@ -1247,6 +1515,8 @@ def process(path, floor_pt=DEFAULT_FLOOR_PT, force=False):
         settle_group(members)
 
     place_card_signs(prs)
+    wrap_under_pictures(prs)
+    place_corner_marks(prs)
     # Last, once every box has its size: the fit measured each fraction as a
     # taller line, and the runs it sized are the ones split here.
     give_fractions_air(prs)

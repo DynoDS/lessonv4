@@ -736,6 +736,8 @@ function labelDiagramArgs(spec) {
       label: l.label,
       given: Boolean(l.given),
     })),
+    // Lines, rings and arrows on the picture, the same marks the board draws.
+    marks: Array.isArray(spec.marks) ? spec.marks : [],
     // The anatomy-poster arrangement: labels stack down the left and right
     // margins by which half of the picture their dot sits in, so several
     // callouts never land on top of each other. 'auto' routes each to its

@@ -69,6 +69,13 @@ class TheTeachersDecisionsAreWritten(unittest.TestCase):
         voice = flat((ROOT / "references" / "teacher-voice.md").read_text(encoding="utf-8"))
         self.assertIn("> Change the ones digit to 0. / Add 10. / Mark halfway and your number. / Round to the nearer ten. If it is halfway, round up.", voice)
 
+    def test_the_steps_are_the_way_this_class_should_use(self) -> None:
+        """6 Nov 2026, on the area criteria: pick "the best, easiest, quickest, most efficient way";
+        counting every square stays as the check for children who find it tricky."""
+        self.assertIn("is not written in as a second route", self.HOME)
+        maths = flat((ROOT / "references" / "subject-maths.md").read_text(encoding="utf-8"))
+        self.assertIn("**The lesson teaches the way this class should be using, and the slower ways that also work become the check.**", maths)
+
     def test_the_wall_never_rewords_a_step(self) -> None:
         """Decision 12: "I don't think it should be reworded."""
         wall = flat((ROOT / "agents" / "working-wall-designer.md").read_text(encoding="utf-8"))

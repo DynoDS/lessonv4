@@ -632,6 +632,32 @@ def test_a_card_sign_rises_to_the_first_line_of_a_tall_card():
         assert sign.top >= shape.top
 
 
+# A pencil about as tall as two centred lines stays halfway down, beside both of
+# them, so it has to clear the wider one. Placed by the first line alone, it sat
+# on the blank that starts a longer second line ("There are ___ rows with /
+# ___ squares in each, so ___.", Year 4 area, 28 October 2026; the teacher: "the
+# pencil visually looks like it's literally touching the text").
+def test_a_sign_beside_two_centred_lines_clears_the_wider_one():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / "sign-two-lines.pptx"
+        prs = Presentation()
+        slide = prs.slides.add_slide(prs.slide_layouts[6])
+        words = "Write it: ____________________"
+        sign, shape = card_with_sign(slide, words, "center", box_h=0.9)
+        shape.width = Inches(5.4)
+        prs.save(path)
+        MODULE.process(str(path))
+        after = Presentation(path).slides[0]
+        sign = next(s for s in after.shapes if s.name == "CardSign")
+        shape = next(s for s in after.shapes if s.has_text_frame)
+        total_h, _, line_h, lines = MODULE.text_block(shape)
+        assert len(lines) == 2 and lines[1][1] > lines[0][1], "the second line must be the wider"
+        # The sign sits beside both lines, and ends before the wider one starts.
+        assert sign.height > line_h
+        widest_start = shape.left + (shape.width - max(w for _, w in lines)) // 2
+        assert sign.left + sign.width <= widest_start - Inches(0.05)
+
+
 def test_a_sign_with_no_words_beside_it_stays_where_it_was_drawn():
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "sign-alone.pptx"

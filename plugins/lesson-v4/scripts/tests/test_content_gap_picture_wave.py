@@ -122,7 +122,7 @@ class ContentGapPictureWaveTests(unittest.TestCase):
         provenance story ('every filename has at most two AI calls in its
         immutable ledger') stops being true."""
         playbook = flat(PLAYBOOK)
-        self.assertIn("run the supplemental-wave mechanics over that snapshot", playbook)
+        self.assertIn("run `worksheet-render` → The supplemental picture wave over that snapshot", playbook)
         self.assertIn(
             "naming already-terminal filenames so nothing finished reopens",
             playbook,

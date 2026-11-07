@@ -251,7 +251,7 @@ cd /tmp/pptx_tpl && unzip -q "<Deck Name>.pptx"
 
 ### Step 2 — Parse the slide XML
 
-Write `<your-projects-folder>/parse_tpl.py` and run it. It reads each `ppt/slides/slideN.xml` and prints, per shape, the position/size (converted from EMU to inches), fill, text colour, bold/italic/underline, font size, alignment, and a text snippet. Have it also write the full report to `<your-projects-folder>/parse_tpl_output.txt`, and read that file with the Read tool — terminal output truncates on long decks and that has caused missed changes.
+Write `<your-projects-folder>/parse_tpl.py` and run it. It reads each `ppt/slides/slideN.xml` and prints, per shape, the position/size (converted from EMU to inches), fill, text colour, bold/italic/underline, font size, alignment, and a text snippet. Have it also write the full report to `<your-projects-folder>/parse_tpl_output.txt`, and read that file with the Read tool — terminal output truncates on long decks and can hide changes.
 
 ```python
 import xml.etree.ElementTree as ET, os
@@ -282,7 +282,7 @@ open('<your-projects-folder>/parse_tpl_output.txt','w',encoding='utf-8').write('
 
 ### Step 3a — Audit on paper first (read-only)
 
-Past runs lost the teacher's edits by skimming the parse output and silently dropping shapes. The fix is a table that forces every template element to be accounted for and every XML shape to be matched back. **Do not edit any code until the audit is printed in the chat.**
+Skimming the parse output and silently dropping shapes loses the teacher's edits. The table forces every template element to be accounted for and every XML shape to be matched back. **Do not edit any code until the audit is printed in the chat.**
 
 For each slide, print one table — one row per element the template draws (every `addShape` and `addText`, in source order):
 

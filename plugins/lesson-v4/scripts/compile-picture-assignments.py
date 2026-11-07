@@ -499,6 +499,44 @@ def source_schedule(photo: dict, generation_available: bool = True) -> list[dict
     return steps
 
 
+def usage_spent_schedule(photo: dict, generation_available: bool = True) -> list[dict]:
+    """The rest of the real ladder, walked only if the picture maker's usage runs out.
+
+    A real-first picture with `fallback_action: ai` compiles to a short search
+    because the maker is meant to catch the miss. Whether the maker has usage
+    left is only known when it is called, after that short search. On 6
+    November 2026 a Year 4 PSHE deck went out with grey boxes on nine slides:
+    one Unsplash and one Openverse round each, then "usage limit reached", and
+    "building bricks" had returned brick walls. On a host with no maker the
+    same pictures would have had the whole ladder and a plainer stand-in. The
+    teacher's ruling (6 November 2026): a plainer real photograph that makes
+    sense beats a grey box he has to fill himself; the grey box stays for what
+    no search can find.
+
+    So these are the no-generator ladder's steps the short schedule does not
+    already hold, in their own order. Empty wherever the short schedule is
+    already the whole story: no maker on this host, a made picture, or a
+    picture whose fallback is not to generate.
+    """
+    if not generation_available or photo["acquisition_mode"] != "ordinary-real" or photo["fallback_action"] != "ai":
+        return []
+    short = {(step["source"], step["round"]) for step in source_schedule(photo, True)}
+    return [
+        step for step in source_schedule(photo, False)
+        if (step["source"], step["round"]) not in short
+    ]
+
+
+def schedule_rows(photo: dict, steps: list[dict], work_root: Path) -> list[dict]:
+    return [
+        {
+            **step,
+            "summary_path": str((work_root / entry_key(photo["filename"]) / f"{step['source']}-r{step['round']}" / f"_search-summary-{step['source']}-r{step['round']}.json").resolve()),
+        }
+        for step in steps
+    ]
+
+
 def initial_route(photo: dict) -> str:
     return "ai" if photo["acquisition_mode"] == "controlled-ai" else "real"
 
@@ -601,7 +639,7 @@ def build_assignment(requirements_path: Path, photos: list[dict], batch_id: str,
         # No prompt and no ledger on a host that cannot generate: with nothing
         # to reserve, no generation attempt can be spent finding that out.
         prompt_file, prompt_hash = prompt_paths(photo, output_dir, batch_id, working_dir, generation_available)
-        rows.append({
+        row = {
             "entry_key": entry_key(photo["filename"]),
             "filename": photo["filename"],
             "subject": photo["subject"],
@@ -617,17 +655,17 @@ def build_assignment(requirements_path: Path, photos: list[dict], batch_id: str,
             "coherent_visual_invariants": photo["coherent_visual_invariants"],
             "avoid": avoid_list(photo),
             "initial_route": initial_route(photo),
-            "search_schedule": [
-                {
-                    **step,
-                    "summary_path": str((work_root / entry_key(photo["filename"]) / f"{step['source']}-r{step['round']}" / f"_search-summary-{step['source']}-r{step['round']}.json").resolve()),
-                }
-                for step in source_schedule(photo, generation_available)
-            ],
+            "search_schedule": schedule_rows(photo, source_schedule(photo, generation_available), work_root),
             "generation_prompt_file": prompt_file,
             "generation_prompt_sha256": prompt_hash,
             "ai_ledger_path": ai_ledger_path(working_dir, photo["filename"]) if prompt_file else None,
-        })
+        }
+        # Written only where it has steps, so every other entry compiles byte
+        # for byte what it always did. See `usage_spent_schedule`.
+        extra = usage_spent_schedule(photo, generation_available)
+        if extra:
+            row["usage_spent_schedule"] = schedule_rows(photo, extra, work_root)
+        rows.append(row)
     assignment = {
         "schema_version": 2,
         "kind": "image",
@@ -809,13 +847,14 @@ def repair_command(args) -> int:
     # at the original batch's folders, and the validator refused every result
     # the repair could write (1 October 2026).
     new_root = (Path(args.working_dir).resolve() / "unsplash" / "_picture-work" / args.batch_id).resolve()
-    if isinstance(row.get("search_schedule"), list):
-        row["search_schedule"] = [
-            {**step, "summary_path": str((new_root / row["entry_key"] / f"{step['source']}-r{step['round']}"
-                                          / f"_search-summary-{step['source']}-r{step['round']}.json").resolve())}
-            if isinstance(step, dict) and "source" in step and "round" in step and "entry_key" in row else step
-            for step in row["search_schedule"]
-        ]
+    for field in ("search_schedule", "usage_spent_schedule"):
+        if isinstance(row.get(field), list):
+            row[field] = [
+                {**step, "summary_path": str((new_root / row["entry_key"] / f"{step['source']}-r{step['round']}"
+                                              / f"_search-summary-{step['source']}-r{step['round']}.json").resolve())}
+                if isinstance(step, dict) and "source" in step and "round" in step and "entry_key" in row else step
+                for step in row[field]
+            ]
     repair = {"fault_file": str(fault), "fault_sha256": fault_hash, "previous_receipt": str(receipt), "previous_receipt_sha256": receipt_hash, "prior_summaries": prior_summaries, "prior_staged_assets": staged_assets, "additional_real_searches": 1}
     output = Path(args.output).resolve()
     repaired = {"schema_version": 2, "kind": "image", "batch_id": args.batch_id, "requirements": assignment["requirements"], "work_root": str((Path(args.working_dir).resolve() / "unsplash" / "_picture-work" / args.batch_id).resolve()), "entries": [row]}

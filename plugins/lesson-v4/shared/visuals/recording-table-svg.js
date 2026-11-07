@@ -63,9 +63,29 @@ function esc(value) {
 
 // A `||` anywhere in a cell marks revealed-answer content; the write-on piece
 // blanks it so no child glues in a finished answer.
+//
+// A choice cell (`{ "choices": ["same", "different"], "circled": ... }`, the
+// slide table's circle-one cell) prints every choice for the child to circle.
+// The ring stays only on the row done with the class; a `||` circled choice is
+// a revealed answer and loses its ring, as any other answer cell is blanked.
 function writeOnValue(value) {
+  if (value && typeof value === 'object' && Array.isArray(value.choices)) {
+    const circled = value.circled == null ? '' : String(value.circled);
+    return {
+      choices: value.choices.map((c) => String(c == null ? '' : c).trim()).filter(Boolean),
+      circled: circled && !circled.includes('||') ? circled.trim() : null,
+    };
+  }
   const text = String(value == null ? '' : value);
   return text.includes('||') ? '' : text.trim();
+}
+
+function isChoice(cell) {
+  return !!cell && typeof cell === 'object' && Array.isArray(cell.choices);
+}
+
+function cellText(cell) {
+  return isChoice(cell) ? cell.choices.reduce((a, b) => (b.length > a.length ? b : a), '') : String(cell || '');
 }
 
 function wrapText(text, maxWidth, maxFs, minFs) {
@@ -118,11 +138,11 @@ function columnWidths(headers, rows, innerW) {
   // whose ROWS supply no text is a response column like its neighbours, and
   // every column shares the width equally.
   const cols = headers.length;
-  const firstGiven = rows.some((r) => String((r && r[0]) || '').trim().length > 0);
+  const firstGiven = rows.some((r) => cellText(r && r[0]).trim().length > 0);
   if (!firstGiven) {
     return new Array(cols).fill(innerW / cols);
   }
-  const firstTexts = [headers[0]].concat(rows.map((r) => r[0] || ''));
+  const firstTexts = [headers[0]].concat(rows.map((r) => cellText(r[0])));
   const longest = firstTexts.reduce((max, t) => Math.max(max, String(t).length), 0);
   let firstW = longest * CELL_FS_MAX * CHAR_W + 2 * CELL_PAD_X;
   firstW = Math.max(innerW * 0.16, Math.min(innerW * 0.3, firstW));
@@ -143,6 +163,24 @@ function textLines(x, yTop, cellH, wrap, colour, weight, anchorMiddle, cellW) {
       return `<text x="${xPos.toFixed(2)}" y="${y.toFixed(2)}"${anchor} font-family="${FONT}" font-size="${wrap.fs}" font-weight="${weight}" fill="${colour}">${esc(line)}</text>`;
     })
     .join('');
+}
+
+// One choice to a line, at the largest size that keeps the longest on one line.
+function choiceWrap(cell, maxWidth) {
+  const longest = cellText(cell).length || 1;
+  const fs = Math.max(CELL_FS_MIN, Math.min(CELL_FS_MAX, Math.floor(maxWidth / (longest * CHAR_W))));
+  const index = cell.circled ? cell.choices.indexOf(cell.circled) : -1;
+  return { lines: cell.choices.slice(), fs, circled: index >= 0 ? { index, text: cell.circled } : null };
+}
+
+// The ring round the chosen line, matching textLines' placement.
+function choiceRing(x, yTop, cellH, wrap, cellW, colour) {
+  const lineH = wrap.fs * LINE_HEIGHT;
+  const blockH = wrap.lines.length * lineH;
+  const cy = yTop + (cellH - blockH) / 2 + (wrap.circled.index + 0.5) * lineH;
+  const rx = Math.min(cellW / 2 - 4, (wrap.circled.text.length * wrap.fs * CHAR_W) / 2 + 12);
+  const ry = lineH / 2 + 2;
+  return `<ellipse cx="${(x + cellW / 2).toFixed(2)}" cy="${cy.toFixed(2)}" rx="${rx.toFixed(2)}" ry="${ry.toFixed(2)}" fill="none" stroke="${colour}" stroke-width="${GRID_STROKE}"/>`;
 }
 
 // `profile` is optional: the stick-in pack passes its own so this prints in
@@ -168,9 +206,11 @@ function tightSvg(data = {}, profile) {
   // cell is there to be written into.
   const rowWraps = rows.map((row) =>
     row.map((cell, i) =>
-      cell
-        ? wrapText(cell, widths[i] - 2 * CELL_PAD_X, CELL_FS_MAX, CELL_FS_MIN)
-        : null
+      isChoice(cell)
+        ? choiceWrap(cell, widths[i] - 2 * CELL_PAD_X)
+        : cell
+          ? wrapText(cell, widths[i] - 2 * CELL_PAD_X, CELL_FS_MAX, CELL_FS_MIN)
+          : null
     )
   );
   const rowHeights = rows.map((row, r) => {
@@ -205,6 +245,7 @@ function tightSvg(data = {}, profile) {
       const wrap = rowWraps[r][c];
       if (wrap) {
         parts.push(textLines(cx, y, rowHeights[r], wrap, C.GIVEN_TEXT, c === 0 ? 'bold' : 'normal', true, widths[c]));
+        if (wrap.circled) parts.push(choiceRing(cx, y, rowHeights[r], wrap, widths[c], C.GRID_COLOUR));
       }
       cx += widths[c];
     }

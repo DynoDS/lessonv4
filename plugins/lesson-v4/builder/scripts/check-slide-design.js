@@ -510,7 +510,7 @@ function slideShowsCriteria(slideData) {
 }
 
 function asksForWork(slideData) {
-  if (slideData.doSign) return true;
+  if (slideData.doSign && slideData.doSign !== 'final') return true;
   let found = false;
   const walk = (value) => {
     if (found || !value || typeof value !== 'object') return;
@@ -531,6 +531,51 @@ function isWorkingSlide(slideData) {
   return asksForWork(slideData);
 }
 
+// A Do board told over two slides puts its set-up first (the goal and the
+// action cards that hand out the jobs) and the material, question and criteria
+// next (slide-composition-playbook.md, the Do board paragraph). The set-up's
+// action cards carry talk or pencil signs because they say what the work will
+// be, not because children do it there: with no question on the slide there is
+// nothing yet to talk or write about. Printing the criteria on both made the two
+// slides look like one slide shown twice (the teacher, PSHE 4, 6 November 2026).
+// So a slide is a set-up when its working signs sit only on the board's equal
+// action cards, it asks nothing, and the very next slide is the same unit and
+// draws the criteria. A talk or writing task on its own card (partner talk
+// before the writing) is still work.
+function asksSomething(value) {
+  if (!value || typeof value !== 'object') return false;
+  if (Array.isArray(value)) return value.some(asksSomething);
+  if (value.colorRole === 'focus-blue' || value.colorRole === 'task-blue') return true;
+  if (typeof value.value === 'string' && value.value.includes('[[')) return true;
+  return Object.keys(value).some((key) => !UNRENDERED_SLIDE_KEYS.has(key) && asksSomething(value[key]));
+}
+
+function signsOnlyOnActionCards(slideData) {
+  let loose = false;
+  const walk = (value, inActions) => {
+    if (loose || !value || typeof value !== 'object') return;
+    if (Array.isArray(value)) { value.forEach((item) => walk(item, inActions)); return; }
+    if (WORKING_SIGNALS.has(value.signal) && !inActions) { loose = true; return; }
+    const actions = inActions || (value.type === 'row' && value.equaliseTextCards === true);
+    Object.keys(value).forEach((key) => { if (!UNRENDERED_SLIDE_KEYS.has(key)) walk(value[key], actions); });
+  };
+  walk(slideData, false);
+  return !loose;
+}
+
+function isBoardSetUp(slides, index) {
+  const slideData = slides[index];
+  const next = slides[index + 1];
+  if (!slideData || !next || (slideData.doSign && slideData.doSign !== 'final')) return false;
+  const units = slideUnitIds(slideData);
+  if (!units.length || !slideUnitIds(next).some((id) => units.includes(id))) return false;
+  const refs = Array.isArray(slideData.representationRefs) ? slideData.representationRefs : [];
+  if (refs.some((ref) => ref && WORKING_INTERACTIONS.has(ref.interaction))) return false;
+  const title = typeof slideData.title === 'string' ? slideData.title.trim() : '';
+  if (MODELLING_TITLE.test(title)) return false;
+  return slideShowsCriteria(next) && !asksSomething(slideData) && signsOnlyOnActionCards(slideData);
+}
+
 function lateCriteriaWarnings(lesson) {
   const slides = Array.isArray(lesson && lesson.slides) ? lesson.slides : [];
   const byUnit = new Map();
@@ -545,7 +590,8 @@ function lateCriteriaWarnings(lesson) {
   byUnit.forEach((indexes) => {
     const firstCriteria = indexes.find((index) => slideShowsCriteria(slides[index]));
     if (firstCriteria === undefined) return;
-    const early = indexes.find((index) => index < firstCriteria && isWorkingSlide(slides[index]));
+    const early = indexes.find((index) => index < firstCriteria && isWorkingSlide(slides[index]) &&
+      !isBoardSetUp(slides, index));
     if (early === undefined) return;
     const title = String(slides[early].title || '').trim();
     warnings.push({
@@ -1902,6 +1948,28 @@ function teachLayoutWarnings(lesson, jsonPath) {
       });
     });
 
+    // A question the teacher asks on the way through a Teach is a line of the
+    // design's explanation, in the place it is asked, so the board carries the
+    // asking as well as the telling for a teacher who never opens the notes.
+    // Copied into `lines` it prints black like the telling around it, and the
+    // class cannot see that it is being asked anything.
+    slides.forEach((slideData, index) => {
+      if (!slideData || slideData.template !== 'teach-layout') return;
+      if (!slideUnitIds(slideData).some((id) => teachIds.has(id))) return;
+      const asking = slotWords(slideData.lines).find((words) => String(words).trim().endsWith('?'));
+      if (!asking) return;
+      warnings.push({
+        slide: index + 1,
+        field: 'lines',
+        signal: 'QUESTION_PRINTED_AS_TELLING',
+        message:
+          `"${String(asking).trim().slice(0, 60)}" is a question the teacher asks the class here, and in \`lines\` it ` +
+          'prints black like the telling around it. Put it in the slide\'s `question`, which prints it blue, and let ' +
+          'it close this slide: the line after it in the design answers it, so that line opens the next slide ' +
+          '(templates.md, the `question` slot).'
+      });
+    });
+
     const slidesByUnit = new Map();
     slides.forEach((slideData, index) => {
       slideUnitIds(slideData).forEach((id) => {
@@ -2298,6 +2366,58 @@ function pictureLookAgainLines(jsonPath) {
     }
     run = 1;
   }
+  return lines;
+}
+
+// A question with its answer printed beside it has stopped being a question:
+// the child reads both in one glance, so there is nothing left to think about.
+// templates.md, the `question` slot, says where each goes. Whether a line or a
+// star line really answers the question is a judgement, so this prints a
+// prompt to look again, never a refusal: a slide that keeps up a question it
+// does not answer, or keeps the question in view once the class has had its
+// go, stands.
+function answerBesideQuestionLookAgainLines(jsonPath) {
+  let spec;
+  try {
+    spec = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  } catch {
+    return [];
+  }
+  const slides = Array.isArray(spec && spec.slides) ? spec.slides : [];
+  const textOf = (value) => {
+    if (typeof value === 'string') return value;
+    if (value && typeof value === 'object' && typeof value.value === 'string') return value.value;
+    return '';
+  };
+  const filled = (value) => (Array.isArray(value) ? value.some((item) => textOf(item).trim()) : Boolean(textOf(value).trim()));
+  const asked = new Set();
+  const lines = [];
+  slides.forEach((slideData, index) => {
+    if (!slideData || slideData.template !== 'teach-layout') return;
+    const units = slideUnitIds(slideData);
+    if (!units.length) return;
+    const lead = textOf(slideData.lead).trim();
+    const questions = (Array.isArray(slideData.question) ? slideData.question : [slideData.question])
+      .map(textOf).map((text) => text.trim()).filter(Boolean);
+    const firstTime = questions.filter((text) => !units.some((unit) => asked.has(`${unit}\n${plainLine(text)}`)));
+    questions.forEach((text) => units.forEach((unit) => asked.add(`${unit}\n${plainLine(text)}`)));
+    if (lead.endsWith('?') && (filled(slideData.lines) || filled(slideData.sticky))) {
+      lines.push(
+        `SLIDE_DESIGN_LOOK_AGAIN: slide ${index + 1} leads with the question "${lead.slice(0, 60)}" and has ` +
+        'lines or a star line under it. If one of them answers it, the question goes on this slide with its ' +
+        'picture and the answering line opens the next slide, so the class thinks before it reads (templates.md, ' +
+        'the `question` slot). A question this slide does not answer is right as it is.'
+      );
+    }
+    if (firstTime.length && filled(slideData.sticky)) {
+      lines.push(
+        `SLIDE_DESIGN_LOOK_AGAIN: slide ${index + 1} asks "${firstTime[0].slice(0, 60)}" with its star line ` +
+        `"${textOf(slideData.sticky).trim().slice(0, 60)}" beside it. If the star line answers the question, ` +
+        'it opens the next slide instead (templates.md, the `question` slot). A star line that does not ' +
+        'answer it is right as it is.'
+      );
+    }
+  });
   return lines;
 }
 
@@ -3232,6 +3352,7 @@ function main(argv = process.argv.slice(2)) {
       console.log(optionalPictureLine(result.optionalPictures));
     }
     pictureLookAgainLines(args[0]).forEach((line) => console.log(line));
+    answerBesideQuestionLookAgainLines(args[0]).forEach((line) => console.log(line));
     console.log(`SLIDE_DESIGN_CHECK_OK: ${result.slideCount} slides`);
     return 0;
   }
@@ -3296,6 +3417,7 @@ module.exports = {
   countOptionalPictures,
   optionalPictureLine,
   pictureLookAgainLines,
+  answerBesideQuestionLookAgainLines,
   ordinaryRevealWarnings,
   caseAfterItsInstructionWarnings,
   lateCriteriaWarnings,

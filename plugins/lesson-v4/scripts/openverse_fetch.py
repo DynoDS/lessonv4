@@ -32,6 +32,7 @@ import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
+import web_tls
 from pathlib import Path
 import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 from picture_plain import plain_bytes
@@ -189,7 +190,7 @@ def search_openverse_once(query, reserve):
     }
     request = urllib.request.Request(API + "?" + urllib.parse.urlencode(params), headers={"User-Agent": USER_AGENT})
     try:
-        with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS) as response:
+        with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS, context=web_tls.CONTEXT) as response:
             data = json.loads(response.read().decode())
     except urllib.error.HTTPError as exc:
         kind = http_failure_kind(exc)
@@ -274,7 +275,7 @@ def _atomic_write(path, value, mode="wb"):
 
 def download_image(url, dest_path):
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS) as response:
+    with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS, context=web_tls.CONTEXT) as response:
         data = response.read()
     # Rewritten plain, so the worker who looks at it can open it (picture_plain.py).
     _atomic_write(dest_path, plain_bytes(data))

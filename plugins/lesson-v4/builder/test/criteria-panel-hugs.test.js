@@ -51,9 +51,16 @@ test('the step cards are the size they were: hugging does not blow the text up',
   assert.ok(Math.abs(two.h - three.h) < 0.02, 'a two-step and a three-step list share one card height');
 });
 
-test('a list that needs the whole height keeps it', () => {
-  const { panel } = draw(steps(6));
-  assert.ok(panel.h > ZONE.h - 0.3, `six steps fill the zone (${panel.h.toFixed(2)}in)`);
+test('a long list also ends where its words end', () => {
+  // Since 7 November 2026 every card is as tall as its own words, and the box
+  // is not stretched to the zone's foot to fill it: the teacher, "if we're just
+  // making it bigger just to make it bigger, and it's above the minimum font
+  // size anyway, then that's silly"; the room under it is the designer's.
+  const { panel, cards } = draw(steps(6));
+  const lastCard = Math.max(...cards.map((c) => c.y + c.h));
+  assert.equal(cards.length, 6, 'every step drawn');
+  assert.ok(panel.y + panel.h >= lastCard, 'the box holds its last card');
+  assert.ok(panel.y + panel.h - lastCard < 0.3, 'and ends just under it');
 });
 
 test('criteria that are not a list of steps keep the zone they were given', () => {

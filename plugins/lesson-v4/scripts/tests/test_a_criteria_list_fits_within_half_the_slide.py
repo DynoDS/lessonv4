@@ -171,8 +171,11 @@ def test_either_side_of_the_new_limit():
     band_only = [steps for steps, verdict in made
                  if not builder_holds(verdict) and (verdict["band"] or verdict["callouts"])]
     beyond_every_named_panel = [steps for steps, verdict in made if not builder_holds(verdict)]
-    assert len(half_side_only) >= 5, len(half_side_only)
-    assert len(band_only) >= 5, len(band_only)
+    # Since the numbers moved onto the cards' corners (6 November 2026) fewer
+    # made lists fall in this window: the half side is under one line taller
+    # than the widest practice panel, and the cards hold more words a line.
+    assert len(half_side_only) >= 3, len(half_side_only)
+    assert len(band_only) >= 3, len(band_only)  # fewer since 6 November 2026, as above
     assert len(beyond_every_named_panel) >= 40, len(beyond_every_named_panel)
     for steps in half_side_only:
         fit = validator.criteria_fit(steps)
@@ -240,6 +243,9 @@ SMALLER = [
     "If they are not close, check each column again, starting with the ones.",
     "Write a sentence that says how your estimate helped you check the answer.",
     "Circle the answer you trust most and explain to a partner why you trust it.",
+    # Added 6 November 2026: with the numbers on the cards' corners the seven
+    # steps above fit at 18pt.
+    "Check it.",
 ]
 HALF_SIDE_ONLY = [
     "Write the 3-digit number on top and the 1-digit number under the ones column.",
@@ -270,6 +276,10 @@ def too_long_design():
         "Multiply the hundreds and add anything you carried from the tens column, then write the answer.",
         "Read the whole answer back from the hundreds column to the ones column, saying each digit's value.",
         "Check your answer with an estimate, rounding the 3-digit number to the nearest hundred first.",
+        # Two more since 6 November 2026, so it is still too long at 16pt now
+        # the cards' numbers sit on their corners and the words have more room.
+        "Write the multiplication again as a sentence, saying what each of the numbers stands for.",
+        "Explain to your partner how you know the answer is sensible, using the estimate to help you.",
     ]
     return design, photos
 
@@ -284,7 +294,7 @@ def test_a_list_the_named_panels_cannot_hold_goes_back_to_its_writer():
         raise AssertionError("an eight-step list of very long steps passed the lesson check")
     assert ("successCriteria[0] (sc-001), the list that begins \"Write the 3-digit number on top...\", "
             "is too long for the criteria panels slides are built with") in message
-    assert "at 18pt, the smallest the board allows, its 8 steps take" in message
+    assert "at 18pt, the smallest the board allows, its 10 steps take" in message
     assert "in the roomiest of them, the half-width side (6.35in wide and 6.65in tall), which holds" in message
     assert "and the practice panel holds it at none of its three widths." in message
     assert "Tighten the wording here, where it is written, keeping what each step tells a stuck child to do" in message

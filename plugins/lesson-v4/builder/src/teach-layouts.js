@@ -352,6 +352,16 @@ const WIDE_CARDS_WEIGHT = 1.9;
 // beside the person: the pictures are what the class is looking at.
 const BOARD_BESIDE_SPEAKER = 0.72;
 
+// Which side the person stands on when they stand beside a board. A child
+// reads from the left, so the side is what they meet first: the person, when
+// the cards explain what the person said; the board, when it holds the
+// situation the person's words are about. `speakerSide` is the designer's
+// choice for the slide; left keeps the person first, as before it existed.
+const SPEAKER_SIDE_LAYOUTS = ['speaker-lines', 'flexible'];
+function boardSide(s) {
+  return s.speakerSide === 'right' ? 'left' : 'right';
+}
+
 function withWeight(visual, weight) {
   return Object.assign({}, visual, { weight });
 }
@@ -563,15 +573,16 @@ const LAYOUTS = {
   // 11 October 2026 a speaker could stand beside a picture only, so a Year 4
   // PSHE Teach beat (a child's words, what they tell us, a question) lost its
   // bubble and printed `Amara says: "..."` on a flat card. The speaker stands
-  // on the left because their words are read first; the explanation, and the
-  // success criteria when the unit carries them, are what the class reads next.
+  // on the left when their words are read first and the cards explain them;
+  // `speakerSide: "right"` puts the cards first when they set the situation
+  // the words are about (see boardSide above).
   // The picture is optional because a story beat needs its character and the
   // thing they are talking about together. On 21 October 2026 a Year 4 PSHE
   // deck had to choose: George's face and his bubble, or the maths book he was
   // stuck on, never both, so three slides lost the book. The picture stands
   // above the cards, as the Lily and Eli Do slide had always drawn it.
   'speaker-lines': {
-    use: 'One person speaking on the left; the explanation of what they said, and the question, in cards beside them, with the thing they are talking about pictured above the cards when there is one.',
+    use: 'One person speaking, with cards beside them (the explanation of what they said, or the situation they are speaking about, and the question), and the thing they are talking about pictured above the cards when there is one. The person stands on the left; "speakerSide": "right" puts the cards first.',
     slots: { speakers: [1, 1], lines: [0, 3], question: [0, 1], task: [0, 1], sticky: [0, 1], criteria: [0, 1], pictures: [0, 1] },
     column: [1, 4],
     build: (s) => {
@@ -580,7 +591,7 @@ const LAYOUTS = {
       if (s.pictures && s.pictures.length) items.push(withWeight(s.pictures[0], 1.4));
       if (s.criteria) items.push(withWeight(s.criteria, 2));
       return {
-        template: 'speech-bubbles-1', statementSide: 'right',
+        template: 'speech-bubbles-1', statementSide: boardSide(s),
         statementRatio: s.criteria || items.length ? 0.62 : 0.58,
         statement: items.length
           ? { type: 'stack', verticalAlign: 'center', items: items.concat([cards]) }
@@ -599,13 +610,13 @@ const LAYOUTS = {
   // fits: see content/board.js. A named layout that fits is still the first
   // choice, because a deck built all on this one would read as one slide repeated.
   'flexible': {
-    use: 'One to four pictures, a map among them if it helps, with whatever else the slide needs: a line across the top, a person speaking, cards, a question, a task, a line to remember, the success criteria. Pictures take the same size and the room left by the words.',
+    use: 'One to four pictures, a map among them if it helps, with whatever else the slide needs: a line across the top, a person speaking, cards, a question, a task, a line to remember, the success criteria. Pictures take the same size and the room left by the words. A person speaking stands on the left; "speakerSide": "right" puts the board first.',
     slots: { lead: [0, 1], pictures: [1, 4], captions: [0, 4], lines: [0, 3], question: [0, 1], task: [0, 1], sticky: [0, 1], speakers: [0, 1], criteria: [0, 1] },
     column: [0, 4],
     build: (s) => {
       const body = board(s, s.columnItems);
       if (!s.speakers.length) return { template: 'body-full', body };
-      return { template: 'speech-bubbles-1', statementSide: 'right', statementRatio: BOARD_BESIDE_SPEAKER, statement: body, speakers: s.speakers };
+      return { template: 'speech-bubbles-1', statementSide: boardSide(s), statementRatio: BOARD_BESIDE_SPEAKER, statement: body, speakers: s.speakers };
     }
   },
 
@@ -762,8 +773,16 @@ function expandSlide(slide, slideNumber) {
             `${supplied.join(', ')} together, so the beat is two slides: split it where its teaching turns.`));
     }
   });
+  if (slide.speakerSide !== undefined) {
+    if (!SPEAKER_SIDE_LAYOUTS.includes(name)) {
+      fail(at, `"speakerSide" is read only on ${SPEAKER_SIDE_LAYOUTS.join(' and ')}, where a person stands beside a board.`);
+    }
+    if (slide.speakerSide !== 'left' && slide.speakerSide !== 'right') {
+      fail(at, '"speakerSide" is "left" (the person read first) or "right" (the board read first).');
+    }
+  }
   Object.keys(slide).forEach((key) => {
-    if (key === 'template' || key === 'layout' || SLOT_KEYS.includes(key) ||
+    if (key === 'template' || key === 'layout' || key === 'speakerSide' || SLOT_KEYS.includes(key) ||
         PASS_THROUGH.includes(key)) return;
     fail(at, `"${key}" is not read on a teach-layout slide.`);
   });
@@ -903,6 +922,7 @@ function expandSlide(slide, slideNumber) {
     fail(at, 'has pictures and nothing to say about them. Give it the words the slide needs, or use "picture-with-statement".');
   }
 
+  s.speakerSide = slide.speakerSide;
   const expanded = def.build(s);
   PASS_THROUGH.forEach((key) => {
     if (slide[key] !== undefined) expanded[key] = slide[key];

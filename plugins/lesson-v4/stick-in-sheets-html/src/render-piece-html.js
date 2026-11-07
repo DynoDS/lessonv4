@@ -319,6 +319,8 @@ async function renderLabelDiagram(item, baseDir, opts = {}) {
     // The callout the board points at, ringed in the pack's dark ink.
     highlight: spec.highlight,
     ink: true,
+    // Lines, rings and arrows on the picture, the same marks the board draws.
+    marks: Array.isArray(spec.marks) ? spec.marks : [],
   };
   // A piece with lines to write on is a sheet a child labels, so it is laid
   // out as the worksheet's is: the lines stacked beside the picture, each long

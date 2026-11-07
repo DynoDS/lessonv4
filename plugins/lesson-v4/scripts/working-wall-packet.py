@@ -1354,6 +1354,9 @@ def changed_source_cell(card: dict, table: dict) -> str:
     wall_numbers = {number for cell in wall_cells for number in NUMBER_RE.findall(cell)}
     for row in table.get("rows") or []:
         for cell in row if isinstance(row, list) else [row]:
+            if isinstance(cell, dict) and "choices" in cell:
+                # A circle-one cell is a task's answer space, not a fact a wall keeps.
+                continue
             if isinstance(cell, dict):
                 if cell not in [c for r in card.get("rows") or [] for c in (r if isinstance(r, list) else [r])]:
                     return "picture cell"

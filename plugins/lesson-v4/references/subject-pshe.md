@@ -9,13 +9,26 @@ Read this at the start of a PSHE lesson, before the route is chosen. This file a
 - Use **Dialogic** when the question genuinely permits several defensible choices or positions and children must justify a view.
 - Use **Task-Centred** when one sustained real-life task is the main learning experience and evidence.
 
+## The learning is the part children did not bring
+
+Children walk into most PSHE lessons able to say the headline: be kind, share, tell an adult, respect each other. A lesson that draws that headline out of them and confirms it has reminded them, not taught them, however tidy its moves, and this teacher will not teach it to a Year 4 class. So before choosing the route, name what a child will be able to say or do at the end that they could not at the start. In PSHE it is usually one of two things:
+
+- **A belief that is nearly right.** Children bring the headline with a wrong edge on it: respect means agreeing, a good friend never argues, being kind always builds trust, someone on their own must be lonely, someone who says they are fine is fine, compromise means one person gives in, being assertive means being loud. Build the lesson on turning it: open on a case where the belief seems to hold, so children commit to it, draw them to a case where it breaks, and give them the better version to use on someone else's situation the lesson has not settled. Coming back to the opening case at the end lets children hear their own answer change.
+- **A moment they know the answer to and cannot yet manage.** Saying no to a friend without losing them, owning up, asking for help when it is embarrassing. The learning is the doing: every child says the words aloud in a situation with a real pull, so saying them costs something.
+
+The teacher's plan is the first place to look: a scheme's misconceptions or things to look for are usually the nearly-right beliefs, and they belong at the centre of the lesson, not in the teacher's notes. Ask the general test of what you name (`preferences.md` → `Would a child have needed this lesson to say it?`).
+
+The situations carry the depth, so pitch their thinking at Year 4 even while the words are pitched at the child who reads least (`preferences.md` → `Write for this class`): simple to read, with two sides that each have a fair reason, and no character whose reply is obviously wrong. Two fair reasons are not enough on their own: the friendship, or something the child cares about, has to stand to lose something whichever way it goes, because that is what makes the decision hard (rocket or castle for a class model has two fair reasons and nothing at stake). A warm-up or a quick check can be smaller; the cases children practise on carry the weight. A disagreement over a display colour, or shouting in a library, was settled for these children years ago and gives them nothing to decide. Year 4 pulls look more like a group chat one friend is left out of, a best friend who wants you to play with nobody else, a secret that worries you, an idea used without asking. Two situations that turn on the same decision are one situation; each new one changes what is being decided.
+
+Where this stops: some PSHE lessons are mainly knowledge (what a period is, the water safety code, when a medicine helps or harms, the Eatwell Guide). Teach that clearly (`Teach facts before dependent judgement`) without inventing a mix-up or a dilemma around it, and never present a safety message as one side of a debate. A short reminder of something known is a good step inside a lesson (a starter, a bridge); the fault is a lesson that stops there.
+
 ## Teach facts before dependent judgement
 
 Teach necessary factual, legal, anatomical or safeguarding knowledge directly before asking children to make a judgement that depends on it. When the learning is an idea children will apply beyond today's scenario (a boundary, consent, a fair share), name it in `concepts` and meet it on more than one scenario; a rule shown on one story is a fact about that story. Do not turn factual knowledge into an opinion poll or present a non-negotiable safety message as though every answer is equally defensible.
 
 ## Use safe distance
 
-Use fictional, school-based or third-person situations for sensitive topics. Do not assume children share the same family circumstances or ask them to reveal private information about family, money, relationships, mental health, puberty or unsafe experiences.
+Use fictional, third-person situations for sensitive topics. Distance comes from the situation being someone else's, not from making it small or setting it at school: a character's group chat is as safe to discuss as a display colour, and far more worth discussing. So set the cases wherever Year 4 friendships and choices really happen (a sleepover, a club, the park, a group chat, a family party, as well as the playground and the classroom), because a lesson whose every case is in class tells children the learning belongs to school. Do not assume children share the same family circumstances or ask them to reveal private information about family, money, relationships, mental health, puberty or unsafe experiences.
 
 Personal reflection may remain private. Protect it from unnecessary public disclosure, collection or marking for its personal content. A child may still show the learning through a safely distanced scenario.
 
@@ -31,12 +44,12 @@ A personal reflection or a piece about the child's own life names the product. T
 
 ## What a Do beat looks like in PSHE
 
-PSHE's own work is a citizen's: weighing a situation, deciding what to do and who to ask, practising the words, seeing another side and persuading someone who can act. **Know the wrong answers children bring.** No researched list of PSHE misconceptions exists for this age; these come from the PSHE Association's guidance and from this plugin's own tasks that worked:
+PSHE's own work is a citizen's: weighing a situation, deciding what to do and who to ask, practising the words, seeing another side and persuading someone who can act. **Know the wrong answers children bring.** The teacher's plan often lists them for the lesson (`The learning is the part children did not bring`); these come from the PSHE Association's guidance and from this plugin's own tasks that worked:
 - Facts and rules: `I will get in trouble if I tell.` A stranger looks scary (children asked to draw one draw a villain).
 - Recognising it: the child looks for a nasty voice, so a friendly push is missed; `maybe later` is taken for a no. Borderline cases find this.
-- Strategies and words: there is no wrong idea. The child knows what to say and cannot yet say it, so the beat is every child saying it.
+- Strategies and words: the child often knows what to say and cannot yet say it when it costs something (to a friend, to someone older), so the beat is every child saying it in a situation with a real pull.
 
-**Saying it aloud is the skill, not the lesson said back.** A child saying a refusal or a way of asking for help, in their own voice, to a partner, is practising what the lesson is for. Declare that beat as `use.practice` (`output-template.md` → `use`); it is not the lesson's one say-it-back (the teacher, 6 October 2026: "different because saying it is the point"). The edge is what is said. Words or an action the child will have to say or do in life are practice: a refusal, asking a trusted adult for help, a partner voice. A fact, a rule or a list of steps recited to a partner is still rehearsal.
+**Saying it aloud is the skill, not the lesson said back.** A child saying a refusal or a way of asking for help, in their own voice, to a partner, is practising what the lesson is for. Declare that beat as `use.practice` (`output-template.md` → `use`); it is not the lesson's one say-it-back. The edge is what is said. Words or an action the child will have to say or do in life are practice: a refusal, asking a trusted adult for help, a partner voice. A fact, a rule or a list of steps recited to a partner is still rehearsal.
 
 Two questions are unsafe however well they would sort a class (PSHE Association: disclosures are never encouraged in class, and no personal questions): one that invites a child to tell something about their own life or home, and one that has a child judge a named classmate. Ask about a character, in the Association's own form: what is happening to them, who could help, what would you tell them. A `what do you already think?` starter has no wrong answer and is not a check.
 
@@ -44,7 +57,8 @@ A PSHE Do beat has children apply the taught reason or boundary to a situation, 
 
 - **What would you do next, and who could help?** A situation that is someone else's: children weigh two ways it could go, choose one and say the words.
 - **Change someone's mind.** Children work out who could change something (the head, the school council, a councillor) and what would persuade them, using what was taught.
-- **Sort the behaviours.** Kind, unkind or not sure, for short scenarios the class has not discussed, with the taught rule deciding the hard one.
+- **Coach two friends.** In threes, two play friends whose sides each have a fair reason and one coaches them to an answer that is fair to both, using the taught words; the group then decides whether it is fair or one person is just giving in.
+- **Sort the behaviours.** Kind, unkind or not sure, for short scenarios the class has not discussed, where the polite-sounding and rude-sounding cards are not all where they seem and the taught idea decides them; a sort a child gets right without the lesson is a weak task.
 - **Spot the warning sign.** Children underline the phrase in Mia's message that is trying to pressure her, or the detail in the story that is the risk.
 - **Safest next step.** Three things Leo could do; choose the safest and name the rule that makes it so.
 - **Order the steps.** What to do first, next and last, for a situation the Teach did not walk through, with one step that looks helpful and is not. Without those two it is recall of the list just taught (`do-beats.md` 5.8).

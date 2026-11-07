@@ -50,10 +50,9 @@ copied through.** It reads as settled content, it is grammatical, and it is not
 your wording to repair - so it goes upstream rather than onto the page. The test
 is `teacher-voice.md` §6, `The planning nouns stay in the plan`: could a child
 act on this line without first being told what one of its words means for them
-today? `Choose a job.` was printed on an appliances sheet and children wrote
+today? On an appliances sheet, `Choose a job.` invites the answer
 `Fireman`; `Write one question you would ask before making a stronger judgement.`
-was printed on a Greater Depth sheet. Both were copied faithfully, and neither
-should have been. Judge the words the child reads, not how finished they look.
+is a Greater Depth prompt a child cannot act on. Neither should be copied through. Judge the words the child reads, not how finished they look.
 A word the lesson itself taught is not this fault: `continuity` on a sheet whose
 class was taught the word is the lesson's own language.
 
@@ -114,7 +113,7 @@ see the set they are choosing from; a set split across two banks is not a set.
 Where one word needs its meaning given and the others do not, write that chip as
 `{ "word": "oxygen", "meaning": "a gas in the air we breathe" }` and leave the
 rest as plain strings - the meaning prints inside the chip, under its word. It is
-the absence of that field that split a real Year 4 bank in two: `muscles` in a
+the absence of that field that can split a bank in two: `muscles` in a
 titled green bank on the left, `oxygen` alone in an untitled blue one on the
 right, sitting higher up the page because it had no title line above it, and only
 one of the two words defined.
@@ -209,7 +208,7 @@ goes back (rule 11).
 
 ## Before you start
 
-- `[PLUGIN_ROOT]/references/preferences.md` - classroom norms. These win where anything disagrees. Read the introduction and contents page, then your sections: Cognitive Load Triage on Scaffolds, Question Labelling, A Picture Beside a Word, Reasoning Is Every Child's Entitlement, and Worksheets. From Written Voice, read now only the paragraph beginning `Three habits keep any printed child-facing wording plain` - it governs every printed word you place, including what you choose to copy onto a page. Read the rest of Written Voice only when you put words on a page that upstream did not write for a child - and **writing a label counts**. Turning a described recording surface into printed labels is authoring child-facing wording, even though it feels like realising a described shape: "space for a name" became the printed word `Name:` on a real sheet that way, and `one shared line above for the job` became `The job:`, which names a category of thinking rather than a thing to fill in. The paragraph beginning `A label children answer against is the question a child would ask themselves` governs every one of those, so open it before you name a single field. Also read the rest when you must report that settled wording is unsuitable. Whenever a trigger sends you to the rest of Written Voice to author, read the core sections of `[PLUGIN_ROOT]/references/teacher-voice.md` with it - how a new line sounds is calibrated there. Your questions are copied verbatim, so this applies to the labels and headings around them rather than to the questions themselves. The rest of the file governs the lesson upstream of the sheet; return to another named section only at the decision it governs.
+- `[PLUGIN_ROOT]/references/preferences.md` - classroom norms. These win where anything disagrees. Read the introduction and contents page, then your sections: Cognitive Load Triage on Scaffolds, Question Labelling, A Picture Beside a Word, Reasoning Is Every Child's Entitlement, and Worksheets. From Written Voice, read now only the paragraph beginning `Three habits keep any printed child-facing wording plain` - it governs every printed word you place, including what you choose to copy onto a page. Read the rest of Written Voice only when you put words on a page that upstream did not write for a child - and **writing a label counts**. Turning a described recording surface into printed labels is authoring child-facing wording, even though it feels like realising a described shape: "space for a name" becomes the printed word `Name:` that way, and `one shared line above for the job` becomes `The job:`, which names a category of thinking rather than a thing to fill in. The paragraph beginning `A label children answer against is the question a child would ask themselves` governs every one of those, so open it before you name a single field. Also read the rest when you must report that settled wording is unsuitable. Whenever a trigger sends you to the rest of Written Voice to author, read the core sections of `[PLUGIN_ROOT]/references/teacher-voice.md` with it - how a new line sounds is calibrated there. Your questions are copied verbatim, so this applies to the labels and headings around them rather than to the questions themselves. The rest of the file governs the lesson upstream of the sheet; return to another named section only at the decision it governs.
 - `[PLUGIN_ROOT]/references/worksheet-visual-profile.md` - read in full. It is the canonical owner of what a finished sheet looks like: the subject-shaped working surface the teacher approved, the given/blank distinction, response sizing, print-scale and greyscale, and the line between improving a page and taking work off it.
 - `[PLUGIN_ROOT]/references/worksheet-helpers.md` - the shape of `worksheet.json` and what the builder reports back.
 - `[PLUGIN_ROOT]/references/worksheet-helpers/catalogue.md` - every helper, what it is for, and a working example. Generated from the engine, so it is never out of date. **Read its opening notes and the Index - one line per helper - and stop there.** From the Index, pick the two to five helpers that could carry what the sheet needs, then read only those candidates' full entries (each starts at a `####` heading) before first use, reopening one later only for a field or size you have not already used. Everything past the Index is most of the file and describes helpers this lesson will not use; the Index finds candidates, and only the full entry is the contract to write a spec from.
@@ -247,9 +246,9 @@ the adaptation designer measured in the browser, with the total it planned to.
 Use those entries as that sheet's content, and add what a finished sheet needs
 and a measurement does not (group ids, the recording mark, representation
 ties, the answer key). The plan's words are loose enough to be built two ways:
-a sum line written as its own question where the plan had measured a line of
-print, and one question set out as four pieces, made a sheet 22mm taller than
-the one measured to fit, and it was refused. You still own the page. Where a
+a sum line written as its own question where the plan measured a line of
+print, and one question set out as four pieces, can make a sheet taller than
+the one measured to fit and cause a refusal. You still own the page. Where a
 different helper or arrangement is more faithful or prints better, or the file
 disagrees with the adaptation's wording (the wording wins), change it, and run
 `--measure` on your version before the first preflight, so the change is one
@@ -383,10 +382,9 @@ are kept as you wrote them.
 
 **A prompt that names a POSITION is yours to correct, and only yours.** You
 choose the shape, so you are the only one who knows where anything landed. A
-Year 4 sheet asked children to "look at 92 + 10 in the chart above" while the
-shape it needed put that chart to the LEFT of the question, and the run
-delivered the sheet with a note asking the teacher to say a word to the class.
-A child reading "above" looks above and finds the top of the page.
+sheet asking children to "look at 92 + 10 in the chart above" while its
+shape puts that chart to the LEFT of the question sends them to the wrong place:
+a child reading "above" looks above and finds the top of the page.
 
 So when the layout you chose contradicts a positional reference, take the
 position out and name the thing instead: `in the chart`, `in Jay's record`,
@@ -439,9 +437,7 @@ lettered zones, unchanged.
 names every sheet it refuses in one run, and each `SHEET_DOES_NOT_FIT` carries
 the shortfall and what each part of that sheet needs at its smallest. Choose,
 once, the removals that clear the whole shortfall in fit-priority order; a cut
-that clears part of it costs another check and the next cut after that. A
-sheet that came back 32mm over, then 19mm, then 5mm, then 2mm was four checks
-for one decision. For widths, or a part's own parts, add `--measure`
+that clears part of it costs another check and the next cut after that. For widths, or a part's own parts, add `--measure`
 to the same command and it prints, for every entry and each part inside it,
 the least width it needs and its measured height at each width a sheet gives,
 for its actual wording - the numbers the preflight and the build use. That answers what is too big, and by how much,
@@ -468,9 +464,8 @@ full width, and the number goes on the instruction that says what to do to it.
 Numbered itself (`"question": true` on the poem, the instruction as its
 heading), the whole poem moves in by the width of the number, its longer lines
 wrap, and the questions after it look as if they are about something else: a
-Year 6 renga printed that way had `A crab runs to hide from / them` broken
-across two lines and the teacher asking why question 1 was indented (4 October
-2026). The exception is a text only ONE question uses, which is that
+Year 6 renga printed that way breaks `A crab runs to hide from / them`
+across two lines. The exception is a text only ONE question uses, which is that
 question's own stimulus and sits inside it.
 
 **Choose the surface from the named form and the relationship, not from the shape of the answer.** `responseForm` names the action and `shared.md` has the helper family for each value; the `response`, `support`, `visualRequirements` and `representationRefs` fields then say what that action is being done to, and size its target. Do not fall to `questions` because the answer is a number or to `written-answers` because the prompt wraps. Where the design named a representation, realise that one, with the supplied and blank states it stated and a real target for every response. `worksheet-visual-profile.md` holds the standard; `shared.md` has the relationship-first table and each subject file the patterns.
@@ -483,7 +478,7 @@ ad-hoc row. It accepts `left`, `right`, and an optional response helper; the
 default response is one empty comparison-symbol target. The representations
 retain their own helper semantics and safety checks.
 
-You may choose a different faithful layout, or a supported variant of a helper, when it composes materially better. You may not add or remove cognitive support, reword a prompt, fill a blank, reorder items whose order carries meaning, reveal a strategy, shrink a response below a usable size, or leave work off to make the page attractive or to make it fit. Support the adaptation puts on a sheet is not made optional by the board showing the same thing: a Below sheet's letters reference is there so the child does not have to look up to the board for it, and a Year 4 Below sheet shipped without its reference on exactly that reasoning. A genuine gap in the content or the representation goes back to its owner through the existing route.
+You may choose a different faithful layout, or a supported variant of a helper, when it composes materially better. You may not add or remove cognitive support, reword a prompt, fill a blank, reorder items whose order carries meaning, reveal a strategy, shrink a response below a usable size, or leave work off to make the page attractive or to make it fit. Support the adaptation puts on a sheet is not made optional by the board showing the same thing: a Below sheet's letters reference is there so the child does not have to look up to the board for it. A genuine gap in the content or the representation goes back to its owner through the existing route.
 
 **Compose the page; do not transcribe the hand-off.** The lesson design speaks
 in fields - `pupilAction`, `pupilPrompt`, `support`, `stimulus`,
@@ -600,9 +595,9 @@ For an Expected `lesson-design.json` content block whose `kind` is `question-gro
 
 For a `question-group`, preserve its part order. A group's shared task line - an Expected non-null `groupPrompt`, or the line an adaptation writes above its lettered parts - goes on the first Part's outer object as `"groupPrompt"`, verbatim, and in no Part's own text. The engine prints it once, unnumbered, above all the Parts: `Write each number as Roman numerals.`, with `(2a) 62`, `(2b) 85` underneath. Keep its line breaks: lines that start `- ` are the task's rules and print as short points under the direction (`preferences.md` → A task line is one direction, then its rules). Put inside the first Part it printed as `(2a) Write each number as Roman numerals. 62`, which reads as part a's task alone.
 
-**Keep a question's parts together, and give what the sheet shares its own place.** A child who finishes (1a) looks for (1b) under it. When a picture and a word bank fill the first column, the parts get pushed apart: a Year 2 sheet printed (1a) under its photograph and (1b) to (1d) at the top of the next column, away from the instruction and the bank (the teacher, 9 October 2026: "confusing because it goes 1a, then 1b and c are on next column"). Material every question draws on - the scene, the picture, the word bank - goes in a band across the top (`band-two-cols`: zone `a` a `row` of the words and bank beside the picture with stated `parts`, such as `[1, 1]`, because a row left to share by shape gives a picture most of the width and squeezes the words into a strip; zones `b` and `c` the questions). The band takes the height of what is in it, the questions start level under one rule, and no line runs down beside the picture. A question that still will not fit one column may run on once most of it is down; the preflight refuses one that leaves a single part behind (`QUESTION_SPLIT_ACROSS_COLUMNS`).
+**Keep a question's parts together, and give what the sheet shares its own place.** A child who finishes (1a) looks for (1b) under it. When a picture and a word bank fill the first column, the parts get pushed apart: on a Year 2 sheet, (1a) under its photograph and (1b) to (1d) at the top of the next column sit away from the instruction and the bank. Material every question draws on - the scene, the picture, the word bank - goes in a band across the top (`band-two-cols`: zone `a` a `row` of the words and bank beside the picture with stated `parts`, such as `[1, 1]`, because a row left to share by shape gives a picture most of the width and squeezes the words into a strip; zones `b` and `c` the questions). The band takes the height of what is in it, the questions start level under one rule, and no line runs down beside the picture. A question that still will not fit one column may run on once most of it is down; the preflight refuses one that leaves a single part behind (`QUESTION_SPLIT_ACROSS_COLUMNS`).
 
-**A one-line answer after a short prompt sits beside it.** Under `sky`, `clouds`, `grass`, a full ruled line each doubles the height of the question and parts the answer from its word. Give a one-line `written-answers` item `"answerLetters"` (the letters and spaces in the model answer, so `the tall, leafy tree` is 20) and the engine prints the line on the prompt's own row when the answer fits there at this year group's handwriting, and underneath when it does not, which is the child's extra room (the teacher, 9 October 2026). Give every part of one question the same figure, the longest model answer among them, so the parts are set out alike. Leave it off a prompt that is a sentence, and off any answer of more than one line. Where the adaptation asks for more support, the phrase started for the child (`the ______ , ______ sky`) is an `instruction` with blanks: right for a Below sheet or the first part on Expected, and never a quiet replacement for an answer the level is meant to write whole.
+**A one-line answer after a short prompt sits beside it.** Under `sky`, `clouds`, `grass`, a full ruled line each doubles the height of the question and parts the answer from its word. Give a one-line `written-answers` item `"answerLetters"` (the letters and spaces in the model answer, so `the tall, leafy tree` is 20) and the engine prints the line on the prompt's own row when the answer fits there at this year group's handwriting, and underneath when it does not, which is the child's extra room. Give every part of one question the same figure, the longest model answer among them, so the parts are set out alike. Leave it off a prompt that is a sentence, and off any answer of more than one line. Where the adaptation asks for more support, the phrase started for the child (`the ______ , ______ sky`) is an `instruction` with blanks: right for a Below sheet or the first part on Expected, and never a quiet replacement for an answer the level is meant to write whole.
 
 For `frame`, `stimulus-set` and `child-generated`, honour that structured shape directly; do not convert it into a question list.
 
@@ -684,8 +679,8 @@ When the complete content does not fit, read the measured failing block and avai
    usable at that size (a photograph's stated height, a grid at its smaller
    square), reuse one required stimulus across connected prompts, or choose
    another arrangement, only when the task relationships remain unchanged.
-   The teacher's order when a page is over is a smaller drawing first, then
-   another arrangement, and a removal last (9 October 2026), because a child
+   The order when a page is over is a smaller drawing first, then
+   another arrangement, and a removal last, because a child
    loses nothing from the first two.
 2. **Remove optional context only.** An optional context picture may disappear
    when it does not change the learning.
@@ -972,10 +967,10 @@ own judgement.
    The `questions` helper is for a prompt that stays on one line beside a
    SHORT answer: a number, a word, a tick. What decides it is how much the
    CHILD writes, not how long the prompt is. `It helps the body...` is four
-   words and asks for a clause, and it printed as a three-centimetre dotted
-   tail with the rest of the page blank underneath - the shortest prompt on
-   the sheet took the smallest answer space on it, and the child with most to
-   say had least room to say it. When the answer is a phrase, a clause or a
+   words and asks for a clause: printing it as a three-centimetre dotted
+   tail with the rest of the page blank underneath gives the shortest prompt
+   the smallest answer space, and the child with most to say least room to
+   say it. When the answer is a phrase, a clause or a
    sentence, use `written-answers` with the `sentences` it needs, even where
    the prompt is one short line. Use it too when the prompt itself wraps: a
    short dotted stub floating beside the last line no longer reads as the
@@ -989,8 +984,8 @@ own judgement.
 
    A sentence stem with blanks IS the answer space too: the child writes the
    missing words into the gaps, so it takes no writing lines beneath it. A line
-   under a stem is a second invitation, and a real child answered it by copying
-   the whole sentence out — the line taught them to. Draw every blank in a stem
+   under a stem is a second invitation: it teaches the child to copy
+   the whole sentence out. Draw every blank in a stem
    the same width, sized for the longest word that could fill any of them, so a
    blank's length never leaks which word it wants.
 
@@ -1061,6 +1056,17 @@ own judgement.
    and `null` for a cell the child completes. Use `rowLabels` only when the first
    column is the sole prefilled column.
 
+   When the sheet prints a Do's `table` or
+   `match` from the design's `taskStructure`, it is that material exactly,
+   because the board and the sheet are one task and a child moving between them
+   must meet the same rows: a `table` is a `recording-table` with the same
+   columns, given cells and blanks, its row done together filled in, and a
+   circle-one cell copied as `{ "choices": [...], "circled": ... }`, which prints
+   the choices with a ring only on that row; a `match` is a `match-up` with the
+   same labels in the same columns (the engine draws no line, so the pair done
+   together is joined on the board and the child joins it again on paper).
+   A sheet of your own in place of either is a different task.
+
 11. **A sheet a child could not use goes back; a doubt the teacher should hear
     is a note.** A problem a child could not get past as printed (a question
     they cannot act on, missing support, a wrong answer, a form or visual no
@@ -1094,8 +1100,8 @@ own judgement.
 
 14. **Nor as a list in an `instruction`.** The engine refuses the `steps`
     panel on a sheet, and an instruction of three lines or more too, because a
-    list written as an instruction prints as a grey paragraph, which is what a
-    Year 4 rounding sheet shipped: seven lines at the foot of the page,
+    list written as an instruction prints as a grey paragraph: a seven-line
+    method at the foot of a Year 4 rounding sheet is
     indistinguishable from `Use the place value chart to help you.`
 
 ---

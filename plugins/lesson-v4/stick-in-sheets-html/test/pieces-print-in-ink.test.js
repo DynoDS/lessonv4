@@ -100,6 +100,7 @@ const SAMPLES = {
   map: [WORLD_MAP],
   "geographical-description-frame": [{ answers: { biome: "a large area with its own plants" } }],
   table: [{ headers: ["Device", "Electrical?"], rows: [["Kettle", "||yes"], ["Book", ""]] }],
+  match: [{ left: [{ id: "left-001", label: "Swept the yard" }, { id: "left-002", label: "Shared the food" }], right: [{ id: "right-001", label: "Would try it" }, { id: "right-002", label: "Would not" }], togetherPair: { leftRef: "left-001", rightRef: "right-002" } }],
   "line-pair": [
     { relationship: "parallel", form: "horizontal", notation: "arrows" },
     { relationship: "perpendicular", form: "L", notation: "right-angle" },

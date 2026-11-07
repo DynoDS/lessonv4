@@ -222,9 +222,30 @@ class TheBuiltDecksOf18October(unittest.TestCase):
 
     def test_a_broad_objective_is_met_by_its_core_story(self) -> None:
         fits = section_by_heading(PREFS, "## How Much Fits in One Lesson", 0)
-        self.assertIn("for a broad objective write the shortest good answer a child of this age could give first",
+        self.assertIn("for a broad objective write first the answer a child of this age could give after excellent teaching",
                       fits)
         self.assertIn("not a summary of everything the lesson told", fits)
+        # 3 Nov 2026: the bar is the best teaching, never the least a task accepts,
+        # and it holds for every kind of lesson, not only explaining ones.
+        self.assertNotIn("shortest good answer", fits)
+        self.assertIn("never the least a task would accept", fits)
+        self.assertIn("a lesson whose end is doing rather than explaining", fits)
+        self.assertIn("That is the lesson's destination", REVIEWER)
+        self.assertIn("catches too little, and a lesson can fail either way", REVIEWER)
+        self.assertNotIn("shortest good answer", REVIEWER)
+        # 4 Nov 2026: the goal the designer names is never slide wording; copied
+        # onto boards it read as summaries rather than teaching.
+        self.assertIn("What you name is the goal, not the lesson's words", DESIGNER)
+        self.assertIn("never copy it onto a board or into the script", DESIGNER)
+        # 4 Nov 2026: lessons told instead of drawing out. The told lesson is
+        # written as this teacher teaches, asking his way to each idea, and a
+        # scene earns its slide with a problem to think about.
+        self.assertIn("the words you say and the questions you ask", DESIGNER)
+        self.assertIn("This teacher asks his way to each idea and tells only what children cannot know", DESIGNER)
+        self.assertNotIn("each time you stop talking", DESIGNER)
+        self.assertNotIn("My Turn/Teach/Apply = modelling narration", DESIGNER)
+        self.assertIn("A scene earns its place by giving children something to think about", DESIGNER)
+        self.assertNotIn("a plainly told scene may serve better", DESIGNER)
         # The teacher's addition: the unit around the lesson decides too.
         self.assertIn("a part a later lesson in the plan teaches is left to it", fits)
         self.assertIn("what an earlier lesson taught comes back as a reminder rather than being taught again", fits)

@@ -137,15 +137,17 @@ test('each long list in his style draws in every practice template, at 18pt or m
   }
 });
 
-test('a short list keeps the 4.60in panel where it has always been', () => {
-  // criteria-lists-keep-their-size.test.js holds every real list to this; the
-  // saved slides were redrawn object by object and none moved.
+test('a short list never widens the panel: it narrows to its words from the 4.60in edge, and the work takes the room', () => {
+  // Since 6 November 2026 the box takes the narrowest width its steps read
+  // well at (criteria-width.js); it keeps its right-hand edge where it has
+  // always been, and the work side ends clear of it.
   for (const [template, make] of Object.entries(TEMPLATES)) {
     const drawn = draw(make(ROUNDING));
-    assert.equal(drawn.panel.w, 4.6, template);
-    assert.equal(drawn.panel.x, 8.51, template);
+    assert.ok(drawn.panel.w <= 4.6 + 1e-9, `${template}: ${drawn.panel.w}`);
+    assert.ok(Math.abs(drawn.panel.x + drawn.panel.w - (8.51 + 4.6)) < 1e-6, `${template}: the box left its edge`);
+    assert.ok(drawn.stepFonts.every((pt) => pt >= 20), `${template}: ${drawn.stepFonts}`);
     const rightmost = Math.max(...drawn.left.map((o) => o.x + o.w));
-    assert.ok(rightmost <= 8.21 + 1e-9, `${template}: the work side reaches ${rightmost}`);
+    assert.ok(rightmost <= drawn.panel.x - 0.3 + 1e-9, `${template}: the work side reaches ${rightmost}`);
   }
 });
 
@@ -153,7 +155,7 @@ for (const [steps, width] of [[LONG.numberLine, 5.5], [ROUNDING, 4.6]]) {
   test(`a number line uses the available width beside a ${width}in criteria panel`, () => {
     const drawn = draw({ template: 'maths-turn-sc', title: 'My Turn', questions: ['What number is the arrow pointing to?'],
       questionVisual: NUMBER_LINE, workingSpace: true, criteria: { type: 'steps', steps } });
-    assert.equal(drawn.panel.w, width);
+    assert.ok(drawn.panel.w <= width + 1e-9, `${drawn.panel.w}`);
     assert.ok(drawn.stepFonts.every((pt) => pt >= 18));
     const picture = drawn.left.find((o) => o.fill && o.fill.color === 'FFFFFF' && o.y > 1.5);
     assert.ok(picture, 'the diagram is drawn');
@@ -229,7 +231,7 @@ test('a write-in chart keeps meaningful blanks while using the width freed by re
   for (const [steps, width] of [[ROUNDING, 4.6], [LONG.addition, 5.5]]) {
     const drawn = draw({ template: 'maths-turn-sc', title: 'Our Turn', questions: ['Write the number in expanded form.'],
       questionVisual: chart, workingSpace: true, criteria: { type: 'steps', steps } });
-    assert.equal(drawn.panel.w, width);
+    assert.ok(drawn.panel.w <= width + 1e-9, `${drawn.panel.w}`);
     assert.equal(drawn.work, undefined);
     assert.ok(drawn.left.some(o => o.fill && o.fill.color === 'FFFFFF' && o.w > 7), 'chart has the full task width');
   }
@@ -316,6 +318,9 @@ const SMALLER = [
   'If they are not close, check each column again, starting with the ones.',
   'Write a sentence that says how your estimate helped you check the answer.',
   'Circle the answer you trust most and explain to a partner why you trust it.',
+  // Added 6 November 2026: with the numbers on the cards' corners the words
+  // have more width, and the seven steps above now fit at 18pt.
+  'Check it.',
 ];
 const HALF_SIDE_ONLY = [
   'Write the 3-digit number on top and the 1-digit number under the ones column.',
@@ -329,6 +334,19 @@ const HALF_SIDE_ONLY = [
 ];
 const BEYOND = Array.from({ length: 9 }, () =>
   'Write each digit in its own column, lined up under the digit above it, and say its value.');
+
+// A marked list is drawn smaller where no shape holds it at 18pt. Since the
+// numbers moved onto the cards' corners (6 November 2026), a list the practice
+// panel holds at 16 or 17pt is held at 18pt by the half-width split risen beside
+// the title, so its mark reads as stale there and the slide designer is told
+// to move it. Under a task line the split cannot rise, so this is where a
+// marked list is still drawn smaller.
+// Nine steps, so the list sits clearly under 18pt in the layout and in the
+// final fit alike (the final fit measures the real font a little tighter, and
+// a list right on the edge came out 17pt in one and 18pt in the other).
+const NINE = SMALLER.concat(['Say why it is close to your estimate.']);
+const halfUnderTaskLine = (steps) => ({ template: 'split-h-50-50', title: 'Our Turn', instruction: 'Estimate first, then add.',
+  primary: { type: 'text', value: 'Work out 4,352 + 1,386.' }, secondary: { type: 'sc-panel', content: { type: 'steps', steps } } });
 
 function markedDesign(root, lists) {
   fs.writeFileSync(path.join(root, 'lesson-design.json'), JSON.stringify({
@@ -359,13 +377,13 @@ test('a list marked too long is drawn smaller on a finished slide; only one no p
     slides: [
       { template: 'split-v-60-40', title: 'A clean slide', primary: { type: 'text', value: 'Round 342 to the nearest 100.' },
         secondary: { type: 'text', value: 'Show it on a number line.' } },
-      Object.assign(TEMPLATES['maths-turn-sc'](SMALLER), say),
+      Object.assign(halfUnderTaskLine(NINE), say),
       Object.assign(TEMPLATES['maths-your-turn-sc'](Array.from({ length: 9 }, () => other)), say),
       Object.assign(TEMPLATES['maths-turn-sc'](HALF_SIDE_ONLY), say),
       Object.assign(TEMPLATES['maths-turn-sc'](BEYOND), say),
     ],
   }));
-  markedDesign(root, [[SMALLER, true], [Array.from({ length: 9 }, () => other), false], [HALF_SIDE_ONLY, true], [BEYOND, true]]);
+  markedDesign(root, [[NINE, true], [Array.from({ length: 9 }, () => other), false], [HALF_SIDE_ONLY, true], [BEYOND, true]]);
   try {
     const run = spawnSync(process.execPath, [path.join(__dirname, '..', 'build.js'), lessonPath, path.join(root, 'out'), '--deliver-flagged'],
       { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
@@ -384,14 +402,16 @@ test('a list marked too long is drawn smaller on a finished slide; only one no p
     // Drawn smaller: finished, flagged, the design's.
     const smaller = on(2, 'CRITERIA_BELOW_READABLE_FLOOR');
     assert.equal(smaller.faultClass, 'content');
-    assert.match(smaller.message, /are laid out at 17pt, under the 18pt floor/);
+    assert.match(smaller.message, /are laid out at 1[67]pt, under the 18pt floor/);
     assert.ok(!on(2, 'STEP_TEXT_OVERLOAD') && !on(2, 'TEXT_OVERLOAD'), 'nothing refused slide 2');
     // Nobody marked it: the 18pt floor, and the roomier shape named.
     assert.equal(on(3, 'STEP_TEXT_OVERLOAD').faultClass, 'composition');
     assert.match(on(3, 'STEP_TEXT_OVERLOAD').message, /at the 18pt readable minimum\. .*The practice panel is already as wide as it goes\./);
-    // Marked, and the half-width split holds it at 16pt: the slide designer's move.
+    // Marked, and the half-width split holds it: the slide designer's move.
+    // Since 6 November 2026 the split, risen beside the title, holds it at
+    // 18pt, so the mark is stale and the refusal is at 18pt, naming the split.
     assert.equal(on(4, 'STEP_TEXT_OVERLOAD').faultClass, 'composition');
-    assert.match(on(4, 'STEP_TEXT_OVERLOAD').message, /at the 16pt a list marked too long may be drawn at\. .*the half-width split \(`split-h-50-50`\)/);
+    assert.match(on(4, 'STEP_TEXT_OVERLOAD').message, /at the 18pt readable minimum\. .*the half-width split \(`split-h-50-50`\)/);
     // Marked, and no panel holds it even at 16pt: the design's, left alone.
     assert.equal(on(5, 'STEP_TEXT_OVERLOAD').faultClass, 'content');
     assert.match(on(5, 'STEP_TEXT_OVERLOAD').message, /^This success-criteria list is marked too long in the design \(`tooLongForPanels`\), and no criteria panel holds it as this slide carries it, even at 16pt/);
@@ -400,7 +420,7 @@ test('a list marked too long is drawn smaller on a finished slide; only one no p
     const JSZip = requireGlobal('jszip');
     const xml = await (await JSZip.loadAsync(fs.readFileSync(deck))).file('ppt/slides/slide2.xml').async('string');
     const lines = xml.split('<p:sp>').filter((shape) => /marked-step-text-\d+"/.test(shape));
-    assert.equal(lines.length, SMALLER.length);
+    assert.equal(lines.length, NINE.length);
     for (const shape of lines) {
       const size = Number(/ sz="(\d+)"/.exec(shape)[1]);
       assert.ok(size >= 1600 && size < 1800, `a marked line at ${size / 100}pt`);
@@ -421,7 +441,7 @@ test('the slide check\'s scratch build passes a marked list drawn smaller, and i
   const lessonPath = path.join(root, 'lesson.json.tmp.attempt-1');
   fs.writeFileSync(lessonPath, JSON.stringify({
     lessonName: 'Marked Check', subject: 'Maths', lo: 'Check a marked list',
-    slides: [Object.assign(TEMPLATES['maths-turn-sc'](SMALLER), { speakerNotes: 'Say to children: go.' })],
+    slides: [Object.assign(halfUnderTaskLine(SMALLER), { speakerNotes: 'Say to children: go.' })],
   }));
   const preview = () => spawnSync(process.execPath, [path.join(__dirname, '..', 'build.js'), lessonPath, scratch, '--design-preview'],
     { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
@@ -476,7 +496,10 @@ test('a long list that fits costs the slide designer no repair pass: the criteri
 
 test('trying the widths raises no warnings of their own', () => {
   clearWarnings();
-  draw(TEMPLATES['maths-turn-sc'](LONG.setting));
+  // A list that settles under 20pt after the widths are tried (since the
+  // numbers moved onto the cards' corners, 6 November 2026, the setting list
+  // reads at 20pt and raises nothing).
+  draw(TEMPLATES['maths-turn-sc'](LONG.multiplication));
   const settled = getWarnings().filter((w) => /success criteria set at/.test(w));
   assert.equal(settled.length, 1, settled.join('\n'));
   clearWarnings();

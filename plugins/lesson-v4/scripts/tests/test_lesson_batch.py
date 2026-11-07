@@ -578,3 +578,93 @@ def test_a_set_with_no_lesson_before_it_hands_every_lesson_none():
                 os.environ.pop(k, None)
             else:
                 os.environ[k] = v
+
+
+# Lessons as T3 Code threads (6 November 2026). Inside T3 each lesson of a set
+# runs as its own thread the teacher can open, started by the asking chat. A
+# thread cannot be given environment values, so what the set agreed travels in
+# a file the lesson hands to resolve-filing.py.
+
+def test_t3_prepare_writes_each_lessons_message_and_handover_and_starts_no_session():
+    module = load_batch_module()
+    started = []
+    module.subprocess = types.SimpleNamespace(
+        Popen=lambda command, **kw: started.append(command), DEVNULL=subprocess.DEVNULL)
+    module.claude_command = lambda: ""  # no CLI needed: T3 starts the threads
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+        text, batch, output, env = plan(tmp, [lesson("a"), lesson("b")])
+        file = output / "working" / "lesson-batch" / "thread-year-4-maths.json"
+        file.write_text(json.dumps({"lessons": [thread_entry("a"), thread_entry("b")]}), encoding="utf-8")
+        module.launch(["--output", str(output)], t3=True)
+        assert not started, started
+        saved = json.loads((output / "working" / "lesson-batch" / "batch.json").read_text(encoding="utf-8"))
+        assert all(l["status"] == "in thread" and l["host"] == "t3" for l in saved["lessons"]), saved
+        handover_file = output / "working" / "lesson-batch" / "b" / "set-handover.json"
+        handover = json.loads(handover_file.read_text(encoding="utf-8"))
+        assert handover["LESSON_SET_LESSON"] == "b" and Path(handover["LESSON_SET_THREAD"]) == file, handover
+        assert handover["LESSON_SET_PREVIOUS"] == "none", handover
+        message = (output / "working" / "lesson-batch" / "b" / "t3-message.txt").read_text(encoding="utf-8")
+        brief_part = message.split("TEACHER'S MESSAGE")[1].split("ORCHESTRATOR NOTES")[0]
+        assert "Y4 Maths: b" in brief_part and "set-handover" not in brief_part, message
+        assert f'--set-handover "{handover_file}"' in message and f"OUTPUT_DIR: {output}" in message, message
+        # The keeper never carries these lessons on as hidden sessions.
+        module.keep_once(output)
+        assert not started, started
+
+
+def test_a_handover_file_gives_the_filing_step_what_the_set_agreed():
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+        base, output, env = setup(tmp)
+        working = output / "working"
+        (working / "year-4-maths-lesson-27-column-addition").mkdir(parents=True)
+        current = working / "year-4-maths-lesson-29-x"
+        current.mkdir()
+        handover = base / "set-handover.json"
+        handover.write_text(json.dumps({
+            "LESSON_SET_THREAD": str(base / "thread.json"), "LESSON_SET_LESSON": "b",
+            "LESSON_SET_PREVIOUS": str(working / "year-4-maths-lesson-27-column-addition"),
+            "LESSON_SET_EARLIER": ""}), encoding="utf-8")
+        clean = {k: v for k, v in env.items() if not k.startswith("LESSON_SET_")}
+        out = subprocess.run([sys.executable, str(SCRIPT.parent / "resolve-filing.py"), "Year 4", "Maths",
+                              "--working", str(working), "--current", str(current), "--set-handover", str(handover)],
+                             capture_output=True, text=True, env=clean)
+        values = dict(l.split("=", 1) for l in out.stdout.splitlines() if "=" in l)
+        assert values.get("SET_THREAD") == str(base / "thread.json") and values.get("SET_LESSON") == "b", out.stdout + out.stderr
+        assert Path(values["PREVIOUS_LESSON"]).name == "year-4-maths-lesson-27-column-addition", out.stdout
+
+
+def test_a_t3_lesson_that_stops_unsaved_gets_one_more_go_then_is_handed_back():
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+        k = Keeper(tmp)
+        k.lesson(host="t3", status="in thread")
+        out = io_run(k.module.t3_ended, ["--output", str(k.output), "--tag", "a"])
+        assert out.startswith("T3_CARRY_ON a:") and "Carry on from where it stopped" in out, out
+        out = io_run(k.module.t3_ended, ["--output", str(k.output), "--tag", "a"])
+        assert out.startswith("STOPPED a") and "BATCH_DONE" in out, out
+        assert not k.started, k.started
+
+
+def test_a_t3_lesson_is_finished_when_its_files_are_in_the_day_folder():
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+        k = Keeper(tmp)
+        k.lesson(host="t3", status="in thread")
+        day = k.saved(["deck.pptx"], present=["deck.pptx"])
+        out = io_run(k.module.t3_ended, ["--output", str(k.output), "--tag", "a"])
+        assert out.startswith(f"FINISHED a: saved to {day}"), out
+        assert k.batch()["lessons"][0]["status"] == "finished", k.batch()
+
+
+def test_resume_leaves_a_t3_lesson_to_its_own_thread():
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+        k = Keeper(tmp)
+        k.lesson(host="t3", status="stopped", t3Thread="thread-1")
+        out = io_run(k.module.resume, ["--output", str(k.output)])
+        assert "LEFT a: runs in its own T3 thread thread-1" in out and not k.started, out
+
+
+def io_run(fn, args):
+    import contextlib, io
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        fn(args)
+    return buffer.getvalue()

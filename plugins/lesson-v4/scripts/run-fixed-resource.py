@@ -255,7 +255,7 @@ def command_for(args) -> list[str]:
         # every faulty slide named, instead of withholding it (Daniel, 16
         # September 2026: "flag the slides and deliver it"). A deck PowerPoint
         # would call broken is still refused by the build itself.
-        return [
+        command = [
             "node",
             str(plugin_root / "builder" / "build.js"),
             str(working / "lesson.json"),
@@ -264,6 +264,11 @@ def command_for(args) -> list[str]:
             "--name",
             args.build_name,
         ]
+        # A picture the tool's usage ran out on is drawn as a labelled grey
+        # box rather than refused (Daniel, 6 November 2026), and only those.
+        if getattr(args, "awaiting_pictures_path", None):
+            command += ["--awaiting-pictures", str(args.awaiting_pictures_path)]
+        return command
     if args.kind == "worksheets":
         # A pack is not lost because one of its sheets will not fit. The deck's
         # --deliver-flagged above is the same idea, and this is the sheets'
@@ -350,6 +355,112 @@ def command_for(args) -> list[str]:
             command.extend(["--file", filename])
         return command
     raise FixedResourceError(f"unsupported kind: {args.kind}")
+
+
+AWAITING_PICTURES_FILE = "build-results/awaiting-pictures.json"
+PICTURES_TO_ADD_FILE = "pictures-to-add.md"
+
+
+def awaiting_pictures(working: Path) -> list[dict]:
+    """Pictures the run could not get because the picture tool's usage ran out.
+
+    Read from the terminal receipts finalize-picture-assignment.py marked
+    `awaitingUsage`, skipping any whose file has since been added. Each comes
+    with the plain description the lesson asked for, which the slide build
+    prints in the grey box and the list carries for whoever adds it.
+    """
+    receipts = working / "orchestration-receipts" / "picture-terminal"
+    if not receipts.is_dir():
+        return []
+    wanted = {}
+    for path in sorted(receipts.glob("*.json")):
+        try:
+            receipt = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(receipt, dict) or receipt.get("awaitingUsage") is not True:
+            continue
+        if receipt.get("terminalState") not in {"unsatisfied", "omitted"}:
+            continue
+        filename = receipt.get("filename")
+        if isinstance(filename, str) and filename and not (working / filename).is_file():
+            wanted[filename] = {"filename": filename}
+    if not wanted:
+        return []
+    try:
+        contract = json.loads((working / "photo-requirements.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        contract = {}
+    photos = contract.get("photos") if isinstance(contract, dict) else contract
+    for photo in photos if isinstance(photos, list) else []:
+        if isinstance(photo, dict) and photo.get("filename") in wanted:
+            item = wanted[photo["filename"]]
+            if isinstance(photo.get("subject"), str) and photo["subject"].strip():
+                item["describe"] = photo["subject"].strip()
+            evidence = photo.get("load_bearing_evidence")
+            if isinstance(evidence, list):
+                item["mustShow"] = [str(e) for e in evidence if str(e).strip()]
+            if isinstance(photo.get("teaching_requirement"), str):
+                item["why"] = photo["teaching_requirement"].strip()
+    return list(wanted.values())
+
+
+def awaited_on_slides(stdout: str) -> list[dict]:
+    """Each grey box the slide build drew, from its PICTURE_AWAITING_USAGE lines."""
+    found = []
+    for line in stdout.splitlines():
+        if line.startswith("PICTURE_AWAITING_USAGE: "):
+            try:
+                payload = json.loads(line[len("PICTURE_AWAITING_USAGE: "):])
+            except json.JSONDecodeError as exc:
+                raise FixedResourceError(f"unreadable PICTURE_AWAITING_USAGE line: {exc}")
+            if isinstance(payload, dict):
+                found.append(payload)
+    return found
+
+
+def write_pictures_to_add(working: Path, deck, drawn: list[dict], wanted: list[dict]) -> Path:
+    """The list a teacher, or a fresh session once the usage is back, works from."""
+    details = {item["filename"]: item for item in wanted}
+    slides: dict[str, list[int]] = {}
+    for box in drawn:
+        name = box.get("filename")
+        if isinstance(name, str):
+            number = box.get("slide")
+            slides.setdefault(name, [])
+            if isinstance(number, int) and number not in slides[name]:
+                slides[name].append(number)
+    lines = [
+        "# Pictures to add",
+        "",
+        "The picture tool's usage ran out before these pictures could be got, so the "
+        "deck shows a grey box for each, saying what goes there.",
+        "",
+        "To add one: find or make a picture that shows what is described, save it at "
+        "the path given (inside this lesson's working folder), then rebuild the "
+        "slides with the same `run-fixed-resource.py slides` command the lesson run "
+        "used. A picture saved there replaces its grey box; any still missing stay "
+        "grey and stay on this list.",
+        "",
+    ]
+    if deck is not None:
+        lines += [f"Deck: {deck}", ""]
+    ordered = sorted(slides, key=lambda n: (min(slides[n]) if slides[n] else 0, n))
+    for number, name in enumerate(ordered, 1):
+        item = details.get(name, {"filename": name})
+        where = ", ".join(str(n) for n in sorted(slides[name])) or "?"
+        lines.append(f"## {number}. Slide {where}")
+        lines.append("")
+        lines.append(f"- What it shows: {item.get('describe', name)}")
+        if item.get("mustShow"):
+            lines.append("- It must show: " + "; ".join(item["mustShow"]))
+        if item.get("why"):
+            lines.append(f"- Why it is there: {item['why']}")
+        lines.append(f"- Save it as: {working / name}")
+        lines.append("")
+    target = working / PICTURES_TO_ADD_FILE
+    target.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return target
 
 
 def slides_flagged(stdout: str) -> dict:
@@ -682,6 +793,14 @@ def run(args) -> int:
         args.save_source = stage_for_saving(working, output, args.file)
         args.file = staged_names(working, args.file)
 
+    wanted_pictures: list[dict] = []
+    args.awaiting_pictures_path = None
+    if args.kind == "slides":
+        wanted_pictures = awaiting_pictures(working)
+        if wanted_pictures:
+            args.awaiting_pictures_path = working / AWAITING_PICTURES_FILE
+            atomic_write_json(args.awaiting_pictures_path, {"pictures": wanted_pictures})
+
     command = command_for(args)
     # The Python running this wrapper is one this machine and sandbox can start,
     # so the builders' own Python step (slide text fitting) uses it too rather
@@ -766,6 +885,19 @@ def run(args) -> int:
         flags = slides_flagged(completed.stdout)
         summary["flaggedSlides"] = flags.get("slides", [])
         summary["flaggedFaults"] = flags.get("faults", [])
+        drawn = awaited_on_slides(completed.stdout)
+        stale = working / PICTURES_TO_ADD_FILE
+        if drawn:
+            deck = next((p for p in paths if p.suffix.lower() == ".pptx"), None)
+            listed = write_pictures_to_add(working, deck, drawn, wanted_pictures)
+            summary["picturesToAdd"] = {
+                "list": str(listed),
+                "slides": sorted({b["slide"] for b in drawn if isinstance(b.get("slide"), int)}),
+                "count": len({b.get("filename") for b in drawn}),
+            }
+        elif stale.is_file():
+            # Every picture on the old list has since arrived.
+            stale.unlink()
 
     if args.kind == "worksheets":
         summary["omittedSheets"] = sheets_omitted(completed.stdout)
@@ -778,6 +910,13 @@ def run(args) -> int:
     ]
     summary["ok"] = True
     atomic_write_json(Path(args.summary_output), summary)
+    if summary.get("picturesToAdd"):
+        added = summary["picturesToAdd"]
+        print(
+            f"PICTURES_TO_ADD: {added['count']} picture(s) shown as grey boxes on slide(s) "
+            f"{', '.join(str(n) for n in added['slides'])}, because the picture tool's usage "
+            f"ran out; the list is {added['list']}. Tell the teacher in the run report."
+        )
     if summary.get("flaggedSlides"):
         numbers = ", ".join(str(n) for n in summary["flaggedSlides"])
         print(f"FIXED_RESOURCE_FLAGGED {args.kind}: {numbers}")

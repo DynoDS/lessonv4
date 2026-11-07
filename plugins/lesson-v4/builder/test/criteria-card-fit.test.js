@@ -119,7 +119,11 @@ test('a criteria panel that settles below the readable target says which step di
         'Change the hundreds, tens and ones digits to zero.',
         'Add 1,000 to find the next thousand.',
         'Mark halfway and your number on the line.',
-        'Choose the nearer thousand; at halfway, choose the greater thousand.'
+        'Choose the nearer thousand; at halfway, choose the greater thousand.',
+        // Since the numbers moved onto the cards' corners (6 November 2026) the
+        // words have more width, and four steps no longer settle below 20pt.
+        'Check your answer is a multiple of 1,000 and say why.',
+        'Explain to your partner which thousand is nearer and how you know.'
       ]
     }
   };

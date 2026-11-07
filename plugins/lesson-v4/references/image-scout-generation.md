@@ -94,3 +94,9 @@ Do not spend a second call after a fundamental miss merely because one remains.
 ## Capability unavailable
 
 When the built-in capability is unavailable, do not reserve an attempt. Report `omitted` only when the checked fallback permits omission. Otherwise report `unsatisfied` with `imagegen_capability_unavailable`.
+
+When a call says the generator's usage limit is reached, that is no verdict on this picture, and every later call in the batch would meet it, so make none. Close the open attempt with `interrupt-open --reason imagegen_usage_spent`; that reason opens the further search below.
+
+A real-first entry carrying `usage_spent_schedule` searches on: run `picture-search.py` for it again to get those steps. Take a faithful photograph if one appears; if none, read `image-scout-stand-in.md` and take a plainer stand-in where one makes sense. The teacher prefers a sensible real photograph to a gap he must fill (6 November 2026); one that would confuse children or contradict the lesson is worse than the gap.
+
+Report `imagegen_usage_spent` (`omitted` where the fallback permits omission, otherwise `unsatisfied`) only for what is left: a made picture, or a real-first one whose whole ladder gave nothing usable. Each becomes a labelled grey box to fill once usage is back. This reason is only for a spent limit: a refusal, or an empty return with no word of a limit, takes the recovery route above.

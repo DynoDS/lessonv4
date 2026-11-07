@@ -6,6 +6,7 @@ const path = require('path');
 const { FONT, COLOURS, SIZE_CEILINGS, FIT } = require('../styles');
 const { resolveFit } = require('../images/fit');
 const { drawMissingImage } = require('../images/placeholder');
+const { awaitedDescription, recordAwaitedPicture } = require('../images/awaiting');
 const { resolveForEmbed } = require('../images/resolve');
 const { warn, recording } = require('../warnings');
 const { checkZoneFill } = require('./_zone-fill');
@@ -189,7 +190,10 @@ function imageWillDraw(imageData, ctx) {
   const resolved = resolveForEmbed(imageData.imagePath, ctx);
   if (resolved && fs.existsSync(resolved)) return true;
   // A missing essential photo still draws: the grey placeholder is the signal
-  // that it needs sourcing, so the space it holds is doing a job.
+  // that it needs sourcing, so the space it holds is doing a job. A picture
+  // awaiting usage draws too, essential or not: its labelled box is how the
+  // teacher finds where to add it.
+  if (awaitedDescription(imageData.imagePath) !== null) return true;
   return imageData.essential !== false;
 }
 
@@ -506,6 +510,21 @@ function drawOneImage(pptx, slide, frame, imageData, isInset, ctx) {
   const resolved = resolveForEmbed(raw, ctx);
 
   if (!resolved || !fs.existsSync(resolved)) {
+    // A picture the run could not get because the picture tool's usage ran
+    // out is delivered as a labelled grey box, essential or not, and listed
+    // for adding later. It is never recorded as missing, so it does not stop
+    // the build; see ../images/awaiting.js.
+    const awaited = awaitedDescription(raw);
+    if (awaited !== null) {
+      const slideNumber = ctx && Number.isInteger(ctx.slideIndex) ? ctx.slideIndex + 1 : undefined;
+      if (recording()) recordAwaitedPicture(slideNumber, raw);
+      drawMissingImage(
+        slide,
+        resolveFit(imageData, isInset) === 'contain' ? containRect(frame, PENDING_ASPECT) : frame,
+        isInset ? null : awaited
+      );
+      return;
+    }
     // A photo the lesson-designer marked non-essential is an enhancement, not
     // load-bearing — when it can't be sourced, leave the zone as clean slide
     // background rather than a grey box. Essential photos (the default) keep

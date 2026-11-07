@@ -160,9 +160,50 @@ test('explicit mode clears stale badges from setup and answers, and never badges
   assert.deepStrictEqual(lesson.slides.map(s => s.doSign), [undefined, 'sheet', undefined, undefined, undefined]);
 });
 
+test('the final written piece (record) carries the flag on every slide of it, the scene included', () => {
+  const design = { worksheet: { taskUnitId: 'w1' }, teachingSequence: [
+    { sourceUnitId: 'd1', kind: 'do', levels: BOARD, doMode: 'deeper' },
+    { sourceUnitId: 'w1', kind: 'practise', levels: PRINTED, doMode: 'record' },
+  ] };
+  const lesson = { slides: [
+    { title: 'Work on the case', designUnitId: 'd1', instruction: { signal: 'pencil' } },
+    { title: 'How does Mateo hear the dog?', designUnitId: 'w1' },
+    { title: 'Write your explanation', designUnitId: 'w1', doSign: 'sheet', instruction: { signal: 'pencil' } },
+    { title: 'Write your explanation - Answers', designUnitId: 'w1' },
+  ] };
+  applyDoSigns(lesson, folderWith(design));
+  assert.deepStrictEqual(lesson.slides.map(s => s.doSign), ['sheet', 'final', 'final', undefined]);
+});
+
 test('new multi-slide tasks require a marked working slide instead of badging setup', () => {
   const design = { teachingSequence: [{ sourceUnitId: 'd1', kind: 'do', doMode: 'deeper' }] };
   assert.throws(() => applyDoSigns({ slides: [
     { title: 'Setup', designUnitId: 'd1' }, { title: 'Task', designUnitId: 'd1' },
   ] }, folderWith(design)), /no task signal/);
+});
+
+// A Do board over two slides: the jobs first, each card signed with what the
+// work will be, then the challenges and the question. The book belongs on the
+// slide that asks (the teacher, 6 November 2026: two slides both badged read as
+// the same slide twice).
+test('a Do board set-up that only hands out jobs leaves the badge to the slide that asks', () => {
+  const design = { teachingSequence: [{ sourceUnitId: 'u6', kind: 'do', doMode: 'deeper', minutes: 12 }] };
+  const lesson = { slides: [
+    { title: 'Be friendship coaches', designUnitId: 'u6', primary: { type: 'row', equaliseTextCards: true, items: [
+      { type: 'text', value: 'One of you is the coach.' },
+      { type: 'text', value: 'The coach asks each friend what they want.', signal: 'talk' },
+    ] } },
+    { title: 'Coach Arjun and Maja', designUnitId: 'u6', primary: { type: 'stack', items: [
+      { type: 'text', value: 'Arjun wants a rocket. Maja wants a castle.' },
+      { type: 'text', value: 'How can they solve each challenge?', colorRole: 'focus-blue', signal: 'talk' },
+    ] } },
+  ] };
+  applyDoSigns(lesson, folderWith(design));
+  assert.deepStrictEqual(lesson.slides.map((s) => s.doSign), [undefined, 'sheet']);
+
+  // When every working slide asks, each keeps the badge as before.
+  lesson.slides[0].primary.items.push({ type: 'text', value: 'Which job will you take?', colorRole: 'focus-blue' });
+  lesson.slides.forEach((s) => { delete s.doSign; });
+  applyDoSigns(lesson, folderWith(design));
+  assert.deepStrictEqual(lesson.slides.map((s) => s.doSign), ['sheet', 'sheet']);
 });

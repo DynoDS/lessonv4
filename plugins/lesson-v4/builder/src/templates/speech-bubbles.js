@@ -41,7 +41,11 @@ const COL_GAP           = 0.45;   // gap between speaker columns
 // The block now takes what the bubbles leave, between a floor and this old value
 // as its ceiling. The floor matters: a postage-stamp face stops a child picturing
 // a person, which is the only reason the portrait is there.
-const FIG_BLOCK_RATIO     = 0.46;  // the most the figure + name may take
+//
+// The ceiling was 0.46 until 6 November 2026, when a short remark ("Football
+// again!") left its speaker small under a strip of empty slide. The person
+// grows into the room the words do not need, up to this share.
+const FIG_BLOCK_RATIO     = 0.6;   // the most the figure + name may take
 const FIG_BLOCK_MIN_RATIO = 0.30;  // and the least, so a face stays a face
 const NAME_H            = 0.45;   // name label height (inches)
 const BUBBLE_FIG_GAP    = 0.10;   // gap between the tail tip and the figure
@@ -308,9 +312,7 @@ function drawSpeechBubbles(pptx, slide, data, ctx, count) {
   // held between its floor and its old value. Every column uses the same figure
   // height so two speakers stand on one line rather than at different depths.
   const tallestSpeech = speakers.slice(0, count).reduce(function (most, speaker) {
-    const needed = estimateSpeechHeight(
-      (speaker && speaker.speech) || '', colW - 2 * TEXT_PAD_X
-    ) + 2 * TEXT_PAD_Y;
+    const needed = bubbleNeed((speaker && speaker.speech) || '', colW - 2 * TEXT_PAD_X);
     return Math.max(most, Math.max(MIN_BUBBLE_H, needed));
   }, 0);
   const figBlockHeight = Math.max(
@@ -343,19 +345,59 @@ function drawSpeechBubbles(pptx, slide, data, ctx, count) {
   }
 }
 
+// A short remark is drawn the size of its words, across as well as down.
+//
+// The bubble always took its column's full width, so "Football again!" sat at
+// the left of a bubble with a third of it empty, broken over two lines at the
+// top size. A remark that fits one line at a comfortable size is now set on
+// one line, the bubble is as wide as the words, and the words sit centred in
+// it, which is how a speech bubble looks when someone says something short.
+// Anything longer (a sentence that wraps, a remark written on several lines, a
+// calculation that has to fit) keeps the full width and reads from the left,
+// because several lines are easiest to follow when each starts in the same
+// place and a sum is read from its left.
+const SHORT_LINE_MIN_PT = 24;      // the smallest size a remark is kept on one line at
+const MIN_BUBBLE_W      = 1.6;     // a hugged bubble still reads as a bubble, not a tag
+const HUG_W_SAFETY      = 1.06;    // room for the measured glyphs to differ a little
+
+function shortRemark(speech, innerW) {
+  const text = readable(speech).trim();
+  if (!text || text.indexOf(BREAK) >= 0) return null;
+  const line = measurable(text);
+  for (let pt = BUBBLE_FONT; pt >= SHORT_LINE_MIN_PT; pt -= 1) {
+    const w = textBoxWidthIn(line, pt, true) * HUG_W_SAFETY;
+    if (w <= innerW) return { pt: pt, textW: w };
+  }
+  return null;
+}
+
+// The height a bubble needs for this speech: one line for a short remark,
+// otherwise the wrapped estimate. The figure is sized from it, so a short
+// remark leaves its speaker the room it does not use.
+function bubbleNeed(speech, innerW) {
+  const short = shortRemark(speech, innerW);
+  return short
+    ? (short.pt * LINE_H_EM / 72) * HUG_SAFETY + 2 * TEXT_PAD_Y
+    : estimateSpeechHeight(speech, innerW) + 2 * TEXT_PAD_Y;
+}
+
 function drawBubble(pptx, slide, b) {
   // The bubble hugs its claim. The bottom edge is fixed (the tail below it
   // points at the figure), so the height it gives back comes off the TOP,
   // where blank slide reads as breathing room rather than as an unfinished
   // surface.
-  const neededH = estimateSpeechHeight(b.speech, b.w - 2 * TEXT_PAD_X) + 2 * TEXT_PAD_Y;
+  const short = shortRemark(b.speech, b.w - 2 * TEXT_PAD_X);
+  const neededH = bubbleNeed(b.speech, b.w - 2 * TEXT_PAD_X);
   const h = Math.max(MIN_BUBBLE_H, Math.min(b.h, neededH));
   const y = b.y + b.h - h;
   const bottom = y + h;
+  // A short remark's bubble is centred over the tail, kept inside its column.
+  const w = short ? Math.min(b.w, Math.max(MIN_BUBBLE_W, short.textW + 2 * TEXT_PAD_X)) : b.w;
+  const x = short ? Math.min(b.x + b.w - w, Math.max(b.x, b.tailCx - w / 2)) : b.x;
 
   // Bubble body
   slide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
-    x: b.x, y: y, w: b.w, h: h,
+    x: x, y: y, w: w, h: h,
     rectRadius: BUBBLE_RADIUS,
     fill: { color: COLOURS.pureWhite },
     line: { color: COLOURS.body, width: LINE_W }
@@ -388,10 +430,10 @@ function drawBubble(pptx, slide, b) {
     ? keepCalculationsWhole(runs)
     : runs.map(function (run) { return Object.assign({}, run, { text: keepCalculationsWhole(run.text) }); });
   slide.addText(whole, {
-    x: b.x + TEXT_PAD_X, y: y + TEXT_PAD_Y,
-    w: b.w - 2 * TEXT_PAD_X, h: h - 2 * TEXT_PAD_Y,
-    fontFace: FONT, fontSize: speechFont(b.speech, b.w - 2 * TEXT_PAD_X), bold: true,
-    color: COLOURS.body, align: 'left', valign: 'top',
+    x: x + TEXT_PAD_X, y: y + TEXT_PAD_Y,
+    w: w - 2 * TEXT_PAD_X, h: h - 2 * TEXT_PAD_Y,
+    fontFace: FONT, fontSize: short ? short.pt : speechFont(b.speech, b.w - 2 * TEXT_PAD_X), bold: true,
+    color: COLOURS.body, align: short ? 'center' : 'left', valign: short ? 'middle' : 'top',
     margin: 0, fit: FIT
   });
 }
@@ -451,10 +493,7 @@ function drawSpeechBubbles1(pptx, slide, data, ctx) {
     // bubble leaves, between its floor and its old fixed share. See
     // FIG_BLOCK_RATIO for why. This branch is the one a single speaker uses,
     // which is the Apply slide the teacher re-sized by hand.
-    const speechH = Math.max(
-      MIN_BUBBLE_H,
-      estimateSpeechHeight(speaker.speech || '', colW - 2 * TEXT_PAD_X) + 2 * TEXT_PAD_Y
-    );
+    const speechH = Math.max(MIN_BUBBLE_H, bubbleNeed(speaker.speech || '', colW - 2 * TEXT_PAD_X));
     const figBlockH = Math.max(
       colH * FIG_BLOCK_MIN_RATIO,
       Math.min(colH * FIG_BLOCK_RATIO, colH - speechH - TAIL_H - BUBBLE_FIG_GAP)

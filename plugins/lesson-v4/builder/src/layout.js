@@ -156,7 +156,7 @@ const HEADER_TITLE_TWO_LINE_H = 0.74;
 // the 0.05in a header pill reaches past its box, and a clear gap between them.
 const DO_SIGN_ROOM = 0.82;
 function doSignRoom(data) {
-  return data && (data.doSign === 'quick' || data.doSign === 'sheet') ? DO_SIGN_ROOM : 0;
+  return data && (data.doSign === 'quick' || data.doSign === 'sheet' || data.doSign === 'final') ? DO_SIGN_ROOM : 0;
 }
 
 function instructionNeedsTwoLines(data) {

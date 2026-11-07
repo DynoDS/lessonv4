@@ -34,6 +34,12 @@ const PICTURE_CELL_PAD = 0.05;
 // A column whose longest entry needs no more than this share of the table's
 // width is a column of short entries, and keeps each one on a single line.
 const SHORT_COLUMN_SHARE = 0.35;
+// A choice cell's ring: purple for the row done with the class (a worked
+// example's colour), green when the circled choice is a revealed answer.
+const RING_WORKED      = COLOURS.worked;
+const RING_ANSWER      = '00B050';
+const RING_W           = 2.25;
+const RING_INSET_X     = 0.04;
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 // A table divides whatever height it is handed. Handed too little, it used to
@@ -91,7 +97,31 @@ function isPictureCell(cell) {
   return !!cell && typeof cell === 'object' && typeof cell.type === 'string';
 }
 
+// A cell answered by circling one of a few short words (`same` or
+// `different`, `true` or `false`): `{ "choices": [...], "circled": null }`.
+// The choices stand one under another, and `circled` rings the one chosen: a
+// plain value on the row done with the class, `||value` on the answer slide.
+// Every row of a choice column prints all its choices, so the row done
+// together looks exactly like the rows children fill (the teacher, 5 November
+// 2026).
+function isChoiceCell(cell) {
+  return !!cell && typeof cell === 'object' && !cell.type && Array.isArray(cell.choices);
+}
+
+function choiceList(cell) {
+  return cell.choices.map(function (c) { return String(c == null ? '' : c); });
+}
+
+function circledChoice(cell) {
+  if (cell.circled == null || cell.circled === '') return null;
+  const raw = String(cell.circled);
+  const answer = raw.indexOf('||') !== -1;
+  const value = raw.replace(/\|\|/g, '').trim();
+  return { value: value, answer: answer };
+}
+
 function plainWords(cell) {
+  if (isChoiceCell(cell)) return choiceList(cell).join('\n');
   return String(cell == null ? '' : cell).replace(/\|\||\{\{|\}\}|<<|>>/g, '');
 }
 
@@ -126,7 +156,9 @@ function columnWidths(headers, rows, innerW, rowH, fixed) {
       }
       const words = plainWords(cell);
       const bold = c === 0;
-      lineNeed = Math.max(lineNeed, lineInches(words, bold) + CELL_SIDE_ROOM);
+      words.split('\n').forEach((line) => {
+        lineNeed = Math.max(lineNeed, lineInches(line, bold) + CELL_SIDE_ROOM);
+      });
       words.split(/\s+/).forEach((word) => {
         wordNeed = Math.max(wordNeed, lineInches(word, bold) + CELL_SIDE_ROOM);
       });
@@ -244,6 +276,11 @@ function drawTable(pptx, slide, zone, data, ctx) {
         fill: { color: rowFill },
         line: { color: CELL_BORDER, width: 1 }
       });
+      if (isChoiceCell(cell)) {
+        drawChoiceCell(pptx, slide, { x: cx, y: cy, w: colW, h: rowH }, cell, cellBold,
+          tableGroup, 'table-cell-' + r + '-' + c, ctx);
+        return;
+      }
       if (isPictureCell(cell)) {
         // A picture cell draws through the ordinary helpers, bare: the row's
         // colour is its background, so it takes no card of its own, and it is
@@ -267,4 +304,33 @@ function drawTable(pptx, slide, zone, data, ctx) {
   });
 }
 
-module.exports = { drawTable, requiredZoneHeight, columnWidths, ROW_MIN_H };
+function drawChoiceCell(pptx, slide, box, cell, bold, group, name, ctx) {
+  const choices = choiceList(cell);
+  const circled = circledChoice(cell);
+  if (circled && choices.indexOf(circled.value) === -1 && ctx && Number.isFinite(ctx.slideIndex)) {
+    warn(ctx.slideIndex, 'TABLE_CHOICE_NOT_LISTED: a choice cell circles "' + circled.value +
+      '", which is not one of its choices (' + choices.join(', ') + '), so nothing is ringed.');
+  }
+  const slotH = box.h / Math.max(1, choices.length);
+  choices.forEach(function (choice, i) {
+    const y = box.y + i * slotH;
+    const ringed = circled && circled.value === choice;
+    slide.addText(ringed && circled.answer ? splitAnswerRuns('||' + choice, bold) : choice, {
+      x: box.x, y: y, w: box.w, h: slotH,
+      fontFace: FONT, fontSize: CELL_FONT, bold: bold, color: COLOURS.body,
+      align: CELL_ALIGN, valign: 'middle', margin: 0, fit: FIT,
+      objectName: growFitObjectName(group, CELL_FONT_MAX, name + '-choice-' + i, TABLE_MIN_PT)
+    });
+    if (ringed) {
+      slide.addShape(pptx.shapes.OVAL, {
+        x: box.x + RING_INSET_X, y: y + slotH * 0.06,
+        w: box.w - 2 * RING_INSET_X, h: slotH * 0.88,
+        fill: { type: 'none' },
+        line: { color: circled.answer ? RING_ANSWER : RING_WORKED, width: RING_W },
+        objectName: name + '-ring'
+      });
+    }
+  });
+}
+
+module.exports = { drawTable, isChoiceCell, requiredZoneHeight, columnWidths, ROW_MIN_H };

@@ -111,6 +111,7 @@ def pupil_words(unit: dict) -> str:
     walk(unit.get("content"))
     walk(unit.get("pupilInstruction"))
     walk(unit.get("taskStructure"))
+    walk(unit.get("board"))
     return " ".join(parts).lower()
 
 
@@ -250,7 +251,15 @@ def kit_faults(design: dict, stick_in: dict, photo_files: dict | None = None) ->
                 faults.append(
                     f"{unit_id}: card {row.get('id')} prints {image}, but {ref} is {photo_files[ref]}"
                 )
-        if (spec.get("instruction") or "").strip() != (unit.get("pupilInstruction") or "").strip():
+        # A unit with a board sets its task in `board.actions` and leaves
+        # pupilInstruction null, so the kit's instruction is those cards in order.
+        board = unit.get("board") if isinstance(unit.get("board"), dict) else None
+        if board is not None:
+            want_instruction = " ".join(" ".join(str(line).split()) for line in board.get("actions") or [])
+            got_instruction = " ".join(str(spec.get("instruction") or "").split())
+            if got_instruction != want_instruction:
+                faults.append(f"{unit_id}: card-set instruction differs from the unit's board.actions")
+        elif (spec.get("instruction") or "").strip() != (unit.get("pupilInstruction") or "").strip():
             faults.append(f"{unit_id}: card-set instruction differs from the unit's pupilInstruction")
         if not isinstance(kit_items_by_unit.get(unit_id, {}).get("tag"), str) or not kit_items_by_unit[unit_id]["tag"].strip():
             faults.append(

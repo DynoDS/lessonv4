@@ -181,6 +181,13 @@ def beside_expected_answer(unit: dict) -> str:
             f"{items.get(p.get('itemRef'), p.get('itemRef'))} under {groups.get(p.get('groupRef'), p.get('groupRef'))}"
             for p in structure.get("placements") or []
         )
+    if isinstance(structure, dict) and structure.get("kind") == "match":
+        left = {row["id"]: row.get("label", "") for row in task.get("left") or []}
+        right = {row["id"]: row.get("label", "") for row in task.get("right") or []}
+        return "; ".join(
+            f"{left.get(p.get('leftRef'), p.get('leftRef'))} with {right.get(p.get('rightRef'), p.get('rightRef'))}"
+            for p in structure.get("pairs") or []
+        )
     if isinstance(structure, dict) and structure.get("kind") == "evidence-classification":
         return "; ".join(
             ", ".join(str(value.get("value")) for value in result.get("values") or [])
@@ -262,7 +269,7 @@ def ask_text(unit: dict) -> str:
     content = unit.get("content") or {}
     seen = [
         unit.get("pupilInstruction"), content.get("task"), content.get("discussionQuestion"),
-        content.get("question"), unit.get("taskStructure"),
+        content.get("question"), unit.get("taskStructure"), unit.get("board"),
     ]
     if not any(seen):
         # `activity` is the designer describing the task, not the task: it is
@@ -273,6 +280,15 @@ def ask_text(unit: dict) -> str:
 
 _LETTERED = re.compile(r"(?:^|\n)\s*([A-D])\s*[:.)]\s+(.+?)(?=(?:\n\s*[A-D]\s*[:.)]\s)|\Z)", re.S)
 _ORDINALS = {"first": 0, "second": 1, "third": 2, "fourth": 3}
+
+
+def board_text(unit: dict) -> str:
+    """The board's own words (the case, the goal, the action cards and the
+    stems), which carry what `pupilInstruction` used to on a unit that has one."""
+    board = unit.get("board")
+    if not isinstance(board, dict):
+        return ""
+    return " ".join(flatten(board.get(key)) for key in ("context", "goal", "actions", "stems") if board.get(key))
 
 
 def task_options(unit: dict) -> list[str]:
@@ -347,7 +363,7 @@ def stem_text(unit: dict) -> str:
     text = " ".join(
         str(part) for part in (
             content.get("task"), content.get("discussionQuestion"), content.get("question"),
-            unit.get("pupilInstruction"),
+            unit.get("pupilInstruction"), board_text(unit),
         ) if part
     )
     for option in task_options(unit):

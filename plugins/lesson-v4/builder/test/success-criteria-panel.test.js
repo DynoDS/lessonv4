@@ -98,6 +98,35 @@ test('the panel heading is one unbreakable line', () => {
   assert.ok(text.includes('\u00a0'));
 });
 
+// The draw-live easel sits in the panel's top-right corner, on the heading's
+// line. A heading drawn the panel's full width ran under it ("How to find area"
+// touching the easel, Year 4 area, 28 October 2026: "the overlapping flip chart,
+// that's always been there"). The heading now ends before the easel starts.
+test('a heading never runs under the draw-live easel', () => {
+  for (const route of ['fixed', 'free']) {
+    const images = [];
+    const slide = fakeSlide();
+    slide.addImage = (options) => images.push(options);
+    const data = { criteriaRef: 'sc-001', flipchart: true, criteriaLabel: '✓ How to find area',
+      criteria: { type: 'steps', steps: ['Count the squares in one row.', 'Count the rows.'] } };
+    const ctx = { slideIndex: 0, imageDims: {}, cardLook: true };
+    if (route === 'fixed') drawScPanel(new PptxGenJS(), slide, data, ctx);
+    else drawScPanelContent(new PptxGenJS(), slide, PANEL, data, ctx);
+    const heading = slide.texts.find((t) => String(t.content).includes('How'));
+    const easel = images.find((i) => /flipchart/.test(i.path));
+    assert.ok(heading && easel, route + ': heading and easel drawn');
+    assert.ok(heading.x + heading.w <= easel.x - 0.04,
+      `${route}: heading ends at ${(heading.x + heading.w).toFixed(2)}in, easel starts at ${easel.x.toFixed(2)}in`);
+    // And it fits on its one line there: PowerPoint breaks a heading too long
+    // for its box in the middle of a word ("are / a"), it does not shrink it.
+    const { lineWidthIn } = require('../src/content/steps');
+    const words = String(heading.content).replace(/ /g, ' ');
+    assert.ok(lineWidthIn(words, heading.fontSize) <= heading.w + 1e-6,
+      `${route}: "${words}" at ${heading.fontSize}pt needs ${lineWidthIn(words, heading.fontSize).toFixed(2)}in, has ${heading.w.toFixed(2)}in`);
+    assert.ok(heading.fontSize >= 22, route + ': heading stays readable');
+  }
+});
+
 const SIX_STEPS = [
   'Find the endpoints.', 'Find the difference.', 'Count the spaces.',
   'Divide by the spaces.', 'Count on in steps.', 'Write the missing number.'

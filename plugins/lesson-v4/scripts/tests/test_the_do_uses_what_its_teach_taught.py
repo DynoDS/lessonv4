@@ -160,7 +160,8 @@ class ALessonTellsOneStoryTests(unittest.TestCase):
     def test_how_much_fits_counts_stories_with_its_reason_and_example(self) -> None:
         self.assertIn("**The same measure counts stories, not only ideas.**", self.text)
         self.assertIn("it doubles what a child holds however well each half is told", self.text)
-        self.assertIn("it's definitely too much, for sure", self.text)
+        self.assertIn("Tudor plague and Victorian cholera told in full in one lesson on how diseases spread "
+                      "was two lessons.", self.text)
 
     def test_a_plural_objective_does_not_ask_for_two_full_stories(self) -> None:
         self.assertIn("is met by one story told properly and that comparison, not by two full stories", self.text)

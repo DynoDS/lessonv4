@@ -71,13 +71,15 @@ const EXPECTED_MODES = {
   'number-pyramid': 'SC-inline',
   'draw-bars': 'SC-inline',
   'one-per-column': 'SC-inline',
+  'exchange-subtract': 'SC-inline',
+  'exchange-add': 'SC-inline',
   'count-array': 'SC-inline',
   'part-whole': 'SC-inline'
 };
 
 test('shared catalogue marks all audited helpers by supported size', () => {
-  assert.equal(SUCCESS_CRITERIA_HELPERS.length, 28);
-  assert.equal(new Set(SUCCESS_CRITERIA_HELPER_KEYS).size, 28);
+  assert.equal(SUCCESS_CRITERIA_HELPERS.length, 30);
+  assert.equal(new Set(SUCCESS_CRITERIA_HELPER_KEYS).size, 30);
   assert.deepEqual(
     Object.fromEntries(SUCCESS_CRITERIA_HELPERS.map((entry) => [entry.key, entry.mode])),
     EXPECTED_MODES
@@ -140,6 +142,8 @@ test('inline treatments come from the same shared geometry owner as their full-s
   assert.equal(buildSuccessCriteriaInline('number-pyramid').svg, pyramidCue.tightSvg({}).svg);
   assert.equal(buildSuccessCriteriaInline('draw-bars').svg, barChart.barsCueSvg({}).svg);
   assert.equal(buildSuccessCriteriaInline('one-per-column').svg, placeValue.onePerColumnCueSvg({}).svg);
+  assert.equal(buildSuccessCriteriaInline('exchange-subtract').svg, placeValue.exchangeSubtractCueSvg({}).svg);
+  assert.equal(buildSuccessCriteriaInline('exchange-add').svg, placeValue.exchangeAddCueSvg({}).svg);
   assert.equal(buildSuccessCriteriaInline('count-array').svg, areaGridCue.tightSvg({}).svg);
   assert.equal(buildSuccessCriteriaInline('part-whole').svg, partWholeCue.tightSvg({}).svg);
   assert.equal(getSuccessCriteriaHelper('angle-arc').geometrySource, 'shared/visuals/angle-svg.js');

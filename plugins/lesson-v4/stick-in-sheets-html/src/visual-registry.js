@@ -12,6 +12,7 @@ const rainforestLayers = require("../../shared/visuals/rainforest-layers-svg");
 const map = require("../../shared/visuals/map-svg");
 const geographicalDescriptionFrame = require("../../shared/visuals/geographical-description-frame-svg");
 const recordingTable = require("../../shared/visuals/recording-table-svg");
+const match = require("../../shared/visuals/match-svg");
 const geoboard = require("../../shared/visuals/geoboard-svg");
 const numberLine = require("../../shared/visuals/number-line-svg");
 const linePair = require("../../shared/visuals/line-pair-svg");
@@ -308,6 +309,12 @@ const VISUALS = {
   // cell copied from a check slide is stripped to a blank write-on cell, so
   // copying either the task or the answer table yields the same blank piece.
   table: scaledPiece(recordingTable, { defaultWidthMm: 160 }),
+  // 150mm wide: the child draws lines from each left box to its partner on the
+  // right, so what has to be comfortable is the corridor between the columns
+  // (about 37mm here) and a box big enough to aim at (16mm tall at least).
+  // The piece copies the design's `left`, `right` and `togetherPair`; only the
+  // pair done with the class is drawn joined, and answer pairs never print.
+  match: scaledPiece(match, { defaultWidthMm: 150 }),
 
   // ── Pictures the pack could not draw until 13 September 2026, when every
   //    picture became one shared drawing on every surface. Whether a lesson
@@ -527,6 +534,7 @@ function missingQuestionContent(item) {
     case "part-whole-model":
     case "pyramid":
     case "mult-grid":
+    case "match":
       try {
         VISUALS[item.visual].geometry.normalise(s);
         return null;

@@ -100,6 +100,62 @@ def flatten(value) -> str:
     return str(value) if value is not None else ""
 
 
+def teach_boards(item: dict) -> int:
+    """About how many boards a Teach puts up, split the way the slide designer
+    paces one (`preferences.md` -> `A Teach run is paced`): a slide for each
+    thing to look at (a picture or a drawn representation), a question line
+    closing its slide so its answer opens the next, and about two lines of
+    teaching to a board otherwise, the headline counted as a line.
+
+    Counting every line as its own board (until 6 November 2026) read four
+    6 November designs as six to eight boards whose built decks showed four
+    told slides or fewer, so the LOOK AGAIN below fired on good lessons. Checked
+    against 19 built Teach beats from 3 to 6 November, this count is within
+    one slide on all but one and seldom over; the river Teach it was written
+    for (five pictures, six real slides) still counts five."""
+    content = item.get("content") or {}
+    explanation = content.get("explanation") or content.get("accurateExplanation") or ""
+    if isinstance(explanation, list):
+        explanation = "\n".join(str(x) for x in explanation)
+    lines = [line.strip() for line in str(explanation).split("\n") if line.strip()]
+    headline = 1 if str(content.get("headline") or "").strip() else 0
+    by_lines = -(-(len(lines) + headline) // 2)
+    by_pictures = len(item.get("photoRefs") or []) + len(item.get("representationRefs") or [])
+    by_questions = sum(1 for n, line in enumerate(lines) if line.endswith("?") and n < len(lines) - 1) + 1
+    return max(by_lines, by_pictures, by_questions, 1)
+
+
+def board_actions(unit: dict) -> str:
+    """A board's action cards as one line: on a unit with a board they set the
+    task, and its pupilInstruction is null."""
+    board = unit.get("board") if isinstance(unit.get("board"), dict) else {}
+    return " ".join(str(line) for line in board.get("actions") or [])
+
+
+def material_lines(structure: dict, indent: str = "    ") -> list[str]:
+    """A table or a match as the child sees it, one line a row."""
+    lines: list[str] = []
+    if structure.get("kind") == "table":
+        columns = structure.get("columns") or []
+        lines.append(indent + "table: " + " | ".join(str(c.get("label")) for c in columns))
+        together = structure.get("togetherRowRef")
+        for row in structure.get("rows") or []:
+            cells = " | ".join("______" if cell is None else str(cell) for cell in row.get("cells") or [])
+            lines.append(indent + "  " + cells + ("   (done together)" if row.get("id") == together else ""))
+        for column in columns:
+            if column.get("choices"):
+                lines.append(indent + f"  {column.get('label')}: circle " + " or ".join(map(str, column["choices"])))
+    elif structure.get("kind") == "match":
+        lines.append(indent + "join with lines: " + " | ".join(str(i.get("label")) for i in structure.get("left") or []))
+        lines.append(indent + "to: " + " | ".join(str(i.get("label")) for i in structure.get("right") or []))
+        pair = structure.get("togetherPair")
+        if isinstance(pair, dict):
+            left = {i.get("id"): i.get("label") for i in structure.get("left") or []}
+            right = {i.get("id"): i.get("label") for i in structure.get("right") or []}
+            lines.append(indent + f"done together: {left.get(pair.get('leftRef'))} with {right.get(pair.get('rightRef'))}")
+    return lines
+
+
 def first_words(text: str, count: int = 8) -> str:
     ws = str(text or "").split()
     return " ".join(ws[:count]) + (" ..." if len(ws) > count else "")
@@ -217,6 +273,8 @@ def child_seat(design: dict) -> list[str]:
     said = 0
     stretch: list[tuple[str, int]] = []
     stretches: list[list[tuple[str, int]]] = []
+    boards_in_stretch = 0
+    stretch_boards: list[int] = []
     before_main = {"do": 0, "cards": 0, "together": 0, "quick": 0}
     # Chunks of teaching before the main work: a listening stretch holding a
     # Teach, ended by whatever children do next, quick Do or task. A Year 4
@@ -237,6 +295,7 @@ def child_seat(design: dict) -> list[str]:
             listened += count
             said += count
             stretch.append((name, count))
+            boards_in_stretch += 1
             continue
         name = item.get("label") or item.get("sourceUnitId") or item.get("kind") or "beat"
         count = len(script_of(item).split())
@@ -245,6 +304,7 @@ def child_seat(design: dict) -> list[str]:
             lines.append(f"  listen  {name} ({count} words, {time_to_say(count)})")
             listened += count
             stretch.append((name, count))
+            boards_in_stretch += teach_boards(item)
             taught_in_stretch = taught_in_stretch or item.get("kind") in CHUNK_TEACH_KINDS
             # An enabling input can own the immediate pupil action too.
             if not (item.get("kind") == "teach-needed" and item.get("pupilInstruction")):
@@ -267,10 +327,12 @@ def child_seat(design: dict) -> list[str]:
         taught_in_stretch = False
         if stretch:
             stretches.append(stretch)
+            stretch_boards.append(boards_in_stretch)
             stretch = []
+        boards_in_stretch = 0
         content = item.get("content") or {}
-        told = (item.get("pupilInstruction") or content.get("task") or content.get("prompt")
-                or content.get("question") or content.get("activity") or "")
+        told = (item.get("pupilInstruction") or board_actions(item) or content.get("task")
+                or content.get("prompt") or content.get("question") or content.get("activity") or "")
         handling = (item.get("taskStructure") or {}).get("handling") or {}
         cards = handling.get("kind") == "cards"
         together = (handling.get("per") in {"pair", "group"}) or bool(TOGETHER.search(flatten(told)))
@@ -291,12 +353,12 @@ def child_seat(design: dict) -> list[str]:
         # Explicit source scope wins. Only old saved designs without it use
         # the historical print/time approximation.
         mode = item.get("doMode")
-        quick = (mode == "quick" if mode in {"quick", "deeper"} else
+        quick = (mode == "quick" if mode in {"quick", "deeper", "record"} else
                  (item.get("kind") != "starter" and i != main_at and printed is None
                   and isinstance(planned, (int, float)) and planned <= QUICK_CHECK_MINUTES))
         tag = "MAIN" if i == main_at else ("quick" if quick else "do")
         minutes = f", {planned} min planned" if isinstance(planned, (int, float)) else ""
-        if mode in {"quick", "deeper"}:
+        if mode in {"quick", "deeper", "record"}:
             minutes += f", designer chose {mode}"
         lines.append(f"  {tag:<6}  {name}: \"{first_words(flatten(told), 10)}\" - {where}, {who}"
                      f" (teacher says {count} words{minutes})")
@@ -317,6 +379,7 @@ def child_seat(design: dict) -> list[str]:
             after_main += 1
     if stretch:
         stretches.append(stretch)
+        stretch_boards.append(boards_in_stretch)
 
     lines.append(f"  On the Teach slides and word cards alone, children listen to {listened} words, "
                  f"{time_to_say(listened)}.")
@@ -331,6 +394,20 @@ def child_seat(design: dict) -> list[str]:
         words_in = sum(count for _name, count in longest)
         lines.append(f"  The longest listening stretch is {words_in} words, {time_to_say(words_in)}: "
                      + "; ".join(name for name, _count in longest) + ".")
+        # Words alone hid a Year 4 geography stretch (3 November 2026): 366
+        # words read as three minutes, but its Teach walked water, fish and the
+        # river as a road over six slides, a word card among them, and the
+        # teacher found it "just lots of information". The class lives the
+        # boards, so count them too.
+        most = max(stretch_boards) if stretch_boards else 0
+        if most > 5:
+            at = stretch_boards.index(most)
+            lines.append(
+                f"  LOOK AGAIN: one stretch puts about {most} boards in front of the class before they do anything "
+                f"({'; '.join(name for name, _count in stretches[at])}). More than five slides of telling before "
+                "children use any of it is where the teacher found a lesson \"just lots of information\". Ask which of those things "
+                "the class would forget if you moved on, and give it its use there "
+                "(`preferences.md` -> `Judge the workload of Dos and the final task`).")
     if main_at is not None:
         lines.append(
             f"  Between the starter and the main work children do {before_main['do']} "
@@ -385,6 +462,11 @@ LESSON_REFUSED_MINUTES = 55
 WORKSHEET_ABOUT_MINUTES = 15
 WORKSHEET_SHORT_MINUTES = 10
 TASKS_SPENT_MINUTES = 15
+DEEPER_SHORT_MINUTES = 4
+# A quick check takes about five minutes at most (`preferences.md` -> `Choose
+# Do activities for the learning`); one planned at more is either a strong task
+# marked quick or a check bigger than what it checks. A look, never a refusal.
+QUICK_LONG_MINUTES = 5
 TEACH_KINDS = {"teach", "teach-why", "teach-needed"}
 
 
@@ -458,6 +540,31 @@ def room(design: dict, order: list[tuple[str, dict]], planned: float) -> list[st
             f"where a worksheet usually takes about {WORKSHEET_ABOUT_MINUTES}. A short sheet is a real thing; "
             f"a sheet given {main:g} because that was what the sum had left is a lesson fuller than it "
             "looks. Which is this?")
+    # The subject's work (preferences.md -> The subject's work has its own
+    # stretch of the lesson). A book task is the stretch where children do the
+    # subject for real time; one planned at a quick check's minutes has been
+    # given handing-out time, and a lesson whose book tasks are all short has
+    # its work squeezed between the teaching and the written piece. A look,
+    # never a verdict: the teacher's "it's all roughly" (12 October 2026).
+    deeper = [(u.get("label") or u.get("sourceUnitId") or "a Do", minutes(u))
+              for u in units if u.get("doMode") == "deeper"]
+    for label, planned_minutes in deeper:
+        if 0 < planned_minutes <= DEEPER_SHORT_MINUTES:
+            lines.append(
+                f"  LOOK AGAIN: \"{label}\" carries the book (doMode deeper) and is planned at {planned_minutes:g} "
+                f"minutes. Say what a pair is doing at minute two and minute six of it (preferences.md, Two "
+                "minutes in, six minutes in). A find that is over in a minute is a quick check wearing the book; "
+                "the subject's work needs its minutes before the teaching is sized.")
+    quick = [(u.get("label") or u.get("sourceUnitId") or "a Do", minutes(u))
+             for u in units if u.get("doMode") == "quick"]
+    for label, planned_minutes in quick:
+        if planned_minutes > QUICK_LONG_MINUTES:
+            lines.append(
+                f"  LOOK AGAIN: \"{label}\" is a quick check (doMode quick) planned at {planned_minutes:g} "
+                f"minutes. A quick check takes about {QUICK_LONG_MINUTES} minutes at most; planned at "
+                f"{planned_minutes:g}, it is either really a strong task, and then it is marked deeper and "
+                "passes Two minutes in, six minutes in, or it is too big for what it checks, and then the "
+                "task gets smaller (preferences.md, Choose Do activities for the learning).")
     return lines
 
 
@@ -489,6 +596,21 @@ def clock(design: dict, order: list[tuple[str, dict]]) -> list[str]:
     return lines
 
 
+def board_lines(unit: dict) -> list[str]:
+    """The board's parts, in the order the slide shows them."""
+    board = unit.get("board")
+    if not isinstance(board, dict):
+        return []
+    lines = []
+    for key, name in (("context", "the case"), ("goal", "what we are going to do"),
+                      ("actions", "action cards"), ("stems", "stems")):
+        value = board.get(key)
+        if isinstance(value, list):
+            value = " | ".join(str(line) for line in value) if value else "(none)"
+        lines.append(f"    board, {name}: {value or '(none)'}")
+    return lines
+
+
 def response_contract_lines(design: dict, unit: dict) -> list[str]:
     """Expose the authored success boundary and actual response affordance.
 
@@ -506,6 +628,7 @@ def response_contract_lines(design: dict, unit: dict) -> list[str]:
              "    intended thinking: " + str(unit.get("thinking") or "(not recorded)"),
              "    task-facing content: " + json.dumps(task_content, ensure_ascii=False),
              "    pupil instruction: " + str(unit.get("pupilInstruction") or "(none)"),
+             *board_lines(unit),
              "    model/exact answer: " + beside_teaching.beside_expected_answer(unit),
              "    acceptance boundary: " + str(answer.get("acceptanceCondition") or "(none recorded)"),
              "    answer delivery: " + str(answer.get("delivery") or "(not recorded)")]
@@ -564,7 +687,7 @@ def main(argv: list[str]) -> int:
             continue
         count += 1
         task = content.get("task") or content.get("prompt") or content.get("question") or ""
-        told = unit.get("pupilInstruction") or task or content.get("activity") or ""
+        told = unit.get("pupilInstruction") or board_actions(unit) or task or content.get("activity") or ""
         form = how_answered(unit)
         label = "practice" if kind == "practise" else f"Do {count}"
         print(f"{label}: {unit.get('label') or unit.get('sourceUnitId')}")
@@ -618,6 +741,8 @@ def main(argv: list[str]) -> int:
                 if structure.get("kind") == "sort":
                     print("    headings: " + " | ".join(str(g.get("label")) for g in structure.get("groups") or []))
                     print("    cards: " + " | ".join(str(i.get("label")) for i in structure.get("items") or []))
+                for line in material_lines(structure):
+                    print(line)
                 for _refused, sentence in clues:
                     print(f"  ON THE PAGE: {sentence}" + ("" if sentence.endswith("?") else "."))
                 if row.practice:

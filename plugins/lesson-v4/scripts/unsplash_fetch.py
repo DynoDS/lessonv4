@@ -11,6 +11,7 @@ import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
+import web_tls
 import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 from picture_plain import plain_bytes
 
@@ -77,7 +78,7 @@ def search_unsplash(query, access_key, reserve, orientation=None):
     url = "https://api.unsplash.com/search/photos?" + urllib.parse.urlencode(params)
     request = urllib.request.Request(url, headers={"Authorization": f"Client-ID {access_key}", "Accept-Version": "v1"})
     try:
-        with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS) as response:
+        with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS, context=web_tls.CONTEXT) as response:
             data = json.loads(response.read().decode())
     except urllib.error.HTTPError as exc:
         kind = http_failure_kind(exc)
@@ -120,7 +121,7 @@ def search_unsplash(query, access_key, reserve, orientation=None):
 def trigger_download(photo_id, access_key):
     request = urllib.request.Request(f"https://api.unsplash.com/photos/{photo_id}/download", headers={"Authorization": f"Client-ID {access_key}", "Accept-Version": "v1"})
     try:
-        urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS).close()
+        urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS, context=web_tls.CONTEXT).close()
     except Exception:
         pass
 
@@ -145,7 +146,7 @@ def _atomic_write(path, data, mode="wb"):
 
 def download_image(url, dest_path):
     request = urllib.request.Request(url, headers={"User-Agent": "lesson-resources-image-scout/2.0"})
-    with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS) as response:
+    with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS, context=web_tls.CONTEXT) as response:
         data = response.read()
     # Rewritten plain, so the worker who looks at it can open it (picture_plain.py).
     _atomic_write(dest_path, plain_bytes(data))

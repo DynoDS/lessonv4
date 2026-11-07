@@ -315,7 +315,11 @@ class TheGuidanceReachesItsReaders(unittest.TestCase):
     def test_the_planner_is_told_what_the_scout_cannot_guess(self):
         text = self.read("references/output-template.md")
         self.assertIn("are read for a photograph that is searched for as well as for one that is generated", text)
-        self.assertIn("stands for a child the lesson names", text)
+        # A named person: who they are, and what a name cannot tell the scout
+        # (boy or girl, how they feel), and one look-alike set when they recur.
+        self.assertIn("When the picture shows a person the lesson names", text)
+        self.assertIn("boy or girl as the lesson's words have them", text)
+        self.assertIn("put those pictures in one `coherent_group`", text)
         self.assertIn("a picture made at the time", text)
 
 

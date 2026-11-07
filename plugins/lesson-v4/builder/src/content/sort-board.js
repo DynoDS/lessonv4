@@ -6,6 +6,8 @@ const { fitGroupId, growFitObjectName } = require('../text-fit');
 const { resolveForEmbed } = require('../images/resolve');
 const { drawMissingImage } = require('../images/placeholder');
 const { recordMissingPicture } = require('./image');
+const { awaitedDescription, recordAwaitedPicture } = require('../images/awaiting');
+const { recording } = require('../warnings');
 
 const PAD = 0.12;
 const PANEL_GAP = 0.16;
@@ -32,6 +34,14 @@ function normaliseGroups(data) {
       label: String(group && group.label != null ? group.label : ''),
       items: (Array.isArray(group && group.items) ? group.items : [])
         .map(function (item) { return String(item == null ? '' : item); })
+        .filter(Boolean),
+      // The card placed with the class on the board, named by its letter, on
+      // the sort children do: it prints in the place's room for a letter, in a
+      // worked example's purple, so the class sees the move once before the
+      // cards are theirs.
+      together: (Array.isArray(group && group.together) ? group.together
+        : (group && group.together != null ? [group.together] : []))
+        .map(function (item) { return String(item == null ? '' : item).trim(); })
         .filter(Boolean)
     };
   });
@@ -121,9 +131,14 @@ function resolveBankPictures(bank, ctx) {
       // the way every required picture does, and is recorded as missing: the
       // composition preview runs before the pictures land and lays the sort
       // out, and the final build refuses a deck still without it.
+      // A picture awaiting usage is the exception: it is listed for adding
+      // later, not recorded as missing (../images/awaiting.js).
       const slideNumber = ctx && Number.isInteger(ctx.slideIndex) ? ctx.slideIndex + 1 : undefined;
-      recordMissingPicture(slideNumber, imagePath);
-      card.image = { resolvedPath: null, aspect: 1, alt: card.text || card.label };
+      const awaited = awaitedDescription(imagePath);
+      if (awaited !== null) {
+        if (recording()) recordAwaitedPicture(slideNumber, imagePath);
+      } else recordMissingPicture(slideNumber, imagePath);
+      card.image = { resolvedPath: null, aspect: 1, alt: card.text || card.label, awaited };
       return;
     }
     const dims = ctx && ctx.imageDims ? ctx.imageDims[imagePath] : null;
@@ -396,7 +411,7 @@ function drawSortTask(pptx, slide, zone, data, groups, ctx) {
       const drawW = Math.min(parts.pictureW, parts.pictureH * card.image.aspect);
       const drawH = drawW / card.image.aspect;
       if (!card.image.resolvedPath) {
-        drawMissingImage(slide, { x: x + (cardW - drawW) / 2, y: textY + (parts.pictureH - drawH) / 2, w: drawW, h: drawH });
+        drawMissingImage(slide, { x: x + (cardW - drawW) / 2, y: textY + (parts.pictureH - drawH) / 2, w: drawW, h: drawH }, card.image.awaited);
       } else slide.addImage({
         path: card.image.resolvedPath,
         x: x + (cardW - drawW) / 2,
@@ -472,6 +487,16 @@ function drawSortTask(pptx, slide, zone, data, groups, ctx) {
       align: 'center', valign: 'top', margin: 0, fit: FIT,
       objectName: growFitObjectName(headerGroup, 28, 'sort-heading-' + index)
     });
+    if (group.together.length) {
+      const roomY = gy + PANEL_PAD * 0.5 + headingNeed;
+      slide.addText(group.together.join('   '), {
+        x: x + PANEL_PAD, y: roomY, w: panelW - 2 * PANEL_PAD,
+        h: Math.max(0.3, gy + panelH - roomY - PANEL_PAD * 0.5),
+        fontFace: FONT, fontSize: 28, bold: true, color: COLOURS.worked,
+        align: 'center', valign: 'middle', margin: 0, fit: FIT,
+        objectName: 'sort-together-' + index
+      });
+    }
   });
 }
 

@@ -174,7 +174,7 @@ function placeCriteria(pptx, slide, bz, panel, ctx) {
   const content = panel.content || panel.criteria;
   if (content && content.type === 'steps') {
     const draw = (p, s, z) => drawContent(p, s, z, panel, ctx);
-    const w = snugCriteriaWidth(zone, panel, draw);
+    const w = snugCriteriaWidth(zone, panel, draw, { ctx });
     zone.x += zone.w - w;
     zone.w = w;
   }

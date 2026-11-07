@@ -26,6 +26,7 @@ const { capacityWarnings } = require('./src/content/capacity');
 const { zoneFillWarnings, clearZoneFill } = require('./src/content/_zone-fill');
 const { figureBoxes, clearFigureBoxes } = require('./src/content/_figure-boxes');
 const { pictureFloorFindings, clearPictureFloor, missingPictureFindings, clearMissingPictures } = require('./src/content/image');
+const { loadAwaitingPictures, awaitedPictureFindings, clearAwaitedPictures } = require('./src/images/awaiting');
 const { runAutofit, autofitDiagnostics } = require('./src/autofit');
 const { fixParagraphProps } = require('./src/fix-paragraph-props');
 const { verifyPictures } = require('./src/verify-pictures');
@@ -226,9 +227,15 @@ async function main() {
   // lessons sharing a title never build over each other's deck.
   const nameAt = rawArgs.indexOf("--name");
   const fileName = nameAt >= 0 ? rawArgs[nameAt + 1] : null;
+  // Pictures the run could not get because the picture tool's usage ran out
+  // (src/images/awaiting.js): drawn as labelled grey boxes and listed, never
+  // a reason to refuse the deck. Only the lesson run's wrapper passes this.
+  const awaitingAt = rawArgs.indexOf("--awaiting-pictures");
+  const awaitingPath = awaitingAt >= 0 ? rawArgs[awaitingAt + 1] : null;
   const args = rawArgs.filter(
     (arg, i) =>
       !(nameAt >= 0 && (i === nameAt || i === nameAt + 1)) &&
+      !(awaitingAt >= 0 && (i === awaitingAt || i === awaitingAt + 1)) &&
       arg !== "--cards" &&
       arg !== "--no-cards" &&
       arg !== "--skip-optional-decorations" &&
@@ -241,6 +248,13 @@ async function main() {
 
   if (!fs.existsSync(jsonPath)) {
     console.error(`Lesson JSON not found: ${jsonPath}`);
+    process.exit(1);
+  }
+  if (awaitingAt >= 0 && !awaitingPath) usage();
+  try {
+    loadAwaitingPictures(awaitingPath ? path.resolve(awaitingPath) : null);
+  } catch (error) {
+    console.error(error.message);
     process.exit(1);
   }
   if (!fs.existsSync(outputDir)) {
@@ -499,6 +513,7 @@ async function main() {
   clearFigureBoxes();
   clearPictureFloor();
   clearMissingPictures();
+  clearAwaitedPictures();
   clearCriteriaBelowFloor();
   clearLabelDiagramFindings();
   clearHairUnder();
@@ -861,6 +876,13 @@ ${pictures.faults.length} picture(s) did not make it into the deck, so ` +
       process.exitCode = 1;
     }
     if (saved) console.log(`Wrote: ${outputPath}`);
+    // One line per grey box a picture is waiting in, for the wrapper to list
+    // for the teacher. Printed only for a deck that was written.
+    if (saved) {
+      for (const awaited of awaitedPictureFindings()) {
+        console.log(`PICTURE_AWAITING_USAGE: ${JSON.stringify(awaited)}`);
+      }
+    }
   }
 
   // Text that fitted, but under the 20pt the board aims for. Not a failure:

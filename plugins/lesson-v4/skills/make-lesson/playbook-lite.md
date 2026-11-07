@@ -455,10 +455,10 @@ distribution is `covered` by the real map with the belts shaded on it. Write
 helpers.** It says the picture route supplies this visual, so it is finished
 only when a filename for it reaches the contract, and `picture` is where that
 filename goes. A reason claiming the contract already covers it is a different
-claim and nothing can check it: a geography run wrote exactly that for two maps,
-froze a contract holding neither, and the deck filled both holes with the
-nearest live map helper - coastlines drawn from chosen coordinates, on a lesson
-about where a real forest is. When the picture route cannot run, the honest
+claim and nothing can check it: a geography contract holding neither of two
+maps can leave the deck to fill both holes with the nearest live map helper -
+coastlines drawn from chosen coordinates, on a lesson about where a real forest
+is. When the picture route cannot run, the honest
 answer is `gap`, not a substitute whose picture nobody will source.
 
 ### The helper route
@@ -508,9 +508,9 @@ Here is the last point at which a missing picture costs one design revision
 rather than a lesson: afterwards the contract is frozen, the sourcing wave has
 sailed, and a designer meeting the hole can only compose around it.
 
-Run it whatever the decisions say. The command used to sit only in the helper
-route, which is read only on a `build`, so the ordinary run - all `covered` and
-`substitute` - never ran it, and the requirement stated here held nothing.
+Run it whatever the decisions say. The helper route is read only on a
+`build`, so a command confined to that route would never check an ordinary run
+with all `covered` and `substitute` decisions.
 
 ---
 
@@ -686,11 +686,9 @@ dependants before going back to what you were reading.
 
 Releasing is normally seconds of deterministic work - finalise the returned
 picture batch, build adaptation's provisional contract, launch the next
-designer - and each one frees a whole branch. A geography run left five sourced
-photographs unpublished for fourteen minutes and adaptation's contract unbuilt
-for twelve, then ran both in seconds once an unrelated Slide Designer returned.
-The worksheet branch waits on that contract and finished last, so the package
-landed twelve minutes late on a fifty-seven minute run.
+designer - and each one frees a whole branch. The worksheet branch waits on
+adaptation's contract, so leaving it unbuilt until an unrelated Slide Designer
+returns delays the package.
 
 Run printable Chrome preflight once before worksheet, wall or stick-in builds:
 `node "[PLUGIN_ROOT]/worksheet-html/scripts/ensure-chrome.js"`. Its last line
@@ -913,7 +911,10 @@ picture wave, not a re-point, and it is taken now (after the voice edit, which
 also writes the design): an essential photograph that
 never arrived is a hole in the teaching, and each track's reconcile below will
 otherwise close it silently by pointing the reference at a surviving picture.
-A deck shipped twelve of sixteen slides bare that way on 21 September 2026.
+
+**A receipt marked `awaitingUsage` is neither.** It was lost only to the
+picture tool's spent usage, and the teacher wants it on the slide as a grey box
+saying what goes there, to add later: no wave, and no slide reconcile.
 
 ---
 
@@ -925,7 +926,7 @@ picture filenames referenced by `lesson.json` are terminal. When the resolved st
 for: build the slides from the specification the designer already wrote.
 
 Reconcile first: for any picture filename `lesson.json` names whose terminal
-receipt reads `unsatisfied` or `omitted`, run one focused Slide Designer repair
+receipt reads `unsatisfied` or `omitted` (not `awaitingUsage`), run one focused Slide Designer repair
 before the build, telling it the filename is terminally unavailable and that
 re-pointing that one reference is the repair, not a scope breach.
 
@@ -934,8 +935,9 @@ the wave above instead: re-pointing one changes what the slide teaches rather
 than repairing a reference, and a photograph demoted to supporting context
 reads as finished to every check downstream.
 
-If the lesson uses a labelled diagram over a photo, launch Diagram Anchor
-against the final published image and update only anchor coordinates.
+If the lesson uses a labelled diagram over a photo, or a photo carrying marks
+(a line round an area, a ring, an arrow), launch Diagram Anchor against the
+final published image and update only anchor coordinates and mark points.
 
 Build slides directly:
 
@@ -951,12 +953,12 @@ Build slides directly:
 Require `ok: true` and the exact output paths in the summary. On a semantic
 build diagnostic, run one focused Slide Designer repair and rebuild once.
 `FIXED_RESOURCE_FLAGGED slides: [numbers]` is a delivered deck; slides not yet
-repaired get their one round first.
+repaired get their one round first. Carry a `PICTURES_TO_ADD:` line into the
+report's picture results in plain words.
 
-The Slide Decorator remains the earlier optional-picture stage. It runs the optional drawing pass the
-Slide Designer used to run last, at the same point and over the same private
-preview, in a worker of its own so the wall and stick-in branches need not
-wait for it. It looks at nothing after the build and judges no photograph.
+The Slide Decorator remains the earlier optional-picture stage. It runs the
+optional drawing pass at the same point and over the same private preview, in a
+worker of its own so the wall and stick-in branches need not wait for it. It looks at nothing after the build and judges no photograph.
 
 ---
 
@@ -1039,9 +1041,8 @@ reports one or more, and the Phase 2 picture stage is `attempting`:
 Launch the Worksheet Designer first, then start this wave beside it. The
 adaptation has just named every picture its sheets could want, and the sheet
 that decides which of them it keeps takes ten minutes or more to design. Waiting
-for that answer before searching put a four to nine minute picture search on
-the end of the worksheet chain, where it was the last thing the run did; sourcing
-now, in parallel, takes it off the end. The price is a picture the sheet then
+for that answer before searching puts the picture search on the end of the
+worksheet chain; sourcing now, in parallel, takes it off the end. The price is a picture the sheet then
 drops: fetched, kept as evidence, never used. That cost is reported, never hidden.
 
 Compile from the immutable snapshot build-provisional just wrote, naming only
@@ -1415,11 +1416,11 @@ says so; anything else may be made honestly (Photograph acquisition).
 
 Re-run the design validator and photo-cap check, then run Phase 1.25 again over
 the revised files: a revision that removes a source, rewrites the model beat
-and re-points the Do beats is a new lesson, and the one this pipeline delivered
-without a second review was the one the teacher refused to teach. The review
+and re-points the Do beats is a new lesson, so the earlier review no longer
+covers it. The review
 costs three minutes; a redesign it returns follows the Phase 1.25 rules.
-Then snapshot the revision as the next wave number, run the supplemental-wave
-mechanics over that snapshot, naming already-terminal filenames so nothing
+Then snapshot the revision as the next wave number, run `worksheet-render` →
+The supplemental picture wave over that snapshot, naming already-terminal filenames so nothing
 finished reopens, and relaunch the blocked designer on the published picture and the current
 `photo-requirements.json`. One wave per run; a gap that
 survives it excludes as before, the pending helper still built for
@@ -1492,12 +1493,12 @@ There is no second round for the same fault. Record the round in the run's
 friction file, whatever its result.
 
 A fault the round uncovered where it did not touch is a different fault and
-gets its own round. Maths 15 (22 September 2026) repaired Expected until it fit,
-the untouched Greater Depth sheet then failed for the first time, and reading
-that as a second round cost the class its whole pack.
+gets its own round. For example, if a repair makes Expected fit and the
+untouched Greater Depth sheet then fails for the first time, treating that as
+a second round would cost the class its whole pack.
 
 **A deck the round did not clear still ships**, its slides flagged for the
-teacher (Daniel, 16 September 2026: "flag the slides and deliver it"). Hand `lesson.json` on as it stands: start any wall
+teacher. Hand `lesson.json` on as it stands: start any wall
 or stick-in track waiting for it, build as Track A says, then run the Slide
 Decorator over that flagged deck, passing the build's `SLIDES_FLAGGED:` numbers
 as `--flagged-slides`. Those slides answer `slide-flagged` and take no drawing;

@@ -245,7 +245,11 @@ def decided_fields_at_risk(
     # A sort's envelope arrives with two fixed values (answer kind `exact`,
     # content null). While that envelope is still untouched it is scaffold,
     # not decided work, so a corrected request that drops the sort may rebuild.
-    pristine = (task_structure_scaffold("sort"), answer_scaffold("sort"))
+    pristine = tuple(
+        envelope
+        for kind in sorted(REQUEST_TASK_STRUCTURES)
+        for envelope in (task_structure_scaffold(kind), answer_scaffold(kind))
+    )
 
     for path in placeholders:
         found, value = resolve_path(existing, path)
@@ -312,6 +316,21 @@ def answer_scaffold(task_structure: str | None = None) -> dict[str, Any]:
             "acceptanceCondition": PLACEHOLDER,
             "delivery": PLACEHOLDER,
         }
+    if task_structure == "match":
+        # A match's key is its pairs, every left item joined once, held the
+        # way a sort holds its placements.
+        return {
+            "kind": "exact",
+            "content": None,
+            "structure": {
+                "kind": "match",
+                "pairs": [PLACEHOLDER],
+            },
+            "acceptanceCondition": PLACEHOLDER,
+            "delivery": PLACEHOLDER,
+        }
+    # A table's model answer is written in `content`, so it keeps the plain
+    # envelope.
     return {
         "kind": PLACEHOLDER,
         "content": PLACEHOLDER,
@@ -320,11 +339,12 @@ def answer_scaffold(task_structure: str | None = None) -> dict[str, Any]:
     }
 
 
-# The request may mark a teaching-sequence unit as a sort. Only a sort gets a
-# shaped envelope: its groups, items and structured answer are fixed keys the
-# validator checks, while every other task structure stays one whole-value
-# placeholder, because whether it exists at all is the designer's decision.
-REQUEST_TASK_STRUCTURES = {"sort"}
+# The request may mark a teaching-sequence unit as a sort, a table or a match.
+# Only those get a shaped envelope: their parts and any structured answer are
+# fixed keys the validator checks, while every other task structure stays one
+# whole-value placeholder, because whether it exists at all is the designer's
+# decision.
+REQUEST_TASK_STRUCTURES = {"sort", "table", "match"}
 
 
 def task_structure_scaffold(task_structure: str | None) -> Any:
@@ -335,7 +355,38 @@ def task_structure_scaffold(task_structure: str | None) -> Any:
             "items": [PLACEHOLDER],
             "handling": PLACEHOLDER,
         }
+    if task_structure == "table":
+        return {
+            "kind": "table",
+            "columns": [PLACEHOLDER],
+            "rows": [PLACEHOLDER],
+            "togetherRowRef": PLACEHOLDER,
+            "handling": PLACEHOLDER,
+        }
+    if task_structure == "match":
+        return {
+            "kind": "match",
+            "left": [PLACEHOLDER],
+            "right": [PLACEHOLDER],
+            "togetherPair": PLACEHOLDER,
+            "handling": PLACEHOLDER,
+        }
     return PLACEHOLDER
+
+
+def board_scaffold(kind: str) -> Any:
+    """The parts that let a Do's slide make sense on its own. Written on every
+    unit, so a new design carries the key: an envelope where the class works on
+    a task, null everywhere else (validate-lesson-design.py, BOARD_KINDS). A
+    record practise, apply or use-learning may set the whole value to null."""
+    if kind not in _validator.BOARD_KINDS:
+        return None
+    return {
+        "context": [PLACEHOLDER],
+        "goal": PLACEHOLDER,
+        "actions": [PLACEHOLDER],
+        "stems": [PLACEHOLDER],
+    }
 
 
 def notes_scaffold(kind: str | None = None) -> dict[str, Any]:
@@ -465,7 +516,11 @@ def source_unit(
         "unlocks": PLACEHOLDER,
         "thinking": PLACEHOLDER,
         "content": content_scaffold(kind),
-        "pupilInstruction": PLACEHOLDER,
+        # A Do always has a board, and its action cards set the task, so its
+        # pupilInstruction is null; on the other task kinds the designer
+        # decides whether a board or an instruction line sets it.
+        "pupilInstruction": None if kind == "do" else PLACEHOLDER,
+        "board": board_scaffold(kind),
         "taskStructure": task_structure_scaffold(task_structure),
         "modellingState": PLACEHOLDER,
         "representationRefs": [PLACEHOLDER],
@@ -1028,8 +1083,9 @@ def validate_request(raw: Any) -> dict[str, Any]:
             isinstance(item, dict),
             f"{path} must be an object",
         )
-        # `taskStructure` is optional: "sort" asks for a sort's envelope and
-        # its structured answer slot; absent or null keeps the placeholder.
+        # `taskStructure` is optional: "sort", "table" or "match" asks for
+        # that envelope and any structured answer slot; absent or null keeps
+        # the placeholder.
         exact_keys(
             item,
             {"kind", "conceptIndex"} | ({"taskStructure"} & set(item)),

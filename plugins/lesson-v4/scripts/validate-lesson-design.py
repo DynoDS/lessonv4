@@ -132,10 +132,14 @@ MAIN_ANSWER_SLIDE_KINDS = {
     "apply",
     "reflect",
 }
-TASK_STRUCTURE_KINDS = {"option-bank", "sort", "evidence-classification"}
+TASK_STRUCTURE_KINDS = {"option-bank", "sort", "evidence-classification", "table", "match"}
 TASK_GROUP_ID_RE = re.compile(r"^group-\d{3}$")
 TASK_FIELD_ID_RE = re.compile(r"^field-\d{3}$")
 TASK_ITEM_ID_RE = re.compile(r"^item-\d{3}$")
+TASK_COLUMN_ID_RE = re.compile(r"^col-\d{3}$")
+TASK_ROW_ID_RE = re.compile(r"^row-\d{3}$")
+TASK_LEFT_ID_RE = re.compile(r"^left-\d{3}$")
+TASK_RIGHT_ID_RE = re.compile(r"^right-\d{3}$")
 SC_TYPES = {"steps", "reference-table", "labelled-reference"}
 WORKSHEET_STATUSES = {"generated", "provided-by-teacher"}
 WORKSHEET_RESOURCE_MODES = {"per-child", "shared-frame"}
@@ -250,7 +254,23 @@ UNIT_FIELDS = {
 # `use` and still reads; it is asked for one only on a beat whose expected
 # answer the teaching just before it had mostly said already
 # (`validate_each_do_says_what_it_brings`).
-UNIT_OPTIONAL_FIELDS = {"taskStructure", "minutes", "levels", "use", "seesHappening", "doMode"}
+UNIT_OPTIONAL_FIELDS = {"taskStructure", "minutes", "levels", "use", "seesHappening", "doMode", "board"}
+
+# What a Do's slide says so that it makes sense on its own (Daniel, 5 November
+# 2026: good task ideas failed on a board that never said who the task was
+# about, what the class was doing and why, or what to do, because the design
+# had nowhere to write those parts and they ended up in the notes). `board` is
+# optional in the schema and compulsory in practice, like `minutes` and `use`:
+# the scaffold writes the key on every unit, an unresolved placeholder is
+# refused, and a saved design from before that day has no key and still reads.
+# Where the key is present it is an object on a Do and on a quick or deeper
+# practise or apply, may be an object on a record practise or apply and on a
+# use-learning, and is null on every other unit.
+BOARD_KINDS = {"do", "practise", "apply", "use-learning"}
+BOARD_FIELDS = {"context", "goal", "actions", "stems"}
+BOARD_CONTEXT_MAX = 3
+BOARD_ACTIONS_MAX = 4
+BOARD_STEMS_MAX = 3
 
 # What a beat that explains how something happens shows the class happening
 # (Daniel, 18 October 2026: children look at the picture first while the words
@@ -281,7 +301,7 @@ LEVEL_KINDS = {
 # Designer-owned scope, independent of delivery, duration and assessment purpose.
 # Optional for saved legacy designs; new scaffolded pupil work must resolve it.
 DO_MODE_KINDS = (LEVEL_KINDS - {"our-turn"}) | {"apply", "reflect", "teach-needed"}
-DO_MODES = {"quick", "deeper"}
+DO_MODES = {"quick", "deeper", "record"}
 
 
 def validate_do_mode(value: Any, path: str, kind: str, pupil_instruction: Any = None) -> None:
@@ -293,7 +313,7 @@ def validate_do_mode(value: Any, path: str, kind: str, pupil_instruction: Any = 
         if value is None:
             return
     expect(isinstance(value, str) and value in DO_MODES,
-           f"{path} must be quick or deeper: the lesson designer chooses the scope "
+           f"{path} must be quick, deeper or record: the lesson designer chooses the scope "
            "under preferences.md, Choose Do activities for the learning")
 
 
@@ -769,7 +789,10 @@ NAMED_PANELS = (
 ROOMIEST_PANEL = "the half-width side"
 PANEL_PAD, PANEL_LABEL_H = 0.15, 0.55      # success-criteria-panel.js
 STEPS_PAD, STEPS_PAD_LEFT = 0.15, 0.05     # steps.js
-BADGE_W, BADGE_MARGIN_MAX, BADGE_GAP = 0.55, 0.08, 0.10
+# A criteria card's number stands on its corner and takes no column; only the
+# first line of each step steps in to clear it (steps.js CORNER_D, CORNER_OUT
+# and CORNER_GAP, less the card's padding).
+CORNER_STEP_IN = 0.44 - 0.08 + 0.08 - 0.05
 CARD_PAD, CARD_GAP = 0.05, 0.07            # styles.js CARD_COMPACT
 FIT_PAD_W, FIT_PAD_H = 0.05, 0.03          # steps.js, the final fit's inset
 FLOOR_ROUNDING = 1e-6                      # steps.js
@@ -839,17 +862,19 @@ def shown_criterion(text: str) -> str:
     return "".join(shown)
 
 
-def wrapped_lines(text: str, width_in: float, pt: float) -> float:
+def wrapped_lines(text: str, width_in: float, pt: float, first_step_in: float = 0.0) -> float:
     """The lines a criterion wraps to, breaking only between words; a word wider
-    than the card cannot wrap at all."""
+    than the card cannot wrap at all. Its first line gives up `first_step_in`
+    at its start, for the number on the card's corner."""
     count = 0
-    for line in shown_criterion(text).split("\n"):
+    for segment, line in enumerate(shown_criterion(text).split("\n")):
         lines, current = 1, ""
         for word in (w for w in re.split(r"[ \t\r\f\v]+", line) if w):
             if line_width_in(word, pt) > width_in + 1e-6:
                 return math.inf
             candidate = f"{current} {word}" if current else word
-            if line_width_in(candidate, pt) <= width_in + 1e-6:
+            room = width_in - first_step_in if segment == 0 and lines == 1 else width_in
+            if not current or line_width_in(candidate, pt) <= room + 1e-6:
                 current = candidate
             else:
                 lines, current = lines + 1, word
@@ -868,15 +893,14 @@ def panel_fit(steps: list[str], panel_w: float, panel_h: float, floor_pt: int = 
 
     def at(height: float) -> tuple[list[float], list[float], float, float]:
         row_h = height / n
-        badge_w = min(BADGE_W, row_h - min(BADGE_MARGIN_MAX, row_h * 0.1) * 2)
-        gutter = badge_w + BADGE_GAP
+        gutter = 0.0
         card_w = min(inner_w, max(inner_w * 0.5, longest * (CARD_SIZE_PT * 0.52 / 72) + gutter))
         gap = min(CARD_GAP, row_h * 0.18)
         usable = max(0.1, max(0.3, card_w - gutter - 2 * CARD_PAD) - FIT_PAD_W)
         # A sticky line keeps 18pt beside a list drawn smaller, as the builder
         # keeps it; only the list's own steps take the lower floor.
         floors = [FLOOR_PT if step.lstrip().startswith("\u2728") else floor_pt for step in steps]
-        lines = [wrapped_lines(step, usable, pt) for step, pt in zip(steps, floors)]
+        lines = [wrapped_lines(step, usable, pt, CORNER_STEP_IN) for step, pt in zip(steps, floors)]
         needs = [count * (pt / 72) * LINE_HEIGHT + FIT_PAD_H + gap for count, pt in zip(lines, floors)]
         return lines, needs, gap, usable
 
@@ -1427,7 +1451,7 @@ def validate_levels(raw: Any, path: str, unit: dict[str, Any]) -> None:
         )
 
 
-def validate_sort_handling(raw: Any, path: str) -> None:
+def validate_sort_handling(raw: Any, path: str, what: str = "sort") -> None:
     """How a sort is done in the room, when it is not done on the board.
 
     Absent (or null) means the sort is shown on the board and children record
@@ -1445,12 +1469,20 @@ def validate_sort_handling(raw: Any, path: str) -> None:
     # copied onto paper: it is chosen for how it changes the way children do or
     # record the task (a tick table with the rule printed as the clue, numbers
     # written on a whole sheet, cards cut out only when the request asks for them).
+    if what == "sort":
+        expect(
+            raw is not None,
+            f"{path} is missing: a sort is always printed as well as shown on the board, so the "
+            "teacher can choose on the day. Give it `sheet` (one whole page, nothing to cut, the "
+            "default) or `cards` (only when the request asks for cards to cut out), who shares a set, and "
+            "the one-line preparation note.",
+        )
     expect(
         raw is not None,
-        f"{path} is missing: a sort is always printed as well as shown on the board, so the "
-        "teacher can choose on the day. Give it `sheet` (one whole page, nothing to cut, the "
-        "default) or `cards` (only when the request asks for cards to cut out), who shares a set, and "
-        "the one-line preparation note.",
+        f"{path} is missing: a {what} is printed as well as shown on the board, so the teacher "
+        "who does not print and the one who does run the same task. Give it `sheet` (one whole "
+        "page, the default), who shares it, and the one-line preparation note, in the sort's "
+        "`handling` shape.",
     )
     handling = expect_dict(raw, path)
     expect_exact_keys(
@@ -1534,10 +1566,18 @@ def validate_task_structure(
             expect_string(item["label"], f"{item_path}.label")
         return structure
 
+    if kind == "table":
+        validate_table_structure(structure, path)
+        return structure
+
+    if kind == "match":
+        validate_match_structure(structure, path)
+        return structure
+
     if kind == "sort":
         expect_exact_keys(
             structure,
-            {"kind", "groups", "items", "handling"},
+            {"kind", "groups", "items", "handling", "togetherItemRef"},
             {"kind", "groups", "items"},
             path,
         )
@@ -1582,6 +1622,13 @@ def validate_task_structure(
                 # A sort handled as printed cards prints this picture on its
                 # card (the stick-in `card-set` carries its imagePath), so a
                 # picture card is allowed at tables as well as on the board.
+        together = structure.get("togetherItemRef")
+        if together is not None:
+            expect(
+                isinstance(together, str) and together in item_ids,
+                f"{path}.togetherItemRef must be null or the id of one of this sort's items: "
+                "the card placed with the class on the board",
+            )
         return structure
 
     expect_exact_keys(
@@ -1623,6 +1670,153 @@ def validate_task_structure(
     return structure
 
 
+def validate_table_structure(structure: dict[str, Any], path: str) -> None:
+    """A table children fill in: columns, rows of cells, and the row done
+    together. Every cell is the exact words the child reads, or null where the
+    child writes; a column with `choices` is answered by circling one. The
+    material is the whole task, so what children compare or reason from sits in
+    the filled cells (`preferences.md` -> `A Do slide makes sense on its own`),
+    and a printed sheet copies it rather than inventing its own."""
+    fields = {"kind", "columns", "rows", "togetherRowRef", "handling"}
+    expect_exact_keys(structure, fields, fields, path)
+    validate_sort_handling(structure.get("handling"), f"{path}.handling", what="table")
+    columns = expect_list(structure["columns"], f"{path}.columns")
+    expect(2 <= len(columns) <= 6, f"{path}.columns must contain 2 to 6 columns")
+    column_ids: set[str] = set()
+    choices_by_column: list[list[str] | None] = []
+    for index, raw_column in enumerate(columns):
+        column_path = f"{path}.columns[{index}]"
+        column = expect_dict(raw_column, column_path)
+        expect_exact_keys(column, {"id", "label", "choices"}, {"id", "label", "choices"}, column_path)
+        column_id = expect_string(column["id"], f"{column_path}.id")
+        expect(TASK_COLUMN_ID_RE.fullmatch(column_id) is not None, f"{column_path}.id must match col-###")
+        expect(column_id not in column_ids, f"{path}.columns contains duplicate id: {column_id}")
+        column_ids.add(column_id)
+        expect_string(column["label"], f"{column_path}.label")
+        choices = column["choices"]
+        if choices is None:
+            choices_by_column.append(None)
+            continue
+        choices = expect_list(choices, f"{column_path}.choices")
+        expect(
+            2 <= len(choices) <= 4,
+            f"{column_path}.choices must be null or 2 to 4 short words to circle (`same`, "
+            "`different`; `true`, `false`)",
+        )
+        for choice_index, choice in enumerate(choices):
+            expect_string(choice, f"{column_path}.choices[{choice_index}]")
+        expect(len(set(choices)) == len(choices), f"{column_path}.choices contains a duplicate")
+        choices_by_column.append(list(choices))
+
+    rows = expect_list(structure["rows"], f"{path}.rows")
+    expect(1 <= len(rows) <= 10, f"{path}.rows must contain 1 to 10 rows")
+    row_ids: set[str] = set()
+    full_rows: set[str] = set()
+    open_rows: set[str] = set()
+    for index, raw_row in enumerate(rows):
+        row_path = f"{path}.rows[{index}]"
+        row = expect_dict(raw_row, row_path)
+        expect_exact_keys(row, {"id", "cells"}, {"id", "cells"}, row_path)
+        row_id = expect_string(row["id"], f"{row_path}.id")
+        expect(TASK_ROW_ID_RE.fullmatch(row_id) is not None, f"{row_path}.id must match row-###")
+        expect(row_id not in row_ids, f"{path}.rows contains duplicate id: {row_id}")
+        row_ids.add(row_id)
+        cells = expect_list(row["cells"], f"{row_path}.cells")
+        expect(
+            len(cells) == len(columns),
+            f"{row_path}.cells must hold one cell per column, in column order: {len(columns)} "
+            f"columns, {len(cells)} cells",
+        )
+        for cell_index, cell in enumerate(cells):
+            cell_path = f"{row_path}.cells[{cell_index}]"
+            if cell is None:
+                continue
+            expect_string(cell, cell_path)
+            choices = choices_by_column[cell_index]
+            if choices is not None:
+                expect(
+                    cell in choices,
+                    f"{cell_path} is `{cell}`, but its column is answered by circling one of "
+                    f"{', '.join(choices)}; a filled cell there is one of those words",
+                )
+        (open_rows if any(cell is None for cell in cells) else full_rows).add(row_id)
+
+    together = structure["togetherRowRef"]
+    if together is not None:
+        expect(
+            isinstance(together, str) and together in row_ids,
+            f"{path}.togetherRowRef must be null or the id of one of this table's rows",
+        )
+        expect(
+            together in full_rows,
+            f"{path}.togetherRowRef names {together}, which has an empty cell: the row done "
+            "with the class is shown filled in on the board, so every one of its cells is written",
+        )
+    expect(
+        bool(open_rows - {together}),
+        f"{path}.rows leaves nothing for children to fill: at least one row other than the "
+        "one done together needs a null cell, where the child writes or circles",
+    )
+
+
+def validate_match_structure(structure: dict[str, Any], path: str) -> None:
+    """Two columns children join with lines. Labels are the exact words the
+    child reads; `togetherPair` is the line drawn with the class first."""
+    fields = {"kind", "left", "right", "togetherPair", "handling"}
+    expect_exact_keys(structure, fields, fields, path)
+    validate_sort_handling(structure.get("handling"), f"{path}.handling", what="match")
+    for side, pattern in (("left", TASK_LEFT_ID_RE), ("right", TASK_RIGHT_ID_RE)):
+        entries = expect_list(structure[side], f"{path}.{side}")
+        expect(2 <= len(entries) <= 8, f"{path}.{side} must contain 2 to 8 items")
+        seen: set[str] = set()
+        for index, raw_entry in enumerate(entries):
+            entry_path = f"{path}.{side}[{index}]"
+            entry = expect_dict(raw_entry, entry_path)
+            expect_exact_keys(entry, {"id", "label"}, {"id", "label"}, entry_path)
+            entry_id = expect_string(entry["id"], f"{entry_path}.id")
+            expect(pattern.fullmatch(entry_id) is not None, f"{entry_path}.id must match {side}-###")
+            expect(entry_id not in seen, f"{path}.{side} contains duplicate id: {entry_id}")
+            seen.add(entry_id)
+            expect_string(entry["label"], f"{entry_path}.label")
+    pair = structure["togetherPair"]
+    if pair is not None:
+        pair = expect_dict(pair, f"{path}.togetherPair")
+        expect_exact_keys(pair, {"leftRef", "rightRef"}, {"leftRef", "rightRef"}, f"{path}.togetherPair")
+        left_ids = {entry["id"] for entry in structure["left"]}
+        right_ids = {entry["id"] for entry in structure["right"]}
+        expect(pair["leftRef"] in left_ids, f"{path}.togetherPair.leftRef points to unknown left item: {pair['leftRef']}")
+        expect(pair["rightRef"] in right_ids, f"{path}.togetherPair.rightRef points to unknown right item: {pair['rightRef']}")
+
+
+def validate_match_answer(structure: dict[str, Any], path: str, task_structure: dict[str, Any]) -> None:
+    """A match's key: every left item joined exactly once. A right item may
+    take several, the way a sort heading takes several cards."""
+    expect_exact_keys(structure, {"kind", "pairs"}, {"kind", "pairs"}, path)
+    left_ids = {entry["id"] for entry in task_structure["left"]}
+    right_ids = {entry["id"] for entry in task_structure["right"]}
+    pairs = expect_list(structure["pairs"], f"{path}.pairs")
+    joined: dict[str, str] = {}
+    for index, raw_pair in enumerate(pairs):
+        pair_path = f"{path}.pairs[{index}]"
+        pair = expect_dict(raw_pair, pair_path)
+        expect_exact_keys(pair, {"leftRef", "rightRef"}, {"leftRef", "rightRef"}, pair_path)
+        left_ref = expect_string(pair["leftRef"], f"{pair_path}.leftRef")
+        right_ref = expect_string(pair["rightRef"], f"{pair_path}.rightRef")
+        expect(left_ref in left_ids, f"{pair_path}.leftRef points to unknown left item: {left_ref}")
+        expect(right_ref in right_ids, f"{pair_path}.rightRef points to unknown right item: {right_ref}")
+        expect(left_ref not in joined, f"{path}.pairs joins {left_ref} twice: each left item is joined exactly once")
+        joined[left_ref] = right_ref
+    missing = left_ids - set(joined)
+    expect(not missing, f"{path}.pairs missing left items: {', '.join(sorted(missing))}")
+    together = task_structure.get("togetherPair")
+    if isinstance(together, dict):
+        expect(
+            joined.get(together.get("leftRef")) == together.get("rightRef"),
+            f"{path}.pairs does not join {together.get('leftRef')} to {together.get('rightRef')}, "
+            "but taskStructure.togetherPair shows the class that line as right",
+        )
+
+
 def validate_answer_structure(
     raw: Any,
     path: str,
@@ -1633,6 +1827,15 @@ def validate_answer_structure(
     structure = expect_dict(raw, path)
     kind = expect_string(structure.get("kind"), f"{path}.kind")
     expect(kind == task_structure["kind"], f"{path}.kind must match taskStructure.kind")
+
+    if kind == "table":
+        raise ContractError(
+            f"{path} is not allowed for taskStructure.kind table; "
+            "a table's model answer is written in answer.content"
+        )
+    if kind == "match":
+        validate_match_answer(structure, path, task_structure)
+        return
 
     item_ids = {item["id"] for item in task_structure["items"]}
     if kind == "option-bank":
@@ -1752,7 +1955,14 @@ def validate_answer(
                     f"{path}.structure is not allowed when taskStructure.kind is option-bank; "
                     "use answer.content"
                 )
-            if task_structure["kind"] == "sort":
+            if task_structure["kind"] == "table":
+                raise ContractError(
+                    f"{path}.structure is not allowed when taskStructure.kind is table; "
+                    "write the model answer in answer.content"
+                )
+            if task_structure["kind"] == "match":
+                expect(kind == "exact", f"{path}.structure for match is allowed only when kind is exact")
+            elif task_structure["kind"] == "sort":
                 expect(kind == "exact", f"{path}.structure for sort is allowed only when kind is exact")
                 # A sort's placements are one key, and a card can honestly
                 # belong in two groups (`knowing when bread is baked just
@@ -2095,7 +2305,7 @@ def validate_recording_is_the_teachers_choice(root: dict[str, Any]) -> None:
     for path, unit in units:
         if not isinstance(unit, dict):
             continue
-        for field in ("content", "pupilInstruction", "taskStructure"):
+        for field in ("content", "pupilInstruction", "taskStructure", "board"):
             seen += [(p, t, True) for p, t in _strings_with_paths(unit.get(field), f"{path}.{field}")]
         seen += [(p, t, False) for p, t in _strings_with_paths(unit.get("speakerNotes"), f"{path}.speakerNotes")]
     for path, text, on_board in seen:
@@ -2162,7 +2372,13 @@ def validate_teach_says_it_once(sequence: list[dict[str, Any]], sticky_by_id: di
                 # same question of the next thing is how a class is walked to
                 # the point (`Where does the rabbit get its food?`, then `Where
                 # does the grass get its food?`; the teacher, 14 October 2026).
-                if text_a.rstrip().endswith("?") and text_b.rstrip().endswith("?"):
+                # Nor is a question and the line that answers it: the route
+                # asks `Why would that make a farmer want to leave?` and the
+                # next line says why, in many of the same words. A question
+                # headline answered by its own board is still the sentence
+                # landed twice.
+                if any(name == "explanation" and text.rstrip().endswith("?")
+                       for name, text in ((name_a, text_a), (name_b, text_b))):
                     continue
                 expect(
                     not _says_the_same(text_a, text_b),
@@ -2291,6 +2507,7 @@ def _unit_board_words(unit: dict[str, Any]) -> str:
     walk(unit.get("content"))
     walk(unit.get("pupilInstruction"))
     walk(unit.get("taskStructure"))
+    walk(unit.get("board"))
     return " ".join(parts).lower()
 
 
@@ -3047,6 +3264,78 @@ def validate_launch_uses_the_taught_words(
     )
 
 
+def board_is_required(kind: str, do_mode: Any) -> bool:
+    """Whether this unit's board must be written, once the design carries the
+    key: a Do always, and a practise or apply that is a quick or deeper task.
+    A record practise may be a written piece whose launch already sets it."""
+    return kind == "do" or (kind in {"practise", "apply"} and do_mode in {"quick", "deeper"})
+
+
+def validate_board(unit: dict[str, Any], path: str, kind: str) -> dict[str, Any] | None:
+    """What a Do's slide carries so it makes sense on its own: the case, what
+    the class is going to do and why, the task as cards, and a stem when the
+    answer needs one (`preferences.md` -> `A Do slide makes sense on its own`).
+    The question that carries the thinking stays `content.task`. Every string
+    is exact child-facing wording, rendered once and never paraphrased."""
+    if "board" not in unit:
+        return None
+    raw = unit["board"]
+    board_path = f"{path}.board"
+    if kind not in BOARD_KINDS:
+        expect(
+            raw is None,
+            f"{board_path} must be null on a {kind}: a board is written for a unit where the "
+            "class works on a task (a do, practise, apply or use-learning)",
+        )
+        return None
+    if raw is None:
+        expect(
+            not board_is_required(kind, unit.get("doMode")),
+            f"{board_path} is null, but this {kind} is a task the class works on, so its slide "
+            "has to make sense on its own: write `context` (who or what it is about), `goal` "
+            "(what the class is going to do and why), `actions` (the task as short cards) and "
+            "`stems` (output-template.md -> board)",
+        )
+        return None
+    board = expect_dict(raw, board_path)
+    expect_exact_keys(board, BOARD_FIELDS, BOARD_FIELDS, board_path)
+    context = expect_list(board["context"], f"{board_path}.context")
+    expect(
+        len(context) <= BOARD_CONTEXT_MAX,
+        f"{board_path}.context must hold at most {BOARD_CONTEXT_MAX} short sentences: enough for "
+        "the slide to stand alone, or [] for a quick check whose context is the slide before",
+    )
+    for index, line in enumerate(context):
+        expect_string(line, f"{board_path}.context[{index}]")
+    expect_string(board["goal"], f"{board_path}.goal")
+    actions = expect_list(board["actions"], f"{board_path}.actions")
+    expect(
+        1 <= len(actions) <= BOARD_ACTIONS_MAX,
+        f"{board_path}.actions must hold 1 to {BOARD_ACTIONS_MAX} short cards, each one thing to do",
+    )
+    task = (unit.get("content") or {}).get("task") if isinstance(unit.get("content"), dict) else None
+    for index, line in enumerate(actions):
+        line = expect_string(line, f"{board_path}.actions[{index}]")
+        expect(
+            not (isinstance(task, str) and " ".join(line.split()) == " ".join(task.split())),
+            f"{board_path}.actions[{index}] repeats content.task: the question is the one line "
+            "the board picks out, so the action cards say what to do around it",
+        )
+    stems = expect_list(board["stems"], f"{board_path}.stems")
+    expect(
+        len(stems) <= BOARD_STEMS_MAX,
+        f"{board_path}.stems must hold at most {BOARD_STEMS_MAX} stems written for this task, or []",
+    )
+    for index, line in enumerate(stems):
+        expect_string(line, f"{board_path}.stems[{index}]")
+    expect(
+        unit["pupilInstruction"] is None,
+        f"{path}.pupilInstruction must be null when board is present: board.actions are the "
+        "words that set the task, so a second instruction line would say it twice",
+    )
+    return board
+
+
 def validate_source_unit(
     raw: Any,
     path: str,
@@ -3119,6 +3408,8 @@ def validate_source_unit(
             f"{path}.thinking must name the thought every child has to have during this beat; null is only for a beat where the teacher acts and children watch (a My Turn, a stimulus, the setting of a task), and {kind} is not one. On a Teach it is what the class works out while you teach, usually what the key question makes them look for on the board",
         )
     expect_nullable_string(unit["pupilInstruction"], f"{path}.pupilInstruction")
+    board = validate_board(unit, path, kind)
+    board_actions = bool(board and board["actions"])
     modelling = unit["modellingState"]
     if modelling is not None:
         modelling = expect_string(modelling, f"{path}.modellingState")
@@ -3206,7 +3497,7 @@ def validate_source_unit(
         f"{path}.taskStructure",
         unit_photo_refs=set(photo_refs),
     )
-    if task_structure is not None:
+    if task_structure is not None and not board_actions:
         expect(
             unit["pupilInstruction"] is not None,
             f"{path}.pupilInstruction must be non-null when taskStructure is present",
@@ -3219,7 +3510,7 @@ def validate_source_unit(
     # taskStructure and a written task does not. The quick beat is untouched:
     # a question answered on whiteboards hands nothing out (`do-beats.md`,
     # Setting the task).
-    if kind in {"do", "practise"} and unit["pupilInstruction"] is None:
+    if kind in {"do", "practise"} and unit["pupilInstruction"] is None and not board_actions:
         # Both pupil-facing interactions count. The first lesson built after this
         # rule shipped handed every child a printed chain strip to write the
         # missing steps into, recorded it as `pupil-writes-on`, and set no task
@@ -4240,6 +4531,9 @@ def write_on_evidence(unit: dict[str, Any]) -> str | None:
         if handling.get("kind") == "sheet":
             return "its sort is printed as a whole sheet for the tables"
         return "its sort is done with printed cards, which is a card kit"
+    task = unit.get("taskStructure")
+    if isinstance(task, dict) and task.get("kind") in {"table", "match"} and isinstance(task.get("handling"), dict):
+        return f"its {task['kind']} is printed for the tables, copied from the board"
     return None
 
 
@@ -5148,7 +5442,7 @@ def validate_made_pictures_are_not_passed_off(root: dict[str, Any], photo_items:
         )
 
     def spoken_to_children(node: dict[str, Any]) -> list[str]:
-        parts: list[Any] = [node.get("content"), node.get("pupilInstruction")]
+        parts: list[Any] = [node.get("content"), node.get("pupilInstruction"), node.get("board")]
         notes = node.get("speakerNotes")
         if isinstance(notes, dict) and isinstance(notes.get("script"), str):
             parts.append(notes["script"].split("Teacher information:", 1)[0])

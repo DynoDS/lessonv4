@@ -71,6 +71,24 @@ def allowance_was_spent(entry: dict) -> bool:
     return False
 
 
+# Reasons that say the picture tool itself had no usage to give, as opposed to a
+# search or a picture that ran and failed: no picture maker on this host, or
+# the maker said its usage limit was reached.
+USAGE_REASONS = {"imagegen_capability_unavailable", "imagegen_usage_spent"}
+
+
+def ran_out_of_usage(entry: dict, reason) -> bool:
+    """Was this picture lost because the picture tool's usage ran out?
+
+    The teacher's ruling, 6 November 2026: a slide keeps a labelled grey box
+    for a picture only when it could not be got for want of usage ("if I
+    don't" have usage), so it can be added once the usage is back. A search
+    that ran properly and found nothing is not this, and keeps the reconcile
+    it always had.
+    """
+    return reason in USAGE_REASONS or allowance_was_spent(entry)
+
+
 def read_json(path: Path, label: str):
     try:
         return json.loads(path.read_text(encoding="utf-8"))
@@ -407,6 +425,7 @@ def assignment_command(args) -> int:
     lost_essential: list[str] = []
     stand_ins = happening_stand_ins(working)
     lost_to_allowance: list[str] = []
+    awaiting_usage: list[str] = []
     live = live_filenames(working, assignment)
     for row in rows:
         filename = row["filename"]; entry = compiled[filename]; canonical = (working / PurePosixPath(filename)).resolve()
@@ -443,6 +462,8 @@ def assignment_command(args) -> int:
                         f"PICTURE_HAPPENING_STAND_IN: {filename} - already finalised without a picture; "
                         f"the slide shows {stand_ins[filename][0]} instead, as reported on the first pass."
                     )
+                elif old.get("terminalState") in {"unsatisfied", "omitted"} and old.get("awaitingUsage") is True:
+                    awaiting_usage.append(filename)
                 elif old.get("terminalState") in {"unsatisfied", "omitted"} and entry.get("essential"):
                     lost_essential.append(filename)
                 continue
@@ -485,6 +506,11 @@ def assignment_command(args) -> int:
                     "detail will not survive enlargement; a scene reads, a document may not"
                 )
         receipt = expected_receipt(args, assignment, row, terminal_state, provenance, canonical if terminal_state == "published" else None, canonical_hash, publication, reason)
+        awaited = terminal_state in {"unsatisfied", "omitted"} and ran_out_of_usage(entry, reason)
+        if awaited:
+            # Read by run-fixed-resource.py, which hands the slide build these
+            # filenames to draw as labelled grey boxes rather than refuse.
+            receipt["awaitingUsage"] = True
         atomic_json(existing, receipt)
         if source_path is None:
             summary["releasedFilenames"].append(filename)
@@ -527,7 +553,10 @@ def assignment_command(args) -> int:
             entry_summary["allowanceSpent"] = True
             lost_to_allowance.append(filename)
         summary["entries"].append(entry_summary)
-        if terminal_state in {"unsatisfied", "omitted"} and filename in stand_ins:
+        if awaited:
+            entry_summary["awaitingUsage"] = True
+            awaiting_usage.append(filename)
+        elif terminal_state in {"unsatisfied", "omitted"} and filename in stand_ins:
             plain, seen = stand_ins[filename]
             entry_summary["happeningStandIn"] = plain
             print(
@@ -568,6 +597,20 @@ def assignment_command(args) -> int:
             "nothing from what they return until the revised design is "
             "reviewed, then catch each resource up as "
             "references/records-after-a-revision.md sets out."
+        )
+    if awaiting_usage:
+        summary["awaitingUsage"] = awaiting_usage
+        print(
+            "PICTURE_AWAITING_USAGE: " + ", ".join(awaiting_usage) + " - the picture "
+            "tool's usage ran out before these could be got. On the slides this is "
+            "neither a reconcile nor the content-gap wave: leave every slide reference "
+            "to these exactly as it is, and the slide build draws each as a grey box "
+            "saying what picture goes there and lists them in pictures-to-add.md for "
+            "adding once the usage is back. A worksheet, the wall and the stick-in "
+            "sheets reconcile them as they reconcile any picture that never came, "
+            "because a grey box on paper is no use to a child. Say in the run "
+            "report's picture results how many grey boxes the deck has and where the "
+            "list is."
         )
     if lost_to_allowance:
         # Not waited for and not retried: on 30 September 2026 a run sat out an

@@ -85,13 +85,18 @@ function drawSuccessCriteriaHelper(slide, name, box, ctx) {
     h = box.h;
     w = h * entry.aspect;
   }
-  slide.addImage({
+  // A picture tucked into a card's corner sits tight in that corner of its
+  // box; any other is centred in it.
+  const corner = box.align === 'top-right';
+  const image = {
     data: 'image/png;base64,' + entry.png.toString('base64'),
-    x: box.x + (box.w - w) / 2,
-    y: box.y + (box.h - h) / 2,
+    x: corner ? box.x + box.w - w : box.x + (box.w - w) / 2,
+    y: corner ? box.y : box.y + (box.h - h) / 2,
     w,
     h
-  });
+  };
+  if (box.objectName) image.objectName = box.objectName;
+  slide.addImage(image);
   return true;
 }
 

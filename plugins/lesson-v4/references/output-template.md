@@ -93,7 +93,7 @@ The section plus ordinal is the stable identity for the current authored structu
 
 `minutes` is how long this beat really takes with a class. Every source unit carries one, and the validator adds them up: the beats may take 40 minutes between them, and the rest of the 45 is books out, the date and objective, and moving children to tables and back. A lesson over the budget is refused rather than trimmed a minute at a time, because the beats were honest and it is the lesson that is too big (`lesson-designer.md`, writing each beat's `minutes`).
 
-`doMode` is `quick` or `deeper`, chosen by the Lesson Designer under `preferences.md` → `Choose Do activities for the learning`. It is independent of `minutes`, `levels` and `use`: those record time, delivery and purpose. The scaffold requires this choice on pupil-work units (`do`, `your-turn`, `practise`, `explore`, `make-sense`, `use-learning`, `talk`, `stimulus-talk`, `do-task`, `apply`, `reflect`). A task-centred `teach-needed` also carries it for its immediate-use `pupilInstruction`, with the badge only on that action, not the enabling explanation. On that kind alone, use `null` when `pupilInstruction` is null because the following task supplies the immediate use; do not invent an extra activity to fill the field. Other teacher input, teacher modelling, Our Turn and the starter carry none. The builder maps `quick` to the lightning badge and `deeper` to the existing book/sheet badge on the working slide. The source choice overrides a conflicting slide badge. Saved designs without this field retain their legacy badge mapping; do not omit it in a new design or infer it from printing or a minute threshold.
+`doMode` is `quick`, `deeper` or `record`, chosen by the Lesson Designer under `preferences.md` → `Choose Do activities for the learning`. `record` is only the lesson's final written piece, the modelled explanation or comparison the class writes at the end, and it draws the flag on every slide of that task, from its scene to the writing. It is independent of `minutes`, `levels` and `use`: those record time, delivery and purpose. The scaffold requires this choice on pupil-work units (`do`, `your-turn`, `practise`, `explore`, `make-sense`, `use-learning`, `talk`, `stimulus-talk`, `do-task`, `apply`, `reflect`). A task-centred `teach-needed` also carries it for its immediate-use `pupilInstruction`, with the badge only on that action, not the enabling explanation. On that kind alone, use `null` when `pupilInstruction` is null because the following task supplies the immediate use; do not invent an extra activity to fill the field. Other teacher input, teacher modelling, Our Turn and the starter carry none. The builder maps `quick` to the lightning badge and `deeper` to the existing book/sheet badge on the working slide. The source choice overrides a conflicting slide badge. Saved designs without this field retain their legacy badge mapping; do not omit it in a new design or infer it from printing or a minute threshold.
 
 `levels` is how a beat where children do something can be run: the board always, a printed sheet, and real things for a prepared day (`preferences.md` → `A hands-on task has a board version`). The scaffold writes it on every such beat (`do`, `our-turn`, `your-turn`, `practise`, `explore`, `make-sense`, `use-learning`, `talk`, `stimulus-talk`, `do-task`). The closing `apply` or `reflect` is the one beat where children do something that carries no `levels`: it is answered from the board or in books, the scaffold leaves the field off it, and the validator refuses a printed sheet or real things written there, so a closing task that needs a printed page is a `practise` in the sequence with the worksheet as its page:
 
@@ -435,6 +435,7 @@ The starter, every teaching-sequence beat and an included Apply/Reflect use exac
   "thinking": "Which of these coins make up the pounds, and which are left as pence?",
   "content": {},
   "pupilInstruction": null,
+  "board": null,
   "taskStructure": null,
   "modellingState": "Live-complete helper",
   "representationRefs": [],
@@ -481,9 +482,25 @@ Use `null` only for a beat where the teacher acts and children watch or listen: 
 
 `see` is what the class watches happen, in a sentence. Exactly one of `photoRef` (one of this beat's `photoRefs`) or `representationRef` (`{"ref", "configuration"}`, one of this beat's `representationRefs`) names the picture that shows it, and no earlier beat may already use that picture (a representation counts as used in any configuration). A named photo request begins its `pedagogical_constraint` with `Shows it happening:`. `standInPhotoRef` is `null` or another photo in the contract, a plain picture of the thing the lesson already holds: if the happening picture is never delivered, the slide shows the stand-in and the teacher is told. Only a photo takes a stand-in; a drawn helper always arrives.
 
-`pupilInstruction` is the exact short child-facing instruction when this unit needs one. Use `null` when no separate instruction is needed. A downstream designer may choose its physical slot but must render non-null wording exactly once and must not paraphrase it.
+`pupilInstruction` is the exact short child-facing instruction when this unit needs one. Use `null` when no separate instruction is needed. A downstream designer may choose its physical slot but must render non-null wording exactly once and must not paraphrase it. On a unit with a `board` it is `null`, because the board's action cards set the task and a second line would say it twice.
 
-`taskStructure` is `null` for an ordinary prompt. Use it when an option bank, sort or photograph-based evidence classification contains parts that must remain separate on the board. It stores pedagogical parts and their identity links, not slide layout. The Slide Designer still chooses the template, zones, card treatment and number of physical slides.
+`board` holds what a task's slide says so that it makes sense on its own, to the cover teacher who has only that slide and the child who drifted during the teaching (`preferences.md` → Slide Philosophy, `A Do slide makes sense on its own`). It is an object on every `do`, and on a `practise` or `apply` whose `doMode` is `quick` or `deeper`; it may be an object or `null` on a `record` practise or apply and on a `use-learning`; it is `null` on every other unit. The scaffold writes the key; a saved design without it still validates.
+
+```json
+"board": {
+  "context": [
+    "Sam wants to find out if a sound is quieter further away.",
+    "He plays a recording on his phone and measures how loud it is with a sound meter, 2 m away and then 4 m away."
+  ],
+  "goal": "We are going to check Sam's plan.",
+  "actions": ["Look at what Sam changes each time.", "Say what Sam should keep the same."],
+  "stems": ["Sam's test is not fair because..."]
+}
+```
+
+`context` is 1 to 3 short sentences saying who or what the task is about and how, or `[]` for a quick check straight after its teaching, where the slide before is the context. `goal` is one line saying what the class is going to do and why. `actions` is 1 to 4 short cards, each one thing to do; the question that carries the thinking stays in `content.task`, which the board picks out, so it is not repeated as an action. `stems` is 0 to 3 stems written for this task (never a frame that would fit any task). Every string is exact child-facing wording: the voice editor reads it, the review surface shows it, and the slide designer renders each part once without paraphrase. The board says how a task is presented, not how hard it is, so a clear board is never evidence that a book task is strong.
+
+`taskStructure` is `null` for an ordinary prompt. Use it when an option bank, sort, photograph-based evidence classification, table or match contains parts that must remain separate on the board. It stores pedagogical parts and their identity links, not slide layout. The Slide Designer still chooses the template, zones, card treatment and number of physical slides.
 
 For a discrete option bank, use this exact shape:
 
@@ -547,7 +564,7 @@ For a photograph-based evidence classification, use this exact shape:
 
 Each field `id` is local to the source unit and uses `field-###`. Each item `id` is local to the source unit and uses `item-###`. Every `photoRef` is required and already appears in the source unit's `photoRefs`. The item keeps the photograph's identity stable from the task to the answer. Do not put the object name in the task item when naming the object is part of the pupil task.
 
-Keep `pupilInstruction` short and non-null when `taskStructure` is present. It names only the action. Do not repeat group labels, item labels or item details inside `pupilInstruction` or `content.task`. On any beat, the task line says the job and leaves out who a child does it with (`Mark up the rest of the text, using the key.`, without `Work with a partner.` in front): the teacher decides pairs on the day, so the script is where it is said, and a printed sheet that opens with it has spent its first line on something that is not the task (the teacher, 11 October 2026).
+Keep `pupilInstruction` short and non-null when `taskStructure` is present, unless the unit's `board.actions` set the task. It names only the action. Do not repeat group labels, item labels or item details inside `pupilInstruction` or `content.task`. On any beat, the task line says the job and leaves out who a child does it with (`Mark up the rest of the text, using the key.`, without `Work with a partner.` in front): the teacher decides pairs on the day, so the script is where it is said, and a printed sheet that opens with it has spent its first line on something that is not the task (the teacher, 11 October 2026).
 
 A sort is shown on the board and always printed as well, so the teacher chooses on the day: the class can record placements on whiteboards or in books from the slide, or work on the printed version at tables. The sort carries a `handling` block, and the stick-in track prints it with its teacher key:
 
@@ -557,7 +574,49 @@ A sort is shown on the board and always printed as well, so the teacher chooses 
 
 `kind` is `sheet` when every item prints on one uncut page for children to mark (a number box on each picture of an order, a box under each named heading for the items' letters, a table to tick for words in a few groups), or `cards` when children cut out and move the cards under heading cards; `per` is `child`, `pair` or `group`; `groupCount` is a positive integer only when `per` is `group` (the plugin never guesses the class), otherwise `null`; `where` is the teacher's one-line preparation note. Choose `sheet` unless moving the cards is the best way to do this task's thinking, which `where` then says in a few words, or the teacher's request asks for cards (`preferences.md` → `A hands-on task has a board version`). A printed kit carries each item's label, detail and picture, so a sort of pictures can go to the tables as well as a sort of words: a card whose item carries `photoRef` prints that picture above its label. A plain order (the story's pictures in the order they happened) is a sort whose groups are the places, `1st`, `2nd`, `3rd` and so on up to six, with one item placed under each. An order whose steps are joined by arrows that mean something (a food chain, a life cycle, a chain of causes) is not a sort: it is the process-chain representation in a configuration the child completes, used with `interaction: "pupil-writes-on"` and printed as `form: "figure"` (`do-beats.md` 11.2). The kit is part of the main activity: a run whose design carries `handling` cannot close `COMPLETE` without the printed pack.
 
-Each group `id` is local to the source unit and uses `group-###`. Each item `id` is local to the source unit and uses `item-###`. `label` and non-null `detail` are exact child-facing strings. `photoRef` is `null` or one ID already present in the source unit's `photoRefs`.
+Each group `id` is local to the source unit and uses `group-###`. Each item `id` is local to the source unit and uses `item-###`. `label` and non-null `detail` are exact child-facing strings. `photoRef` is `null` or one ID already present in the source unit's `photoRefs`. A sort may also carry `"togetherItemRef": "item-003"`, the card placed with the class on the board when the form is new to them, or `null`.
+
+For a table children fill in, such as a comparison where the first people's answers are down one column and children work out the second's, use this exact shape:
+
+```json
+{
+  "kind": "table",
+  "columns": [
+    { "id": "col-001", "label": "What they need", "choices": null },
+    { "id": "col-002", "label": "The Tikuna", "choices": null },
+    { "id": "col-003", "label": "How do the Yanomami get it?", "choices": null },
+    { "id": "col-004", "label": "Same or different?", "choices": ["same", "different"] }
+  ],
+  "rows": [
+    { "id": "row-001", "cells": ["water", "From the river.", "From the stream.", "different"] },
+    { "id": "row-002", "cells": ["food", "Lots of fish from the river.", null, null] }
+  ],
+  "togetherRowRef": "row-001",
+  "handling": { "kind": "sheet", "per": "pair", "groupCount": null, "where": "One sheet between two." }
+}
+```
+
+`columns` holds 2 to 6 and `rows` 1 to 10. Each row has one cell per column, in column order: an exact child-facing string, or `null` where the child writes. A column with `choices` (2 to 4 short words: `same` or `different`, `true` or `false`) is answered by circling one, and a filled cell in it is one of those words. What children compare or reason from is in the filled cells, because the material is the whole task and a printed sheet copies it. `togetherRowRef` is `null` or a row with every cell filled, on a case the teaching has not already worked: the board shows it first with only its given cells and then filled, as the row done with the class, looking exactly like the rows children fill (`preferences.md` → `A Do slide makes sense on its own`); at least one other row leaves a cell `null`. `handling` has the sort's shape and rules. A table's model answer is written in `answer.content`; it never supplies `answer.structure`.
+
+For two columns children join with lines, use this exact shape:
+
+```json
+{
+  "kind": "match",
+  "left": [
+    { "id": "left-001", "label": "Swept the rubbish out of the yard." },
+    { "id": "left-002", "label": "Boiled the water before drinking it." }
+  ],
+  "right": [
+    { "id": "right-001", "label": "Would try it" },
+    { "id": "right-002", "label": "Would not try it" }
+  ],
+  "togetherPair": null,
+  "handling": { "kind": "sheet", "per": "pair", "groupCount": null, "where": "One sheet between two." }
+}
+```
+
+`left` and `right` each hold 2 to 8 items, with ids `left-###` and `right-###` and exact child-facing labels. `togetherPair` is `null` or `{ "leftRef", "rightRef" }`, the line drawn with the class first, and it has to be one of the answer's pairs. `handling` has the sort's shape and rules.
 
 `modellingState` is one of the four existing canonical states when the unit models something, otherwise `null`:
 
@@ -661,6 +720,8 @@ For an exact answer to a structured sort, use:
 ```
 
 Every item appears exactly once. Each `itemRef` and `groupRef` resolves inside the same source unit's `taskStructure`. `answer.structure` is the sole answer source for this sort, so `answer.content` stays `null` and the same answer is not authored twice. `acceptanceCondition` may name a second placement the teacher accepts, with its reason (`Accept "knowing when bread is baked just right" under either heading: he learned it now and it earned his living later`), because a key with one column per card marks a child with a good reason wrong; it is teacher-facing and never prints for children.
+
+For an exact answer to a match, use `"structure": { "kind": "match", "pairs": [ { "leftRef": "left-001", "rightRef": "right-002" }, { "leftRef": "left-002", "rightRef": "right-001" } ] }` in the same envelope, with `kind` `exact` and `content` `null`. Every left item is joined exactly once; a right item may take several. The refs resolve inside the same unit's `taskStructure`, and `acceptanceCondition` may name a second partner the teacher accepts, with its reason.
 
 A structured answer does not change how `delivery` is chosen. The delivery rule above still decides it, and the structured answer reaches the speaker notes under every delivery. The example shows `answer-slide` because a starter earns a separate reveal; the same structured sort on a Do beat, an Our Turn or another smaller check uses `teacher-only` and stays in the notes. Never weaken a sort into prose, an option bank or a looser task shape because a beat cannot carry a separate answer slide.
 
@@ -1182,8 +1243,8 @@ Do not repeat:
 - success-criteria availability already expressed in `successCriteriaRefs`;
 - photo identity already expressed in `photoRefs`;
 - exact speaker notes already stored in `speakerNotes`;
-- exact pupil instructions already stored in `pupilInstruction`;
-- sort groups, items, item evidence and item photo identity already stored in `taskStructure`.
+- exact pupil instructions already stored in `pupilInstruction` or `board`;
+- sort groups, items, item evidence and item photo identity, and table and match material, already stored in `taskStructure`.
 
 Use `[]` when nothing exceptional remains.
 
@@ -1272,7 +1333,7 @@ A named person, place, event, primary source, historical source, field observati
 
 The initial Lesson Designer assigns `photo-001`, `photo-002`, and so on in order. Adaptation-owned pictures use `adaptation-photo-001`, `adaptation-photo-002`, and so on in that adaptation file. Keep count at or below 16. IDs and filenames are the image lifecycle identities. A filename is always one folder and a name (`unsplash/torch-beam.jpg`, `made/volcano-cutaway.png`), because every resource reads it in that form and the validator refuses a bare one. Give each distinct visual job its own object; reuse one object only when the same approved image remains truthful for every use. Truthful is not enough on its own: the test is whether the class is still looking at the same moment (`preferences.md` → "The picture is there whenever its thing is being talked about, and it changes when the talk moves on"). Reuse is right, and usual, while the talk stays on that one thing: a Teach split over several slides, a scene examined part by part, a picture brought back later so the class remembers it. A new attempt, outcome or feeling is a new moment and gets its own picture, even when the same object is in it: George stuck on a maths question and George the next time, saying "This is easy!" and getting it wrong, are two pictures, though a maths book is truthful for both. **Nothing crops a delivered picture.** The file arrives whole and every slide that names it shows all of it, so a picture drawn to cover several teaching moments - panels with gutters between them, a sheet of charts, a strip of examples - puts all of those moments on each of those slides. One place-value lesson asked for three panels holding the My Turn's two numerals, the Our Turn's two and the Your Turn's four; the My Turn then carried eight questions including ones the class had not reached, its answers were on the board before anyone had worked, and every chart rendered a quarter of the size it would have had alone. Splitting it into one object per moment costs the same number of images and each arrives at full size, so the validator refuses a contract that asks a downstream reader to crop, cut or separate a picture. A source-based image belongs here only when a built-in representation cannot do the job. Words a child has to read are printed by the slide or the sheet, not generated into the picture: generated lettering arrives small, cannot be edited, and is sometimes misspelt. So when the lesson will label or caption a picture itself (a `label-diagram`'s callouts, the lines beside it), ask for the picture plain, with a `text_rule` of no lettering, and let each word be printed once, by the surface. Asking for the words in the picture and for a copy on the slide as well prints every label twice: a Year 4 digestion schematic was contracted with a sentence under each organ and the same sentences as callouts, and its slide was a picture about four inches wide inside a page of repeated text. The exception is lettering that belongs to the thing shown (a shop sign, a map's own place names, a source document): that is the picture, so it stays, and nothing repeats it.
 
-The Image Scout sees one picture object and nothing else of the lesson, so three things it cannot guess go in the object. `must_avoid` and `text_rule` are read for a photograph that is searched for as well as for one that is generated, as what makes a candidate second choice, so write them as what would spoil the picture on the board ("another country's flag", "shop signs", "labels or a ruler on the rock"). When the picture stands for a child the lesson names, say so in `pedagogical_constraint` ("This is Abdi, the boy the lesson follows"), or the scout may return a picture that plainly is not that child. When the picture is one of a set children compare side by side, say that too ("One of five rocks shown in a row"), so the scout can look for pictures that match. And when the lesson is about the past and the picture shows how things were, ask in `subject` for a picture made at the time (a drawing, an engraving, a painting, an early photograph) and name a modern survivor only as second best: a street photographed today brings today's shop signs with it, and one sat beside the words "in the year 1666". None of these is a condition on delivery. The scout treats each as a preference and still returns the best picture there is.
+The Image Scout sees one picture object and nothing else of the lesson, so three things it cannot guess go in the object. `must_avoid` and `text_rule` are read for a photograph that is searched for as well as for one that is generated, as what makes a candidate second choice, so write them as what would spoil the picture on the board ("another country's flag", "shop signs", "labels or a ruler on the rock"). When the picture shows a person the lesson names, say who they are in `pedagogical_constraint`, and in `subject` say what the scout cannot guess from a name: boy or girl as the lesson's words have them, roughly how old, and what they are doing and feeling at this moment ("This is Abdi, the boy the lesson follows; here he is stuck, pencil down, looking fed up"). The scout reads nothing but this object, so `a child reading to the class` for a boy the slides call `he` can come back as a girl, and a child who feels rubbish can come back smiling; the class sees the clash at once. When the same person is in more than one picture, put those pictures in one `coherent_group` whose invariants describe the person (age, hair, clothes), so each is plainly the same child; for an invented child that group is `all-generated`, because no search finds one made-up child twice. When the picture is one of a set children compare side by side, say that too ("One of five rocks shown in a row"), so the scout can look for pictures that match. And when the lesson is about the past and the picture shows how things were, ask in `subject` for a picture made at the time (a drawing, an engraving, a painting, an early photograph) and name a modern survivor only as second best: a street photographed today brings today's shop signs with it, and one sat beside the words "in the year 1666". None of these is a condition on delivery. The scout treats each as a preference and still returns the best picture there is.
 
 A picture of a child is read by the image service's safety filter too, and the filter reads the words of the request, not what they are for. So describe a child's body and any touch only as the picture should show it, in calm everyday words (`one hand resting lightly on the front of the neck`, `relaxed and smiling`), and leave harm out of the request altogether. `a hand gripping or squeezing the throat` in `must_avoid` is still those words in the request: on 17 October 2026 it had a Year 4 picture of a child humming refused outright, which spent one of the picture's two generation calls. Where a wrong version needs ruling out, describe the right one more exactly in `physical_state` instead. This applies wherever a child's body or contact is in the picture (a hand on the throat or chest, a finger on a wrist, hands over ears); a picture of an object keeps its `must_avoid` as it is. Show a person's body clothed (a plain T-shirt) or as a simple plain mannequin shape, with any part the lesson needs drawn on top or shown as a cut-away. The filter judges the finished picture as well as the words: on 18 October 2026 two plain body outlines for a Year 4 digestion lesson asked for the rib line and belly button on a child's bare tummy, the pictures were made, and both were blocked as they came out, twice, leaving two slides with nothing. A picture of the organs on their own needs no figure and came through first time.
 

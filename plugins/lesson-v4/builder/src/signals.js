@@ -27,7 +27,11 @@ const SIGNALS = {
   // The vetted pair: lightning for quick pupil work, the book/sheet drawing
   // for deeper work. The source doMode supplies this choice.
   lightning: { file: 'lightning.png', aspect: 718 / 652 },
-  sheet:     { file: 'sheet.png',     aspect: 705 / 536 }
+  sheet:     { file: 'sheet.png',     aspect: 705 / 536 },
+  // The teacher's flag (6 November 2026): the lesson's final task, from the
+  // slide that sets its scene to the writing, so children see the teaching
+  // has finished and this is where they show what they learned.
+  flag:      { file: 'flag.png',      aspect: 695 / 720 }
 };
 
 function signalMeta(name) {
@@ -77,6 +81,6 @@ function drawSignalTopRight(slide, name, box, opts) {
 const TASK_SIGNALS = new Set(['pencil', 'talk', 'magnifier', 'tick']);
 
 // A Do beat's badge, named on the slide as `doSign` and drawn by the header.
-const DO_SIGNS = { quick: 'lightning', sheet: 'sheet' };
+const DO_SIGNS = { quick: 'lightning', sheet: 'sheet', final: 'flag' };
 
 module.exports = { drawSignal, drawSignalTopRight, signalWidth, TASK_SIGNALS, DO_SIGNS };

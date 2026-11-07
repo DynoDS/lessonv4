@@ -87,11 +87,12 @@ class TheGuideOffersMoreThanTheMisconceptionTests(unittest.TestCase):
         self.assertIn("Sameness across lessons is the failure, not silence", self.text)
         self.assertIn("stopped having a voice and started having a habit", self.text)
 
-    def test_placement_stays_open_rather_than_becoming_a_slot(self) -> None:
-        self.assertIn(
-            "can sit on the slide where children read it themselves, or in the script",
-            self.text,
-        )
+    def test_placement_follows_the_step_rather_than_a_slot(self) -> None:
+        # 6 Nov 2026: memorable lines were landing in the notes, where a
+        # teacher teaching from the board never finds them.
+        self.assertIn("Placement follows what the line does, not a slot", self.text)
+        self.assertIn("goes on the board inside the sentence that carries the step", self.text)
+        self.assertIn("needs the teacher's timing, or reacts to what the room has just said", self.text)
         self.assertIn("giving it one turns it into a slot to fill", self.text)
 
     def test_a_straight_lesson_is_not_a_faulty_lesson(self) -> None:

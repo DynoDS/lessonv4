@@ -137,6 +137,30 @@ def thread_id_from(events_path: str) -> str | None:
     return None
 
 
+# The words Codex answers with when the plan's usage is spent, as seen on
+# 4 November 2026: "You've hit your usage limit ... try again at ...".
+USAGE_SPENT_WORDS = ("usage limit", "hit your usage", "usage_limit")
+
+
+def usage_spent_in(*paths: str) -> bool:
+    """Did Codex refuse the call because the plan's usage is spent?
+
+    Told apart from a call that simply produced nothing, because the run
+    treats the two differently: a spent limit leaves a labelled grey box on
+    the slide to fill once the usage is back (the teacher, 6 November 2026),
+    while an empty call is retried or ends the picture as before.
+    """
+    for path in paths:
+        try:
+            with open(path, encoding="utf-8", errors="replace") as handle:
+                text = handle.read().lower()
+        except OSError:
+            continue
+        if any(words in text for words in USAGE_SPENT_WORDS):
+            return True
+    return False
+
+
 def new_images(folder: str, since: float) -> list[str]:
     found = []
     for root, _dirs, names in os.walk(folder):
@@ -206,6 +230,14 @@ def cmd_generate(args) -> int:
     if thread and os.path.isdir(os.path.join(images_root, thread)):
         files = new_images(os.path.join(images_root, thread), started)
     seconds = round(time.time() - started)
+    if not files and usage_spent_in(events_path, last_path):
+        return emit({
+            "ok": False, "usage_spent": True, "codex_exit": code, "seconds": seconds,
+            "thread_id": thread, "events": events_path, "run_dir": run_dir,
+            "error": ("Codex's usage limit is reached, so no picture can be made until it "
+                      "resets; report the entry imagegen_usage_spent "
+                      "(image-scout-generation.md)"),
+        }, 5)
     if len(files) != 1:
         # A call that returned nothing, or a session that made more than one
         # picture, is not something to guess at: report it and let the scout

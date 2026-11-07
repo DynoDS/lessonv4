@@ -161,7 +161,9 @@ Use only kinds allowed by the selected route. The scaffold rejects an out-of-ord
 
 Each generated source unit contains a `taskStructure` placeholder. Replace it with `null` for an ordinary prompt. Replace it with the complete `sort` or `evidence-classification` object from `output-template.md` when the settled task needs protected groups, items, fields or photograph-answer links.
 
-When a teaching-sequence unit is a sort, add `"taskStructure": "sort"` to its request entry (leave the key out otherwise). That unit then arrives with the sort's `groups`, `items` and `handling` to fill, and an answer already shaped as a sort key: `kind` `exact`, `content` `null` and a `structure` whose `placements` you fill, one per item.
+When a teaching-sequence unit is a sort, a table or a match, add `"taskStructure": "sort"`, `"table"` or `"match"` to its request entry (leave the key out otherwise). A sort arrives with its `groups`, `items` and `handling` to fill, and an answer already shaped as a sort key: `kind` `exact`, `content` `null` and a `structure` whose `placements` you fill, one per item. A match arrives the same way with `left`, `right`, `togetherPair` and `handling`, and a `structure` whose `pairs` you fill, one per left item. A table arrives with `columns`, `rows`, `togetherRowRef` and `handling`, and the plain answer envelope, because its model answer is written in `content`.
+
+Every unit also carries `board`. On a `do`, `practise`, `apply` or `use-learning` it arrives as `context`, `goal`, `actions` and `stems` to fill (`output-template.md` → `board`), and a `do` arrives with `pupilInstruction` already `null`, because its action cards set the task. A `record` practise, apply or use-learning may replace the whole board with `null` and set its task in `pupilInstruction` instead. On every other kind `board` arrives as `null` and stays so.
 
 ## Ending
 

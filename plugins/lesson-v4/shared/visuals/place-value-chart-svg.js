@@ -2645,6 +2645,61 @@ function onePerColumnCueSvg() {
   return { svg, aspect: w / h, w, h };
 }
 
+// The two small exchange cues draw what an exchange step's words mean, in the
+// marks the board's column method makes: a tens and a ones column, few parts,
+// digits large enough to read at the criteria card's small picture size.
+const CUE_FONT = "'Comic Sans MS', 'Comic Sans', 'Comic Neue', sans-serif";
+const CUE_MARK = COLOURS.ring;
+
+function cueColumns(w, top, h) {
+  const cellW = (w - 12) / 2;
+  return [COLUMN_COLOURS.T, COLUMN_COLOURS.O].map((col, i) => {
+    const x = 6 + i * cellW;
+    return { x, cx: x + cellW / 2, rect: `<rect x="${x}" y="${top}" width="${cellW}" height="${h}" fill="${col[1]}" stroke="${COLOURS.grid}" stroke-width="4"/>` };
+  });
+}
+
+function cueText(x, y, size, text, fill) {
+  return `<text x="${x}" y="${y}" text-anchor="middle" font-family="${CUE_FONT}" font-size="${size}" font-weight="bold" fill="${fill}">${text}</text>`;
+}
+
+function cueSvg(w, h, parts) {
+  const svg = `<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${parts.join('')}</svg>`;
+  return { svg, aspect: w / h, w, h };
+}
+
+// A column subtraction's exchange: the tens digit crossed out with one less
+// written above it, and a small 1 in front of the ones digit.
+function exchangeSubtractCueSvg() {
+  const w = 196;
+  const h = 160;
+  const [t, o] = cueColumns(w - 16, 50, 104);
+  return cueSvg(w, h, [
+    t.rect, o.rect,
+    cueText(t.cx, 46, 60, '2', CUE_MARK),
+    cueText(t.cx, 128, 84, '3', COLOURS.text),
+    `<line x1="${t.cx - 30}" y1="134" x2="${t.cx + 30}" y2="62" stroke="${CUE_MARK}" stroke-width="8" stroke-linecap="round"/>`,
+    cueText(o.cx - 22, 122, 58, '1', CUE_MARK),
+    cueText(o.cx + 14, 128, 84, '4', COLOURS.text)
+  ]);
+}
+
+// A column addition's exchange: the ones total written as its ones digit, and
+// the ten carried as a small 1 under the tens column.
+function exchangeAddCueSvg() {
+  const w = 180;
+  const h = 170;
+  const [t, o] = cueColumns(w, 6, 92);
+  const carry = cueColumns(w, 104, 60);
+  return cueSvg(w, h, [
+    t.rect, o.rect,
+    `<rect x="${carry[0].x}" y="104" width="${(w - 12) / 2}" height="60" fill="#FFFFFF" stroke="${COLOURS.grid}" stroke-width="3"/>`,
+    cueText(o.cx, 80, 80, '3', COLOURS.text),
+    `<line x1="6" y1="100" x2="${w - 6}" y2="100" stroke="${COLOURS.text}" stroke-width="7"/>`,
+    cueText(t.cx, 156, 64, '1', CUE_MARK)
+  ]);
+}
+
 module.exports = {
   tightSvg,
   cacheKey,
@@ -2654,6 +2709,8 @@ module.exports = {
   clearPairDrawnSmaller,
   minWidthPt,
   onePerColumnCueSvg,
+  exchangeSubtractCueSvg,
+  exchangeAddCueSvg,
   COLUMN_COLOURS,
   SAME_COLOURS,
   canonicalColumn,

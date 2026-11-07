@@ -2318,6 +2318,23 @@ const theWriting = () => wordSlide('Explain the buzzing ruler', [
   CRITERIA_PANEL
 ]);
 
+// A Do board over two slides: the jobs first, then the material, the question
+// and the criteria (PSHE 4, 6 November 2026, where criteria on both slides made
+// them look like one slide twice).
+const boardSetUp = (withQuestion) => wordSlide('Be friendship coaches', [
+  { type: 'text', value: 'We are going to be friendship coaches.' },
+  ...(withQuestion ? [{ type: 'text', value: 'How can they solve each challenge?', colorRole: 'focus-blue' }] : []),
+  { type: 'row', equaliseTextCards: true, items: [
+    { type: 'text', value: 'One of you is the coach.' },
+    { type: 'text', value: 'The coach asks each friend what they want.', signal: 'talk' }
+  ] }
+]);
+const boardMaterial = () => wordSlide('Coach Arjun and Maja', [
+  { type: 'text', value: 'Arjun wants a rocket. Maja wants a castle.' },
+  { type: 'text', value: 'How can they solve each challenge?', colorRole: 'focus-blue', signal: 'talk' },
+  CRITERIA_PANEL
+]);
+
 test('criteria that arrive after a task in words has started are refused', () => {
   const root = makeRoot();
   try {
@@ -2343,6 +2360,8 @@ test('criteria that arrive after a task in words has started are refused', () =>
       'marking before the criteria');
     refused([wordSlide('My Turn', [{ type: 'text', value: 'Watch me explain the bell.' }]), theWriting()],
       'a modelled turn before the criteria');
+    // A board set-up that already asks the question is where the work starts.
+    refused([boardSetUp(true), boardMaterial()], 'a Do board set-up that already asks the question');
 
     // Passing shapes: criteria from the talk on; criteria beside the model;
     // a long model that goes without, with the talk carrying them; the case
@@ -2352,7 +2371,8 @@ test('criteria that arrive after a task in words has started are refused', () =>
       [[theCase(), theModel(true), theTalk(true), theWriting()], 'criteria beside the model as well'],
       [[theCase(), wordSlide('Look closely', [{ type: 'text', value: 'Look at the ruler.', signal: 'magnifier' }]), theWriting()],
         'a look-closely slide before the work'],
-      [[theCase(), theModel(false), theTalk(false)], 'a unit that draws no criteria anywhere']
+      [[theCase(), theModel(false), theTalk(false)], 'a unit that draws no criteria anywhere'],
+      [[boardSetUp(false), boardMaterial()], 'a Do board set-up handing out jobs, then its material with criteria']
     ]) {
       assert.doesNotMatch(run(slides).stdout, /CRITERIA_AFTER_THE_WORK_STARTS/, why);
     }

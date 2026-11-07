@@ -208,7 +208,7 @@ function narrowerPanelWidth(data, ctx) {
   if (!data || !data.criteria || data.criteria.type !== 'steps') return null;
   try {
     const draw = (pptx, slide, zone) => drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx);
-    const w = snugCriteriaWidth(scPanelZone(SC_W), data, draw);
+    const w = snugCriteriaWidth(scPanelZone(SC_W), data, draw, { ctx });
     return w < SC_W ? w : null;
   } catch (err) {
     // Whatever refuses the panel is raised by the ordinary choice below.

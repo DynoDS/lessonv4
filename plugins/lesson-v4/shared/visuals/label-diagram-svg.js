@@ -234,6 +234,91 @@ function resolveCalloutHighlight(callouts, value) {
   return highlight.resolveHighlight({ highlight: value }, highlightParts(callouts), 'labelled diagram');
 }
 
+// -- Marks drawn on the picture ----------------------------------------------
+// A task that asks children to look at one part of a real photograph ("Why
+// does the forest stop at this line?") needs that part marked on the photo,
+// or children hunt a dark space picture for a line nobody drew (Geography 4,
+// 6 November 2026). A mark is placed in the same percentages as a callout's
+// anchor, by diagram-anchor looking at the published picture:
+//   { kind: 'outline', points: [[x, y], ...] }  a closed line round an area
+//   { kind: 'line',    points: [[x, y], ...] }  an open line along an edge
+//   { kind: 'ring',    at: [x, y], size: n }    a circle on one spot, n its
+//                                               width as a percentage of the
+//                                               picture's width (default 12)
+//   { kind: 'arrow',   from: [x, y], to: [x, y] }  an arrow pointing at a spot
+// Every mark is one bright yellow over a dark casing, so it shows on a dark
+// forest and on pale sky alike, and it never carries words: a name belongs
+// in a callout or on the board beside it.
+const MARK_COLOUR = '#FFD21F';
+const MARK_CASING = '#1A1A1A';
+const MARK_KINDS = new Set(['outline', 'line', 'ring', 'arrow']);
+
+function markPoint(p) {
+  return Array.isArray(p) && p.length === 2 && p.every((n) => Number.isFinite(Number(n))) &&
+    p.every((n) => Number(n) >= 0 && Number(n) <= 100);
+}
+
+function markProblems(marks) {
+  if (marks == null) return [];
+  if (!Array.isArray(marks)) return ['marks must be a list'];
+  const problems = [];
+  marks.forEach((m, k) => {
+    const at = `mark ${k + 1}`;
+    if (!m || !MARK_KINDS.has(m.kind)) { problems.push(`${at}: kind must be outline, line, ring or arrow`); return; }
+    if (m.kind === 'outline' || m.kind === 'line') {
+      const need = m.kind === 'outline' ? 3 : 2;
+      if (!Array.isArray(m.points) || m.points.length < need || !m.points.every(markPoint)) {
+        problems.push(`${at}: an ${m.kind} needs at least ${need} points, each [x, y] percentages from 0 to 100`);
+      }
+    } else if (m.kind === 'ring') {
+      if (!markPoint(m.at)) problems.push(`${at}: a ring needs at: [x, y] percentages from 0 to 100`);
+      if (m.size != null && !(Number(m.size) > 0 && Number(m.size) <= 100)) problems.push(`${at}: a ring's size is a percentage of the picture's width, above 0 and up to 100`);
+    } else if (!markPoint(m.from) || !markPoint(m.to)) {
+      problems.push(`${at}: an arrow needs from and to, each [x, y] percentages from 0 to 100`);
+    }
+  });
+  return problems;
+}
+
+function photoMarkParts(marks, pic, strokeW, f) {
+  if (!Array.isArray(marks) || !marks.length) return [];
+  const problems = markProblems(marks);
+  if (problems.length) {
+    throw new Error(`PHOTO_MARK_INVALID: ${problems.join('; ')}.`);
+  }
+  const X = (p) => pic.x + (Number(p[0]) / 100) * pic.w;
+  const Y = (p) => pic.y + (Number(p[1]) / 100) * pic.h;
+  const w = Math.max(strokeW * 2.2, Math.max(pic.w, pic.h) * 0.008);
+  const cased = (shape, extra = '') => [
+    shape(`stroke="${MARK_CASING}" stroke-width="${f(w * 1.9)}"${extra}`),
+    shape(`stroke="${MARK_COLOUR}" stroke-width="${f(w)}"${extra}`),
+  ];
+  const out = [];
+  for (const m of marks) {
+    if (m.kind === 'outline' || m.kind === 'line') {
+      const pts = m.points.map((p) => `${f(X(p))},${f(Y(p))}`).join(' ');
+      const tag = m.kind === 'outline' ? 'polygon' : 'polyline';
+      out.push(...cased((s) => `<${tag} points="${pts}" fill="none" ${s} stroke-linejoin="round" stroke-linecap="round"/>`));
+    } else if (m.kind === 'ring') {
+      const r = ((Number(m.size) > 0 ? Number(m.size) : 12) / 200) * pic.w;
+      out.push(...cased((s) => `<circle cx="${f(X(m.at))}" cy="${f(Y(m.at))}" r="${f(r)}" fill="none" ${s}/>`));
+    } else {
+      const x1 = X(m.from), y1 = Y(m.from), x2 = X(m.to), y2 = Y(m.to);
+      const len = Math.hypot(x2 - x1, y2 - y1) || 1;
+      const ux = (x2 - x1) / len, uy = (y2 - y1) / len;
+      const ah = w * 4;
+      const bx = x2 - ux * ah, by = y2 - uy * ah;
+      const hw = ah * 0.6;
+      const head = `${f(x2)},${f(y2)} ${f(bx - uy * hw)},${f(by + ux * hw)} ${f(bx + uy * hw)},${f(by - ux * hw)}`;
+      out.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(bx)}" y2="${f(by)}" stroke="${MARK_CASING}" stroke-width="${f(w * 1.9)}" stroke-linecap="round"/>`);
+      out.push(`<polygon points="${head}" fill="${MARK_CASING}" stroke="${MARK_CASING}" stroke-width="${f(w * 0.9)}" stroke-linejoin="round"/>`);
+      out.push(`<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(bx)}" y2="${f(by)}" stroke="${MARK_COLOUR}" stroke-width="${f(w)}" stroke-linecap="round"/>`);
+      out.push(`<polygon points="${head}" fill="${MARK_COLOUR}"/>`);
+    }
+  }
+  return out;
+}
+
 function escapeXml(s) {
   return String(s)
     .replace(/&/g, '&amp;')
@@ -275,7 +360,7 @@ function frameBox(W0, H0, frame) {
   return { W, H, dx: (W - W0) / 2, dy: (H - H0) / 2 };
 }
 
-function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN, frame = null, fontSize = null, reserve = null, rule = null, sides = 'both', snug = false, route = null, highlight: highlightValue = null, ink = false }) {
+function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAULT_BLUE, font = 'Comic Sans MS', marginRatio = 0.28, marginXRatio = null, marginYRatio = null, layout = 'auto', labelMaxChars = 0, arrow = false, labelColour = INK, answerColour = ANSWER_GREEN, frame = null, fontSize = null, reserve = null, rule = null, sides = 'both', snug = false, route = null, highlight: highlightValue = null, ink = false, marks = [] }) {
   // W and H are the box everything is laid out around; W0 and H0 the picture
   // inside it. With no frame they are the same, and the drawing is unchanged.
   const W0 = width, H0 = height;
@@ -519,7 +604,9 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   }
   // A snug picture with nothing to label keeps no bands at all: it is the
   // picture, and a band round it prints as a white frame.
-  if (snug && !list.length) {
+  // A picture carrying only marks has no names to hold either: the marks sit
+  // on the picture itself, so it takes its whole slot.
+  if ((snug || (Array.isArray(marks) && marks.length)) && !list.length) {
     MXL = 0;
     MXR = 0;
     MX = 0;
@@ -565,6 +652,7 @@ function buildLabelDiagramSvg({ href, width, height, callouts = [], blue = DEFAU
   }
 
   const parts = [`<image x="${ox + picDX}" y="${oy + picDY}" width="${W0}" height="${H0}" href="${href}"/>`];
+  parts.push(...photoMarkParts(marks, { x: ox + picDX, y: oy + picDY, w: W0, h: H0 }, strokeW, f));
   const rings = [];
 
   for (const o of list) {
@@ -841,6 +929,8 @@ function buildForPaper(args, { widthMm, perLetterMm, minMm, minFontMm = PAPER_MI
 // alongside the lesson's own fields, in the board's spelling:
 //   imagePath  the file (only used in the cache key; the surface reads it)
 //   callouts   [{ anchor, label, label_at?, given? }]  (a sheet's `labels` is read too)
+//   marks      [{ kind, ... }] lines, rings and arrows drawn on the picture (see
+//              'Marks drawn on the picture' above)
 //   layout, marginXRatio, marginYRatio, labelMaxChars, arrow, labelColour
 //
 // `layout: "sides"` is the poster form for a PHOTO: the names stack in the side
@@ -879,6 +969,7 @@ function tightSvg(spec = {}) {
     snug: spec.snug === true,
     highlight: spec.highlight,
     ink: spec.ink === true,
+    marks: Array.isArray(spec.marks) ? spec.marks : [],
   });
 }
 
@@ -897,6 +988,7 @@ function cacheKey(spec = {}) {
     spec.marginXRatio, spec.marginYRatio, spec.labelMaxChars, spec.arrow, spec.labelColour,
     JSON.stringify(spec.frame || null),
     ...(lit ? [`highlight:${lit}`] : []),
+    ...(Array.isArray(spec.marks) && spec.marks.length ? [`marks:${JSON.stringify(spec.marks)}`] : []),
   ].join('|');
 }
 
@@ -909,4 +1001,4 @@ function leaderCueSvg() {
   return { svg, aspect: w / h, w, h };
 }
 
-module.exports = { buildLabelDiagramSvg: buildLabelDiagram, buildForPaper, tightSvg, cacheKey, leaderCueSvg, highlightParts, resolveCalloutHighlight, calloutName };
+module.exports = { buildLabelDiagramSvg: buildLabelDiagram, buildForPaper, tightSvg, cacheKey, leaderCueSvg, highlightParts, resolveCalloutHighlight, calloutName, markProblems };

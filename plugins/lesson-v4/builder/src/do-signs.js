@@ -1,7 +1,7 @@
 'use strict';
 
 // The Lesson Designer's doMode controls the badge: quick -> lightning,
-// deeper -> the existing book/sheet drawing. Time, printing and practice vs
+// deeper -> the existing book/sheet drawing, record (the final written piece) -> the flag. Time, printing and practice vs
 // checking do not choose it. Older saved designs without doMode retain their
 // print-based mapping. Source choices override slide-authored badges.
 // Answer, setup and Our Turn slides carry no Do badge.
@@ -32,6 +32,12 @@ function badgeFor(unit, worksheetTask) {
   if (unit.kind === 'our-turn') return null;
   if (unit.doMode === 'quick') return 'quick';
   if (unit.doMode === 'deeper') return 'sheet';
+  // The lesson's final written piece takes the teacher's flag, not the book
+  // (5 November 2026: take the book off the final writing; 6 November: his
+  // flag drawing as its own sign). It goes on every slide of that task, the
+  // scene included, because it says the teaching has finished, where the bolt
+  // and the book say children are working now.
+  if (unit.doMode === 'record') return 'final';
   if (worksheetTask && unit.sourceUnitId === worksheetTask) return 'sheet';
   const levels = unit.levels && typeof unit.levels === 'object' ? unit.levels : null;
   if (!levels) return null;
@@ -59,8 +65,9 @@ function applyDoSigns(lesson, lessonDir) {
     const ids = typeof slide.designUnitId === 'string' ? [slide.designUnitId]
       : Array.isArray(slide.designUnitIds) ? slide.designUnitIds : [];
     const linked = ids.map((id) => units.get(id)).filter(Boolean);
-    const unit = linked.find((u) => u.doMode === 'quick' || u.doMode === 'deeper') || linked[0];
-    const explicit = unit && (unit.doMode === 'quick' || unit.doMode === 'deeper');
+    const MODES = new Set(['quick', 'deeper', 'record']);
+    const unit = linked.find((u) => MODES.has(u.doMode)) || linked[0];
+    const explicit = unit && MODES.has(unit.doMode);
     if (unit && unit.kind === 'our-turn') { delete slide.doSign; continue; }
     if (explicit) delete slide.doSign;
     else if (slide.doSign !== undefined) continue;
@@ -73,9 +80,16 @@ function applyDoSigns(lesson, lessonDir) {
     byUnit.get(unit).slides.push(slide);
   }
   for (const { badge, slides, explicit } of byUnit.values()) {
+    if (badge === 'final') { slides.forEach((slide) => { slide.doSign = badge; }); continue; }
     const working = (wanted) => slides.filter((slide) => taskSigns(slide).some((sign) => wanted.has(sign)));
     let marked = badge === 'sheet' ? working(new Set(['pencil'])) : [];
     if (!marked.length) marked = working(TASK_SIGNS);
+    // A Do board over two slides gives its jobs out first, their cards signed
+    // with what the work will be, and asks its question on the next slide,
+    // where the work happens. The badge goes on the asking slide only, so the
+    // set-up does not read as a second Do (the teacher, 6 November 2026).
+    const asking = marked.filter(asksTheQuestion);
+    if (asking.length && asking.length < marked.length) marked = asking;
     if (!marked.length) {
       if (explicit && slides.length > 1) {
         throw new Error('A source unit with doMode has several slides but no task signal identifying its working slide.');
@@ -88,6 +102,14 @@ function applyDoSigns(lesson, lessonDir) {
 }
 
 const TASK_SIGNS = new Set(['pencil', 'talk', 'magnifier']);
+
+function asksTheQuestion(node) {
+  if (Array.isArray(node)) return node.some(asksTheQuestion);
+  if (!node || typeof node !== 'object') return false;
+  if (node.colorRole === 'focus-blue' || node.colorRole === 'task-blue') return true;
+  if (typeof node.value === 'string' && node.value.includes('[[')) return true;
+  return Object.keys(node).some((key) => key !== 'speakerNotes' && asksTheQuestion(node[key]));
+}
 
 function taskSigns(node, found = []) {
   if (Array.isArray(node)) node.forEach((item) => taskSigns(item, found));

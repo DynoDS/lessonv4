@@ -102,10 +102,32 @@ function headingHtml(heading) {
   return esc(name) + (under ? `<span class="h-th-under">${esc(under)}</span>` : "");
 }
 
+// A choice cell, `{ "choices": ["same", "different"], "circled": ... }`, is
+// the board table's circle-one cell: every choice prints, one to a line, for
+// the child to circle, and the row done with the class keeps its ring. A `||`
+// circled choice is the answer key's and prints no ring on the pupil sheet.
+function isChoiceCell(cell) {
+  return !!cell && typeof cell === "object" && Array.isArray(cell.choices);
+}
+
+function choiceCellHtml(cell) {
+  const circled = cell.circled == null ? "" : String(cell.circled);
+  const ring = circled && !circled.includes("||") ? circled.trim() : null;
+  return cell.choices
+    .map((c) => String(c ?? "").trim())
+    .filter(Boolean)
+    .map((c) => `<span class="h-choice${c === ring ? " h-choice-ringed" : ""}">${esc(c)}</span>`)
+    .join("");
+}
+
 function rowHeightMm(cells, columnWidthsMm, flatRowMm) {
   let lines = 1;
   cells.forEach((cell, i) => {
     if (cell === undefined || cell === null || String(cell) === "") return;
+    if (isChoiceCell(cell)) {
+      lines = Math.max(lines, cell.choices.length);
+      return;
+    }
     const width = cellTextWidthMm(columnWidthsMm[i] ?? columnWidthsMm[0] ?? 30);
     lines = Math.max(lines, linesFor(String(cell), width));
   });
@@ -264,7 +286,8 @@ function renderRecordingTable(spec) {
         const value = row[i];
         if (value !== undefined && value !== null && String(value) !== "") {
           const tag = i === 0 ? "th scope=\"row\"" : "td";
-          return `<${tag} class="h-given">${esc(value)}</${tag.split(" ")[0]}>`;
+          const inner = isChoiceCell(value) ? choiceCellHtml(value) : esc(value);
+          return `<${tag} class="h-given${isChoiceCell(value) ? " h-choices" : ""}">${inner}</${tag.split(" ")[0]}>`;
         }
         return `<td class="h-write"></td>`;
       });
@@ -439,6 +462,16 @@ const css = `
     color: var(--colour-given);
     font-weight: normal;
   }
+  .h-record .h-choices { text-align: center; }
+  .h-record .h-choice {
+    display: block;
+    width: fit-content;
+    margin: var(--space-hair) auto;
+    padding: 0 var(--space-tight);
+    border: var(--rule-line) solid transparent;
+    border-radius: 50%;
+  }
+  .h-record .h-choice-ringed { border-color: currentColor; }
 
   /* A recording table says it can use spare height (greed 3), and this is what
      makes that true rather than a claim. Without it the engine hands the zone

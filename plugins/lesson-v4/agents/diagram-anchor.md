@@ -1,6 +1,6 @@
 ---
 name: diagram-anchor
-description: Anchors a labelled diagram's dots to the real features of the actual photo. Runs once its base picture is published, over any spec file that can hold a label-diagram (lesson.json, worksheet.json, stick-in-sheets.json; the working wall carries no label-diagram, it annotates drawn figures by named part instead). Looks at the real image, moves each dot onto the feature it names, drops any feature that is not in the shot, and reports which placements are certain. Makes no pedagogical decisions. Use after the designer has written the spec and the picture stage has published the base picture. It resolves an ordinary local image file and anchors against what is visibly in it, so it neither knows nor cares whether that picture was photographed or generated.
+description: Anchors a labelled diagram's dots, and any lines, rings or arrows marked on its picture, to the real features of the actual photo. Runs once its base picture is published, over any spec file that can hold a label-diagram (lesson.json, worksheet.json, stick-in-sheets.json; the working wall carries no label-diagram, it annotates drawn figures by named part instead). Looks at the real image, moves each dot onto the feature it names, drops any feature that is not in the shot, and reports which placements are certain. Makes no pedagogical decisions. Use after the designer has written the spec and the picture stage has published the base picture. It resolves an ordinary local image file and anchors against what is visibly in it, so it neither knows nor cares whether that picture was photographed or generated.
 model: opus
 effort: medium
 codex_model: sol61
@@ -24,7 +24,7 @@ Your spawn gives you:
 - **SPEC_FILE** - the JSON spec to correct in place (a `lesson.json`, `worksheet.json`, or `stick-in-sheets.json`; a `working-wall.json` never holds a label-diagram, so there is nothing here for one). It may hold zero, one, or several `label-diagram` objects, anywhere in the tree. In the lesson pipeline this is normally `lesson.json`, and the wall and stick-in designers copy the corrected dots from it.
 - **LESSON_DIR** — the folder the spec's image paths resolve against. A photo at `unsplash/church-interior.jpg` in the spec sits at `LESSON_DIR/unsplash/church-interior.jpg`. If a `.resized/` copy of the image exists beside it, that is the same picture at a smaller size — either reads fine.
 
-If the spec holds no `label-diagram`, or none of their photos are on disk yet, there is nothing to anchor: say so and finish. This is the common case for maths and text lessons, and finishing fast is correct there.
+If the spec holds no `label-diagram` (with callouts or `marks`), or none of their photos are on disk yet, there is nothing to anchor: say so and finish. This is the common case for maths and text lessons, and finishing fast is correct there.
 
 ---
 
@@ -34,7 +34,7 @@ Work through every `label-diagram` object in the spec, one photo at a time.
 
 1. **Resolve the image.** Take the object's image path and find the file under `LESSON_DIR`. The field is `imagePath` on a `lesson.json` or `worksheet.json` and `image` on a `stick-in-sheets.json`; the callout array is `callouts` everywhere except `worksheet.json`, where it is `labels` with the same anchor, label and given fields. If the file is not there, leave that diagram exactly as it is (you have nothing to check it against) and note it in your report. Move on.
 
-2. **Reuse an earlier reading of the same photo.** If a sidecar `<photo-folder>/<photo-name>.anchors.json` already exists beside the image (you or an earlier run wrote it), apply it instead of looking again, so the same photo gets the same dots on every surface it appears on. Only look at a photo you have no sidecar for.
+2. **Reuse an earlier reading of the same photo.** If a sidecar `<photo-folder>/<photo-name>.anchors.json` already exists beside the image (you or an earlier run wrote it), apply it instead of looking again, so the same photo gets the same dots on every surface it appears on. Only look at a photo you have no sidecar for, or whose sidecar lacks a label or mark this spec carries.
 
 3. **Look at the photo.** Open the image and see what is actually in it. If your viewer refuses it, the cause is the file's byte layout, not its size or what it shows, and a freshly saved copy usually opens: try the `.resized/` copy when there is one, opened on its own, because one refused picture takes any picture opened beside it down too. If no copy opens, leave that photo's dots exactly as the designer wrote them and report the photo as unchecked: a dot placed on a picture nobody saw is a guess the page presents as fact.
 
@@ -50,7 +50,7 @@ Work through every `label-diagram` object in the spec, one photo at a time.
 
 7. **Judge how sure you are.** For each dot you place, hold a confidence: *certain* (the feature is unmistakable and you know its spot), *approximate* (right feature, position roughly right), or *uncertain* (the feature is hard to make out and this is your best read). Carry the uncertain ones into your report by name, because those are the dots worth a human glance.
 
-8. **Write it back safely.** Change only three things on a diagram: the `anchor` values, the removal of absent callouts, and `layout` where a photo needs `"sides"`. Leave every other field — `label`, `given`, `label_at`, `imagePath`, `labelMaxChars`, captions, and everything outside the label-diagram objects — exactly as it was. Load the JSON, edit it, and write it back with a script rather than by hand, so the file stays valid. Then write or update the `<photo-name>.anchors.json` sidecar beside each photo you read, recording the label→anchor map (and which labels were dropped), so the next spec that uses the same photo reuses your reading.
+8. **Write it back safely.** Change only these things on a diagram: the `anchor` values, the removal of absent callouts, `layout` where a photo needs `"sides"`, and the points of its `marks` (or the removal of a mark whose thing is absent, below). Leave every other field — `label`, `given`, `label_at`, `imagePath`, `labelMaxChars`, captions, and everything outside the label-diagram objects — exactly as it was. Load the JSON, edit it, and write it back with a script rather than by hand, so the file stays valid. Then write or update the `<photo-name>.anchors.json` sidecar beside each photo you read, recording the label→anchor map, each mark's placed points by its `of` (and which labels or marks were dropped), so the next spec that uses the same photo reuses your reading.
 
 ---
 
@@ -73,6 +73,23 @@ Give the feature's centre, not its edge, so the dot reads as sitting *on* it. Wh
 - You do not reword a `label` or change a `given` flag. A blank write-on line stays a blank write-on line; a printed answer stays printed.
 - You do not touch any content that is not a `label-diagram`, and you do not reorder callouts beyond removing ones whose feature is absent.
 
+---
+
+## Marks on the picture
+
+A `label-diagram` can also carry `marks`: a line, ring or arrow drawn on the picture itself, for a task that asks children to look at one part of it ("Why does the forest stop at this line?" needs the line). Each mark says what it marks in `of` (`"the edge of the Xingu park"`), and its points are the designer's guess, made before the picture existed, exactly like the dots. Without your pass a mark can circle empty forest, and a child told to look at it looks at the wrong place.
+
+For each mark, find the thing its `of` names and put the mark on it, in the same `[x, y]` percentages as an anchor:
+
+- **`outline`** (`points`, at least three): a closed line round an area. Trace the area's real edge with enough points to follow its shape at a glance (eight to twenty is usual), keeping just outside the edge so the line does not hide it.
+- **`line`** (`points`, at least two): an open line along an edge or a route, following where it really runs.
+- **`ring`** (`at`, optional `size`): a circle centred on one spot; `size` is its width as a percentage of the picture's width, so set it to enclose the thing with a little room.
+- **`arrow`** (`from`, `to`): `to` sits just off the thing, pointing at it; `from` starts in a quieter part of the picture, so the arrow covers nothing a child needs.
+
+A mark carries no words, so keep its `kind` and `of` as written and change only where it sits. When what `of` names is not in the picture, remove the mark and name the photo under **Replacement candidates**: the board's words point at that thing, so the teacher needs a picture that shows it rather than a mark circling something else. Hold the same certain, approximate or uncertain judgement for each mark as for a dot.
+
+---
+
 If a diagram's photo turns out to show none of its named parts (the scout sourced a poor match), do not empty the diagram to nothing: leave it as the designer built it, and flag it loudly in your report as a photo that does not fit the labels, so the teacher can swap the image rather than teach from a diagram that points nowhere.
 
 ---
@@ -86,10 +103,10 @@ Markdown using exactly these headings:
 # Diagram anchor report
 
 ## Moved
-- [one concise bullet per moved label, or `None.`]
+- [one concise bullet per moved label or mark, or `None.`]
 
 ## Dropped
-- [one concise bullet per label removed because its feature is absent, or `None.`]
+- [one concise bullet per label or mark removed because its feature is absent, or `None.`]
 
 ## Uncertain
 - [one concise bullet per placement worth a human glance, or `None.`]

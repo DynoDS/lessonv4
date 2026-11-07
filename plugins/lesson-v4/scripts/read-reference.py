@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Read exact Markdown reference sections without loading neighbouring guidance.
 
-Standard library only. Reads files and writes no run state; on Codex it keeps a
+Standard library only. Records emitted guidance outside the plugin; on Codex it keeps a
 small record of recent reads in the system temp folder so it can refuse a read
 that would be cut (see SAME_CALL_BUDGET_CHARS). Selection is mechanical:
 lesson-design decisions and reading triggers remain in the existing role files.
@@ -242,7 +242,7 @@ def read_role(root: Path, name: str) -> str:
         raise ReferenceError(f"cannot read role {name}: {exc}") from exc
 
 
-def role_reading(root: Path, name: str, companions_only: bool = False) -> str:
+def role_reading(root: Path, name: str, companions_only: bool = False, sources: list | None = None) -> str:
     """The role file, then the guidance its first steps are written in, as one read.
 
     `companions_only` leaves the role out: on Claude Code the role arrives as the
@@ -254,16 +254,21 @@ def role_reading(root: Path, name: str, companions_only: bool = False) -> str:
         parts = []
     else:
         parts = [read_role(root, name)]
+        if sources is not None:
+            sources.append((f"agents/{name}.md", parts[0], 0, parts[0]))
     for source, selectors in ROLE_COMPANIONS.get(name, ()):
         sections = [s for s in selectors if s != STRUCTURE_MENU]
         if sections:
-            text, _ = selected_text(root, [f"{source}::{selector}" for selector in sections])
+            text, _ = selected_text(root, [f"{source}::{selector}" for selector in sections], sources)
         elif selectors:
             text = ""
         else:
-            text = f"<!-- reference: {source} -->\n" + read_source(root, source)
+            original = read_source(root, source)
+            text = f"<!-- reference: {source} -->\n" + original
+            if sources is not None:
+                sources.append((f"references/{source}", original, 0, original))
         if STRUCTURE_MENU in selectors:
-            menu, _ = structure_menu(read_source(root, source))
+            menu, _ = structure_menu(read_source(root, source), sources)
             text = f"{text}\n<!-- structure menu: {source} -->\n{menu}" if text else menu
         parts.append(
             f"<!-- companion reading for {name}: {source}. It is part of your instructions: "
@@ -342,7 +347,7 @@ def merge_intervals(parts: list[tuple[int, int]]) -> list[tuple[int, int]]:
     return merged
 
 
-def selected_text(root: Path, requests: list[str]) -> tuple[str, int]:
+def selected_text(root: Path, requests: list[str], provenance: list | None = None) -> tuple[str, int]:
     """Resolve the entire request before emitting anything; deduplicate overlap.
 
     Files follow first-request order; sections within a file follow source order.
@@ -363,24 +368,32 @@ def selected_text(root: Path, requests: list[str]) -> tuple[str, int]:
     for name, text in sources.items():
         for start, end in merge_intervals(ranges[name]):
             part = text[start:end]
+            if provenance is not None:
+                provenance.append((f"references/{name}", text, start, part))
             byte_count += len(part.encode("utf-8"))
             output.append(f"<!-- reference: {name} -->\n" + part)
     return "\n".join(output), byte_count
 
 
-def structure_menu(text: str) -> tuple[str, int]:
+def structure_menu(text: str, sources: list | None = None) -> tuple[str, int]:
     """Return the source's five use-when paragraphs, not five execution guides."""
     parent = locate(text, STRUCTURES_HEADING)
     children = [h for h in headings(text) if parent.start < h.start < parent.end and h.level == parent.level + 1]
     if tuple(h.title for h in children) != STRUCTURES:
         raise ReferenceError("structure menu changed: inspect evidence-synthesis.md before updating the selector")
     parts = [text[parent.start:children[0].start]]
+    if sources is not None:
+        sources.append(("references/evidence-synthesis.md", text, parent.start, parts[0]))
     for child in children:
         body = text[child.body:child.end]
         paragraphs = re.findall(r"(?m)^\*\*Use when\.\*\*[^\r\n]*(?:\r?\n(?![ \t]*\r?$|#{1,6}[ \t]|\*\*)[^\r\n]+)*", body)
         if len(paragraphs) != 1:
             raise ReferenceError(f"expected exactly one Use when paragraph: {child.title}")
         parts.append(text[child.start:child.body] + paragraphs[0] + "\n")
+        if sources is not None:
+            sources.append(("references/evidence-synthesis.md", text, child.start, text[child.start:child.body]))
+            sources.append(("references/evidence-synthesis.md", text,
+                            text.index(paragraphs[0], child.body, child.end), paragraphs[0]))
     result = "\n".join(parts)
     return result, len(result.encode("utf-8"))
 
@@ -598,6 +611,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--companions-only", action="store_true")
     parser.add_argument("--file", type=Path, metavar="PATH")
     parser.add_argument("--page", type=int, default=1, metavar="N")
+    parser.add_argument("--host", choices=("codex", "claude", "unknown"), help="Host for the usage receipt")
+    parser.add_argument("--reader-role", help="Worker making this read (also on --select and --file)")
+    parser.add_argument("--lesson-id", help="Lesson working folder or other stable lesson identifier")
     args = parser.parse_args(argv)
     whole = [flag for flag, value in (("--index", args.index), ("--role", args.role), ("--file", args.file)) if value]
     if len(whole) > 1 or (whole and (args.select or args.structure_menu)):
@@ -614,20 +630,28 @@ def main(argv: list[str] | None = None) -> int:
     if hasattr(sys.stderr, "reconfigure"):
         sys.stderr.reconfigure(encoding="utf-8")
     try:
+        sources = []
         if args.index:
             source = read_source(args.plugin_root, args.index)
             output = "\n".join(" > ".join(h.path) for h in headings(source))
             size = 0
         elif args.role:
-            output = role_reading(args.plugin_root, args.role, args.companions_only)
+            output = role_reading(args.plugin_root, args.role, args.companions_only, sources)
             size = len(output.encode("utf-8"))
         elif args.file:
-            output = read_working_file(reference_or_path(args.plugin_root, args.file))
+            path = reference_or_path(args.plugin_root, args.file)
+            output = read_working_file(path)
+            try:
+                relative = path.resolve().relative_to(args.plugin_root.resolve()).as_posix()
+            except ValueError:
+                relative = ""
+            if relative.startswith(("references/", "agents/")) and path.suffix.lower() == ".md":
+                sources.append((relative, output, 0, output))
             size = len(output.encode("utf-8"))
         else:
-            output, size = selected_text(args.plugin_root, args.select) if args.select else ("", 0)
+            output, size = selected_text(args.plugin_root, args.select, sources) if args.select else ("", 0)
             if args.structure_menu:
-                menu, menu_size = structure_menu(read_source(args.plugin_root, "evidence-synthesis.md"))
+                menu, menu_size = structure_menu(read_source(args.plugin_root, "evidence-synthesis.md"), sources)
                 output = f"{output}\n<!-- structure menu: evidence-synthesis.md -->\n{menu}" if output else menu
                 size += menu_size
         split = pages(output)
@@ -650,6 +674,13 @@ def main(argv: list[str] | None = None) -> int:
             print(text, end="" if text.endswith("\n") else "\n")
             if note:
                 print(note)
+            # A receipt means this process emitted a page, never that the host
+            # displayed it uncut or that the model understood it. Flush first;
+            # refused, missing, index-only and broken-pipe reads get no receipt.
+            sys.stdout.flush()
+            if sources:
+                import reference_usage
+                reference_usage.record_page(args, output, split, sources, headings)
             if args.page < len(split):
                 # No success line until the last page: a reader who stops here has
                 # read part of the guidance, and the success line is what the

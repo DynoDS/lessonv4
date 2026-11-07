@@ -23,6 +23,7 @@ Standard library only.
 from __future__ import annotations
 
 import math
+import re
 
 BOARD_WORDS_A_MINUTE = 16
 
@@ -38,6 +39,28 @@ def _words(value) -> int:
     if isinstance(value, dict):
         return sum(_words(item) for key, item in value.items() if key not in NOT_ON_THE_BOARD)
     return 0
+
+
+# The beats whose board teaches an idea, as distinct from setting a task.
+TEACH_KINDS = {"teach", "teach-why", "teach-needed"}
+
+
+# A question on a Teach board is asked, and then the class answers and talks it
+# through: about 10 to 30 seconds depending on the question (the teacher, 6
+# November 2026), so each one adds the middle of that on top of its words.
+SECONDS_TO_DISCUSS_A_QUESTION = 20
+
+
+def teach_questions(unit: dict) -> int:
+    """How many questions a Teach board puts to the class."""
+    if unit.get("kind") not in TEACH_KINDS:
+        return 0
+    content = unit.get("content") if isinstance(unit.get("content"), dict) else {}
+    asked = [q for q in content.get("keyQuestions") or [] if isinstance(q, str) and q.strip()]
+    for value in content.values():
+        if isinstance(value, str):
+            asked += [part for part in re.split(r"(?<=[.!?])\s+|\n+", value) if part.strip().endswith("?")]
+    return len(asked)
 
 
 def visible_answer_words(unit: dict) -> int:
@@ -57,6 +80,9 @@ def visible_answer_words(unit: dict) -> int:
         placements = structure.get("placements") or []
         return sum(_words(items.get(p.get("itemRef"), "")) for p in placements) + sum(
             _words(groups.get(ref, "")) for ref in {p.get("groupRef") for p in placements})
+    if structure.get("kind") == "match":
+        left = {row.get("id"): row.get("label", "") for row in task.get("left") or []}
+        return sum(_words(left.get(p.get("leftRef"), "")) for p in structure.get("pairs") or [])
     if structure.get("kind") == "evidence-classification":
         return sum(_words(value.get("value")) for result in structure.get("results") or []
                    for value in result.get("values") or [])
@@ -80,6 +106,8 @@ def board_words(unit: dict, design: dict) -> int:
     elif isinstance(takeaway, str):
         count += _words(takeaway)
     count += _words(unit.get("pupilInstruction") or "")
+    # The board's case, goal, action cards and stems are on the slide too.
+    count += _words(unit.get("board") or {})
     count += visible_answer_words(unit)
     return count
 
@@ -120,8 +148,9 @@ def honest_minutes(design: dict) -> tuple[int, list[tuple[str, int, int]]]:
     for label, unit in lesson_beats(design):
         planned = unit.get("minutes") if isinstance(unit.get("minutes"), int) else 0
         words = board_words(unit, design)
-        rows.append((label, planned, taught_minutes(words)))
-        exact += max(planned, words / BOARD_WORDS_A_MINUTE)
+        taught = words / BOARD_WORDS_A_MINUTE + teach_questions(unit) * SECONDS_TO_DISCUSS_A_QUESTION / 60
+        rows.append((label, planned, math.ceil(taught - 1e-9) if taught > 0 else 0))
+        exact += max(planned, taught)
     card = card_words(design)
     if card:
         rows.append(("the word cards", 0, taught_minutes(card)))

@@ -124,7 +124,7 @@ class TheTeachersColourAnswersAreWritten(unittest.TestCase):
 
     def test_blue_is_a_question_or_a_short_task(self) -> None:
         """Decision 11 and question 1: "I want blue means question or like a short task"."""
-        self.assertIn("I want blue means question or like a short task as in like explain why or something like that.", self.PREF)
+        self.assertIn("A question or a short task, the child's job, is blue", self.PREF)
         self.assertIn("a longer instruction about how to go about it stays black", self.PREF)
         self.assertIn("House blue is the colour of the child's job: a question they answer, or a short task.", self.PROFILE)
         self.assertNotIn("a task is black either way", self.PROFILE)
@@ -139,7 +139,8 @@ class TheTeachersColourAnswersAreWritten(unittest.TestCase):
                       "photograph.` and `Describe each tooth using the pictures.`", self.PROFILE)
         self.assertIn("`Use the shaded map.`, `Use the number line to help you.` and `Look at the shaded areas and "
                       "the Equator.` are all black", self.PROFILE)
-        self.assertIn("he said \"y\" (25 September 2026)", self.PREF)
+        self.assertIn("A job that names what to use is still the job, and blue: "
+                      "`Explain your answer using the photograph.`", self.PREF)
         self.assertIn("and a job that also names what to use (`Explain your answer using the photograph.`)", tmpl)
 
     def test_a_short_task_is_marked_by_its_role_not_counted(self) -> None:
@@ -163,7 +164,7 @@ class TheTeachersColourAnswersAreWritten(unittest.TestCase):
 
     def test_a_worked_example_is_purple_like_a_sticky_fact(self) -> None:
         """Decision 11: "worked example purple too"."""
-        self.assertIn("\"worked example purple too\"", self.PREF)
+        self.assertIn("A worked example is purple, the same colour as a sticky fact.", self.PREF)
         self.assertIn("- A worked example is purple, the same colour as a sticky fact.", self.PROFILE)
         self.assertNotIn("whatever carries it", self.PROFILE)
         self.assertIn("Prepared examples and `visible-in-unit` models are worked examples", self.PREF)
@@ -176,7 +177,8 @@ class TheTeachersColourAnswersAreWritten(unittest.TestCase):
 
     def test_green_is_a_taught_word_or_an_answer(self) -> None:
         """Decision 11: "green is vocabulary or an answer. So we'd have to fix those."."""
-        self.assertIn("And yeah, green is vocabulary or an answer.", self.PREF)
+        self.assertIn("Green pupil-facing text is reserved for answers being revealed or marked, "
+                      "vocabulary emphasis, vocabulary slides and success-criteria treatment.", self.PREF)
         self.assertIn("**Green has a fixed teaching role.**", self.PREF)
 
     def test_the_wall_uses_the_boards_colours(self) -> None:

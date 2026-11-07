@@ -11,6 +11,7 @@ import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
+import web_tls
 from pathlib import Path
 import python_extras  # noqa: F401,E402 - the plugin's own installed libraries
 from picture_plain import plain_bytes
@@ -171,7 +172,7 @@ def search_commons_once(query, reserve, thumb_width=BOARD_WIDTH_PX):
     params = {"action": "query", "generator": "search", "gsrsearch": f"{query} filetype:bitmap|drawing", "gsrnamespace": "6", "gsrlimit": str(min(max(reserve * 2, 30), MAX_SEARCH_LIMIT)), "prop": "imageinfo", "iiprop": "url|extmetadata|size", "iiurlwidth": str(thumb_width), "format": "json"}
     request = urllib.request.Request("https://commons.wikimedia.org/w/api.php?" + urllib.parse.urlencode(params), headers={"User-Agent": USER_AGENT})
     try:
-        with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS) as response:
+        with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS, context=web_tls.CONTEXT) as response:
             data = json.loads(response.read().decode())
     except urllib.error.HTTPError as exc:
         kind = "auth" if exc.code in (401, 403) else "rate_limit" if exc.code == 429 else "transport"
@@ -265,7 +266,7 @@ def _atomic_write(path, value, mode="wb"):
 
 def download_image(url, dest_path):
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS) as response:
+    with urllib.request.urlopen(request, timeout=NETWORK_TIMEOUT_SECONDS, context=web_tls.CONTEXT) as response:
         data = response.read()
     # Rewritten plain, so the worker who looks at it can open it (picture_plain.py).
     _atomic_write(dest_path, plain_bytes(data))

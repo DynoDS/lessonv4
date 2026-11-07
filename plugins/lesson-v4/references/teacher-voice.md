@@ -179,6 +179,8 @@ A phrase repeated on purpose for rhythm is the one exception, and only in speech
 
 Humour is a genuine part of the voice, but it is **opportunity-sensitive, not quota-based**.
 
+It is also a way of teaching, not decoration. A line with a turn in it is what children repeat at home time, and a joke aimed at the lesson's wrong idea is often what makes the right one stick. So when the material does hand one over, put it where it does the most for the learning.
+
 ## Where the opportunities actually come from
 
 If the content naturally hands you an easy playful hook, notice it. The hook is not always the content being amusing. Six places it tends to come from, none of them the default:
@@ -236,7 +238,7 @@ Two things follow. A light line you had to reach for is not one, and a lesson wh
 
 That last route is the one always available, which is exactly why it must not become the house joke. A teacher whose last three lessons each made a wry remark about the wrong answer has stopped having a voice and started having a habit, and children hear a habit coming. Look at the other five first, and let the material decide which one this lesson gets.
 
-The same applies to placement. A light line can sit on the slide where children read it themselves, or in the script where the teacher uses it if the room is right, or both. There is no fixed home, and giving it one turns it into a slot to fill.
+Placement follows what the line does, not a slot. A line that makes one step of the teaching stick (a comparison that makes a size real, a vivid detail from the source, a turn on the wrong idea) belongs with that step, so it goes on the board inside the sentence that carries the step, where children read it themselves and a teacher teaching from the board finds it. Left in the script, it reaches only the classes whose teacher opened the notes. A line that needs the teacher's timing, or reacts to what the room has just said (a reaction to their answers, `Not literally!`), stays in the script. There is no fixed home beyond its step, and giving it one turns it into a slot to fill.
 
 ## Now there is room, so look harder, and refuse harder
 
@@ -260,6 +262,8 @@ Procedural content often works best without humour:
 - calculation steps;
 - routine methods;
 - important safety instructions;
+- success criteria and the words of a task, which children follow exactly;
+- a clue or step the class is about to work out, where the line would hand them the answer;
 - explanations where a joke adds nothing.
 
 ## Sensitive or serious lessons
@@ -273,7 +277,8 @@ The safest lightness in a sensitive lesson usually targets the wrong idea being 
 However:
 - never make the actual sensitive issue the joke;
 - never weaken safeguarding;
-- never use humour in a way that trivialises a pupil's concern or experience.
+- never use humour in a way that trivialises a pupil's concern or experience;
+- keep the serious moment itself straight: death or suffering in a history lesson, a child's real worry, telling a trusted adult. Lightness, if any, belongs to another part of the lesson.
 
 ### Core rule
 
@@ -587,7 +592,7 @@ Aim for:
 - a strong, attainable answer for the year group;
 - enough subject knowledge to model success;
 - natural pupil-plausible phrasing;
-- useful subject vocabulary;
+- useful subject vocabulary, from the words this lesson taught or children already use: the model shows what a child who followed this lesson could write, so a subject word met first in the answer (`so cacao was holy`, where the lesson said `a gift from their gods`) is either taught before the task or said in the lesson's own words;
 - clear sentence structure;
 - natural rhythm.
 

@@ -21,7 +21,7 @@ def test_new_pupil_work_requires_a_resolved_mode(kind):
     assert unit["doMode"] == S.PLACEHOLDER
     with pytest.raises(V.ContractError, match="unresolved scaffold placeholder"):
         V.reject_unresolved_scaffold_placeholders({"doMode": unit["doMode"]}, "unit")
-    for mode in ("quick", "deeper"):
+    for mode in ("quick", "deeper", "record"):
         V.validate_do_mode(mode, "unit.doMode", kind, "Try the action." if kind == "teach-needed" else None)
 
 @pytest.mark.parametrize("kind", ["teach", "my-turn", "our-turn", "starter"])
@@ -33,7 +33,7 @@ def test_teacher_work_and_starter_have_no_mode(kind):
 
 @pytest.mark.parametrize("value", [None, "sheet", "deep", True, 2])
 def test_invalid_modes_rejected(value):
-    with pytest.raises(V.ContractError, match="quick or deeper"):
+    with pytest.raises(V.ContractError, match="quick, deeper or record"):
         V.validate_do_mode(value, "unit.doMode", "do")
 
 def test_mode_is_protected_from_voice_rewriting():

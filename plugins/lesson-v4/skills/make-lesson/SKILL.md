@@ -98,6 +98,13 @@ A worker prompt contains only:
 - the assignment-specific current fault or immutable hand-off evidence, when applicable;
 - the deterministic success check and expected markers for that assignment.
 
+Include this reading instruction in each worker assignment: use
+`scripts/read-reference.py` for guidance reads and append
+`--host [codex|claude] --reader-role [this worker's role] --lesson-id "[WORKING_DIR]"`
+to every read, including companion and subsequent pages. Keep existing section
+triggers and selective loading. This records emitted guidance outside the plugin
+on both hosts; `references/reference-usage.md` owns its reporting and limits.
+
 Saved lesson files, picture contracts, compiled assignments, picture results, AI
 ledgers and review findings carry continuity between attempts. Conversational
 inheritance does not.
@@ -111,8 +118,7 @@ Claude Code and Codex on the teacher's computer start your next turn when a
 worker finishes, so ending a turn while workers run is safe there and nothing
 here changes. ChatGPT Work's cloud does not: a turn that ends with a worker
 still running is where the run stops, because nothing starts the next turn, and
-an unattended or scheduled run has nobody to type one (a real run stalled after
-each of its first three workers, 13 September 2026).
+an unattended or scheduled run has nobody to type one.
 
 On such a host, or whenever you notice a finished worker did not wake you,
 never end your turn while a worker is running or a step of the lesson remains.
@@ -123,8 +129,7 @@ ChatGPT Work) and service each as it returns. A progress update is written
 without ending the turn.
 
 Whenever you wait with that tool, give it a long timeout, ten minutes: it
-returns the moment a worker finishes, so a short one only adds empty turns (42
-of 69 one-minute waits in a 28 September 2026 run came back with nothing).
+returns the moment a worker finishes, so a short one only adds empty turns.
 
 ---
 
@@ -162,8 +167,8 @@ On Codex the host keeps its own record of what it launched. Read it back:
 ```
 
 The working directory picks this run's own record when another lesson is being
-built at the same time; without it the newest record wins, and on 22 September
-2026 a history report printed a maths lesson's timings. Run it twice: once when the approved design is settled, because a design made at
+built at the same time; without it the newest record wins, so a history report
+can print a maths lesson's timings. Run it twice: once when the approved design is settled, because a design made at
 the wrong setting is cheapest to redo before anything is built on it, and once
 before the run report. Put the final marker line in the report's
 `## Worker launches` section.
@@ -422,8 +427,7 @@ exists, and one `SETUP_NOTE:` line per thing the teacher should hear. Store the
 interpreter; in PowerShell call it as `& "[PYTHON]" ...`. Never substitute
 `python3`, `python` or `py` for it. It is found unelevated because the workers
 run unelevated: an interpreter found with extra access can be one no worker can
-start, which is how Codex runs spent their first command in most workers
-rediscovering Python (13 September 2026).
+start.
 
 - `SETUP_OK`: carry on.
 - `SETUP_NEEDS_FIX`: something every build needs is missing: the builders'
@@ -518,9 +522,8 @@ When a command fails because `PLUGIN_ROOT` no longer resolves:
    infrastructure failure: use its one infrastructure retry, with the new root.
 4. Record one `FRICTION:` line naming both versions.
 
-Stopping branches to avoid "mixing versions" is the failure, not the caution: a
-real run lost its working wall, stick-in sheets and filing to a patch release
-that changed none of them. Stop only when the re-verification itself fails, and
+Stopping branches to avoid "mixing versions" loses working wall, stick-in
+sheets and filing even when a patch release changes none of them. Stop only when the re-verification itself fails, and
 report that exactly as a start-up verification failure.
 
 `PLUGIN_SOURCE_ROOT` is separate. It means a writable git checkout of this
@@ -560,7 +563,7 @@ SCRATCH_DIR: [WORKING_DIR]/_scratch/[this launch's task_name] (yours alone: ever
 helper script, a test copy of a picture, a trial build. The host hands every
 worker in a session the same scratch folder, and workers run side by side, so
 two that each save `check.py` there replace one another's file while it is in
-use (three reports in the 7 October 2026 stress test). The launch's task name
+use. The launch's task name
 is already unique in a run, which makes the folder the worker's alone; the
 worker creates it on first use. An image scout's `WORK_ROOT` is already its own,
 so its line names that folder and nothing new is made. The playbook's
@@ -574,14 +577,11 @@ command to the shell whole, and one longer than about 7,500 characters arrives
 cut short: the shell then finds a quote with no partner (`unexpected EOF`), or,
 past about 32,000, the command is refused (`ENAMETOOLONG`). A worker that types
 a page-filling script straight into the shell meets this, and each apostrophe
-in a child's sentence makes the command longer once escaped. Across about 5,000
-typed scripts from 15 September to 15 October 2026 none under 7,000 characters
-failed and nearly all over 8,000 did, in four of the five lessons of the 15
-October round.
+in a child's sentence makes the command longer once escaped.
 A script saved as a file never crosses the shell, so it runs at any length; a
 short one-line command is still fine typed. The run clears `_scratch/` itself,
-so a worker tidies nothing elsewhere: a decorator in that round deleted the
-slide designer's attempt file beside `lesson.json`.
+so a worker tidies nothing elsewhere: deleting the slide designer's attempt
+file beside `lesson.json` would remove another worker's work.
 
 In every runtime prompt template, `[PLUGIN_ROOT]` and `[PYTHON]` mean those
 literal values. Replace the placeholders before launching the worker. Do not pass

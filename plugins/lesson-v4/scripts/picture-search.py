@@ -72,6 +72,33 @@ def find_entry(assignment: dict, filename: str) -> dict:
     raise SearchError(f"{filename} is not in this assignment; its pictures are: {names}")
 
 
+def usage_was_spent(assignment: dict) -> bool:
+    """Has the picture maker said, in this batch, that its usage is used up?
+
+    The same evidence the result check reads: an AI ledger whose attempt was
+    closed with `interrupt-open --reason imagegen_usage_spent`. From then on a
+    real-first picture's `usage_spent_schedule` joins its ladder, so the search
+    runs on instead of the picture becoming a grey box (6 November 2026).
+    """
+    for entry in assignment.get("entries") or []:
+        ledger = entry.get("ai_ledger_path") if isinstance(entry, dict) else None
+        data = read_json(Path(ledger)) if isinstance(ledger, str) else None
+        events = data.get("events") if isinstance(data, dict) else None
+        if any(isinstance(e, dict) and e.get("event") == "interrupted" and e.get("reason") == "imagegen_usage_spent"
+               for e in events or []):
+            return True
+    return False
+
+
+def entry_ladder(assignment: dict, entry: dict) -> tuple[list[dict], bool]:
+    """(the steps this picture may walk now, whether the usage-spent rest is among them)."""
+    schedule = list(entry.get("search_schedule") or [])
+    extra = entry.get("usage_spent_schedule") or []
+    if extra and usage_was_spent(assignment):
+        return schedule + list(extra), True
+    return schedule, False
+
+
 def step_state(step: dict) -> str:
     """Where one compiled step stands: todo, retry, done, spent or blocked."""
     primary = Path(step["summary_path"])
@@ -118,13 +145,19 @@ def next_step(schedule: list[dict]):
     return None, None, "every compiled search for this picture has been run."
 
 
-def describe_next(entry: dict) -> str:
-    index, step, state = next_step(entry["search_schedule"])
+def describe_next(entry: dict, schedule: list[dict] | None = None, spent: bool = False) -> str:
+    index, step, state = next_step(entry["search_schedule"] if schedule is None else schedule)
     if step is None:
-        after = (
-            "generate it" if entry.get("generation_prompt_file")
-            else "report what the search found"
-        )
+        if spent:
+            after = (
+                "take a plainer stand-in if one makes sense (see the stand-in reference), otherwise "
+                "report imagegen_usage_spent so the slide shows a labelled grey box"
+            )
+        else:
+            after = (
+                "generate it" if entry.get("generation_prompt_file")
+                else "report what the search found"
+            )
         return f"NEXT: no search is left for this picture ({state.rstrip('.')}). With no faithful winner, {after}."
     what = f"{step['source']} round {step['round']}"
     if state == "retry":
@@ -144,20 +177,20 @@ def run(args) -> int:
     if not isinstance(assignment, dict):
         raise SearchError(f"cannot read the assignment at {assignment_path}")
     entry = find_entry(assignment, args.filename)
-    schedule = entry.get("search_schedule") or []
+    schedule, spent = entry_ladder(assignment, entry)
     if not schedule:
         raise SearchError(f"{entry['filename']} has no compiled search: it is a made picture, so generate it")
 
     if args.status:
         for number, step in enumerate(schedule, 1):
             print(f"step {number} of {len(schedule)}: {step['source']} round {step['round']} - {step_state(step)}")
-        print(describe_next(entry))
+        print(describe_next(entry, schedule, spent))
         return 0
 
     index, step, state = next_step(schedule)
     if step is None:
         print(f"PICTURE_SEARCH_NONE_LEFT: {entry['filename']}: {state}")
-        print(describe_next(entry))
+        print(describe_next(entry, schedule, spent))
         return 0
     if not args.query or not args.query.strip():
         raise SearchError("--query is required: the two to four words that say what the picture is of")
@@ -195,7 +228,7 @@ def run(args) -> int:
         f"({source} round {step['round']}{', retry' if state == 'retry' else ''}) "
         f"complete={'true' if complete else 'false'} record={output_dir / primary.name}"
     )
-    print(describe_next(entry))
+    print(describe_next(entry, schedule, spent))
     return code
 
 

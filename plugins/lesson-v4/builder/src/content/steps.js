@@ -45,6 +45,24 @@ const DIVIDER_COLOUR   = '888888';
 const SC_HELPER_SLOT_W = 0.68;
 const SC_HELPER_H_MAX  = 0.62;
 const SC_HELPER_GAP    = 0.10;
+// A criteria card's number sits on the card's top-left corner, about three
+// quarters on the card, and only the first line of words steps in to clear it;
+// every line under it runs the card's full width. A number in a column of its
+// own took about a sixth of every card down its whole height, which made the
+// criteria box wider than its words needed and left the work beside it less
+// room (the teacher, 6 November 2026, of Year 4 area: the criteria matter, "but
+// it's not the thing on the slides that needs the most space"). He chose a full
+// size green circle with a white number, three quarters on the corner, over a
+// small one (hard to read) and a plain green number (it read as part of the
+// sentence). Only criteria panels draw this; a list that is a slide's main
+// content keeps its column of numbers.
+const CORNER_D    = 0.44;   // the circle
+const CORNER_OUT  = 0.08;   // how far it stands off the card, left and up
+const CORNER_GAP  = 0.08;   // clear room between the circle and the first word
+const CORNER_MARK = 'NOFIT_corner-mark';
+const CRITERIA_PICTURE = 'NOFIT_criteria-picture';
+// While a criteria panel is measured, how far its steps' first lines step in.
+let FIRST_LINE_STEP_IN = 0;
 // ─── END CONSTANTS ────────────────────────────────────────────
 
 // Ordinary steps stay as strings. A step that names a visible mark may instead
@@ -179,7 +197,7 @@ function wrappedLineCount(text, widthIn, pt) {
 
   return Math.max(
     1,
-    shown.split(/\n/).reduce((count, line) => {
+    shown.split(/\n/).reduce((count, line, segment) => {
       const words = line.split(/[ \t\r\f\v]+/).filter(Boolean);
       let lines = 1;
       let current = '';
@@ -187,7 +205,10 @@ function wrappedLineCount(text, widthIn, pt) {
       for (const word of words) {
         if (lineWidthIn(word, pt) > widthIn + 1e-6) return Infinity;
         const candidate = current ? `${current} ${word}` : word;
-        if (lineWidthIn(candidate, pt) <= widthIn + 1e-6) {
+        // A criteria card's first line gives up its start to the corner number;
+        // its first word stays on it however little room that leaves.
+        const room = segment === 0 && lines === 1 ? widthIn - FIRST_LINE_STEP_IN : widthIn;
+        if (!current || lineWidthIn(candidate, pt) <= room + 1e-6) {
           current = candidate;
         } else {
           lines += 1;
@@ -416,7 +437,8 @@ function cardRows(steps, zone, innerX, innerW, height) {
     (m, s) => Math.max(m, normaliseStep(s).text.length),
     0
   );
-  const gutterW = badgeW + BADGE_GAP;
+  // A corner number takes no column: only the first line steps in for it.
+  const gutterW = zone.cornerNumbers ? 0 : badgeW + BADGE_GAP;
   // At the largest size we would ever use, the width the longest step wants on
   // a single line, plus the badge column and padding.
   const wantedW = longest * (TEXT_FONT_MAX * 0.52 / 72) + gutterW;
@@ -435,7 +457,7 @@ function cardRows(steps, zone, innerX, innerW, height) {
     ? Math.min((zone.compactCards ? CARD_COMPACT : CARD).itemGap, rowH * 0.18)
     : 0;
 
-  return { rowH, badgeW, badgeFont, cardW, cardX, stepTextW, rowGapForFit };
+  return { rowH, badgeW, badgeFont, cardW, cardX, stepTextW, rowGapForFit, corner: !!zone.cornerNumbers };
 }
 
 // The height a step or a sticky line needs at the floor, its card's gap
@@ -464,6 +486,7 @@ function floorNeed(text, rows, floorPt = TEXT_FONT_MIN) {
 const POINTED_STEP_MAX = 24;
 const POINT_STEP_DOWN = 4;
 const POINTED_SPARE_MAX = 0.25;
+const CORNER_SPARE_MAX = 0.08;
 const BADGE_CLEARANCE = 0.12;
 
 function splitPoints(text) {
@@ -499,19 +522,40 @@ function planPointedList(steps, rows, innerH, floorPt) {
         };
       }
       const { head, points } = splitPoints(text);
+      if (rows.corner && normaliseStep(step).helper) {
+        // Beside a picture in the card's corner the step's first lines stop
+        // short of it and the rest run the full width under it (the text
+        // fitter splits the step there): about one line more than the step
+        // takes at full width, never more than it takes all stopped short.
+        const full = wrappedLineCount(head, usableWidth(fullW), pt);
+        const short = wrappedLineCount(head, widthOf(step), pt);
+        const lines = Math.min(short, full + (short > full ? 1 : 0));
+        return {
+          headH: linesHeight(lines, pt),
+          pointH: points ? linesHeight(wrappedLineCount(points, usableWidth(fullW), pointPt), pointPt) : 0,
+          font: pt,
+          besideLines: Math.min(2, lines)
+        };
+      }
       return {
         headH: linesHeight(wrappedLineCount(head, widthOf(step), pt), pt),
-        pointH: points ? linesHeight(wrappedLineCount(points, widthOf(step), pointPt), pointPt) : 0,
+        // On a corner-numbered card the picture sits in the top-right corner
+        // beside the step's own lines only; the points under them run under it
+        // at the card's full width.
+        pointH: points ? linesHeight(wrappedLineCount(points, rows.corner ? usableWidth(fullW) : widthOf(step), pointPt), pointPt) : 0,
         font: pt
       };
     });
     // A card is never shorter than the number beside it: a one-line step in a
     // full panel was given a card its own number stood out of.
-    const cardNeed = (part) => Math.max(part.headH + part.pointH, rows.badgeW + BADGE_CLEARANCE);
+    // A corner number stands on the card's corner, so it sets no least height.
+    const cardNeed = (part) => Math.max(part.headH + part.pointH, rows.corner ? 0 : rows.badgeW + BADGE_CLEARANCE);
     const need = parts.reduce((total, part) => total + cardNeed(part) + rows.rowGapForFit, 0);
     if (!Number.isFinite(need) || need > innerH + 1e-9) continue;
 
-    const spare = Math.min(POINTED_SPARE_MAX, (innerH - need) / steps.length);
+    // Words set from the top of a corner-numbered card leave any spare room
+    // under them, so those cards take only a little.
+    const spare = Math.min(rows.corner ? CORNER_SPARE_MAX : POINTED_SPARE_MAX, (innerH - need) / steps.length);
     return {
       pt,
       pointPt,
@@ -523,7 +567,26 @@ function planPointedList(steps, rows, innerH, floorPt) {
   return null;
 }
 
+// A criteria panel's cards (white cards inside the green box) number their
+// steps on the card's corner; the measuring below then knows each step's first
+// line steps in that far. The step-in is set only while this list is drawn.
 function drawSteps(pptx, slide, zone, data, ctx) {
+  if (!(zone.criteriaPanel && zone.itemCards)) return drawStepsIn(pptx, slide, zone, data, ctx);
+  const pad = (zone.compactCards ? CARD_COMPACT : CARD).pad;
+  const before = FIRST_LINE_STEP_IN;
+  FIRST_LINE_STEP_IN = cornerStepIn(pad);
+  try {
+    return drawStepsIn(pptx, slide, Object.assign({}, zone, { cornerNumbers: true }), data, ctx);
+  } finally {
+    FIRST_LINE_STEP_IN = before;
+  }
+}
+
+// From the text box's left edge (the card's edge plus its padding) to just
+// past the corner number.
+const cornerStepIn = (cardPad) => CORNER_D - CORNER_OUT + CORNER_GAP - cardPad;
+
+function drawStepsIn(pptx, slide, zone, data, ctx) {
   const steps = Array.isArray(data.steps) ? data.steps : [];
   if (steps.length === 0) return;
 
@@ -672,7 +735,13 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   };
   const { rowH, cardW, cardX, stepTextW, rowGapForFit } = rows;
   let { badgeW, badgeFont } = rows;
-  const plan = hasPoints ? planPointedList(steps, rows, innerH, floorPt) : null;
+  // A list numbered on its cards' corners is sized the way a list with points
+  // is: each card as tall as its own words, so words centred in their card sit
+  // up by the number on the corner instead of floating mid-card below it (the
+  // teacher, 7 November 2026: in equal-height cards the numbers were "not in
+  // the corner at all"; and the words are centred top to bottom in every card,
+  // left-aligned).
+  const plan = hasPoints || (zone.cornerNumbers && !drawnSmaller) ? planPointedList(steps, rows, innerH, floorPt) : null;
 
   // The height each item genuinely needs at the readable floor.
   //
@@ -1079,6 +1148,34 @@ function drawSteps(pptx, slide, zone, data, ctx) {
       });
     }
 
+    // A corner number (or star) stands on the card's top-left corner, about a
+    // quarter off it. The text fitter finds the words beside it by where they
+    // sit (their box starts at the card's edge, just inside the number), gives
+    // their first line its step-in, and lowers the number level with that line
+    // when the words sit lower in a roomy card (fit_text_postprocess.py,
+    // prepare_corner_steps and place_corner_marks). It is never taller than
+    // the shortest card it numbers.
+    const corner = !!zone.cornerNumbers;
+    const cornerD = Math.min(CORNER_D, badgeW);
+    const cornerX = cardX - CORNER_OUT;
+    const cornerY = rowY - CORNER_OUT;
+
+    if (corner && isReference(step)) {
+      const starW = drawSignal(slide, 'star', {
+        x: cornerX + (cornerD - cornerD * 0.865) / 2, y: cornerY, h: cornerD,
+        objectName: CORNER_MARK
+      });
+      const shown = starW ? step.text.replace(/^\s*✨\s*/, '') : step.text;
+      slide.addText(splitAnswerRuns(shown, true), {
+        x: rowX, y: rowY, w: rowW, h: cardH,
+        fontFace: FONT, fontSize: textFont, bold: true,
+        color: COLOURS.sticky,
+        align: 'left', valign: 'middle', margin: 0, fit: FIT,
+        objectName: lineName('step-reference-', i)
+      });
+      return;
+    }
+
     if (isReference(step)) {
       // The marker is the drawn star from the signal set, sitting in the badge
       // column so the sticky line's text ranges with the numbered steps. The
@@ -1105,31 +1202,65 @@ function drawSteps(pptx, slide, zone, data, ctx) {
     if (!step.otherQuestion) stepNum += 1;
     const badgeColour = step.worked ? COLOURS.worked : COLOURS.green;
     const badgeFill = step.otherQuestion ? COLOURS.orange : badgeColour;
-    slide.addShape(pptx.shapes.OVAL, {
-      x: rowX, y: badgeY, w: badgeW, h: badgeW,
-      fill: { color: badgeFill },
-      line: { color: badgeFill, width: 1 }
-    });
-    slide.addText(step.otherQuestion ? '?' : String(stepNum), {
-      x: rowX, y: badgeY, w: badgeW, h: badgeW,
-      fontFace: FONT, fontSize: badgeFont, bold: true,
-      color: COLOURS.pureWhite,
-      align: 'center', valign: 'middle', margin: 0,
-      objectName: 'NOFIT_step-badge'
-    });
     let textX = rowX + badgeW + BADGE_GAP;
     let textW = rowW - badgeW - BADGE_GAP;
+    if (corner) {
+      // One shape, the circle and its number, so the fitter moves them together.
+      slide.addText(step.otherQuestion ? '?' : String(stepNum), {
+        shape: pptx.shapes.OVAL,
+        x: cornerX, y: cornerY, w: cornerD, h: cornerD,
+        fill: { color: badgeFill }, line: { color: badgeFill, width: 1 },
+        fontFace: FONT, fontSize: Math.max(BADGE_FONT_MIN, Math.min(18, Math.floor(cornerD * 72 * 0.55))), bold: true,
+        color: COLOURS.pureWhite,
+        align: 'center', valign: 'middle', margin: 0,
+        objectName: CORNER_MARK
+      });
+      textX = rowX;
+      textW = rowW;
+    } else {
+      slide.addShape(pptx.shapes.OVAL, {
+        x: rowX, y: badgeY, w: badgeW, h: badgeW,
+        fill: { color: badgeFill },
+        line: { color: badgeFill, width: 1 }
+      });
+      slide.addText(step.otherQuestion ? '?' : String(stepNum), {
+        x: rowX, y: badgeY, w: badgeW, h: badgeW,
+        fontFace: FONT, fontSize: badgeFont, bold: true,
+        color: COLOURS.pureWhite,
+        align: 'center', valign: 'middle', margin: 0,
+        objectName: 'NOFIT_step-badge'
+      });
+    }
 
     // The Success Criteria Helper is a literal picture of the mark the child makes, placed
     // between the step number and the words. It takes a bounded slot so a wide
     // parallel-arrow drawing never pushes the criterion into the card edge.
     // If the image is unavailable, reserve nothing: readable instructions beat
     // a mysterious blank hole.
-    if (step.helper && textW > SC_HELPER_SLOT_W + SC_HELPER_GAP + 0.8 && cardH > 0.34) {
+    // On a corner-numbered card the picture tucks tight into the card's
+    // top-right corner, beside the step's own lines, and the words wrap short
+    // of it there and run the full width under it, the way a picture sits in a
+    // corner of a Word document (the teacher, 6 November 2026: a picture in a
+    // column of its own floated mid-card with empty card above and below it).
+    // The text fitter stops those lines short of the picture by where it sits
+    // (fit_text_postprocess.py, prepare_corner_steps).
+    if (corner && part && step.helper) {
+      const picH = Math.min(SC_HELPER_H_MAX, Math.max(0.3, (part.besideLines || 1) * (part.font / 72) * 1.28));
+      drawSuccessCriteriaHelper(slide, step.helper, {
+        x: rowX + rowW - SC_HELPER_SLOT_W, y: blockY,
+        w: SC_HELPER_SLOT_W, h: picH,
+        align: 'top-right', objectName: CRITERIA_PICTURE
+      }, ctx);
+    } else if (step.helper && textW > SC_HELPER_SLOT_W + SC_HELPER_GAP + 0.8 && cardH > 0.34) {
       const helperH = Math.min(SC_HELPER_H_MAX, cardH * 0.72);
+      // Under a corner number, the picture keeps clear of it when the card
+      // has the height; the words beside it start after it and do not step in.
+      const centred = rowY + (cardH - helperH) / 2;
+      const underCorner = cornerY + cornerD + 0.03;
+      const helperY = corner && underCorner + helperH <= rowY + cardH ? Math.max(centred, underCorner) : centred;
       const drew = drawSuccessCriteriaHelper(slide, step.helper, {
         x: textX,
-        y: rowY + (cardH - helperH) / 2,
+        y: helperY,
         w: SC_HELPER_SLOT_W,
         h: helperH
       }, ctx);
@@ -1200,4 +1331,8 @@ function drawSteps(pptx, slide, zone, data, ctx) {
   }
 }
 
-module.exports = { drawSteps, TEXT_FONT_MIN, lineWidthIn, usableWidth };
+// How far a criteria card's first line steps in, in the compact cards every
+// criteria panel draws (criteria-width.js measures its lines with it).
+const CORNER_STEP_IN = cornerStepIn(CARD_COMPACT.pad);
+
+module.exports = { drawSteps, TEXT_FONT_MIN, lineWidthIn, usableWidth, CORNER_STEP_IN };

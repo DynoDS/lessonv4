@@ -20,6 +20,14 @@
 // smaller, never under the 20pt a panel is read best at (or the size a list
 // already under that had). Every fitting list still draws, and the practice
 // panel still never widens for a list that fitted 4.60in.
+//
+// And on 6 November 2026 the numbers moved onto the cards' corners, so every
+// step's words gained the width the number's column took: a list now comes out
+// at a different size at the same width, larger where it had room to grow and
+// never past the 24pt the teacher set for criteria (so a list once drawn at 26
+// to 35pt in a roomy box now stops at 24). The promise kept is the one that
+// matters to him: every list that fitted still draws, none smaller than it may
+// go, and the practice panel never widens for it.
 
 const assert = require('node:assert/strict');
 const test = require('node:test');
@@ -92,11 +100,6 @@ const SHAPES = {
     reference: { type: 'text', value: '346' }, criteria,
   }),
 };
-// The width each shape's criteria box had before it could narrow to its words.
-const SNUG_FROM = {
-  'sc-template (maths-turn-sc)': 4.6, 'maths-your-turn-sc': 4.6, 'maths-turn-ref-sc': 4.6, 'writing-turn-ref-sc': 4.6,
-  'split-h-70-30 secondary': 3.81, 'split-h-60-40 secondary': 5.08, 'split-h-50-50 secondary': 6.35,
-};
 const PRACTICE = new Set(['sc-template (maths-turn-sc)', 'maths-your-turn-sc', 'maths-turn-ref-sc', 'writing-turn-ref-sc']);
 
 // The step size a slide's criteria were drawn at, and its panel's width; or the
@@ -134,8 +137,8 @@ test('every list that fitted before still draws, no smaller than it may go, and 
       const now = drawn(SHAPES[shape]({ type: 'steps', steps: list.steps }));
       if (now.refused) moved.push(`${shape}: ${list.source} was ${before}pt, now refused (${now.refused})`);
       else if (now.font < Math.min(before, 20)) moved.push(`${shape}: ${list.source} was ${before}pt, now ${now.font}pt`);
-      else if (now.font !== before && !(now.w < SNUG_FROM[shape] - 0.02)) moved.push(`${shape}: ${list.source} was ${before}pt, now ${now.font}pt at full width`);
-      else if (PRACTICE.has(shape) && now.w > 4.6) moved.push(`${shape}: ${list.source} panel widened to ${now.w}in`);
+      else if (PRACTICE.has(shape) && now.w > 4.6 + 1e-9) moved.push(`${shape}: ${list.source} panel widened to ${now.w}in`);
+      else if (now.font > 24) moved.push(`${shape}: ${list.source} drawn at ${now.font}pt, past the 24pt criteria limit`);
       else kept += 1;
     });
   }

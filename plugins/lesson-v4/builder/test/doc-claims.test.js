@@ -387,7 +387,9 @@ test('blue is a question or a short task, and a longer instruction is black', ()
   assert.ok(TEACHER_PROFILE_MD.includes('marked `colorRole: "task-blue"`'));
   assert.match(TEACHER_PROFILE_MD, /no count of words decides it/);
   assert.match(TEACHER_PROFILE_MD, /The cue is drawn black/);
-  assert.ok(PREFERENCES_MD.includes('I want blue means question or like a short task'));
+  // His words for this rule (decision 11) moved to build-review-log.md in the
+  // 3 November tidy; preferences keeps the rule itself.
+  assert.ok(PREFERENCES_MD.includes("A question or a short task, the child's job, is blue"));
   assert.match(PREFERENCES_MD, /a longer instruction about how to go about it stays black/);
   assert.match(
     PLAYBOOK_MD,

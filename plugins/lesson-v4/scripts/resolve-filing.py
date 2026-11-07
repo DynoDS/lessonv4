@@ -42,6 +42,8 @@ lessons before the set, never a sibling being written at the same time. It
 also prints:
     SET_THREAD    the set's agreed thread file (LESSON_SET_THREAD)
     SET_LESSON    this lesson's key in it (LESSON_SET_LESSON)
+A lesson started as a T3 Code thread gets the same values from a file instead:
+--set-handover <file> (written by lesson-batch.py t3-prepare).
 
 Sorted mode also prints:
     TERM_FOLDER   the half-term folder, e.g. "Summer 2"
@@ -150,6 +152,25 @@ def remember_working_root(working_root):
 # ones before that (LESSON_SET_EARLIER). Searching here instead could hand it a
 # sibling built at the same moment, half-written.
 NO_LESSON = "none"
+
+
+def load_set_handover(path):
+    """Take the set's values from a file when the session could not be started with them.
+
+    A lesson of a set started as a T3 Code thread (lesson-batch.py t3-prepare)
+    cannot be given environment values, so the set writes them to a file and
+    the lesson names it here. Values already in the environment win.
+    """
+    try:
+        with open(path, encoding="utf-8") as fh:
+            values = json.load(fh)
+    except (OSError, ValueError) as exc:
+        print(f"SET_HANDOVER_UNREADABLE: {path} ({exc}); this lesson goes on without the set's agreed values",
+              file=sys.stderr)
+        return
+    for key, value in (values.items() if isinstance(values, dict) else []):
+        if key.startswith("LESSON_SET_") and isinstance(value, str):
+            os.environ.setdefault(key, value)
 
 
 def set_neighbours():
@@ -514,6 +535,10 @@ def main(argv=None):
         i = args.index("--letterbox")
         if i + 1 < len(args):
             os.environ[plugin_settings.LETTERBOX_VARIABLE] = args[i + 1]
+        del args[i:i + 2]
+    if "--set-handover" in args:
+        i = args.index("--set-handover")
+        load_set_handover(args[i + 1] if i + 1 < len(args) else "")
         del args[i:i + 2]
     year, subject, working_root = parse_args(args)
     remember_working_root(working_root)

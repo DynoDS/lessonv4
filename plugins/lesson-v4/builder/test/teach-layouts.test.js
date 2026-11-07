@@ -554,6 +554,28 @@ test('the same instruction in the task place passes, two sentences and all', (t)
   assert.doesNotMatch(result.stdout || '', /TEACH_TASK_OUTSIDE_ITS_SLOT|TASK_BLUE_NOT_A_SHORT_TASK|BLUE_WITHOUT_A_QUESTION|TEACH_LAYOUT/);
 });
 
+test('a question the teacher asks, left among the told lines, is sent to the question place', (t) => {
+  const dir = tmpDir(t, 'teach-layouts-question-black-');
+  const specPath = writeLesson(dir, [teachSlide('lead-picture-lines', {
+    designUnitId: 'lesson-section/teaching-sequence/unit-001', question: undefined,
+    lines: ['The sea kept flooding their fields and spoiling their crops.', 'Why would that make a farmer want to leave?'] })]);
+  designFor(dir, TEACH_WITH_SCRIPT);
+  const result = runSlideDesignCheck(specPath);
+  assert.equal(result.ok, false);
+  assert.match(result.stdout, /QUESTION_PRINTED_AS_TELLING/);
+});
+
+test('the same question in the question place passes, and a quoted question stays a line', (t) => {
+  const dir = tmpDir(t, 'teach-layouts-question-blue-');
+  const specPath = writeLesson(dir, [teachSlide('lead-picture-lines', {
+    designUnitId: 'lesson-section/teaching-sequence/unit-001',
+    lines: ['The sea kept flooding their fields and spoiling their crops.', 'Mum asked him, "Are you hungry?"'],
+    question: 'Why would that make a farmer want to leave?' })]);
+  designFor(dir, TEACH_WITH_SCRIPT);
+  const result = runSlideDesignCheck(specPath);
+  assert.doesNotMatch(result.stdout || '', /QUESTION_PRINTED_AS_TELLING/);
+});
+
 test('a Teach slide with no instruction in its design is not asked for a task', (t) => {
   const dir = tmpDir(t, 'teach-layouts-task-none-');
   const specPath = writeLesson(dir, [teachSlide('lead-picture-lines', {
@@ -628,6 +650,20 @@ test('one speaker stands on the left with the explanation and the question besid
     ['His words are a clue.', 'He might be worried.', 'Which words tell us?']);
   const withPanel = expandTeachLayouts({ slides: [teachSlide('speaker-lines', { lines: undefined, criteria: CRITERIA })] });
   assert.equal(find(withPanel.slides[0], 'sc-panel').length, 1);
+});
+
+test('the person can stand second, so the situation on the board is read before their words', () => {
+  const lesson = expandTeachLayouts({ slides: [
+    teachSlide('speaker-lines', { speakerSide: 'right' }),
+    teachSlide('flexible', { speakers: [{ name: 'Maja', child: 'girl-2', speech: 'Football again!' }], speakerSide: 'right' }),
+    teachSlide('flexible', { speakers: [{ name: 'Maja', child: 'girl-2', speech: 'Football again!' }] })
+  ] });
+  assert.deepEqual(lesson.slides.map((x) => x.statementSide), ['left', 'left', 'right']);
+  assert.equal(lesson.slides[0].speakerSide, undefined);
+  assert.throws(() => expandTeachLayouts({ slides: [teachSlide('picture-three-cards', { speakerSide: 'right' })] }),
+    (error) => error instanceof TeachLayoutError && /speakerSide/.test(error.message));
+  assert.throws(() => expandTeachLayouts({ slides: [teachSlide('speaker-lines', { speakerSide: 'middle' })] }),
+    (error) => error instanceof TeachLayoutError && /"left".*"right"/.test(error.message));
 });
 
 test('a speaker given explanation lines on one-speaker is sent to the layout that holds both', () => {

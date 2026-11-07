@@ -16,7 +16,7 @@ const { FONT, FIT, COLOURS } = require('./styles');
 const { warn, withoutRecording } = require('./warnings');
 const { isMarkedList, markedListHeldAt18, markedListFloor } = require('./marked-criteria');
 const requireGlobal = require('./require-global');
-const { drawSignalTopRight } = require('./signals');
+const { drawSignalTopRight, signalWidth } = require('./signals');
 const { SLIDE_W, SLIDE_H } = require('./layout');
 
 // ─── CONSTANTS ────────────────────────────────────────────────
@@ -28,6 +28,16 @@ const LINE_W      = 1.5;
 const RADIUS      = 0.08;
 const LABEL_FONT  = 28;
 const LABEL_COLOR = COLOURS.textGreen;
+// The draw-live easel in the top-right corner: its height, its distance from
+// the panel's edges, and the clear gap the heading keeps before it.
+const EASEL_H     = 0.58;
+const EASEL_INSET = 0.10;
+const EASEL_GAP   = 0.08;
+// The heading goes smaller to fit a narrow box or the easel beside it, never
+// under 22pt, so it stays a size above the 20pt steps under it; the name keeps
+// the text fitter off it and lets the width search find it.
+const LABEL_FLOOR = 22;
+const HEADING_NAME = 'NOFIT_criteria-heading';
 // The teacher's limit: the criteria support the work and never take more than
 // half the slide. Only a slide whose one job is the criteria may go further, or
 // a slide marked `workOnPaper`: the children do the task on paper and the board
@@ -148,12 +158,26 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
   // The heading is one line, always: the fit pass shrinks a word it cannot
   // break, and "Success Criteria" once wrapped to two large lines in a
   // sidebar panel and pushed the criteria down. No-break spaces make it one word.
-  slide.addText(String(label).replace(/ +/g, ' '), {
+  // The draw-live easel shares the heading's line in the top-right corner, so
+  // the heading ends before it: drawn the full width, "How to find area" ran
+  // under the easel (Year 4 area, 28 October 2026). The text fitter leaves this
+  // heading alone, and PowerPoint breaks a one-word heading too long for its box
+  // in the middle of a word ("are / a"), so a heading too long for the room
+  // left is drawn smaller here, just enough to fit on its line.
+  const headingEnd = data.flipchart ? signalWidth('flipchart', EASEL_H) + EASEL_INSET + EASEL_GAP : PAD;
+  const headingText = String(label).replace(/ +/g, ' ');
+  const headingW = zone.w - PAD - headingEnd;
+  const { lineWidthIn } = require('./content/steps');
+  const headingNeeds = lineWidthIn(headingText.replace(/ /g, ' '), LABEL_FONT);
+  const headingPt = headingNeeds > headingW
+    ? Math.max(LABEL_FLOOR, Math.floor(LABEL_FONT * headingW / headingNeeds))
+    : LABEL_FONT;
+  slide.addText(headingText, {
     x: zone.x + PAD, y: zone.y + PAD,
-    w: zone.w - 2 * PAD, h: LABEL_H,
-    fontFace: FONT, fontSize: LABEL_FONT, bold: true,
+    w: headingW, h: LABEL_H,
+    fontFace: FONT, fontSize: headingPt, bold: true,
     color: LABEL_COLOR, align: 'left', valign: 'middle',
-    margin: 0, fit: FIT
+    margin: 0, fit: FIT, objectName: HEADING_NAME
   });
 
   if (criteria) {
@@ -267,7 +291,7 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
   if (data.flipchart) {
     // The draw-live easel ends where the panel's content begins
     // (PAD + LABEL_H), so it never sits on the first criteria card.
-    drawSignalTopRight(slide, 'flipchart', zone, { h: 0.58, inset: 0.10 });
+    drawSignalTopRight(slide, 'flipchart', zone, { h: EASEL_H, inset: EASEL_INSET });
   }
 }
 
@@ -275,4 +299,4 @@ function drawSuccessCriteriaPanel(pptx, slide, zone, data, ctx) {
 const PANEL_FRAME_H = 2 * PAD + LABEL_H;
 
 module.exports = {
-  huggedHeight, drawSuccessCriteriaPanel, tallestPanel, PANEL_FRAME_H };
+  HEADING_NAME, huggedHeight, drawSuccessCriteriaPanel, tallestPanel, PANEL_FRAME_H };

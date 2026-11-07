@@ -31,6 +31,7 @@ REASONS = {
     "real_source_unavailable", "real_requirement_unfulfillable",
     "imagegen_capability_unavailable", "fundamental_generation_miss",
     "correction_failed", "attempt_budget_exhausted", "imagegen_output_unavailable",
+    "imagegen_usage_spent",
 }
 REAL_SOURCES = {"unsplash", "wikimedia", "openverse", "web"}
 
@@ -104,6 +105,33 @@ def generation_is_available(assignment: dict) -> bool:
     return assignment.get("image_generation") != "unavailable"
 
 
+def usage_was_spent(assignment: dict) -> bool:
+    """Did the picture maker answer, in this batch, that its usage is used up?
+
+    Read from the AI ledgers, where the scout closes the open attempt with
+    `interrupt-open --reason imagegen_usage_spent`. Only then may a real-first
+    picture walk its `usage_spent_schedule` and take a plainer stand-in: with
+    usage left, the exact picture can still be made, so it is made.
+    """
+    for row in assignment.get("entries") or []:
+        ledger = row.get("ai_ledger_path") if isinstance(row, dict) else None
+        if not isinstance(ledger, str):
+            continue
+        try:
+            events = json.loads(Path(ledger).read_text(encoding="utf-8")).get("events") or []
+        except (OSError, ValueError, AttributeError):
+            continue
+        if any(isinstance(e, dict) and e.get("event") == "interrupted" and e.get("reason") == "imagegen_usage_spent"
+               for e in events):
+            return True
+    return False
+
+
+def ladder(compiled: dict, spent: bool) -> list:
+    """The steps this entry was owed: the compiled schedule, and its rest once usage ran out."""
+    return list(compiled["search_schedule"]) + (list(compiled.get("usage_spent_schedule") or []) if spent else [])
+
+
 def validate_assignment_shape(assignment: dict, requirements_path: Path, working_dir: Path, expected_batch_id: str, expected: list[str]) -> tuple[dict, list[dict]]:
     if not isinstance(assignment, dict) or assignment.get("schema_version") != 2 or assignment.get("kind") != "image":
         raise ValidationError("assignment must be schema_version 2 and kind image")
@@ -140,7 +168,7 @@ def validate_assignment_shape(assignment: dict, requirements_path: Path, working
         required = {"entry_key", "filename", "subject", "pedagogical_constraint", "teaching_requirement", "load_bearing_evidence", "use", "essential", "acquisition_mode", "fallback_action", "coherent_group", "coherent_mode", "coherent_visual_invariants", "initial_route", "search_schedule", "generation_prompt_file", "generation_prompt_sha256", "ai_ledger_path"}
         # `avoid` is absent from an assignment compiled before the field
         # existed, and a run resumed across the upgrade still has to validate.
-        if set(row) - {"avoid"} != required:
+        if set(row) - {"avoid", "usage_spent_schedule"} != required:
             raise ValidationError(f"{row.get('filename')}: assignment entry must contain only compiled fields")
         photo = by_name.get(row["filename"])
         if photo is None:
@@ -165,6 +193,12 @@ def validate_assignment_shape(assignment: dict, requirements_path: Path, working
                 raise ValidationError(f"{row['filename']}: compiled search schedule length changed")
         elif row["search_schedule"] != []:
             raise ValidationError(f"{row['filename']}: AI entry must have no search schedule")
+        # Absent on an assignment compiled before the field existed, and on
+        # every entry with no steps in it. See `usage_was_spent`.
+        if "usage_spent_schedule" in row:
+            extra = compiler.usage_spent_schedule(photo, generation_available)
+            if not extra or row["usage_spent_schedule"] != compiler.schedule_rows(photo, extra, work_root):
+                raise ValidationError(f"{row['filename']}: compiled usage-spent search schedule changed")
         authorised = generation_available and compiler.ai_authorised(photo)
         if authorised:
             prompt = Path(row["generation_prompt_file"])
@@ -443,7 +477,7 @@ def load_trim():
     return module
 
 
-def validate_stand_in(row: dict, compiled: dict, generation_available: bool, label: str) -> bool:
+def validate_stand_in(row: dict, compiled: dict, generation_available: bool, label: str, spent: bool = False) -> bool:
     """Is this row a stand-in, and was the scout entitled to take one?
 
     A stand-in is a plainer photograph of the same thing, taken when the exact
@@ -460,7 +494,9 @@ def validate_stand_in(row: dict, compiled: dict, generation_available: bool, lab
       would misteach (another street is not this street), and that contract
       still ends in nothing rather than in something untrue.
     - never where a generated picture is still owed. With a generator and
-      `fallback_action: ai` the exact picture can be made, so it is made.
+      `fallback_action: ai` the exact picture can be made, so it is made,
+      unless the maker said its usage is used up (`spent`): then the picture
+      can no more be made than on a host with no maker (6 November 2026).
     - the whole ladder was walked first (checked by the caller, which holds
       the schedule).
 
@@ -482,7 +518,7 @@ def validate_stand_in(row: dict, compiled: dict, generation_available: bool, lab
             f"{label}: a stand-in is only for an ordinary-real picture; an authentic-real one "
             "names a particular thing, and a different one would misteach"
         )
-    if generation_available and compiled["fallback_action"] == "ai":
+    if generation_available and compiled["fallback_action"] == "ai" and not (spent and compiled.get("usage_spent_schedule")):
         raise ValidationError(
             f"{label}: this picture can still be generated, so generate it; a stand-in is for "
             "a picture that can be neither found nor made"
@@ -684,6 +720,7 @@ def validate_result(args) -> None:
         )
     compiler = load_compiler(); attempts = load_attempts()
     generation_available = generation_is_available(assignment)
+    spent = generation_available and usage_was_spent(assignment)
     outage_notes: list[str] = []
     for row, compiled in zip(rows, assignment_entries):
         label = row.get("filename") if isinstance(row, dict) else "<invalid>"
@@ -697,14 +734,14 @@ def validate_result(args) -> None:
         status = row["status"]; selection = row["selection"]; staged = row["staging_path"]; reason = row["reason"]
         if reason is not None and reason not in REASONS:
             raise ValidationError(f"{label}: invalid terminal reason")
-        stand_in = validate_stand_in(row, compiled, generation_available, label)
+        stand_in = validate_stand_in(row, compiled, generation_available, label, spent)
         validate_kept_picture_notes(row, label)
         if status == "sourced":
             if compiled["initial_route"] != "real":
                 raise ValidationError(f"{label}: controlled AI cannot report a sourced result")
             if not isinstance(selection, dict) or set(selection) != {"summary_path", "candidate_id"} or staged is not None or reason is not None:
                 raise ValidationError(f"{label}: sourced requires only a summary selection")
-            schedule = compiled["search_schedule"]
+            schedule = ladder(compiled, spent)
             allowed = {}
             for index, step in enumerate(schedule):
                 for summary_path in step_summary_paths(step):
@@ -851,6 +888,7 @@ def validate_result(args) -> None:
                 "optional_omission",
                 "authorised_alternative",
                 "imagegen_capability_unavailable",
+                "imagegen_usage_spent",
             }:
                 raise ValidationError(f"{label}: omitted has an invalid reason")
             if status == "unsatisfied" and reason not in REASONS:
@@ -883,6 +921,37 @@ def validate_result(args) -> None:
                     ledger_data = attempts.read_ledger(ledger_text, label)
                     if ledger_data.get("events"):
                         raise ValidationError(f"{label}: capability unavailable must consume no AI call")
+
+            # The picture maker answered that its usage limit is reached: not a
+            # verdict on this picture, so the slide keeps a labelled grey box
+            # for it (finalize-picture-assignment.py). It needs a route that
+            # could have generated, and the status the fallback allows.
+            if reason == "imagegen_usage_spent":
+                expected_status = "omitted" if compiled["fallback_action"] == "omit" else "unsatisfied"
+                if status != expected_status:
+                    raise ValidationError(f"{label}: usage-spent status disagrees with fallback_action")
+                if not generation_available:
+                    raise ValidationError(
+                        f"{label}: this host has no generator, so its usage cannot be spent; "
+                        "report imagegen_capability_unavailable or what the search found"
+                    )
+                if compiled["initial_route"] != "ai" and compiled["fallback_action"] != "ai":
+                    raise ValidationError(f"{label}: usage-spent needs a route that generates")
+                # A grey box is for what no search could find: a real-first
+                # picture walks the rest of its ladder, and may take a plainer
+                # stand-in, before it is left for the teacher to fill.
+                if compiled.get("usage_spent_schedule"):
+                    for step in ladder(compiled, True):
+                        if step_has_final_operational_failure(step, label):
+                            continue
+                        try:
+                            completed_step_summary(step, label)
+                        except ValidationError as unwalked:
+                            raise ValidationError(
+                                f"{label}: the picture maker's usage is spent, so this real-first picture walks "
+                                f"the rest of its search (usage_spent_schedule) and takes a faithful photograph "
+                                f"or a plainer stand-in before it is left as a grey box ({unwalked})"
+                            ) from None
 
             if compiled["initial_route"] == "ai" and reason in {
                 "no_faithful_real_match",

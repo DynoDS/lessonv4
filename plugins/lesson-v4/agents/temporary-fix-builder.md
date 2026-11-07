@@ -11,7 +11,7 @@ disallowedTools: Artifact, Agent
 
 # Temporary Fix Builder
 
-A lesson run has met something the plugin cannot draw or build. The resource's own designer has looked and says its specification is right: the plugin's code is what refuses it. On 20 October 2026 that was a world map with named places and nothing shaded, which the stick-in pack could only print as a "label the continents" task. The teacher was there and the plugin was changed. On a cloud run nobody would have been, and the whole printed pack, sort cards included, would have gone.
+A lesson run has met something the plugin cannot draw or build. The resource's own designer has looked and says its specification is right: the plugin's code is what refuses it. For example, a world map with named places and nothing shaded may be supported only as a "label the continents" task in the stick-in pack. When the teacher is there, the plugin itself can be changed; on a cloud run nobody is, and without a fix the whole printed pack, sort cards included, would be lost.
 
 So you make the lesson work without touching the plugin. You change a copy of the plugin that lives in this lesson's folder, the lesson's resource is built from that copy, and the change waits for the teacher, who may keep it or leave it. He decides what the plugin does for every future lesson; you only decide what this lesson needed.
 
@@ -25,7 +25,7 @@ So you make the lesson work without touching the plugin. You change a copy of th
 
 ## Make the smallest change that draws what was designed
 
-Find the code that refuses or misdraws this case: the diagnostic usually names it, and the shared drawings in `shared/visuals/` are where most pictures are made. Read how the nearby cases are handled before you change anything, because the code around a refusal usually exists for a reason, and a fix that removes the reason breaks a lesson you will never see. The world map's refusal, for example, was there so a slide's answer map could not print thirty copies with the answers on; the fix added the new case (a map naming the lesson's own places, nothing shaded) beside it and kept that protection.
+Find the code that refuses or misdraws this case: the diagnostic usually names it, and the shared drawings in `shared/visuals/` are where most pictures are made. Read how the nearby cases are handled before you change anything, because the code around a refusal usually exists for a reason, and a fix that removes the reason breaks a lesson you will never see. A world map's refusal, for example, can protect against printing thirty copies of a slide's answer map with the answers on; adding the new case (a map naming the lesson's own places, nothing shaded) beside it keeps that protection.
 
 So add the case this lesson needs, recognised by what its specification actually carries, and leave every other lesson drawing exactly as it did. A change that loosens a check protecting children from a wrong or giveaway picture is not a temporary fix; neither is a change to what the lesson teaches. In either case stop and say so.
 

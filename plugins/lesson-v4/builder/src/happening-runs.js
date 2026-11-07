@@ -20,6 +20,11 @@
 // `buildSteps`). The teacher, 19 October 2026: "one part appears and then the
 // next part and then the next part".
 //
+// An area grid built up one row per click runs the same way: an `area-grid`
+// carrying `build: "rows"` lights the next row with its running total on each
+// click, then writes "3 rows of 4" and "3 × 4 = 12" (shared/visuals/area-grid-svg.js
+// `buildSteps`), so the rows-times-squares method is seen happening, not told.
+//
 // The deck now has more slides than lesson.json, so every slide number the build
 // reports is turned back into the lesson.json slide it came from (`sourceOf`),
 // and the designer's tools, which edit lesson.json by number, keep meaning the
@@ -27,6 +32,7 @@
 
 const happening = require('../../shared/visuals/exchange-happening-svg');
 const barModel = require('../../shared/visuals/bar-model-svg');
+const areaGrid = require('../../shared/visuals/area-grid-svg');
 
 const TYPE = 'exchange-happening';
 
@@ -45,6 +51,14 @@ const RUNS = [
     is: (node) => node.type === 'bar-model' && barModel.shapeOf(node) === 'whole-parts' && !!barModel.buildMode(node),
     stepsFor: (node) => barModel.buildSteps(node),
     key: (node) => `bar:${JSON.stringify([node.whole || {}, node.parts || []])}`,
+  },
+  {
+    is: (node) => node.type === 'area-grid' && node.build != null && node.build !== '' && node.build !== false,
+    stepsFor: (node) => areaGrid.buildSteps(node),
+    key: (node) => {
+      const g = areaGrid.normalise(node);
+      return `area:${g.cols}x${g.rows}:${JSON.stringify(g.rects)}`;
+    },
   },
 ];
 
